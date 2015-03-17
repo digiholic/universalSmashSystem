@@ -37,7 +37,6 @@ class Stage():
                 self.zoomLevel += min([0.05,-diff])
             self.camera_position.width  = round(640.0  * self.zoomLevel)
             self.camera_position.height = round(480.0 * self.zoomLevel)
-        #self.camera_position = self.camera_preferred_position
         if self.camera_position.x != self.camera_preferred_position.x:
             diff = self.camera_position.x - self.camera_preferred_position.x
             if diff > 0: #If the camera is too far to the right
@@ -117,13 +116,8 @@ class Stage():
     
         boundingBox = pygame.Rect(leftmost.left-self.deadZone[0],topmost.top-self.deadZone[1],xdist,ydist)
         center = boundingBox.center
-        #self.centerSprite.rect.center = center
         
         self.centerCamera(center)
-        #self.moveCamera(center[0],center[1], True)  
-        
-        #if (xZoom > 1 or yZoom > 1):
-            #self.zoom(xdist, ydist)
         
     def stageToScreen(self,rect):
         x = rect.x - self.camera_position.x

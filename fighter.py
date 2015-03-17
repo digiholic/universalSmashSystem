@@ -1,4 +1,5 @@
 import pygame
+import baseActions
 import math
 import spriteObject
 
@@ -104,6 +105,8 @@ class Fighter():
         
         self.sprite.rect = self.rect
     
+    # Change speed to get closer to the preferred speed without going over.
+    # xFactor - The factor by which to change xSpeed. Usually self.groundFriction or self.airControl
     def accel(self,xFactor):
         if self.change_x > self.preferred_xspeed: #if we're going too fast
             diff = self.change_x - self.preferred_xspeed
@@ -111,7 +114,8 @@ class Fighter():
         elif self.change_x < self.preferred_xspeed: #if we're going too slow
             diff = self.preferred_xspeed - self.change_x
             self.change_x += min(diff,xFactor)
-            
+    
+    # Change ySpeed according to gravity.        
     def calc_grav(self):
         """ Calculate effect of gravity. """
         if self.change_y == 0:
@@ -126,6 +130,8 @@ class Fighter():
             #self.grounded = True
         if self.grounded: self.jumps = self.maxJumps
     
+    # Check if the fighter is on the ground.
+    # Returns True if fighter is grounded, False if airborne.
     def checkForGround(self):
         #Check if there's a platform below us to update the grounded flag 
         self.rect.y += 2
@@ -138,63 +144,53 @@ class Fighter():
             #self.grounded = True
         else: self.grounded = False
     
-    def keyPressed(self,key):
-        self.currentKeys.append((key,True))
-        self.keysHeld.append(key)
-        return True
         
-    def keyReleased(self,key):
-        self.keysHeld.remove(key)
-        self.inputBuffer.append((key,False))
-        return True
-    
-    #Check the input buffer for the given key. If "Held" is set to True,
-    #the function will check to make sure the key is still being held down at the time of execution.
-    #If you are checking for a key release instead of a press, state can be set to False to check for a release.
-    def bufferContains(self,key,held=False,state = True):
-        keyCount = 0
-        for buff in self.inputBuffer:
-            if buff.count((key,state)):
-                keyCount += 1
-            if held:
-                if buff.count((key,not state)):
-                    keyCount -= 1
-        return (keyCount >= 1)
-    
-    def die(self):
-        print "DEAD"
-        self.damage = 0
-        self.change_x = 0
-        self.change_y = 0
-        self.jumps = self.maxJumps
-        self.rect.midtop = self.gameState.size.midtop
-        
+########################################################
+#                  ACTION SETTERS                      #
+########################################################
+# These functions are meant to be overridden. They are
+# provided so the baseActions can change the Fighter's
+# actions. If you've changed any of the base actions
+# for the fighter (including adding a sprite change)
+# override the corresponding method and have it set
+# an instance of your overridden action.
+
+
     def doStop(self):
-        return None
+        self.current_action = baseActions.NeutralAction()
     
     def doGroundMove(self):
-        return None
+        self.current_action = baseActions.Move()
     
     def doLand(self):
-        return None
+        self.current_action = baseActions.Land()
     
     def doPivot(self):
-        return None
+        self.current_action = baseActions.Pivot()
     
     def doGroundJump(self):
-        return None
+        self.current_action = baseActions.Jump()
     
     def doAirJump(self):
-        return None
+        self.current_action = baseActions.AirJump()
     
     def doNeutralAttack(self):
         return None
     
     def doAirAttack(self):
         return None
-    
-    def keysContain(self,key):
-        return (self.currentKeys.count(key) != 0)    
+   
+   
+########################################################
+#                  STATE CHANGERS                      #
+########################################################
+# These involve the game engine. They will likely be
+# sufficient for your character implementation, although
+# in a heavily modified game engine, these might no
+# longer be relevant. Override only if you're changing
+# the core functionality of the fighter system. Extend
+# as you see fit, if you need to tweak sprites or
+# set flags.
     
     def flip(self):
         self.facing = -self.facing
@@ -215,18 +211,10 @@ class Fighter():
                 trajectory -= 15
         self.setSpeed(totalKB, trajectory)
     
-    def draw(self,screen,offset,scale):
-        #spriteObject.RectSprite(self.rect.topleft, self.rect.size).draw(screen)
-        self.sprite.draw(screen,offset,scale)
-        for hbox in self.current_action.hitboxes:
-            offset = self.gameState.stageToScreen(hbox.rect)
-            hbox.draw(screen,offset,scale)
-        
     def setSpeed(self,speed,direction,preferred = True):
         vectors = getXYFromDM(direction,speed)
         x = vectors.pop(0)
         y = vectors.pop(0)
-        #print x, " ", y
         if preferred:
             self.preferred_xspeed = x
             self.preferred_yspeed = y
@@ -238,13 +226,74 @@ class Fighter():
         self.angle += -direction
         self.sprite.image = pygame.transform.rotate(self.sprite.image,-direction)
         #self.rect = self.sprite.image.get_rect(center=self.rect.center)
-        
-        
+            
     def unRotate(self):
         self.sprite.image = pygame.transform.rotate(self.sprite.image, -self.angle)
         #self.rect = self.sprite.image.get_rect(center=self.rect.center)
         self.angle = 0
     
+    def die(self):
+        self.damage = 0
+        self.change_x = 0
+        self.change_y = 0
+        self.jumps = self.maxJumps
+        self.rect.midtop = self.gameState.size.midtop
+
+    
+########################################################
+#                 ENGINE FUNCTIONS                     #
+########################################################
+# These functions are not meant to be overridden, and
+# likely won't need to be extended. Most of these are
+# input/output related, and shouldn't be trifled with.
+# Many of them reference outside variables, so 
+# functionality can be changed by tweaking those values.
+# Edit at your own risk.
+
+    def keyPressed(self,key):
+        self.currentKeys.append ((key,True))
+        self.keysHeld.append(key)
+        return True
+        
+    def keyReleased(self,key):
+        self.keysHeld.remove(key)
+        self.inputBuffer.append((key,False))
+        return True
+    
+    #Check the input buffer for the given key. If "Held" is set to True,
+    #the function will check to make sure the key is still being held down at the time of execution.
+    #If you are checking for a key release instead of a press, state can be set to False to check for a release.
+    def bufferContains(self,key,held=False,state = True):
+        keyCount = 0
+        for buff in self.inputBuffer:
+            if buff.count((key,state)):
+                keyCount += 1
+            if held:
+                if buff.count((key,not state)):
+                    keyCount -= 1
+        return (keyCount >= 1)
+
+    def keysContain(self,key):
+        return (self.currentKeys.count(key) != 0)    
+    
+    def draw(self,screen,offset,scale):
+        #spriteObject.RectSprite(self.rect.topleft, self.rect.size).draw(screen)
+        self.sprite.draw(screen,offset,scale)
+        for hbox in self.current_action.hitboxes:
+            offset = self.gameState.stageToScreen(hbox.rect)
+            hbox.draw(screen,offset,scale)
+        
+    #Gets the proper direction, adjusted for facing
+    def getForwardWithOffset(self,offSet = 0):
+        if self.facing == 1:
+            return offSet
+        else:
+            return 180 - offSet
+    
+########################################################
+#             STATIC HELPER FUNCTIONS                  #
+########################################################
+# Functions that don't require a fighter instance to use
         
 #A helper function to get the X and Y magnitudes from the Direction and Magnitude of a trajectory
 def getXYFromDM(direction,magnitude):

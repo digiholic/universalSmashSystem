@@ -72,12 +72,8 @@ def main():
         current_stage.draw(screen)
         for obj in gameObjects:
             obj.update()
-            #if isinstance(obj, fighter.Fighter):
-                #current_stage.followObject(obj)
             offset = current_stage.stageToScreen(obj.rect)
             scale =  current_stage.getScale()
-            #scale = 1
-            #print current_stage.camera_position
             obj.draw(screen,offset,scale)
             hitbox_collisions = pygame.sprite.spritecollide(obj, current_stage.active_hitboxes, False)
             for hbox in hitbox_collisions:

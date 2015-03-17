@@ -216,7 +216,6 @@ class NeutralAction(baseActions.NeutralAction):
         
     def update(self, actor):
         if actor.bufferContains(pygame.K_UP):
-            print "buffering jump"
             actor.doJump()
         actor.sprite.changeImage("hitboxie_idle")
         if actor.grounded == False: actor.current_action = Fall()
@@ -254,7 +253,6 @@ class HitStun(baseActions.HitStun):
 class Jump(baseActions.Jump):
     def __init__(self):
         baseActions.Jump.__init__(self,9,8)
-        print "Jumping"
         
     def update(self,actor):
         if self.frame == 0:
