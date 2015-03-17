@@ -82,14 +82,11 @@ class Hitboxie(fighter.Fighter):
         self.current_action = newAction
     
     def doJump(self):
-        newAction = None
         if self.grounded:
-            newAction = actions.Jump()
+            self.current_action = actions.Jump()
         else:
             if self.jumps > 0:
-                newAction = actions.AirJump()
-        if self.current_action.canBeInterrupted(newAction):
-            self.current_action = newAction
+                self.current_action = actions.AirJump()
             
     def doNeutralAttack(self):
         if isinstance(self.current_action,actions.NeutralAttack):

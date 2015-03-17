@@ -20,6 +20,8 @@ class Fighter():
         
         self.sprite = spriteObject.SheetSprite(sprite,[0,0],92)
         self.currentKeys = []
+        self.inputBuffer = [[],[],[],[],[],[]]
+        self.keysHeld = []
         
         #initialize important variables
         self.gravity = gravity
@@ -44,6 +46,8 @@ class Fighter():
         
         self.change_x = 0
         self.change_y = 0
+        self.preferred_xspeed = 0
+        self.preferred_yspeed = 0
         
         #facing right = 1, left = -1
         self.facing = 1
@@ -52,7 +56,15 @@ class Fighter():
         self.gameState = None
         
     def update(self):
-        self.current_action.update(self) #update it              
+        self.inputBuffer.pop()
+        self.inputBuffer.insert(0, self.currentKeys)
+        self.currentKeys = []
+        
+        #accelerate/decelerate
+        if self.grounded: self.accel(self.groundFriction)
+        else: self.accel(self.airControl)
+        
+        self.current_action.update(self) #update our action              
         
         # Gravity
         self.calc_grav()
@@ -92,6 +104,14 @@ class Fighter():
         
         self.sprite.rect = self.rect
     
+    def accel(self,xFactor):
+        if self.change_x > self.preferred_xspeed: #if we're going too fast
+            diff = self.change_x - self.preferred_xspeed
+            self.change_x -= min(diff,xFactor)
+        elif self.change_x < self.preferred_xspeed: #if we're going too slow
+            diff = self.preferred_xspeed - self.change_x
+            self.change_x += min(diff,xFactor)
+            
     def calc_grav(self):
         """ Calculate effect of gravity. """
         if self.change_y == 0:
@@ -119,18 +139,27 @@ class Fighter():
         else: self.grounded = False
     
     def keyPressed(self,key):
-        if   key == pygame.K_LEFT  and self.currentKeys.count(pygame.K_RIGHT): self.currentKeys.remove(pygame.K_RIGHT)
-        elif key == pygame.K_RIGHT and self.currentKeys.count(pygame.K_LEFT):  self.currentKeys.remove(pygame.K_LEFT)
-        self.currentKeys.append(key)
+        self.currentKeys.append((key,True))
+        self.keysHeld.append(key)
         return True
         
     def keyReleased(self,key):
-        #This one can fail, if the key has been removed by a conflicting key (such as left/right)
-        #Returns true if the key release was actually removed
-        if self.currentKeys.count(key):
-            self.currentKeys.remove(key)
-            return True
-        return False
+        self.keysHeld.remove(key)
+        self.inputBuffer.append((key,False))
+        return True
+    
+    #Check the input buffer for the given key. If "Held" is set to True,
+    #the function will check to make sure the key is still being held down at the time of execution.
+    #If you are checking for a key release instead of a press, state can be set to False to check for a release.
+    def bufferContains(self,key,held=False,state = True):
+        keyCount = 0
+        for buff in self.inputBuffer:
+            if buff.count((key,state)):
+                keyCount += 1
+            if held:
+                if buff.count((key,not state)):
+                    keyCount -= 1
+        return (keyCount >= 1)
     
     def die(self):
         print "DEAD"
@@ -193,19 +222,18 @@ class Fighter():
             offset = self.gameState.stageToScreen(hbox.rect)
             hbox.draw(screen,offset,scale)
         
-    def setSpeed(self,speed,direction,accelerate=False,acceleration=0):
+    def setSpeed(self,speed,direction,preferred = True):
         vectors = getXYFromDM(direction,speed)
         x = vectors.pop(0)
         y = vectors.pop(0)
         #print x, " ", y
-        if accelerate:
-            self.change_x = x
-            self.change_y = y
+        if preferred:
+            self.preferred_xspeed = x
+            self.preferred_yspeed = y
         else:
             self.change_x = x
             self.change_y = y
         
-    
     def rotateSprite(self,direction):
         self.angle += -direction
         self.sprite.image = pygame.transform.rotate(self.sprite.image,-direction)

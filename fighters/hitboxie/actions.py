@@ -215,6 +215,9 @@ class NeutralAction(baseActions.NeutralAction):
         baseActions.NeutralAction.__init__(self,1)
         
     def update(self, actor):
+        if actor.bufferContains(pygame.K_UP):
+            print "buffering jump"
+            actor.doJump()
         actor.sprite.changeImage("hitboxie_idle")
         if actor.grounded == False: actor.current_action = Fall()
         baseActions.NeutralAction.update(self, actor)
