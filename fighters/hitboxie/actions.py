@@ -13,7 +13,7 @@ class NeutralAttack(action.Action):
         
     def update(self, actor):
         actor.change_x = 0
-        if (self.rapidJabbing and actor.currentKeys.count(pygame.K_z) == 0):
+        if (self.rapidJabbing and actor.currentKeys.count(actor.keyBindings.k_attack) == 0):
             self.rapidJabbing = False
                     
         if (self.frame % 3 == 0):
@@ -215,7 +215,7 @@ class NeutralAction(baseActions.NeutralAction):
         baseActions.NeutralAction.__init__(self,1)
         
     def update(self, actor):
-        if actor.bufferContains(pygame.K_UP):
+        if actor.bufferContains(actor.keyBindings.k_up):
             actor.doJump()
         actor.sprite.changeImage("hitboxie_idle")
         if actor.grounded == False: actor.current_action = Fall()

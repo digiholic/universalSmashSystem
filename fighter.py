@@ -3,11 +3,13 @@ import baseActions
 import math
 import spriteObject
 
+
 class Fighter():
     
     def __init__(self,
                  sprite,
                  name,
+                 keybindings,
                  weight,
                  gravity,
                  maxFallSpeed,
@@ -19,10 +21,12 @@ class Fighter():
                  jumpHeight,
                  airJumpHeight):
         
+        self.keyBindings = Keybindings(keybindings)
         self.sprite = spriteObject.SheetSprite(sprite,[0,0],92)
         self.currentKeys = []
         self.inputBuffer = [[],[],[],[],[],[]]
         self.keysHeld = []
+        
         
         #initialize important variables
         self.gravity = gravity
@@ -205,9 +209,9 @@ class Fighter():
         totalKB = kb + kbg*self.damage
         #Directional Incluence
         if (trajectory < 45 or trajectory > 315) or (trajectory < 225 and trajectory > 135):
-            if self.keysContain(pygame.K_UP):
+            if self.keysContain(self.keyBindings.k_up()):
                 trajectory += 15
-            if self.keysContain(pygame.K_DOWN):
+            if self.keysContain(self.keyBindings.k_down()):
                 trajectory -= 15
         self.setSpeed(totalKB, trajectory)
     
@@ -301,3 +305,19 @@ def getXYFromDM(direction,magnitude):
     x = round(math.cos(rad) * magnitude,5)
     y = -round(math.sin(rad) * magnitude,5)
     return [x,y]
+
+
+########################################################
+#                   KEYBINDINGS                        #
+########################################################
+class Keybindings():
+    
+    def __init__(self,keyBindings):
+        self.keyBindings = keyBindings
+        print self.keyBindings
+        self.k_left = self.keyBindings.get('left',pygame.K_LEFT)
+        self.k_right = self.keyBindings.get('right',pygame.K_RIGHT)
+        self.k_up = self.keyBindings.get('up',pygame.K_UP)
+        self.k_down = self.keyBindings.get('down',pygame.K_DOWN)
+        self.k_jump = self.keyBindings.get('jump',pygame.K_UP)
+        self.k_attack = self.keyBindings.get('attack',pygame.K_z)

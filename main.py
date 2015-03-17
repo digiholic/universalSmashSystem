@@ -18,7 +18,7 @@ def main():
     current_stage = stage.Stage()
     
     #gameObjects
-    testBoxie = fighters.hitboxie.hitboxie.Hitboxie(spriteObject.RectSprite([64,64],[64,64]))
+    testBoxie = fighters.hitboxie.hitboxie.Hitboxie(spriteObject.RectSprite([64,64],[64,64]),defaultKeybindingsDict())
     testBoxie.rect.x = 128
     testBoxie.gameState = current_stage
     sandbag = fighters.sandbag.sandbag.Sandbag(spriteObject.RectSprite([128,128],[128,128]))
@@ -84,4 +84,15 @@ def main():
         clock.tick(60)    
         pygame.display.flip()
 
+def defaultKeybindingsDict():
+    bindings = {
+                'left': pygame.K_LEFT,
+                'right': pygame.K_RIGHT,
+                'up': pygame.K_UP,
+                'down': pygame.K_DOWN,
+                'jump': pygame.K_UP,
+                'attack': pygame.K_z
+                }
+    return bindings
+    
 if __name__  == '__main__': main()

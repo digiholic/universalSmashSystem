@@ -8,6 +8,7 @@ class Sandbag(fighter.Fighter):
         fighter.Fighter.__init__(self,
                                  "sandbag", #Start Sprite
                                  "Sandbag", #Name
+                                 {},
                                  .35,.35, #weight, gravity
                                  10, #MaxFallSpeed
                                  5,4, #MaxGroundSpeed, MaxAirSpeed
