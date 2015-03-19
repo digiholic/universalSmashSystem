@@ -106,7 +106,7 @@ class Stage():
         if xZoom * 640 > self.camera_maximum.width:
             xZoom = self.camera_maximum.width / 640.0
         if yZoom * 480 > self.camera_maximum.height:
-            yZoom = self.camera_maximum / 480.0
+            yZoom = self.camera_maximum.height / 480.0
         
         self.preferred_zoomLevel = max([xZoom,yZoom])
         if self.preferred_zoomLevel > (self.camera_maximum.width/640.0):

@@ -1,7 +1,4 @@
-import pygame
 import action
-import hitbox
-
             
 class Move(action.Action):
     def __init__(self,length):
@@ -10,9 +7,22 @@ class Move(action.Action):
         self.interruptTags.append("jump")
         
     def update(self, actor):
+        direction = actor.getForwardWithOffset(0)
+        actor.setSpeed(actor.maxRunSpeed,direction)
+        
+        self.frame += 1
+        if self.frame > self.lastFrame: self.frame = 0
+
+class Run(action.Action):
+    def __init__(self,length):
+        action.Action.__init__(self,length)
+        self.tags.append("run")
+        self.interruptTags.append("jump")
+        
+    def update(self, actor):
         if actor.facing == 1: direction = 0
         else: direction = 180
-        actor.setSpeed(actor.maxRunSpeed,direction)
+        actor.setSpeed(actor.maxRunSpeed*1.5,direction, False)
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
@@ -95,11 +105,11 @@ class AirJump(action.Action):
             actor.grounded = False
             actor.change_y = -actor.airJumpHeight
             
-            if actor.bufferContains(pygame.K_LEFT):
+            if actor.keysContain(actor.keyBindings.k_left):
                 if actor.facing == 1:
                     actor.flip()
                     actor.change_x = actor.facing * actor.maxAirSpeed
-            elif actor.bufferContains(pygame.K_RIGHT):
+            elif actor.keysContain(actor.keyBindings.k_right):
                 if actor.facing == -1:
                     actor.flip()
                     actor.change_x = actor.facing * actor.maxAirSpeed    
@@ -126,8 +136,8 @@ class Land(action.Action):
         elif self.frame == self.lastFrame:
             actor.landingLag = 6
             self.interruptTags.append("run")
-            if   actor.bufferContains(pygame.K_LEFT): actor.doGroundMove(-1)
-            elif actor.bufferContains(pygame.K_RIGHT): actor.doGroundMove(1)
+            if   actor.keysHeld.count(actor.keyBindings.k_left): actor.doGroundMove(-1)
+            elif actor.keysHeld.count(actor.keyBindings.k_right): actor.doGroundMove(1)
             else: actor.doIdle()
         actor.preferred_xspeed = 0
         self.frame+= 1
@@ -136,7 +146,7 @@ class Land(action.Action):
 #               TRANSITION STATES                     #
 ########################################################
 def neutralState(actor):
-    if actor.bufferContains(pygame.K_UP):
+    if actor.bufferContains(actor.keyBindings.k_up):
         actor.doJump()
 
 
@@ -145,14 +155,14 @@ def neutralState(actor):
 ########################################################
 
 def airControl(actor):
-    if actor.bufferContains(pygame.K_LEFT):
+    if actor.keysHeld.count(actor.keyBindings.k_left):
         actor.preferred_xspeed = -actor.maxAirSpeed
-    elif actor.bufferContains(pygame.K_RIGHT):
+    elif actor.keysHeld.count(actor.keyBindings.k_right):
         actor.preferred_xspeed = actor.maxAirSpeed
     
-    if (actor.change_x < 0) and not actor.bufferContains(pygame.K_LEFT):
+    if (actor.change_x < 0) and not actor.keysHeld.count(actor.keyBindings.k_left):
         actor.preferred_xspeed = 0
-    elif (actor.change_x > 0) and not actor.bufferContains(pygame.K_RIGHT):
+    elif (actor.change_x > 0) and not actor.keysHeld.count(actor.keyBindings.k_right):
         actor.preferred_xspeed = 0
         
     actor.checkForGround()

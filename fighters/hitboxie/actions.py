@@ -1,4 +1,3 @@
-import pygame
 import action
 import baseActions
 import hitbox
@@ -13,7 +12,7 @@ class NeutralAttack(action.Action):
         
     def update(self, actor):
         actor.change_x = 0
-        if (self.rapidJabbing and actor.currentKeys.count(actor.keyBindings.k_attack) == 0):
+        if (self.rapidJabbing and actor.keysHeld.count(actor.keyBindings.k_attack) == 0):
             self.rapidJabbing = False
                     
         if (self.frame % 3 == 0):
@@ -168,6 +167,13 @@ class Move(baseActions.Move):
     def update(self, actor):
         if self.accel:
             if (self.frame == 0):
+                direction = actor.getForwardWithOffset(0)
+                if direction == 0: key = actor.keyBindings.k_right
+                else: key = actor.keyBindings.k_left
+                if (actor.inputBuffer.contains(key, 7, andReleased = True)):
+                    print actor.inputBuffer.getLastNFrames(7)
+                    actor.current_action = Run(self.lastFrame)
+        
                 actor.sprite.imageText = "hitboxie_run"
                 actor.sprite.getImageAtIndex(0)
             elif (self.frame == 3):
@@ -189,7 +195,35 @@ class Move(baseActions.Move):
         if (self.frame == self.lastFrame):
             self.frame = 12
         
+class Run(baseActions.Run):
+    def __init__(self,accel = True):
+        baseActions.Run.__init__(self,15)
+        self.accel = accel
         
+    def update(self, actor):
+        if self.accel:
+            if (self.frame == 0):
+                actor.sprite.imageText = "hitboxie_run"
+                actor.sprite.getImageAtIndex(0)
+            elif (self.frame == 3):
+                actor.sprite.getImageAtIndex(1)
+            elif (self.frame == 6):
+                actor.sprite.getImageAtIndex(2)
+            elif (self.frame == 9):
+                actor.sprite.getImageAtIndex(3)
+            elif (self.frame == 12):
+                actor.sprite.getImageAtIndex(4)
+        else:
+            if (self.frame == 0):
+                actor.sprite.imageText = "hitboxie_run"
+                actor.sprite.getImageAtIndex(4)
+                
+        if actor.grounded == False:
+            actor.current_action = Fall()
+        baseActions.Run.update(self, actor)
+        if (self.frame == self.lastFrame):
+            self.frame = 12
+                   
 class Pivot(baseActions.Pivot):
     def __init__(self):
         baseActions.Pivot.__init__(self,10)
@@ -207,6 +241,8 @@ class Pivot(baseActions.Pivot):
         elif self.frame == 8:
             actor.sprite.getImageAtIndex(0)
         elif self.frame == self.lastFrame:
+            if actor.inputBuffer.contains(actor.keyBindings.k_up,5):
+                actor.current_action = Jump()
             actor.current_action = Move(False)
         baseActions.Pivot.update(self, actor)
         
@@ -215,7 +251,7 @@ class NeutralAction(baseActions.NeutralAction):
         baseActions.NeutralAction.__init__(self,1)
         
     def update(self, actor):
-        if actor.bufferContains(actor.keyBindings.k_up):
+        if actor.inputBuffer.contains(actor.keyBindings.k_up,5):
             actor.doJump()
         actor.sprite.changeImage("hitboxie_idle")
         if actor.grounded == False: actor.current_action = Fall()

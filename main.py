@@ -29,7 +29,7 @@ def main():
     gameObjects = []
     gameObjects.append(testBoxie)
     gameObjects.append(gravityText)
-    gameObjects.append(sandbag)
+    #gameObjects.append(sandbag)
     
     current_stage.follows.append(testBoxie.rect)
     current_stage.follows.append(sandbag.rect)
@@ -80,7 +80,7 @@ def main():
                 if hbox.owner != obj:
                     hbox.onCollision(obj)
         
-            
+              
         clock.tick(60)    
         pygame.display.flip()
 
@@ -96,3 +96,4 @@ def defaultKeybindingsDict():
     return bindings
     
 if __name__  == '__main__': main()
+

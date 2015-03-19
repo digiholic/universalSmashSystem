@@ -1,6 +1,5 @@
 import fighter
 import actions
-import pygame
 
 class Hitboxie(fighter.Fighter):
     def __init__(self,sprite,keybindings):
@@ -10,8 +9,8 @@ class Hitboxie(fighter.Fighter):
                                  keybindings,
                                  .35,.35, #weight, gravity
                                  10, #MaxFallSpeed
-                                 6,4, #MaxGroundSpeed, MaxAirSpeed
-                                 0.2,0.2, #friction, air control
+                                 6,5, #MaxGroundSpeed, MaxAirSpeed
+                                 0.2,0.4, #friction, air control
                                  1,8,10) #jumps, jump height, air jump height
         self.current_action = actions.NeutralAction()
                          
@@ -31,6 +30,8 @@ class Hitboxie(fighter.Fighter):
             self.current_action = actions.Stop()
             
     def doGroundMove(self,direction):
+        #dist = self.bufferGetDistanceBack((self.keyBindings.k_right,False))
+        #if (dist and dist < 2):
         newAction = actions.Move()
         #if self.current_action.canBeInterrupted(newAction):
         if self.facing != direction:
