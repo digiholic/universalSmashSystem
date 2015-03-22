@@ -30,6 +30,7 @@ class Fighter():
         
         #initialize important variables
         self.gravity = gravity
+        self.maxFallSpeed = maxFallSpeed
         self.maxJumps = jumps
         self.jumpHeight = jumpHeight
         self.airJumpHeight = airJumpHeight
@@ -61,18 +62,22 @@ class Fighter():
         self.gameState = None
         
     def update(self):
+        #Step one, push the input buffer
         self.inputBuffer.push()
-        self.inputBuffer.getLastNFrames(5)
-        #accelerate/decelerate
+        
+        #Step two, accelerate/decelerate
         if self.grounded: self.accel(self.groundFriction)
         else: self.accel(self.airControl)
         
+        #Step three, change state and update
+        self.current_action.stateTransitions(self)
         self.current_action.update(self) #update our action              
         
         # Gravity
         self.calc_grav()
         self.checkForGround()
-                
+        
+        #Execute horizontal movement        
         self.rect.x += self.change_x
         block_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
         
@@ -85,12 +90,12 @@ class Fighter():
                 # Otherwise if we are moving left, do the opposite.
                 self.rect.left = block.rect.right
         
+        #Execute horizontal movement
         self.rect.y += self.change_y
         block_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
         
         
         for block in block_hit_list:
- 
             # Reset our position based on the top/bottom of the object.
             if self.change_y > 0:
                 self.rect.bottom = block.rect.top
@@ -99,12 +104,14 @@ class Fighter():
  
             # Stop our vertical movement
             self.change_y = 0
-            
+        
+        #Check for deaths    
         if self.rect.right < self.gameState.blast_line.left: self.die()
         if self.rect.left > self.gameState.blast_line.right: self.die()
         if self.rect.top > self.gameState.blast_line.bottom: self.die()
         if self.rect.bottom < self.gameState.blast_line.top: self.die()
         
+        #Update Sprite
         self.sprite.rect = self.rect
     
     # Change speed to get closer to the preferred speed without going over.
@@ -124,7 +131,7 @@ class Fighter():
             self.change_y = 1
         else:
             self.change_y += self.gravity
-        
+            if self.change_y > self.maxFallSpeed: self.change_y = self.maxFallSpeed
         # See if we are on the ground.
         #if self.rect.y >= self.gameState.size.height - self.rect.height and self.change_y >= 0:
             #self.change_y = 0
@@ -157,18 +164,30 @@ class Fighter():
 # override the corresponding method and have it set
 # an instance of your overridden action.
 
-
-    def doStop(self):
-        self.current_action = baseActions.NeutralAction()
+    def changeAction(self,newAction):
+        newAction.setUp(self)
+        self.current_action.tearDown(self)
+        self.current_action = newAction
+        
+    def doIdle(self):
+        self.changeAction(baseActions.NeutralAction())
+        
+    def doGroundMove(self,direction):
+        if direction == 0: key = self.keyBindings.k_right
+        else: key = self.keyBindings.k_left
+        if (self.inputBuffer.contains(key, 12, andReleased = True)):
+            self.current_action = baseActions.Run()
+        
+        self.changeAction(baseActions.Move())
     
-    def doGroundMove(self):
-        self.current_action = baseActions.Move()
+    def doPivot(self):
+        self.changeAction(baseActions.Pivot())
+    
+    def doStop(self):
+        self.changeAction(baseActions.NeutralAction())
     
     def doLand(self):
         self.current_action = baseActions.Land()
-    
-    def doPivot(self):
-        self.current_action = baseActions.Pivot()
     
     def doGroundJump(self):
         self.current_action = baseActions.Jump()
@@ -176,7 +195,7 @@ class Fighter():
     def doAirJump(self):
         self.current_action = baseActions.AirJump()
     
-    def doNeutralAttack(self):
+    def doGroundAttack(self):
         return None
     
     def doAirAttack(self):
@@ -264,6 +283,10 @@ class Fighter():
         self.keysHeld.remove(key)
         return True
     
+    
+    def bufferContains(self,key, distanceBack = 0, state=True, andReleased=False, notReleased=False):
+        return self.inputBuffer.contains(key, distanceBack, state, andReleased, notReleased)
+    
     #This will make sure that a list of keys are pressed in an order in the buffer.
     #For example, checking for the sequence [left,attack] would work if left and attack
     #have been input in that order in the past five frames.
@@ -279,6 +302,11 @@ class Fighter():
     def keysContain(self,key):
         return (self.keysHeld.count(key) != 0)    
     
+    #This returns a tuple of the key for forward, then backward
+    def getForwardBackwardKeys(self):
+        if self.facing == 1: return (self.keyBindings.k_right,self.keyBindings.k_left)
+        else: return (self.keyBindings.k_left,self.keyBindings.k_right)
+        
     def draw(self,screen,offset,scale):
         #spriteObject.RectSprite(self.rect.topleft, self.rect.size).draw(screen)
         self.sprite.draw(screen,offset,scale)
@@ -340,27 +368,24 @@ class InputBuffer():
         self.lastIndex += 1
         
     def contains(self,key, distanceBack = 0, state=True, andReleased=False, notReleased=False):
-        status = False
-        j = 0
+        js = [] #If the key shows up multiple times, we might need to check all of them.
         if distanceBack > self.lastIndex: distanceBack = self.lastIndex
-        for i in range(self.lastIndex,(self.lastIndex - distanceBack), -1):
+        for i in range(self.lastIndex,(self.lastIndex - distanceBack - 1), -1):
             #first, check if the key exists in the distance.
             buff = self.buffer[i]
             if buff.count((key,state)):
-                j = i
-                status = True
-                break
-        #If it's not in there, return false.
-        if status == False: return False
-        #If we don't care whether it was released or not, we can return True now.
-        if not (andReleased or notReleased): return True #If either of these flags are true, this statement won't be run
+                js.append(i)
+                if not (andReleased or notReleased): return True #If we don't care whether it was released or not, we can return True now.
         
+        #If it's not in there, return false.
+        if len(js) == 0: return False
         #Note, if, for some stupid reason, both andReleased and notReleased are set, it will prioritize andReleased
-        for i in range (self.lastIndex,self.lastIndex - j,-1):
-            buff = self.buffer[i]
-            if buff.count((key,not state)): #If we encounter the inversion of the key we're looking for
-                if andReleased: return True #If we're looking for a release, we found it
-                if notReleased: return False #If we're looking for a held, we didn't get it
+        for j in js:
+            for i in range(j,self.lastIndex+1):
+                buff = self.buffer[i]
+                if buff.count((key,not state)): #If we encounter the inversion of the key we're looking for
+                    if andReleased: return True #If we're looking for a release, we found it
+                    if notReleased: return False #If we're looking for a held, we didn't get it
         #If we go through the buffer up to the key press and we don't find its inversion...
         if andReleased: return False
         if notReleased: return True

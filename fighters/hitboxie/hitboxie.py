@@ -7,11 +7,11 @@ class Hitboxie(fighter.Fighter):
                                  "hitboxie_idle", #Start Sprite
                                  "HBoxie", #Name
                                  keybindings,
-                                 .35,.35, #weight, gravity
+                                 .35,.7, #weight, gravity
                                  10, #MaxFallSpeed
-                                 6,5, #MaxGroundSpeed, MaxAirSpeed
-                                 0.2,0.4, #friction, air control
-                                 1,8,10) #jumps, jump height, air jump height
+                                 6,6, #MaxGroundSpeed, MaxAirSpeed
+                                 0.2,0.6, #friction, air control
+                                 1,12,14) #jumps, jump height, air jump height
         self.current_action = actions.NeutralAction()
                          
     
@@ -20,14 +20,14 @@ class Hitboxie(fighter.Fighter):
 ########################################################
     
     def doIdle(self):
-        self.current_action = actions.NeutralAction()
+        self.changeAction(actions.NeutralAction())
             
     def doLand(self):
-        self.current_action = actions.Land()
+        self.changeAction(actions.Land())
         
     def doStop(self):
         if self.grounded:
-            self.current_action = actions.Stop()
+            self.changeAction(actions.Stop())
             
     def doGroundMove(self,direction):
         #dist = self.bufferGetDistanceBack((self.keyBindings.k_right,False))
@@ -35,22 +35,21 @@ class Hitboxie(fighter.Fighter):
         newAction = actions.Move()
         #if self.current_action.canBeInterrupted(newAction):
         if self.facing != direction:
-            self.flip()
-        self.current_action = newAction
+            self.doPivot()
+        self.changeAction(newAction)
         
-    def doPivot(self,direction):
+    def doPivot(self):
         newAction = actions.Pivot()
         #if self.current_action.canBeInterrupted(newAction):
-        if self.facing != direction:
-            self.flip()
-        self.current_action = newAction
+        self.flip()
+        self.changeAction(newAction)
     
     def doJump(self):
         if self.grounded:
-            self.current_action = actions.Jump()
+            self.changeAction(actions.Jump())
         else:
             if self.jumps > 0:
-                self.current_action = actions.AirJump()
+                self.changeAction(actions.AirJump())
             
     def doNeutralAttack(self):
         if isinstance(self.current_action,actions.NeutralAttack):
@@ -63,12 +62,12 @@ class Hitboxie(fighter.Fighter):
             
         newAction = actions.NeutralAttack()
         if self.current_action.canBeInterrupted(newAction):
-            self.current_action = actions.NeutralAttack()        
+            self.changeAction(actions.NeutralAttack())     
     
     def doAirAttack(self):
         if not (self.keysContain(self.keyBindings.k_left) or self.keysContain(self.keyBindings.k_right) 
                 or self.keysContain(self.keyBindings.k_up) or self.keysContain(self.keyBindings.k_down)):
-            self.current_action = actions.NeutralAir()
+            self.changeAction(actions.NeutralAir())
             
 ########################################################
 #                  STATE CHANGERS                      #
@@ -76,11 +75,11 @@ class Hitboxie(fighter.Fighter):
         
     def die(self):
         fighter.Fighter.die(self)
-        self.current_action = actions.Fall()
+        self.changeAction(actions.Fall())
     
     def applyKnockback(self,kb,kbg,trajectory):
         fighter.Fighter.applyKnockback(self, kb, kbg, trajectory)
-        self.current_action = actions.HitStun(40,trajectory)
+        self.changeAction(actions.HitStun(40,trajectory))
         
 ########################################################
 #                 ENGINE FUNCTIONS                     #
@@ -88,19 +87,7 @@ class Hitboxie(fighter.Fighter):
 
     def keyPressed(self,key):
         fighter.Fighter.keyPressed(self,key)
-        if key == self.keyBindings.k_right:
-            if self.grounded:
-                if self.change_x < 0:
-                    self.doPivot(1)
-                else:
-                    self.doGroundMove(1)
-        elif key == self.keyBindings.k_left:
-            if self.grounded:
-                if self.change_x > 0:
-                    self.doPivot(-1)
-                else:
-                    self.doGroundMove(-1)
-        elif key == self.keyBindings.k_up:
+        if key == self.keyBindings.k_up:
             self.doJump()
             
         elif key == self.keyBindings.k_attack:
@@ -108,10 +95,3 @@ class Hitboxie(fighter.Fighter):
                 self.doNeutralAttack()
             else:
                 self.doAirAttack()
-                
-    def keyReleased(self,key):
-        if fighter.Fighter.keyReleased(self,key):
-            if key == self.keyBindings.k_right:
-                self.doStop()
-            elif key == self.keyBindings.k_left:
-                self.doStop()

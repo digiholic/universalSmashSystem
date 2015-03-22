@@ -18,6 +18,14 @@ class Action():
     def update(self,actor):
         return None
     
+    def stateTransitions(self,actor):
+        return
+    
+    def setUp(self,actor):
+        return
+    
+    def tearDown(self,actor):
+        return
     
     def canBeInterrupted(self,other):
         if other:

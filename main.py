@@ -29,7 +29,7 @@ def main():
     gameObjects = []
     gameObjects.append(testBoxie)
     gameObjects.append(gravityText)
-    #gameObjects.append(sandbag)
+    gameObjects.append(sandbag)
     
     current_stage.follows.append(testBoxie.rect)
     current_stage.follows.append(sandbag.rect)

@@ -5,14 +5,20 @@ class Move(action.Action):
         action.Action.__init__(self,length)
         self.tags.append("run")
         self.interruptTags.append("jump")
+        self.direction = -1
+        
+    def setUp(self,actor):
+        self.direction = actor.getForwardWithOffset(0)
         
     def update(self, actor):
-        direction = actor.getForwardWithOffset(0)
-        actor.setSpeed(actor.maxRunSpeed,direction)
+        actor.setSpeed(actor.maxRunSpeed,self.direction)
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
-
+        
+    def stateTransitions(self,actor):
+        moveState(actor,self.direction)
+        
 class Run(action.Action):
     def __init__(self,length):
         action.Action.__init__(self,length)
@@ -47,6 +53,10 @@ class Stop(action.Action):
         actor.preferred_xspeed = 0
         self.frame += 1
         
+    def stateTransitions(self, actor):
+        (_,invkey) = actor.getForwardBackwardKeys()
+        if actor.bufferContains(invkey,5,notReleased = True):
+            actor.doPivot()
                 
 class NeutralAction(action.Action):
     def __init__(self,length):
@@ -56,6 +66,9 @@ class NeutralAction(action.Action):
     def update(self, actor):
         return
     
+    def stateTransition(self, actor):
+        neutralState(actor)
+        
 class HitStun(action.Action):
     def __init__(self,hitstun,direction):
         action.Action.__init__(self, hitstun)
@@ -146,9 +159,30 @@ class Land(action.Action):
 #               TRANSITION STATES                     #
 ########################################################
 def neutralState(actor):
+    if actor.bufferContains(actor.keyBindings.k_up,5):
+        actor.doJump()
+    if actor.bufferContains(actor.keyBindings.k_left):
+        actor.doGroundMove(180)
+    elif actor.bufferContains(actor.keyBindings.k_right):
+        actor.doGroundMove(0)
+    if actor.bufferContains(actor.keyBindings.k_attack):
+        actor.doNeutralAttack()
+
+def airState(actor):
+    airControl(actor)
     if actor.bufferContains(actor.keyBindings.k_up):
         actor.doJump()
-
+    if actor.bufferContains(actor.keyBindings.k_down):
+        if actor.change_y >= 0:
+            actor.change_y = actor.maxFallSpeed
+            
+def moveState(actor, direction):
+    if actor.bufferContains(actor.keyBindings.k_up):
+        actor.doJump()
+    (key,_) = actor.getForwardBackwardKeys()
+    if actor.bufferContains(key, 0, state=False):
+        actor.doStop()
+            
 
 ########################################################
 #             BEGIN HELPER METHODS                     #

@@ -167,13 +167,7 @@ class Move(baseActions.Move):
     def update(self, actor):
         if self.accel:
             if (self.frame == 0):
-                direction = actor.getForwardWithOffset(0)
-                if direction == 0: key = actor.keyBindings.k_right
-                else: key = actor.keyBindings.k_left
-                if (actor.inputBuffer.contains(key, 7, andReleased = True)):
-                    print actor.inputBuffer.getLastNFrames(7)
-                    actor.current_action = Run(self.lastFrame)
-        
+                print actor.facing
                 actor.sprite.imageText = "hitboxie_run"
                 actor.sprite.getImageAtIndex(0)
             elif (self.frame == 3):
@@ -186,6 +180,8 @@ class Move(baseActions.Move):
                 actor.sprite.getImageAtIndex(4)
         else:
             if (self.frame == 0):
+                print actor.facing
+                print self.direction
                 actor.sprite.imageText = "hitboxie_run"
                 actor.sprite.getImageAtIndex(4)
                 
@@ -241,9 +237,7 @@ class Pivot(baseActions.Pivot):
         elif self.frame == 8:
             actor.sprite.getImageAtIndex(0)
         elif self.frame == self.lastFrame:
-            if actor.inputBuffer.contains(actor.keyBindings.k_up,5):
-                actor.current_action = Jump()
-            actor.current_action = Move(False)
+            actor.changeAction(Move(False))
         baseActions.Pivot.update(self, actor)
         
 class NeutralAction(baseActions.NeutralAction):
@@ -253,6 +247,10 @@ class NeutralAction(baseActions.NeutralAction):
     def update(self, actor):
         if actor.inputBuffer.contains(actor.keyBindings.k_up,5):
             actor.doJump()
+        elif actor.inputBuffer.contains(actor.keyBindings.k_left,5):
+            actor.doGroundMove(-1)
+        elif actor.inputBuffer.contains(actor.keyBindings.k_right,5):
+            actor.doGroundMove(1)
         actor.sprite.changeImage("hitboxie_idle")
         if actor.grounded == False: actor.current_action = Fall()
         baseActions.NeutralAction.update(self, actor)
@@ -270,7 +268,9 @@ class Stop(baseActions.Stop):
         elif self.frame == 6:
             actor.sprite.getImageAtIndex(2)
         elif self.frame == self.lastFrame:
-            actor.current_action = NeutralAction()
+            if actor.inputBuffer.contains(actor.keyBindings.k_up,5):
+                actor.current_action = Jump()
+            else: actor.current_action = NeutralAction()
         if actor.grounded == False: actor.current_action = Fall()
         baseActions.Stop.update(self, actor)
         
