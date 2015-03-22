@@ -154,7 +154,46 @@ class NeutralAir(action.Action):
             self.neutralAirHitbox.kill()
             actor.current_action = Fall()
 
-            
+class ForwardAttack(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 42)
+        self.tags.extend(["attack"])
+        self.fSmashHitbox = None
+        
+    def update(self,actor):
+        if self.frame == 0:
+            actor.change_x = 0
+            actor.preferred_xspeed = 0
+            actor.sprite.imageText = "hitboxie_fsmash"
+            actor.sprite.getImageAtIndex(0)
+        elif self.frame == 3:
+            actor.sprite.getImageAtIndex(1)
+        elif self.frame == 6:
+            actor.sprite.getImageAtIndex(2)
+        elif self.frame == 9:
+            actor.sprite.getImageAtIndex(3)
+        elif self.frame == 12:
+            actor.sprite.getImageAtIndex(4)
+        elif self.frame == 15:
+            actor.sprite.getImageAtIndex(5)
+        elif self.frame == 18:
+            actor.sprite.getImageAtIndex(6)
+        elif self.frame == 21:
+            actor.sprite.getImageAtIndex(7)
+            self.fSmashHitbox = None
+        elif self.frame == 36:
+            actor.sprite.getImageAtIndex(8)
+            #self.fSmashHitbox.kill()
+        elif self.frame == 39:
+            actor.sprite.getImageAtIndex(9)
+        elif self.frame == self.lastFrame:
+            actor.doIdle()
+        
+        self.frame += 1
+        
+        def stateTransitions(self,actor):
+            if self.frame > 36:
+                baseActions.neutralState(actor)    
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
 ########################################################
@@ -167,7 +206,6 @@ class Move(baseActions.Move):
     def update(self, actor):
         if self.accel:
             if (self.frame == 0):
-                print actor.facing
                 actor.sprite.imageText = "hitboxie_run"
                 actor.sprite.getImageAtIndex(0)
             elif (self.frame == 3):
@@ -180,8 +218,6 @@ class Move(baseActions.Move):
                 actor.sprite.getImageAtIndex(4)
         else:
             if (self.frame == 0):
-                print actor.facing
-                print self.direction
                 actor.sprite.imageText = "hitboxie_run"
                 actor.sprite.getImageAtIndex(4)
                 

@@ -276,12 +276,19 @@ class Fighter():
     def keyPressed(self,key):
         self.inputBuffer.append((key,True))
         self.keysHeld.append(key)
-        return True
+        if key == self.keyBindings.k_left:
+            if self.keysContain(self.keyBindings.k_right):
+                self.keyReleased(self.keyBindings.k_right)
+        elif key == self.keyBindings.k_right:
+            if self.keysContain(self.keyBindings.k_left):
+                self.keyReleased(self.keyBindings.k_left)
         
     def keyReleased(self,key):
-        self.inputBuffer.append((key,False))
-        self.keysHeld.remove(key)
-        return True
+        if self.keysContain(key):
+            self.inputBuffer.append((key,False))
+            self.keysHeld.remove(key)
+            return True
+        else: return False
     
     
     def bufferContains(self,key, distanceBack = 0, state=True, andReleased=False, notReleased=False):

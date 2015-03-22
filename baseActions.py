@@ -166,7 +166,7 @@ def neutralState(actor):
     elif actor.bufferContains(actor.keyBindings.k_right):
         actor.doGroundMove(0)
     if actor.bufferContains(actor.keyBindings.k_attack):
-        actor.doNeutralAttack()
+        actor.doGroundAttack()
 
 def airState(actor):
     airControl(actor)
@@ -182,6 +182,8 @@ def moveState(actor, direction):
     (key,_) = actor.getForwardBackwardKeys()
     if actor.bufferContains(key, 0, state=False):
         actor.doStop()
+    if actor.bufferContains(actor.keyBindings.k_attack):
+        actor.doGroundAttack()
             
 
 ########################################################

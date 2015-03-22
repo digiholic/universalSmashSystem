@@ -50,7 +50,15 @@ class Hitboxie(fighter.Fighter):
         else:
             if self.jumps > 0:
                 self.changeAction(actions.AirJump())
-            
+    
+    def doGroundAttack(self):
+        (key, invkey) = self.getForwardBackwardKeys()
+        if self.keysContain(key):
+            self.changeAction(actions.ForwardAttack())
+        elif self.keysContain(invkey):
+            self.flip()
+            self.changeAction(actions.ForwardAttack())
+             
     def doNeutralAttack(self):
         if isinstance(self.current_action,actions.NeutralAttack):
             self.current_action.nextJab = True
@@ -89,9 +97,3 @@ class Hitboxie(fighter.Fighter):
         fighter.Fighter.keyPressed(self,key)
         if key == self.keyBindings.k_up:
             self.doJump()
-            
-        elif key == self.keyBindings.k_attack:
-            if self.grounded:
-                self.doNeutralAttack()
-            else:
-                self.doAirAttack()
