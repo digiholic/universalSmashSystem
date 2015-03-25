@@ -24,7 +24,7 @@ def main():
     sandbag = fighters.sandbag.sandbag.Sandbag(spriteObject.RectSprite([128,128],[128,128]))
     sandbag.rect.midtop = current_stage.size.midtop
     sandbag.gameState = current_stage
-    gravityText = spriteObject.TextSprite([0,0], str(testBoxie.gravity))
+    gravityText = spriteObject.TextSprite([0,0], str(testBoxie.var['gravity']))
     
     gameObjects = []
     gameObjects.append(testBoxie)

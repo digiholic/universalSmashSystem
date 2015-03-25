@@ -11,7 +11,7 @@ class Move(action.Action):
         self.direction = actor.getForwardWithOffset(0)
         
     def update(self, actor):
-        actor.setSpeed(actor.maxRunSpeed,self.direction)
+        actor.setSpeed(actor.var['maxGroundSpeed'],self.direction)
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
@@ -28,7 +28,7 @@ class Run(action.Action):
     def update(self, actor):
         if actor.facing == 1: direction = 0
         else: direction = 180
-        actor.setSpeed(actor.maxRunSpeed*1.5,direction, False)
+        actor.setSpeed(actor.var['maxGroundSpeed']*1.5,direction, False)
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
@@ -94,11 +94,11 @@ class Jump(action.Action):
     def update(self,actor):
         if self.frame == self.jumpFrame:
             actor.grounded = False
-            actor.change_y = -actor.jumpHeight
-            if actor.change_x > actor.maxAirSpeed:
-                actor.change_x = actor.maxAirSpeed
-            elif actor.change_x < -actor.maxAirSpeed:
-                actor.change_x = -actor.maxAirSpeed
+            actor.change_y = -actor.var['jumpHeight']
+            if actor.change_x > actor.var['maxAirSpeed']:
+                actor.change_x = actor.var['maxAirSpeed']
+            elif actor.change_x < -actor.var['maxAirSpeed']:
+                actor.change_x = -actor.var['maxAirSpeed']
             
         self.frame += 1
         
@@ -116,26 +116,28 @@ class AirJump(action.Action):
             actor.change_y = 0
         if self.frame == self.jumpFrame:
             actor.grounded = False
-            actor.change_y = -actor.airJumpHeight
+            actor.change_y = -actor.var['airJumpHeight']
             
             if actor.keysContain(actor.keyBindings.k_left):
                 if actor.facing == 1:
                     actor.flip()
-                    actor.change_x = actor.facing * actor.maxAirSpeed
+                    actor.change_x = actor.facing * actor.var['maxAirSpeed']
             elif actor.keysContain(actor.keyBindings.k_right):
                 if actor.facing == -1:
                     actor.flip()
-                    actor.change_x = actor.facing * actor.maxAirSpeed    
+                    actor.change_x = actor.facing * actor.var['maxAirSpeed']    
         self.frame += 1
         
 class Fall(action.Action):
     def __init__(self):
         action.Action.__init__(self, 1)
         self.interruptTags.extend(["jump","air-attack"])
+    
+    def stateTransitions(self,actor):
+        airState(actor)
         
     def update(self,actor):
         actor.grounded = False
-        airControl(actor)
             
 class Land(action.Action):
     def __init__(self):
@@ -174,7 +176,8 @@ def airState(actor):
         actor.doJump()
     if actor.bufferContains(actor.keyBindings.k_down):
         if actor.change_y >= 0:
-            actor.change_y = actor.maxFallSpeed
+            actor.change_y = actor.var['maxFallSpeed']
+            actor.landingLag = 14
             
 def moveState(actor, direction):
     if actor.bufferContains(actor.keyBindings.k_up):
@@ -192,9 +195,9 @@ def moveState(actor, direction):
 
 def airControl(actor):
     if actor.keysHeld.count(actor.keyBindings.k_left):
-        actor.preferred_xspeed = -actor.maxAirSpeed
+        actor.preferred_xspeed = -actor.var['maxAirSpeed']
     elif actor.keysHeld.count(actor.keyBindings.k_right):
-        actor.preferred_xspeed = actor.maxAirSpeed
+        actor.preferred_xspeed = actor.var['maxAirSpeed']
     
     if (actor.change_x < 0) and not actor.keysHeld.count(actor.keyBindings.k_left):
         actor.preferred_xspeed = 0

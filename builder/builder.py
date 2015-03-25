@@ -48,3 +48,11 @@ class TimingPanel(Panel):
 #Settings panel changes settings of the application. like displaying the grid or hitboxes.
 class SettingsPanel(Panel):
     pass
+
+
+
+#A button class.
+class Button(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__()
+        

@@ -3,15 +3,24 @@ import actions
 
 class Hitboxie(fighter.Fighter):
     def __init__(self,sprite,keybindings):
+        var = {
+                'weight': .35,
+                'gravity': .7,
+                'maxFallSpeed': 20,
+                'maxGroundSpeed': 6,
+                'maxAirSpeed': 6,
+                'friction': 0.2,
+                'airControl': 0.6,
+                'jumps': 1,
+                'jumpHeight': 12,
+                'airJumpHeight':14
+                }
+        
         fighter.Fighter.__init__(self,
                                  "hitboxie_idle", #Start Sprite
                                  "HBoxie", #Name
                                  keybindings,
-                                 .35,.7, #weight, gravity
-                                 10, #MaxFallSpeed
-                                 6,6, #MaxGroundSpeed, MaxAirSpeed
-                                 0.2,0.6, #friction, air control
-                                 1,12,14) #jumps, jump height, air jump height
+                                 var)
         self.current_action = actions.NeutralAction()
                          
     

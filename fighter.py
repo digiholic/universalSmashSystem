@@ -10,16 +10,9 @@ class Fighter():
                  sprite,
                  name,
                  keybindings,
-                 weight,
-                 gravity,
-                 maxFallSpeed,
-                 maxRunSpeed,
-                 maxAirSpeed,
-                 groundFriction,
-                 airControl,
-                 jumps,
-                 jumpHeight,
-                 airJumpHeight):
+                 var):
+        
+        self.var = var
         
         self.keyBindings = Keybindings(keybindings)
         self.sprite = spriteObject.SheetSprite(sprite,[0,0],92)
@@ -29,15 +22,6 @@ class Fighter():
         
         
         #initialize important variables
-        self.gravity = gravity
-        self.maxFallSpeed = maxFallSpeed
-        self.maxJumps = jumps
-        self.jumpHeight = jumpHeight
-        self.airJumpHeight = airJumpHeight
-        self.groundFriction = groundFriction
-        self.airControl = airControl
-        self.maxRunSpeed = maxRunSpeed
-        self.maxAirSpeed = maxAirSpeed
         self.angle = 0
         
         #initialize the action list
@@ -46,7 +30,7 @@ class Fighter():
         #state variables and flags
         self.grounded = False
         self.rect = self.sprite.rect
-        self.jumps = self.maxJumps
+        self.jumps = self.var['jumps']
         self.damage = 0
         self.landingLag = 6
         
@@ -66,8 +50,8 @@ class Fighter():
         self.inputBuffer.push()
         
         #Step two, accelerate/decelerate
-        if self.grounded: self.accel(self.groundFriction)
-        else: self.accel(self.airControl)
+        if self.grounded: self.accel(self.var['friction'])
+        else: self.accel(self.var['airControl'])
         
         #Step three, change state and update
         self.current_action.stateTransitions(self)
@@ -115,7 +99,7 @@ class Fighter():
         self.sprite.rect = self.rect
     
     # Change speed to get closer to the preferred speed without going over.
-    # xFactor - The factor by which to change xSpeed. Usually self.groundFriction or self.airControl
+    # xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['airControl']
     def accel(self,xFactor):
         if self.change_x > self.preferred_xspeed: #if we're going too fast
             diff = self.change_x - self.preferred_xspeed
@@ -130,14 +114,14 @@ class Fighter():
         if self.change_y == 0:
             self.change_y = 1
         else:
-            self.change_y += self.gravity
-            if self.change_y > self.maxFallSpeed: self.change_y = self.maxFallSpeed
+            self.change_y += self.var['gravity']
+            if self.change_y > self.var['maxFallSpeed']: self.change_y = self.var['maxFallSpeed']
         # See if we are on the ground.
         #if self.rect.y >= self.gameState.size.height - self.rect.height and self.change_y >= 0:
             #self.change_y = 0
             #self.rect.y = self.gameState.size.height - self.rect.height
             #self.grounded = True
-        if self.grounded: self.jumps = self.maxJumps
+        if self.grounded: self.jumps = self.var['jumps']
     
     # Check if the fighter is on the ground.
     # Returns True if fighter is grounded, False if airborne.
@@ -259,7 +243,7 @@ class Fighter():
         self.damage = 0
         self.change_x = 0
         self.change_y = 0
-        self.jumps = self.maxJumps
+        self.jumps = self.var['jumps']
         self.rect.midtop = self.gameState.size.midtop
 
     
