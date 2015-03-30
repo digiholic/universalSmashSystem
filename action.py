@@ -36,3 +36,29 @@ class Action():
         else:
             return False
     
+class DynamicAction(Action):
+    def __init__(self,length,startingFrame=0):
+        Action.__init__(self, length, startingFrame)
+        self.actionsAtFrame = [[]]
+        self.stateTransitionsAtFrame = [[]]
+        self.setUpActions = []
+        self.tearDownActions = []
+        
+    # The update skeleton function. You must implement it for every action or you will get
+    # an error.
+    def update(self,actor):
+        for act in self.actionsAtFrame[self.frame]:
+            act.execute(actor)
+    
+    def stateTransitions(self,actor):
+        for act in self.stateTransitionsAtFrame[self.frame]:
+            act(actor)
+    
+    def setUp(self,actor):
+        for act in self.setUpActions:
+            act.execute(actor)
+    
+    def tearDown(self,actor):
+        for act in self.tearDownActions:
+            act.execute(actor)
+        return    

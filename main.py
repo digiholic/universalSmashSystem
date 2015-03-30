@@ -42,7 +42,6 @@ def main():
                 return -1
             if event.type == KEYDOWN:
                 testBoxie.keyPressed(event.key)
-                    
             if event.type == KEYUP:
                 if event.key == pygame.K_EQUALS:
                     testBoxie.gravity += 0.01

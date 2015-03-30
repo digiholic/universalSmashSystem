@@ -14,20 +14,18 @@ class Fighter():
         
         self.var = var
         
+        #Initialize engine variables
         self.keyBindings = Keybindings(keybindings)
         self.sprite = spriteObject.SheetSprite(sprite,[0,0],92)
         self.currentKeys = []
         self.inputBuffer = InputBuffer()
         self.keysHeld = []
         
-        
-        #initialize important variables
-        self.angle = 0
-        
-        #initialize the action list
+        #initialize the action
         self.current_action = None
         
         #state variables and flags
+        self.angle = 0
         self.grounded = False
         self.rect = self.sprite.rect
         self.jumps = self.var['jumps']
@@ -74,7 +72,7 @@ class Fighter():
                 # Otherwise if we are moving left, do the opposite.
                 self.rect.left = block.rect.right
         
-        #Execute horizontal movement
+        #Execute vertial movement
         self.rect.y += self.change_y
         block_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
         
@@ -110,17 +108,12 @@ class Fighter():
     
     # Change ySpeed according to gravity.        
     def calc_grav(self):
-        """ Calculate effect of gravity. """
         if self.change_y == 0:
             self.change_y = 1
         else:
             self.change_y += self.var['gravity']
             if self.change_y > self.var['maxFallSpeed']: self.change_y = self.var['maxFallSpeed']
-        # See if we are on the ground.
-        #if self.rect.y >= self.gameState.size.height - self.rect.height and self.change_y >= 0:
-            #self.change_y = 0
-            #self.rect.y = self.gameState.size.height - self.rect.height
-            #self.grounded = True
+       
         if self.grounded: self.jumps = self.var['jumps']
     
     # Check if the fighter is on the ground.
@@ -131,10 +124,6 @@ class Fighter():
         platform_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
         self.rect.y -= 2      
         if (len(platform_hit_list) > 0): self.grounded = True
-        #elif self.rect.y >= self.gameState.size.height - self.rect.height and self.change_y >= 0:
-            #self.change_y = 0
-            #self.rect.y = self.gameState.size.height - self.rect.height
-            #self.grounded = True
         else: self.grounded = False
     
         
@@ -278,17 +267,6 @@ class Fighter():
     def bufferContains(self,key, distanceBack = 0, state=True, andReleased=False, notReleased=False):
         return self.inputBuffer.contains(key, distanceBack, state, andReleased, notReleased)
     
-    #This will make sure that a list of keys are pressed in an order in the buffer.
-    #For example, checking for the sequence [left,attack] would work if left and attack
-    #have been input in that order in the past five frames.
-    #If GetBlankSpace is set, will return the number of empty spaces between them.
-    #This can be used, for example, to check if the keys were input close enough for a smash
-    #attack or a tilt attack.
-    #Returns true if buffer contains the sequence, False if it doesn't.
-    #if getBlankSpace is set, returns the distance between the most recent sequence, -1 if sequence not present.
-    def bufferContainsSequence(self,keys,getBlankSpace = False):
-        return False
-    
     #This checks for keys that are currently being held, whether or not they've actually been pressed recently.
     def keysContain(self,key):
         return (self.keysHeld.count(key) != 0)    
@@ -324,6 +302,13 @@ def getXYFromDM(direction,magnitude):
     y = -round(math.sin(rad) * magnitude,5)
     return [x,y]
 
+def getDirectionBetweenPoints(p1, p2):
+    (x1, y1) = p1
+    (x2, y2) = p2
+    dx = x2 - x1
+    dy = y2 - y1
+    return (180 * math.atan2(dy, dx)) / math.pi 
+    
 
 ########################################################
 #                   KEYBINDINGS                        #
