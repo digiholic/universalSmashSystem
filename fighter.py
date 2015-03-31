@@ -234,6 +234,13 @@ class Fighter():
         self.change_y = 0
         self.jumps = self.var['jumps']
         self.rect.midtop = self.gameState.size.midtop
+        
+    def changeSprite(self,newSprite,frame=0):
+        self.sprite.changeImage(newSprite)
+        if frame != 0: self.sprite.getImageAtIndex(frame)
+        
+    def changeSpriteImage(self,frame):
+        self.sprite.getImageAtIndex(frame)
 
     
 ########################################################
@@ -317,13 +324,13 @@ class Keybindings():
     
     def __init__(self,keyBindings):
         self.keyBindings = keyBindings
-        print self.keyBindings
         self.k_left = self.keyBindings.get('left',pygame.K_LEFT)
         self.k_right = self.keyBindings.get('right',pygame.K_RIGHT)
         self.k_up = self.keyBindings.get('up',pygame.K_UP)
         self.k_down = self.keyBindings.get('down',pygame.K_DOWN)
         self.k_jump = self.keyBindings.get('jump',pygame.K_UP)
         self.k_attack = self.keyBindings.get('attack',pygame.K_z)
+        self.k_shield = self.keyBindings.get('shield',pygame.K_a)
         
         
 ########################################################

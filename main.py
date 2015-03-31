@@ -90,7 +90,8 @@ def defaultKeybindingsDict():
                 'up': pygame.K_UP,
                 'down': pygame.K_DOWN,
                 'jump': pygame.K_UP,
-                'attack': pygame.K_z
+                'attack': pygame.K_z,
+                'shield': pygame.K_a
                 }
     return bindings
     

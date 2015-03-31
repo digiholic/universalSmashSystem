@@ -16,8 +16,8 @@ class NeutralAttack(action.Action):
             self.rapidJabbing = False
                     
         if (self.frame % 3 == 0):
-            actor.sprite.imageText = "jab1_"
-            actor.sprite.getImageAtIndex(self.frame/3)  
+            actor.changeSprite("jab1_",0)
+            actor.changeSpriteImage(self.frame/3)  
         if (self.frame == 3):
             if actor.facing == 1:
                 self.jab1Hitbox = hitbox.DamageHitbox([47,37],[27,25],actor,5,1,0,90)
@@ -46,7 +46,7 @@ class NeutralAttack2(action.Action):
     def update(self,actor):
         if (self.frame % 3 == 0):
             actor.sprite.imageText = "jab2_"
-            actor.sprite.getImageAtIndex(self.frame/3)
+            actor.changeSpriteImage(self.frame/3)
         if (self.frame == 3):
             if actor.facing == 1:
                 self.jab2Hitbox = hitbox.DamageHitbox([53,31],[42,22],actor,5,1,0,90)
@@ -76,11 +76,11 @@ class NeutralAttack3(action.Action):
         if (self.frame < 3):
             actor.change_y = -4
             actor.sprite.imageText = "jab3_"
-            actor.sprite.getImageAtIndex(0)
+            actor.changeSpriteImage(0)
         elif (self.frame < 6):
             if self.frame % 3 == 0:
                 actor.sprite.imageText = "jab3_"
-                actor.sprite.getImageAtIndex(1)
+                actor.changeSpriteImage(1)
         
         elif self.frame == 6:
             if actor.facing == 1:
@@ -92,16 +92,16 @@ class NeutralAttack3(action.Action):
             
         elif self.frame >= 6 and self.frame < 15:
             actor.sprite.imageText = "jab3_"
-            actor.sprite.getImageAtIndex(2)
+            actor.changeSpriteImage(2)
             self.jab3Hitbox.update()
         elif self.frame == 15:
             actor.sprite.imageText = "jab3_"
-            actor.sprite.getImageAtIndex(3)
+            actor.changeSpriteImage(3)
             self.jab3Hitbox.kill()
             self.jab3Hitbox = None       
         elif self.frame == 18:
             actor.sprite.imageText = "jab3_"
-            actor.sprite.getImageAtIndex(4)
+            actor.changeSpriteImage(4)
             
         self.frame += 1
         if self.frame == self.lastFrame:
@@ -121,11 +121,11 @@ class NeutralAir(action.Action):
             
         if (self.frame < 3):
             actor.sprite.imageText = "jab3_"
-            actor.sprite.getImageAtIndex(0)
+            actor.changeSpriteImage(0)
         elif (self.frame < 6):
             if self.frame % 3 == 0:
                 actor.sprite.imageText = "jab3_"
-                actor.sprite.getImageAtIndex(1)
+                actor.changeSpriteImage(1)
         
         elif self.frame == 6:
             if actor.facing == 1:
@@ -136,16 +136,16 @@ class NeutralAir(action.Action):
             actor.gameState.active_hitboxes.add(self.neutralAirHitbox)
         elif self.frame >= 6 and self.frame < 36:
             actor.sprite.imageText = "jab3_"
-            actor.sprite.getImageAtIndex(2)
+            actor.changeSpriteImage(2)
             self.neutralAirHitbox.update()
             baseActions.airControl(actor)
         elif self.frame == 36:
             actor.sprite.imageText = "jab3_"
-            actor.sprite.getImageAtIndex(3)
+            actor.changeSpriteImage(3)
             self.neutralAirHitbox.kill()
         elif self.frame == 39:
             actor.sprite.imageText = "jab3_"
-            actor.sprite.getImageAtIndex(4)
+            actor.changeSpriteImage(4)
         
         if actor.grounded:
             self.neutralAirHitbox.kill()    
@@ -164,28 +164,27 @@ class ForwardAttack(action.Action):
         if self.frame == 0:
             actor.change_x = 0
             actor.preferred_xspeed = 0
-            actor.sprite.imageText = "hitboxie_fsmash"
-            actor.sprite.getImageAtIndex(0)
+            actor.changeSprite("hitboxie_fsmash",0)
         elif self.frame == 3:
-            actor.sprite.getImageAtIndex(1)
+            actor.changeSpriteImage(1)
         elif self.frame == 6:
-            actor.sprite.getImageAtIndex(2)
+            actor.changeSpriteImage(2)
         elif self.frame == 9:
-            actor.sprite.getImageAtIndex(3)
+            actor.changeSpriteImage(3)
         elif self.frame == 12:
-            actor.sprite.getImageAtIndex(4)
+            actor.changeSpriteImage(4)
         elif self.frame == 15:
-            actor.sprite.getImageAtIndex(5)
+            actor.changeSpriteImage(5)
         elif self.frame == 18:
-            actor.sprite.getImageAtIndex(6)
+            actor.changeSpriteImage(6)
         elif self.frame == 21:
-            actor.sprite.getImageAtIndex(7)
+            actor.changeSpriteImage(7)
             self.fSmashHitbox = None
         elif self.frame == 36:
-            actor.sprite.getImageAtIndex(8)
+            actor.changeSpriteImage(8)
             #self.fSmashHitbox.kill()
         elif self.frame == 39:
-            actor.sprite.getImageAtIndex(9)
+            actor.changeSpriteImage(9)
         elif self.frame == self.lastFrame:
             actor.doIdle()
         
@@ -206,20 +205,18 @@ class Move(baseActions.Move):
     def update(self, actor):
         if self.accel:
             if (self.frame == 0):
-                actor.sprite.imageText = "hitboxie_run"
-                actor.sprite.getImageAtIndex(0)
+                actor.changeSprite("hitboxie_run",0)
             elif (self.frame == 3):
-                actor.sprite.getImageAtIndex(1)
+                actor.changeSpriteImage(1)
             elif (self.frame == 6):
-                actor.sprite.getImageAtIndex(2)
+                actor.changeSpriteImage(2)
             elif (self.frame == 9):
-                actor.sprite.getImageAtIndex(3)
+                actor.changeSpriteImage(3)
             elif (self.frame == 12):
-                actor.sprite.getImageAtIndex(4)
+                actor.changeSpriteImage(4)
         else:
             if (self.frame == 0):
-                actor.sprite.imageText = "hitboxie_run"
-                actor.sprite.getImageAtIndex(4)
+                actor.changeSprite("hitboxie_run",4)
                 
         if actor.grounded == False:
             actor.current_action = Fall()
@@ -235,20 +232,18 @@ class Run(baseActions.Run):
     def update(self, actor):
         if self.accel:
             if (self.frame == 0):
-                actor.sprite.imageText = "hitboxie_run"
-                actor.sprite.getImageAtIndex(0)
+                actor.changeSprite("hitboxie_run",0)
             elif (self.frame == 3):
-                actor.sprite.getImageAtIndex(1)
+                actor.changeSpriteImage(1)
             elif (self.frame == 6):
-                actor.sprite.getImageAtIndex(2)
+                actor.changeSpriteImage(2)
             elif (self.frame == 9):
-                actor.sprite.getImageAtIndex(3)
+                actor.changeSpriteImage(3)
             elif (self.frame == 12):
-                actor.sprite.getImageAtIndex(4)
+                actor.changeSpriteImage(4)
         else:
             if (self.frame == 0):
-                actor.sprite.imageText = "hitboxie_run"
-                actor.sprite.getImageAtIndex(4)
+                actor.changeSprite("hitboxie_run",4)
                 
         if actor.grounded == False:
             actor.current_action = Fall()
@@ -262,16 +257,15 @@ class Pivot(baseActions.Pivot):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.sprite.changeImage("hitboxie_pivot")
-            actor.sprite.getImageAtIndex(4)
+            actor.changeSprite("hitboxie_pivot",4)
         elif self.frame == 2:
-            actor.sprite.getImageAtIndex(3)
+            actor.changeSpriteImage(3)
         elif self.frame == 4:
-            actor.sprite.getImageAtIndex(2)
+            actor.changeSpriteImage(2)
         elif self.frame == 6:
-            actor.sprite.getImageAtIndex(1)
+            actor.changeSpriteImage(1)
         elif self.frame == 8:
-            actor.sprite.getImageAtIndex(0)
+            actor.changeSpriteImage(0)
         elif self.frame == self.lastFrame:
             actor.changeAction(Move(False))
         baseActions.Pivot.update(self, actor)
@@ -287,7 +281,7 @@ class NeutralAction(baseActions.NeutralAction):
             actor.doGroundMove(-1)
         elif actor.inputBuffer.contains(actor.keyBindings.k_right,5):
             actor.doGroundMove(1)
-        actor.sprite.changeImage("hitboxie_idle")
+        actor.changeSprite("hitboxie_idle")
         if actor.grounded == False: actor.current_action = Fall()
         baseActions.NeutralAction.update(self, actor)
         
@@ -297,12 +291,11 @@ class Stop(baseActions.Stop):
     
     def update(self, actor):
         if self.frame == 0:
-            actor.sprite.changeImage("hitboxie_pivot")
-            actor.sprite.getImageAtIndex(0)
+            actor.changeSprite("hitboxie_pivot",0)
         elif self.frame == 3:
-            actor.sprite.getImageAtIndex(1)
+            actor.changeSpriteImage(1)
         elif self.frame == 6:
-            actor.sprite.getImageAtIndex(2)
+            actor.changeSpriteImage(2)
         elif self.frame == self.lastFrame:
             if actor.inputBuffer.contains(actor.keyBindings.k_up,5):
                 actor.current_action = Jump()
@@ -316,7 +309,7 @@ class HitStun(baseActions.HitStun):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.sprite.changeImage("hitboxie_fall")
+            actor.changeSprite("hitboxie_fall")
             
         if self.frame == self.lastFrame:
             actor.current_action = Fall()
@@ -328,16 +321,15 @@ class Jump(baseActions.Jump):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.sprite.changeImage("hitboxie_land")
-            actor.sprite.getImageAtIndex(0)
+            actor.changeSprite("hitboxie_land",0)
         elif self.frame == 2:
-            actor.sprite.getImageAtIndex(1)
+            actor.changeSpriteImage(1)
         elif self.frame == 4:
-            actor.sprite.getImageAtIndex(2)
+            actor.changeSpriteImage(2)
         elif self.frame == 6:
-            actor.sprite.getImageAtIndex(3)
+            actor.changeSpriteImage(3)
         elif self.frame == 8:
-            actor.sprite.changeImage("hitboxie_jump")
+            actor.changeSprite("hitboxie_jump")
         elif self.frame == self.lastFrame:
             actor.current_action = Fall()
         baseActions.Jump.update(self, actor)
@@ -349,16 +341,15 @@ class AirJump(baseActions.AirJump):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.sprite.changeImage("hitboxie_airjump")
-            actor.sprite.getImageAtIndex(0)
+            actor.changeSprite("hitboxie_airjump",0)
         elif self.frame == 2:
-            actor.sprite.getImageAtIndex(1)
+            actor.changeSpriteImage(1)
         elif self.frame == 4:
-            actor.sprite.getImageAtIndex(2)
+            actor.changeSpriteImage(2)
         elif self.frame == 6:
-            actor.sprite.getImageAtIndex(3)
+            actor.changeSpriteImage(3)
         elif self.frame == 8:
-            actor.sprite.getImageAtIndex(4)
+            actor.changeSpriteImage(4)
         elif self.frame == self.lastFrame:
             actor.current_action = Fall()
         baseActions.AirJump.update(self, actor)
@@ -368,7 +359,7 @@ class Fall(baseActions.Fall):
         baseActions.Fall.__init__(self)
         
     def update(self,actor):
-        actor.sprite.changeImage("hitboxie_jump")
+        actor.changeSprite("hitboxie_jump")
         baseActions.Fall.update(self, actor)
             
 class Land(baseActions.Land):
@@ -377,12 +368,11 @@ class Land(baseActions.Land):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.sprite.changeImage("hitboxie_land")
-            actor.sprite.getImageAtIndex(0)
+            actor.changeSprite("hitboxie_land",0)
         else:
             if self.frame < 12:
                 if self.frame % 3 == 0:
-                    actor.sprite.getImageAtIndex(self.frame / 3)
+                    actor.changeSpriteImage(self.frame / 3)
         
         baseActions.Land.update(self, actor)
             

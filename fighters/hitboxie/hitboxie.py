@@ -22,8 +22,7 @@ class Hitboxie(fighter.Fighter):
                                  keybindings,
                                  var)
         self.current_action = actions.NeutralAction()
-                         
-    
+        
 ########################################################
 #                  ACTION SETTERS                      #
 ########################################################

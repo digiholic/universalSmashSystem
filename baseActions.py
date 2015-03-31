@@ -145,10 +145,12 @@ class Land(action.Action):
         self.tags.append("land")
         
     def update(self,actor):
-        self.lastFrame = actor.landingLag
-        if self.frame == 4:
-            self.interruptTags.extend(["shield","jab"])
-        elif self.frame == self.lastFrame:
+        if self.frame == 0:
+            self.lastFrame = actor.landingLag
+            if actor.bufferContains(actor.keyBindings.k_shield,distanceBack=22):
+                print "l-cancel"
+                self.lastFrame = self.lastFrame / 2    
+        if self.frame == self.lastFrame:
             actor.landingLag = 6
             self.interruptTags.append("run")
             if   actor.keysHeld.count(actor.keyBindings.k_left): actor.doGroundMove(-1)
