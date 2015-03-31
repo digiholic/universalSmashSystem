@@ -177,8 +177,11 @@ class modifyActionVar(SubAction):
         self.val = val
     
     def execute(self):
-        self.action.var[self.var] = self.val
-        
+        if self.action.var.has_key(self.var):
+            self.action.var[self.var] = self.val
+        else:
+            self.action.var.update({self.var:self.val})
+                   
 # Change the frame of the action to a value.
 class changeActionFrame(SubAction):
     def __init__(self,actor,action,newFrame):

@@ -38,11 +38,8 @@ class Hitboxie(fighter.Fighter):
             self.changeAction(actions.Stop())
             
     def doGroundMove(self,direction):
-        #dist = self.bufferGetDistanceBack((self.keyBindings.k_right,False))
-        #if (dist and dist < 2):
         newAction = actions.Move()
-        #if self.current_action.canBeInterrupted(newAction):
-        if self.facing != direction:
+        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
             self.doPivot()
         self.changeAction(newAction)
         
@@ -103,5 +100,3 @@ class Hitboxie(fighter.Fighter):
 
     def keyPressed(self,key):
         fighter.Fighter.keyPressed(self,key)
-        if key == self.keyBindings.k_up:
-            self.doJump()

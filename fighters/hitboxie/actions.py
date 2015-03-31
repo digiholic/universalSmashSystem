@@ -5,7 +5,6 @@ import hitbox
 class NeutralAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,18)
-        self.tags.append("jab")
         self.rapidJabbing = True
         self.nextJab = False
         self.jab1Hitbox = None
@@ -39,7 +38,6 @@ class NeutralAttack(action.Action):
 class NeutralAttack2(action.Action):
     def __init__(self):
         action.Action.__init__(self, 12)
-        self.tags.append("jab")
         self.nextJab = False
         self.jab2Hitbox = None
         
@@ -69,7 +67,6 @@ class NeutralAttack2(action.Action):
 class NeutralAttack3(action.Action):
     def __init__(self):
         action.Action.__init__(self, 21)
-        self.tags.append("jab")
         self.jab3Hitbox = None
         
     def update(self,actor):
@@ -110,7 +107,6 @@ class NeutralAttack3(action.Action):
 class NeutralAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 42)
-        self.tags.extend(["attack","air-attack"])
         self.neutralAirHitbox = None
         
     def update(self,actor):
@@ -157,7 +153,6 @@ class NeutralAir(action.Action):
 class ForwardAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 42)
-        self.tags.extend(["attack"])
         self.fSmashHitbox = None
         
     def update(self,actor):
@@ -179,10 +174,11 @@ class ForwardAttack(action.Action):
             actor.changeSpriteImage(6)
         elif self.frame == 21:
             actor.changeSpriteImage(7)
-            self.fSmashHitbox = None
+            self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,15,10,0.5,20)
+            self.hitboxes.add(self.fSmashHitbox)
         elif self.frame == 36:
             actor.changeSpriteImage(8)
-            #self.fSmashHitbox.kill()
+            self.fSmashHitbox.kill()
         elif self.frame == 39:
             actor.changeSpriteImage(9)
         elif self.frame == self.lastFrame:
@@ -276,15 +272,8 @@ class NeutralAction(baseActions.NeutralAction):
         baseActions.NeutralAction.__init__(self,1)
         
     def update(self, actor):
-        if actor.inputBuffer.contains(actor.keyBindings.k_up,5):
-            actor.doJump()
-        elif actor.inputBuffer.contains(actor.keyBindings.k_left,5):
-            actor.doGroundMove(-1)
-        elif actor.inputBuffer.contains(actor.keyBindings.k_right,5):
-            actor.doGroundMove(1)
         actor.changeSprite("hitboxie_idle")
         if actor.grounded == False: actor.current_action = Fall()
-        baseActions.NeutralAction.update(self, actor)
         
 class Stop(baseActions.Stop):
     def __init__(self):

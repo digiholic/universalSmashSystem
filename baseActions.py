@@ -3,8 +3,6 @@ import action
 class Move(action.Action):
     def __init__(self,length):
         action.Action.__init__(self,length)
-        self.tags.append("run")
-        self.interruptTags.append("jump")
         self.direction = -1
         
     def setUp(self,actor):
@@ -22,8 +20,6 @@ class Move(action.Action):
 class Run(action.Action):
     def __init__(self,length):
         action.Action.__init__(self,length)
-        self.tags.append("run")
-        self.interruptTags.append("jump")
         
     def update(self, actor):
         if actor.facing == 1: direction = 0
@@ -36,8 +32,6 @@ class Run(action.Action):
 class Pivot(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
-        self.tags.append("pivot")
-        self.interruptTags.extend("jump")
         
     def update(self,actor):
         if self.frame != self.lastFrame:
@@ -47,8 +41,7 @@ class Pivot(action.Action):
 class Stop(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
-        self.interruptTags.append("jump")
-    
+        
     def update(self, actor):
         actor.preferred_xspeed = 0
         self.frame += 1
@@ -61,12 +54,12 @@ class Stop(action.Action):
 class NeutralAction(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
-        self.interruptTags.append("ALL")
+
         
     def update(self, actor):
         return
     
-    def stateTransition(self, actor):
+    def stateTransitions(self, actor):
         neutralState(actor)
         
 class HitStun(action.Action):
@@ -88,7 +81,6 @@ class HitStun(action.Action):
 class Jump(action.Action):
     def __init__(self,length,jumpFrame):
         action.Action.__init__(self, length)
-        self.tags.append("jump")
         self.jumpFrame = jumpFrame
         
     def update(self,actor):
@@ -105,7 +97,6 @@ class Jump(action.Action):
 class AirJump(action.Action):
     def __init__(self,length,jumpFrame):
         action.Action.__init__(self, length)
-        self.tags.extend(["airjump","jump"])
         self.jumpFrame = jumpFrame
         
     def update(self,actor):
@@ -131,7 +122,7 @@ class AirJump(action.Action):
 class Fall(action.Action):
     def __init__(self):
         action.Action.__init__(self, 1)
-        self.interruptTags.extend(["jump","air-attack"])
+
     
     def stateTransitions(self,actor):
         airState(actor)
@@ -142,7 +133,7 @@ class Fall(action.Action):
 class Land(action.Action):
     def __init__(self):
         action.Action.__init__(self, 6)
-        self.tags.append("land")
+
         
     def update(self,actor):
         if self.frame == 0:
@@ -152,7 +143,6 @@ class Land(action.Action):
                 self.lastFrame = self.lastFrame / 2    
         if self.frame == self.lastFrame:
             actor.landingLag = 6
-            self.interruptTags.append("run")
             if   actor.keysHeld.count(actor.keyBindings.k_left): actor.doGroundMove(-1)
             elif actor.keysHeld.count(actor.keyBindings.k_right): actor.doGroundMove(1)
             else: actor.doIdle()
@@ -163,14 +153,15 @@ class Land(action.Action):
 #               TRANSITION STATES                     #
 ########################################################
 def neutralState(actor):
-    if actor.bufferContains(actor.keyBindings.k_up,5):
-        actor.doJump()
-    if actor.bufferContains(actor.keyBindings.k_left):
-        actor.doGroundMove(180)
-    elif actor.bufferContains(actor.keyBindings.k_right):
-        actor.doGroundMove(0)
     if actor.bufferContains(actor.keyBindings.k_attack):
         actor.doGroundAttack()
+    if actor.bufferContains(actor.keyBindings.k_up,10):
+        actor.doJump()
+    if actor.bufferContains(actor.keyBindings.k_left,8):
+        actor.doGroundMove(180)
+    elif actor.bufferContains(actor.keyBindings.k_right,8):
+        actor.doGroundMove(0)
+    
 
 def airState(actor):
     airControl(actor)
@@ -185,9 +176,10 @@ def moveState(actor, direction):
     if actor.bufferContains(actor.keyBindings.k_up):
         actor.doJump()
     (key,_) = actor.getForwardBackwardKeys()
-    if actor.bufferContains(key, 0, state=False):
+    if actor.bufferContains(key, state=False):
         actor.doStop()
     if actor.bufferContains(actor.keyBindings.k_attack):
+        print "attacking"
         actor.doGroundAttack()
             
 

@@ -9,8 +9,7 @@ class Action():
         self.lastFrame = length
         self.actor = None
         self.hitboxes = pygame.sprite.Group()
-        self.tags = []
-        self.interruptTags = []
+        self.var = {}
         
     
     # The update skeleton function. You must implement it for every action or you will get
@@ -26,15 +25,6 @@ class Action():
     
     def tearDown(self,actor):
         return
-    
-    def canBeInterrupted(self,other):
-        if other:
-            if self.interruptTags.count("ALL") > 0: return True
-            for tag in self.interruptTags:
-                if other.tags.count(tag) > 0: return True
-            return False
-        else:
-            return False
     
 # The Dynamic Action is created by the Builder. It contains most things that an action would
 # need, but anything more than that can still be defined as above.
