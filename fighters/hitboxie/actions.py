@@ -193,6 +193,7 @@ class ForwardAttack(action.Action):
         def stateTransitions(self,actor):
             if self.frame > 36:
                 baseActions.neutralState(actor)    
+                
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
 ########################################################
