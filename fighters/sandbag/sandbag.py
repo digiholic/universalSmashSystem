@@ -6,7 +6,7 @@ import spriteObject
 class Sandbag(fighter.Fighter):
     def __init__(self,sprite):
         var = {
-                'weight': .35,
+                'weight': 2.0,
                 'gravity': .35,
                 'maxFallSpeed': 10,
                 'maxGroundSpeed': 5,

@@ -196,7 +196,7 @@ class Fighter():
     def applyKnockback(self, kb, kbg, trajectory):
         self.change_x = 0
         self.change_y = 0
-        totalKB = kb + kbg*self.damage
+        totalKB = (kb + kbg*self.damage) / self.var['weight']
         #Directional Incluence
         if (trajectory < 45 or trajectory > 315) or (trajectory < 225 and trajectory > 135):
             if self.keysContain(self.keyBindings.k_up):

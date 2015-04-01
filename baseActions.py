@@ -143,8 +143,8 @@ class Land(action.Action):
                 self.lastFrame = self.lastFrame / 2    
         if self.frame == self.lastFrame:
             actor.landingLag = 6
-            if   actor.keysHeld.count(actor.keyBindings.k_left): actor.doGroundMove(-1)
-            elif actor.keysHeld.count(actor.keyBindings.k_right): actor.doGroundMove(1)
+            if   actor.keysHeld.count(actor.keyBindings.k_left): actor.doGroundMove(180)
+            elif actor.keysHeld.count(actor.keyBindings.k_right): actor.doGroundMove(0)
             else: actor.doIdle()
         actor.preferred_xspeed = 0
         self.frame+= 1

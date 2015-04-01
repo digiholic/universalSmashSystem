@@ -174,7 +174,7 @@ class ForwardAttack(action.Action):
             actor.changeSpriteImage(6)
         elif self.frame == 21:
             actor.changeSpriteImage(7)
-            self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,15,10,0.5,20)
+            self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,15,5,1.0,20)
             self.hitboxes.add(self.fSmashHitbox)
         elif self.frame == 36:
             actor.changeSpriteImage(8)

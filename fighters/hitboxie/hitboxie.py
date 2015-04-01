@@ -4,7 +4,7 @@ import actions
 class Hitboxie(fighter.Fighter):
     def __init__(self,sprite,keybindings):
         var = {
-                'weight': .35,
+                'weight': 1.0,
                 'gravity': .7,
                 'maxFallSpeed': 20,
                 'maxGroundSpeed': 6,
