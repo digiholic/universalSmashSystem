@@ -4,12 +4,15 @@ import fighter
 import fighters.hitboxie.hitboxie
 import fighters.sandbag.sandbag
 import stage
+import settingsManager
 from pygame.locals import *
 
 def main():
+    settings = settingsManager.getSetting().setting
+    
     pygame.init()
-    screen = pygame.display.set_mode((640, 480))
-    pygame.display.set_caption('Universal Smash System')
+    screen = pygame.display.set_mode((settings['windowSize'][0], settings['windowSize'][1]))
+    pygame.display.set_caption(settings['windowName'])
     
     # Fill background
     background = pygame.Surface(screen.get_size())
@@ -19,7 +22,7 @@ def main():
     
     #gameObjects
     testBoxie = fighters.hitboxie.hitboxie.Hitboxie(spriteObject.RectSprite([64,64],[64,64]),defaultKeybindingsDict())
-    testBoxie.rect.x = 128
+    testBoxie.rect.midtop = current_stage.size.midtop
     testBoxie.gameState = current_stage
     sandbag = fighters.sandbag.sandbag.Sandbag(spriteObject.RectSprite([128,128],[128,128]))
     sandbag.rect.midtop = current_stage.size.midtop

@@ -153,8 +153,10 @@ class NeutralAir(action.Action):
 class ForwardAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 42)
-        self.fSmashHitbox = None
-        
+    
+    def setUp(self,actor):
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,15,5,1.0,20)
+            
     def update(self,actor):
         if self.frame == 0:
             actor.change_x = 0
@@ -174,7 +176,6 @@ class ForwardAttack(action.Action):
             actor.changeSpriteImage(6)
         elif self.frame == 21:
             actor.changeSpriteImage(7)
-            self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,15,5,1.0,20)
             self.hitboxes.add(self.fSmashHitbox)
         elif self.frame == 36:
             actor.changeSpriteImage(8)
