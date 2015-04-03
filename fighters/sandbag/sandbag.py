@@ -7,8 +7,8 @@ class Sandbag(fighter.Fighter):
     def __init__(self,sprite):
         var = {
                 'weight': 2.0,
-                'gravity': .35,
-                'maxFallSpeed': 10,
+                'gravity': 1.0,
+                'maxFallSpeed': 20,
                 'maxGroundSpeed': 5,
                 'maxAirSpeed': 4,
                 'friction': 0.2,

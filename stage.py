@@ -1,13 +1,12 @@
 import pygame
 import spriteObject
+import settingsManager
 
 class Stage():
     def __init__(self):
         #Platforms are static, non-moving interactables.
         #They are never updated after creation, to save on memory.
         
-        #self.platform_list = [spriteObject.RectSprite([138,412],[798,342])]
-    
         
         #Entities are updated whenever the frame is drawn.
         #If it changes at all on the stage, it is an entity
@@ -22,12 +21,12 @@ class Stage():
         #self.blast_line = pygame.Rect(0,0,1080,720)
         self.blast_line = pygame.Rect(0,0,2160,1440)
         
-        self.camera_position = pygame.Rect(24,16,640,480)
-        #self.camera_position = pygame.Rect(48,32,1280,960)
+        self.camera_position = pygame.Rect(24,16,settingsManager.getSetting('windowWidth'),settingsManager.getSetting('windowHeight'))
+        self.camera_position.midtop = self.size.midtop
         
-        self.camera_preferred_position = pygame.Rect(24,16,640,480)
-        #self.camera_preferred_position = pygame.Rect(48,32,1280,960)
-        
+        self.camera_preferred_position = pygame.Rect(24,16,settingsManager.getSetting('windowWidth'),settingsManager.getSetting('windowHeight'))
+        self.camera_preferred_position.midtop = self.size.midtop
+       
         self.follows = []
         self.active_hitboxes = pygame.sprite.Group()
         
@@ -35,7 +34,9 @@ class Stage():
         self.deadZone = [64,32]
         
         self.platform_list = [spriteObject.RectSprite([552,824],[798,342])]
-        #self.sprite = spriteObject.ImageSprite("fd",[320,756],generateAlpha=False)
+        #self.platform_list = [spriteObject.RectSprite([138,412],[798,342])]
+    
+        self.sprite = spriteObject.ImageSprite("fd",[494,790],generateAlpha=False)
         
         self.preferred_zoomLevel = 1.0
         self.zoomLevel = 1.0
@@ -49,8 +50,8 @@ class Stage():
                 self.zoomLevel -= min([0.05,diff])
             else:
                 self.zoomLevel += min([0.05,-diff])
-            self.camera_position.width  = round(640.0  * self.zoomLevel)
-            self.camera_position.height = round(480.0 * self.zoomLevel)
+            self.camera_position.width  = round(float(settingsManager.getSetting('windowWidth'))  * self.zoomLevel)
+            self.camera_position.height = round(float(settingsManager.getSetting('windowHeight')) * self.zoomLevel)
         if self.camera_position.x != self.camera_preferred_position.x:
             diff = self.camera_position.x - self.camera_preferred_position.x
             if diff > 0: #If the camera is too far to the right
@@ -65,8 +66,8 @@ class Stage():
                 self.camera_position.y += min([10,-diff])
         
     def centerCamera(self,center):
-        self.camera_preferred_position.width  = round(640  * self.preferred_zoomLevel)
-        self.camera_preferred_position.height = round(480 * self.preferred_zoomLevel)
+        self.camera_preferred_position.width  = round(settingsManager.getSetting('windowWidth')  * self.preferred_zoomLevel)
+        self.camera_preferred_position.height = round(settingsManager.getSetting('windowHeight') * self.preferred_zoomLevel)
         self.camera_preferred_position.center = center
         
         if self.camera_preferred_position.left < self.camera_maximum.left: self.camera_preferred_position.left = self.camera_maximum.left
@@ -91,7 +92,7 @@ class Stage():
         
     def draw(self,screen):
         for plat in self.platform_list: plat.draw(screen,self.stageToScreen(plat.rect),self.getScale())        
-        #self.sprite.draw(screen,self.stageToScreen(self.sprite.rect),self.getScale())
+        self.sprite.draw(screen,self.stageToScreen(self.sprite.rect),self.getScale())
         #self.centerSprite.draw(screen, self.stageToScreen(self.centerSprite.rect), self.getScale())
 
     def cameraUpdate(self):
@@ -111,22 +112,22 @@ class Stage():
         xdist = (rightmost.right - leftmost.left) + (2*self.deadZone[0])
         ydist = (bottommost.bottom - topmost.top) + (2*self.deadZone[1])
         
-        xZoom = xdist / 640.0
-        yZoom = ydist / 480.0
+        xZoom = xdist / float(settingsManager.getSetting('windowWidth'))
+        yZoom = ydist / float(settingsManager.getSetting('windowHeight'))
         
         if xZoom < 1.0: xZoom = 1.0
         if yZoom < 1.0: yZoom = 1.0
         
-        if xZoom * 640 > self.camera_maximum.width:
-            xZoom = self.camera_maximum.width / 640.0
-        if yZoom * 480 > self.camera_maximum.height:
-            yZoom = self.camera_maximum.height / 480.0
+        if xZoom * settingsManager.getSetting('windowWidth') > self.camera_maximum.width:
+            xZoom = self.camera_maximum.width / float(settingsManager.getSetting('windowWidth'))
+        if yZoom * settingsManager.getSetting('windowHeight') > self.camera_maximum.height:
+            yZoom = self.camera_maximum.height / float(settingsManager.getSetting('windowHeight'))
         
         self.preferred_zoomLevel = max([xZoom,yZoom])
-        if self.preferred_zoomLevel > (self.camera_maximum.width/640.0):
-            self.preferred_zoomLevel = self.camera_maximum.width/640.0
-        if self.preferred_zoomLevel > (self.camera_maximum.height/480.0):
-            self.preferred_zoomLevel = self.camera_maximum.height/480.0
+        if self.preferred_zoomLevel > (self.camera_maximum.width/float(settingsManager.getSetting('windowWidth'))):
+            self.preferred_zoomLevel = self.camera_maximum.width/float(settingsManager.getSetting('windowWidth'))
+        if self.preferred_zoomLevel > (self.camera_maximum.height/float(settingsManager.getSetting('windowHeight'))):
+            self.preferred_zoomLevel = self.camera_maximum.height/float(settingsManager.getSetting('windowHeight'))
     
         boundingBox = pygame.Rect(leftmost.left-self.deadZone[0],topmost.top-self.deadZone[1],xdist,ydist)
         center = boundingBox.center
@@ -139,8 +140,8 @@ class Stage():
         return (x,y)
     
     def getScale(self):
-        h = round(480.0 / self.camera_position.height,5)
-        w = round(640.0 / self.camera_position.width,5)
+        h = round(float(settingsManager.getSetting('windowHeight')) / self.camera_position.height,5)
+        w = round(float(settingsManager.getSetting('windowWidth')) / self.camera_position.width,5)
         
         if h == w:
             return h

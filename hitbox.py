@@ -11,7 +11,6 @@ class Hitbox(spriteObject.RectSprite):
         self.rect.center = [owner.rect.center[0] + self.center[0], owner.rect.center[1] + self.center[1]]
         self.owner = owner
         self.id = id
-        self.owner.gameState.active_hitboxes.add(self)
         
     def onCollision(self,other):
         return
@@ -32,7 +31,6 @@ class DamageHitbox(Hitbox):
         self.baseKnockback = baseKnockback
         self.knockbackGrowth = knockbackGrowth
         self.trajectory = self.owner.getForwardWithOffset(trajectory)
-        self.owner.gameState.active_hitboxes.add(self)
         
     def onCollision(self,other):
         other.dealDamage(self.damage)

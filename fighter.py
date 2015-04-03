@@ -54,6 +54,7 @@ class Fighter():
         #Step three, change state and update
         self.current_action.stateTransitions(self)
         self.current_action.update(self) #update our action              
+        self.gameState.active_hitboxes.add(self.current_action.hitboxes)
         
         # Gravity
         self.calc_grav()

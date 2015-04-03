@@ -27,9 +27,11 @@ class Settings():
         # Getting the window information
         size = parser.get('window', 'windowSize')
         
-        self.setting['windowName'] = parser.get('window', 'windowName')
-        self.setting['windowSize'] = self.getNumbersFromString(size,True)
-        self.setting['frameCap'] = self.getNumbersFromString(parser.get('window', 'frameCap'))
+        self.setting['windowName']   = parser.get('window', 'windowName')
+        self.setting['windowSize']   = self.getNumbersFromString(size,True)
+        self.setting['windowWidth']  = self.setting['windowSize'][0]
+        self.setting['windowHeight'] = self.setting['windowSize'][1]
+        self.setting['frameCap']     = self.getNumbersFromString(parser.get('window', 'frameCap'))
         
         # Getting game information
         
