@@ -26,7 +26,7 @@ class Stage():
         
         self.camera_preferred_position = pygame.Rect(24,16,settingsManager.getSetting('windowWidth'),settingsManager.getSetting('windowHeight'))
         self.camera_preferred_position.midtop = self.size.midtop
-       
+        
         self.follows = []
         self.active_hitboxes = pygame.sprite.Group()
         

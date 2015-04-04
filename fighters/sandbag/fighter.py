@@ -1,10 +1,9 @@
-import fighter
-import sandbag_actions
+import abstractFighter
 import spriteObject
+import main
 
-
-class Sandbag(fighter.Fighter):
-    def __init__(self,sprite):
+class Fighter(abstractFighter.AbstractFighter):
+    def __init__(self,playerNum):
         var = {
                 'weight': 2.0,
                 'gravity': 1.0,
@@ -18,10 +17,14 @@ class Sandbag(fighter.Fighter):
                 'airJumpHeight':10
                 }
         
-        fighter.Fighter.__init__(self,
+        abstractFighter.AbstractFighter.__init__(self,
+                                 playerNum,
                                  "sandbag", #Start Sprite
                                  "Sandbag", #Name
-                                 {},
                                  var) #jumps, jump height, air jump height
-        self.current_action = sandbag_actions.NeutralAction()
+        
+        self.actions = main.importFromURI(__file__,'sandbag_actions.py')
+        
+        self.keyBindings = abstractFighter.Keybindings({})
+        self.current_action = self.actions.NeutralAction()
         self.sprite = spriteObject.ImageSprite("sandbag",[0,0],generateAlpha = False)

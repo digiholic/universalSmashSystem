@@ -1,10 +1,10 @@
 import pygame
-import spriteObject
-import fighter
-import fighters.hitboxie.hitboxie
-import fighters.sandbag.sandbag
+import fighters.hitboxie.fighter
+import fighters.sandbag.fighter
 import stage
 import settingsManager
+import imp
+import os
 from pygame.locals import *
 
 def main():
@@ -21,18 +21,23 @@ def main():
     current_stage = stage.Stage()
     
     #gameObjects
-    testBoxie = fighters.hitboxie.hitboxie.Hitboxie(spriteObject.RectSprite([64,64],[64,64]),defaultKeybindingsDict())
+    currentFighters = []
+    
+    fight = importFromURI(__file__,'fighters/hitboxie/fighter.py')
+    testBoxie = fight.Fighter(0)
     testBoxie.rect.midtop = current_stage.size.midtop
     testBoxie.gameState = current_stage
-    sandbag = fighters.sandbag.sandbag.Sandbag(spriteObject.RectSprite([128,128],[128,128]))
+    
+    fight = importFromURI(__file__,'fighters/sandbag/fighter.py')
+    sandbag = fight.Fighter(1)
     sandbag.rect.midtop = current_stage.size.midtop
     sandbag.gameState = current_stage
-    gravityText = spriteObject.TextSprite([0,0], str(testBoxie.var['gravity']))
+    
+    currentFighters.append(testBoxie)
+    currentFighters.append(sandbag)
     
     gameObjects = []
-    gameObjects.append(testBoxie)
-    gameObjects.append(gravityText)
-    gameObjects.append(sandbag)
+    gameObjects.extend(currentFighters)
     
     current_stage.follows.append(testBoxie.rect)
     current_stage.follows.append(sandbag.rect)
@@ -44,28 +49,16 @@ def main():
             if event.type == QUIT:
                 return -1
             if event.type == KEYDOWN:
-                testBoxie.keyPressed(event.key)
+                for fight in currentFighters:
+                    fight.keyPressed(event.key)
             if event.type == KEYUP:
-                if event.key == pygame.K_EQUALS:
-                    testBoxie.gravity += 0.01
-                    gravityText.text = str(testBoxie.gravity)
-                elif event.key == pygame.K_MINUS:
-                    testBoxie.gravity -= 0.01
-                    gravityText.text = str(testBoxie.gravity)
-                elif event.key == pygame.K_ESCAPE:
+                if event.key == pygame.K_ESCAPE:
                     return
                 elif event.key == pygame.K_k:
                     sandbag.applyKnockback(10, 0.5, 35)
                     sandbag.dealDamage(10)
-                elif event.key == pygame.K_d:
-                    gravityText.rect.x += 10
-                elif event.key == pygame.K_a:
-                    gravityText.rect.x -= 10
-                elif event.key == pygame.K_s:
-                    gravityText.rect.y += 10
-                elif event.key == pygame.K_w:
-                    gravityText.rect.y -= 10
-                testBoxie.keyReleased(event.key)
+                for fight in currentFighters:
+                    fight.keyReleased(event.key)
                                
         screen.fill([100, 100, 100])
         
@@ -86,17 +79,25 @@ def main():
         clock.tick(60)    
         pygame.display.flip()
 
-def defaultKeybindingsDict():
-    bindings = {
-                'left': pygame.K_LEFT,
-                'right': pygame.K_RIGHT,
-                'up': pygame.K_UP,
-                'down': pygame.K_DOWN,
-                'jump': pygame.K_UP,
-                'attack': pygame.K_z,
-                'shield': pygame.K_a
-                }
-    return bindings
+def importFromURI(file, uri, absl=False):
+    if not absl:
+        uri = os.path.normpath(os.path.join(os.path.dirname(file), uri))
+    path, fname = os.path.split(uri)
+    mname, ext = os.path.splitext(fname)
+        
+    no_ext = os.path.join(path, mname)
+         
+    if os.path.exists(no_ext + '.pyc'):
+        try:
+            return imp.load_compiled(mname, no_ext + '.pyc')
+        except:
+            pass
+    if os.path.exists(no_ext + '.py'):
+        try:
+            return imp.load_source(mname, no_ext + '.py')
+        except Exception as e:
+            print e
+        
     
 if __name__  == '__main__': main()
 

@@ -1,8 +1,8 @@
-import fighter
-import actions
+import abstractFighter
+import main
 
-class Hitboxie(fighter.Fighter):
-    def __init__(self,sprite,keybindings):
+class Fighter(abstractFighter.AbstractFighter):
+    def __init__(self,playerNum):
         var = {
                 'weight': 1.0,
                 'gravity': .7,
@@ -16,87 +16,90 @@ class Hitboxie(fighter.Fighter):
                 'airJumpHeight':14
                 }
         
-        fighter.Fighter.__init__(self,
+        abstractFighter.AbstractFighter.__init__(self,
+                                 playerNum,
                                  "hitboxie_idle", #Start Sprite
                                  "HBoxie", #Name
-                                 keybindings,
                                  var)
-        self.current_action = actions.NeutralAction()
+        
+        self.actions = main.importFromURI(__file__,'hitboxie_actions.py')
+        
+        self.current_action = self.actions.NeutralAction()
         
 ########################################################
 #                  ACTION SETTERS                      #
 ########################################################
     
     def doIdle(self):
-        self.changeAction(actions.NeutralAction())
+        self.changeAction(self.actions.NeutralAction())
             
     def doLand(self):
-        self.changeAction(actions.Land())
+        self.changeAction(self.actions.Land())
         
     def doStop(self):
         if self.grounded:
-            self.changeAction(actions.Stop())
+            self.changeAction(self.actions.Stop())
             
     def doGroundMove(self,direction):
-        newAction = actions.Move()
+        newAction = self.actions.Move()
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
             self.doPivot()
         self.changeAction(newAction)
         
     def doPivot(self):
-        newAction = actions.Pivot()
+        newAction = self.actions.Pivot()
         #if self.current_action.canBeInterrupted(newAction):
         self.flip()
         self.changeAction(newAction)
     
     def doJump(self):
         if self.grounded:
-            self.changeAction(actions.Jump())
+            self.changeAction(self.actions.Jump())
         else:
             if self.jumps > 0:
-                self.changeAction(actions.AirJump())
+                self.changeAction(self.actions.AirJump())
     
     def doGroundAttack(self):
         (key, invkey) = self.getForwardBackwardKeys()
         if self.keysContain(key):
-            self.changeAction(actions.ForwardAttack())
+            self.changeAction(self.actions.ForwardAttack())
         elif self.keysContain(invkey):
             self.flip()
-            self.changeAction(actions.ForwardAttack())
+            self.changeAction(self.actions.ForwardAttack())
              
     def doNeutralAttack(self):
-        if isinstance(self.current_action,actions.NeutralAttack):
+        if isinstance(self.current_action,self.actions.NeutralAttack):
             self.current_action.nextJab = True
             return
         
-        elif isinstance(self.current_action, actions.NeutralAttack2):
+        elif isinstance(self.current_action, self.actions.NeutralAttack2):
             self.current_action.nextJab = True
             return
             
-        newAction = actions.NeutralAttack()
+        newAction = self.actions.NeutralAttack()
         if self.current_action.canBeInterrupted(newAction):
-            self.changeAction(actions.NeutralAttack())     
+            self.changeAction(self.actions.NeutralAttack())     
     
     def doAirAttack(self):
         if not (self.keysContain(self.keyBindings.k_left) or self.keysContain(self.keyBindings.k_right) 
                 or self.keysContain(self.keyBindings.k_up) or self.keysContain(self.keyBindings.k_down)):
-            self.changeAction(actions.NeutralAir())
+            self.changeAction(self.actions.NeutralAir())
             
 ########################################################
 #                  STATE CHANGERS                      #
 ########################################################
         
     def die(self):
-        fighter.Fighter.die(self)
-        self.changeAction(actions.Fall())
+        abstractFighter.AbstractFighter.die(self)
+        self.changeAction(self.actions.Fall())
     
     def applyKnockback(self,kb,kbg,trajectory):
-        fighter.Fighter.applyKnockback(self, kb, kbg, trajectory)
-        self.changeAction(actions.HitStun(40,trajectory))
+        abstractFighter.AbstractFighter.applyKnockback(self, kb, kbg, trajectory)
+        self.changeAction(self.actions.HitStun(40,trajectory))
         
 ########################################################
 #                 ENGINE FUNCTIONS                     #
 ########################################################
 
     def keyPressed(self,key):
-        fighter.Fighter.keyPressed(self,key)
+        abstractFighter.AbstractFighter.keyPressed(self,key)

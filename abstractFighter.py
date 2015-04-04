@@ -2,20 +2,20 @@ import pygame
 import baseActions
 import math
 import spriteObject
+import settingsManager
 
-
-class Fighter():
+class AbstractFighter():
     
     def __init__(self,
+                 playerNum,
                  sprite,
                  name,
-                 keybindings,
                  var):
         
         self.var = var
         
         #Initialize engine variables
-        self.keyBindings = Keybindings(keybindings)
+        self.keyBindings = Keybindings(settingsManager.getSetting('controls_' + str(playerNum)))
         self.sprite = spriteObject.SheetSprite(sprite,[0,0],92)
         self.currentKeys = []
         self.inputBuffer = InputBuffer()
@@ -132,7 +132,7 @@ class Fighter():
 #                  ACTION SETTERS                      #
 ########################################################
 # These functions are meant to be overridden. They are
-# provided so the baseActions can change the Fighter's
+# provided so the baseActions can change the AbstractFighter's
 # actions. If you've changed any of the base actions
 # for the fighter (including adding a sprite change)
 # override the corresponding method and have it set
@@ -325,13 +325,13 @@ class Keybindings():
     
     def __init__(self,keyBindings):
         self.keyBindings = keyBindings
-        self.k_left = self.keyBindings.get('left',pygame.K_LEFT)
-        self.k_right = self.keyBindings.get('right',pygame.K_RIGHT)
-        self.k_up = self.keyBindings.get('up',pygame.K_UP)
-        self.k_down = self.keyBindings.get('down',pygame.K_DOWN)
-        self.k_jump = self.keyBindings.get('jump',pygame.K_UP)
-        self.k_attack = self.keyBindings.get('attack',pygame.K_z)
-        self.k_shield = self.keyBindings.get('shield',pygame.K_a)
+        self.k_left = self.keyBindings.get('left')
+        self.k_right = self.keyBindings.get('right')
+        self.k_up = self.keyBindings.get('up')
+        self.k_down = self.keyBindings.get('down')
+        self.k_jump = self.keyBindings.get('jump')
+        self.k_attack = self.keyBindings.get('attack')
+        self.k_shield = self.keyBindings.get('shield')
         
         
 ########################################################
