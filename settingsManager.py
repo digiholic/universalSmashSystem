@@ -1,4 +1,3 @@
-import pygame
 import pygame.constants
 import re
 from ConfigParser import SafeConfigParser

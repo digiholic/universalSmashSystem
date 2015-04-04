@@ -22,13 +22,13 @@ class Sprite(pygame.sprite.Sprite):
         screen.blit(blitSprite,pygame.Rect(newOff,(w,h)))
         
 class ImageSprite(Sprite):
-    def __init__(self,image,topleft,colorKey = [255,255,255],generateAlpha = True):
+    def __init__(self,image,topleft, colorKey = [255,255,255],generateAlpha = True, file = __file__):
         Sprite.__init__(self, topleft)
         
         self.index = 0
-        self.imagePrefix = os.path.dirname(__file__) + "/fighters/hitboxie/sprites/" 
+        self.imagePrefix = os.path.join(os.path.dirname(file),"sprites/")
         self.imageText = image
-        self.image = pygame.image.load(self.imagePrefix + self.imageText + ".png")
+        self.image = pygame.image.load(os.path.join(self.imagePrefix, self.imageText + ".png"))
         self.alpha = generateAlpha
         if self.alpha:
             self.colorKey = colorKey
@@ -51,7 +51,7 @@ class ImageSprite(Sprite):
         
     def changeImage(self,imageText):
         self.imageText = imageText
-        self.image = pygame.image.load(self.imagePrefix + self.imageText + ".png")
+        self.image = pygame.image.load(os.path.join(self.imagePrefix, self.imageText + ".png"))
         if self.flip: self.image = pygame.transform.flip(self.image,True,False)
         self.rect = self.image.get_rect(center=self.rect.center)
             
@@ -62,15 +62,16 @@ class ImageSprite(Sprite):
         Sprite.draw(self, screen, offset, scale)
 
 class SheetSprite(ImageSprite):
-    def __init__(self,image,topleft,offset,colorKey = [255,255,255],generateAlpha = True):
+    def __init__(self,image,topleft,offset,colorKey = [255,255,255],generateAlpha = True,file = __file__):
         Sprite.__init__(self,topleft)
         
         self.index = 0
         self.offset = offset
-        self.imagePrefix = os.path.dirname(__file__) + "/fighters/hitboxie/sprites/" 
+        
+        self.imagePrefix = os.path.join(os.path.dirname(file),"sprites/")
         self.imageText = image
         
-        self.sheet = pygame.image.load(self.imagePrefix + self.imageText + ".png")
+        self.sheet = pygame.image.load(os.path.join(self.imagePrefix, self.imageText + ".png"))
         self.sheet.set_clip(pygame.Rect(self.index * self.offset, 0, self.offset,self.sheet.get_height()))
         
         self.image = self.sheet.subsurface(self.sheet.get_clip())
@@ -96,7 +97,7 @@ class SheetSprite(ImageSprite):
         self.imageText = imageText
         if reset: self.index = 0
         
-        self.sheet = pygame.image.load(self.imagePrefix + self.imageText + ".png")
+        self.sheet = pygame.image.load(os.path.join(self.imagePrefix, self.imageText + ".png"))
         self.sheet.set_clip(pygame.Rect(self.index * self.offset, 0, self.offset,self.sheet.get_height()))
         
         self.image = self.sheet.subsurface(self.sheet.get_clip())

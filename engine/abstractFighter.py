@@ -1,7 +1,6 @@
 import pygame
-import baseActions
+import engine.baseActions as baseActions
 import math
-import spriteObject
 import settingsManager
 
 class AbstractFighter():
@@ -16,7 +15,7 @@ class AbstractFighter():
         
         #Initialize engine variables
         self.keyBindings = Keybindings(settingsManager.getSetting('controls_' + str(playerNum)))
-        self.sprite = spriteObject.SheetSprite(sprite,[0,0],92)
+        self.sprite = sprite
         self.currentKeys = []
         self.inputBuffer = InputBuffer()
         self.keysHeld = []

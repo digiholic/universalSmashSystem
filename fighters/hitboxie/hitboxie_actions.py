@@ -1,6 +1,6 @@
-import action
-import baseActions
-import hitbox
+import engine.action as action
+import engine.baseActions as baseActions
+import engine.hitbox as hitbox
 
 class NeutralAttack(action.Action):
     def __init__(self):

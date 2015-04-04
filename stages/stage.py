@@ -35,8 +35,8 @@ class Stage():
         
         self.platform_list = [spriteObject.RectSprite([552,824],[798,342])]
         #self.platform_list = [spriteObject.RectSprite([138,412],[798,342])]
-    
-        self.sprite = spriteObject.ImageSprite("fd",[494,790],generateAlpha=False)
+        
+        self.sprite = spriteObject.ImageSprite("fd",[494,790],generateAlpha=False,file = __file__)
         
         self.preferred_zoomLevel = 1.0
         self.zoomLevel = 1.0

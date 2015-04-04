@@ -1,5 +1,6 @@
-import abstractFighter
+import engine.abstractFighter as abstractFighter
 import spriteObject
+import os
 import main
 
 class Fighter(abstractFighter.AbstractFighter):
@@ -16,10 +17,11 @@ class Fighter(abstractFighter.AbstractFighter):
                 'jumpHeight': 8,
                 'airJumpHeight':10
                 }
+        sprite = spriteObject.SheetSprite("sandbag",[0,0],92,generateAlpha = False,file = __file__)
         
         abstractFighter.AbstractFighter.__init__(self,
                                  playerNum,
-                                 "sandbag", #Start Sprite
+                                 sprite, #Start Sprite
                                  "Sandbag", #Name
                                  var) #jumps, jump height, air jump height
         
@@ -27,4 +29,3 @@ class Fighter(abstractFighter.AbstractFighter):
         
         self.keyBindings = abstractFighter.Keybindings({})
         self.current_action = self.actions.NeutralAction()
-        self.sprite = spriteObject.ImageSprite("sandbag",[0,0],generateAlpha = False)

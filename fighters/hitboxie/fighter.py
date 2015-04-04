@@ -1,4 +1,5 @@
-import abstractFighter
+import engine.abstractFighter as abstractFighter
+import spriteObject
 import main
 
 class Fighter(abstractFighter.AbstractFighter):
@@ -15,10 +16,10 @@ class Fighter(abstractFighter.AbstractFighter):
                 'jumpHeight': 12,
                 'airJumpHeight':14
                 }
-        
+        sprite = spriteObject.SheetSprite("hitboxie_idle",[0,0],92,file = __file__)
         abstractFighter.AbstractFighter.__init__(self,
                                  playerNum,
-                                 "hitboxie_idle", #Start Sprite
+                                 sprite, #Start Sprite
                                  "HBoxie", #Name
                                  var)
         

@@ -1,7 +1,5 @@
 import pygame
-import fighters.hitboxie.fighter
-import fighters.sandbag.fighter
-import stage
+import stages.stage as stage
 import settingsManager
 import imp
 import os
@@ -87,16 +85,16 @@ def importFromURI(file, uri, absl=False):
         
     no_ext = os.path.join(path, mname)
          
-    if os.path.exists(no_ext + '.pyc'):
-        try:
-            return imp.load_compiled(mname, no_ext + '.pyc')
-        except:
-            pass
+    #if os.path.exists(no_ext + '.pyc'):
+        #try:
+            #return imp.load_compiled(mname, no_ext + '.pyc')
+        #except:
+            #pass
     if os.path.exists(no_ext + '.py'):
         try:
             return imp.load_source(mname, no_ext + '.py')
         except Exception as e:
-            print e
+            print mname, e
         
     
 if __name__  == '__main__': main()
