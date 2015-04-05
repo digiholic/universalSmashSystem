@@ -5,12 +5,13 @@ import imp
 import os
 from pygame.locals import *
 
-def main():
+def main(debug = False):
     settings = settingsManager.getSetting().setting
     
-    pygame.init()
-    screen = pygame.display.set_mode((settings['windowSize'][0], settings['windowSize'][1]))
-    pygame.display.set_caption(settings['windowName'])
+    if debug:
+        pygame.init()
+        screen = pygame.display.set_mode((settings['windowWidth'], settings['windowHeight']))
+        pygame.display.set_caption(settings['windowName'])
     
     # Fill background
     background = pygame.Surface(screen.get_size())
@@ -97,5 +98,5 @@ def importFromURI(file, uri, absl=False):
             print mname, e
         
     
-if __name__  == '__main__': main()
+if __name__  == '__main__': main(True)
 

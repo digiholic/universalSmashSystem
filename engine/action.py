@@ -23,7 +23,7 @@ class Action():
     def setUp(self,actor):
         return
     
-    def tearDown(self,actor):
+    def tearDown(self,actor,newAction):
         return
     
 # The Dynamic Action is created by the Builder. It contains most things that an action would

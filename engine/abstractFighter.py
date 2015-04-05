@@ -126,6 +126,9 @@ class AbstractFighter():
         if (len(platform_hit_list) > 0): self.grounded = True
         else: self.grounded = False
     
+    def getFacingDirection(self):
+        if self.facing == 1: return 0
+        else: return 180
         
 ########################################################
 #                  ACTION SETTERS                      #
@@ -139,19 +142,15 @@ class AbstractFighter():
 
     def changeAction(self,newAction):
         newAction.setUp(self)
-        self.current_action.tearDown(self)
+        self.current_action.tearDown(self,newAction)
         self.current_action = newAction
         
     def doIdle(self):
         self.changeAction(baseActions.NeutralAction())
         
-    def doGroundMove(self,direction):
-        if direction == 0: key = self.keyBindings.k_right
-        else: key = self.keyBindings.k_left
-        if (self.inputBuffer.contains(key, 12, andReleased = True)):
-            self.current_action = baseActions.Run()
-        
-        self.changeAction(baseActions.Move())
+    def doGroundMove(self,direction,run=False):
+        if run: self.current_action = baseActions.Run()
+        else: self.changeAction(baseActions.Move())
     
     def doPivot(self):
         self.changeAction(baseActions.Pivot())
@@ -313,7 +312,8 @@ def getDirectionBetweenPoints(p1, p2):
     (x1, y1) = p1
     (x2, y2) = p2
     dx = x2 - x1
-    dy = y2 - y1
+    dy = y1 - y2
+    print dy, "-", dx
     return (180 * math.atan2(dy, dx)) / math.pi 
     
 

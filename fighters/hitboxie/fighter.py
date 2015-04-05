@@ -6,7 +6,7 @@ class Fighter(abstractFighter.AbstractFighter):
     def __init__(self,playerNum):
         var = {
                 'weight': 1.0,
-                'gravity': .7,
+                'gravity': .5,
                 'maxFallSpeed': 20,
                 'maxGroundSpeed': 6,
                 'maxAirSpeed': 6,
@@ -16,7 +16,7 @@ class Fighter(abstractFighter.AbstractFighter):
                 'jumpHeight': 12,
                 'airJumpHeight':14
                 }
-        sprite = spriteObject.SheetSprite("hitboxie_idle",[0,0],92,file = __file__)
+        sprite = spriteObject.SheetSprite("hitboxie_idle",[0,0],92,generateAlpha= False,file = __file__)
         abstractFighter.AbstractFighter.__init__(self,
                                  playerNum,
                                  sprite, #Start Sprite
@@ -41,10 +41,11 @@ class Fighter(abstractFighter.AbstractFighter):
         if self.grounded:
             self.changeAction(self.actions.Stop())
             
-    def doGroundMove(self,direction):
-        newAction = self.actions.Move()
+    def doGroundMove(self,direction,run=False):
+        if run: newAction = self.actions.Run()
+        else: newAction = self.actions.Move()
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
-            self.doPivot()
+            self.flip()
         self.changeAction(newAction)
         
     def doPivot(self):
@@ -67,7 +68,13 @@ class Fighter(abstractFighter.AbstractFighter):
         elif self.keysContain(invkey):
             self.flip()
             self.changeAction(self.actions.ForwardAttack())
-             
+        elif self.keysContain(self.keyBindings.k_up):
+            pass
+        elif self.keysContain(self.keyBindings.k_down):
+            pass
+        else:
+            self.changeAction(self.actions.NeutralAttack())   
+              
     def doNeutralAttack(self):
         if isinstance(self.current_action,self.actions.NeutralAttack):
             self.current_action.nextJab = True

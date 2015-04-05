@@ -21,13 +21,18 @@ class Run(action.Action):
     def __init__(self,length):
         action.Action.__init__(self,length)
         
+    def setUp(self,actor):
+        if actor.facing == 1: self.direction = 0
+        else: self.direction = 180
+            
     def update(self, actor):
-        if actor.facing == 1: direction = 0
-        else: direction = 180
-        actor.setSpeed(actor.var['maxGroundSpeed']*1.5,direction, False)
+        actor.setSpeed(actor.var['maxGroundSpeed']*1.5,self.direction, False)
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
+    
+    def stateTransitions(self,actor):
+        moveState(actor,self.direction)
         
 class Pivot(action.Action):
     def __init__(self,length):
@@ -37,6 +42,15 @@ class Pivot(action.Action):
         if self.frame != self.lastFrame:
             self.frame += 1
             actor.preferred_xspeed = 0
+        if self.frame == self.lastFrame:
+            (key, _) = actor.getForwardBackwardKeys()
+            if actor.keysContain(key):
+                if actor.facing == 1:
+                    actor.doGroundMove(0)
+                else:
+                    actor.doGroundMove(180)
+            else:
+                actor.doIdle()
             
 class Stop(action.Action):
     def __init__(self,length):
@@ -47,7 +61,10 @@ class Stop(action.Action):
         self.frame += 1
         
     def stateTransitions(self, actor):
-        (_,invkey) = actor.getForwardBackwardKeys()
+        (key,invkey) = actor.getForwardBackwardKeys()
+        if actor.bufferContains(key,12,andReleased=True) and actor.keysContain(key):
+            print "run"
+            actor.doGroundMove(actor.getFacingDirection(),True)
         if actor.bufferContains(invkey,5,notReleased = True):
             actor.doPivot()
                 
@@ -86,7 +103,10 @@ class Jump(action.Action):
     def update(self,actor):
         if self.frame == self.jumpFrame:
             actor.grounded = False
-            actor.change_y = -actor.var['jumpHeight']
+            if actor.keysContain(actor.keyBindings.k_jump):
+                actor.change_y = -actor.var['jumpHeight']
+            else: actor.change_y = -actor.var['jumpHeight']/1.5
+            ##TODO Add in shorthop height as an attribute
             if actor.change_x > actor.var['maxAirSpeed']:
                 actor.change_x = actor.var['maxAirSpeed']
             elif actor.change_x < -actor.var['maxAirSpeed']:
@@ -155,7 +175,7 @@ class Land(action.Action):
 def neutralState(actor):
     if actor.bufferContains(actor.keyBindings.k_attack):
         actor.doGroundAttack()
-    if actor.bufferContains(actor.keyBindings.k_up,10):
+    if actor.bufferContains(actor.keyBindings.k_jump,10):
         actor.doJump()
     if actor.bufferContains(actor.keyBindings.k_left,8):
         actor.doGroundMove(180)
@@ -165,7 +185,7 @@ def neutralState(actor):
 
 def airState(actor):
     airControl(actor)
-    if actor.bufferContains(actor.keyBindings.k_up):
+    if actor.bufferContains(actor.keyBindings.k_jump):
         actor.doJump()
     if actor.bufferContains(actor.keyBindings.k_down):
         if actor.change_y >= 0:
@@ -173,7 +193,7 @@ def airState(actor):
             actor.landingLag = 14
             
 def moveState(actor, direction):
-    if actor.bufferContains(actor.keyBindings.k_up):
+    if actor.bufferContains(actor.keyBindings.k_jump):
         actor.doJump()
     (key,_) = actor.getForwardBackwardKeys()
     if actor.bufferContains(key, state=False):
