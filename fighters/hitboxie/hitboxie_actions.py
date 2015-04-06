@@ -2,7 +2,6 @@ import engine.action as action
 import engine.baseActions as baseActions
 import engine.hitbox as hitbox
 import engine.abstractFighter as abstractFighter
-import math
 
 class NeutralAttack(action.Action):
     def __init__(self):
@@ -45,13 +44,61 @@ class NeutralAttack(action.Action):
             actor.doIdle()
         self.frame += 1
         
+class DownAttack(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 34)
+    
+    def setUp(self, actor):
+        actor.change_x = 0
+        actor.preferred_xsped = 0
+        actor.changeSprite("hitboxie_dsmash",0)
+        #self.dsmashHitbox = self.outwardHitbox(actor)
+        #self.dsmashSweetspot
+        
+    def update(self,actor):
+        if self.frame == 0:
+            actor.changeSpriteImage(0)
+        elif self.frame == 2:
+            actor.changeSpriteImage(1)
+        elif self.frame == 4:
+            actor.changeSpriteImage(2)
+        elif self.frame == 6:
+            actor.changeSpriteImage(3)
+        elif self.frame == 8:
+            actor.changeSpriteImage(4)
+        elif self.frame == 12:
+            actor.changeSpriteImage(5)
+        elif self.frame == 14:
+            actor.changeSpriteImage(6)
+        elif self.frame == 15:
+            actor.changeSpriteImage(7)
+            #create hitbox
+        elif self.frame == 17:
+            actor.changeSpriteImage(8)
+        elif self.frame == 19:
+            actor.changeSpriteImage(9)
+            #create sweetspot hitbox
+        elif self.frame == 23:
+            actor.changeSpriteImage(10)
+        elif self.frame == 25:
+            actor.changeSpriteImage(11)
+        elif self.frame == 27:
+            actor.changeSpriteImage(12)
+        elif self.frame == 29:
+            actor.changeSpriteImage(13)
+        elif self.frame == 31:
+            actor.changeSpriteImage(14)
+        if self.frame == self.lastFrame:
+            actor.doIdle()
+        self.frame += 1
+        
             
 class ForwardAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 42)
     
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,15,5,1.0,20)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,15,5,1.0,40)
             
     def update(self,actor):
         if self.frame == 0:
@@ -86,7 +133,32 @@ class ForwardAttack(action.Action):
         def stateTransitions(self,actor):
             if self.frame > 36:
                 baseActions.neutralState(actor)    
-                
+
+class NeutralAir(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 34)
+    
+    def setUp(self, actor):
+        actor.change_x = 0
+        actor.preferred_xsped = 0
+        actor.changeSprite("hitboxie_nair",0)
+        self.subImage = 0
+        #self.dsmashHitbox = self.outwardHitbox(actor)
+        #self.dsmashSweetspot
+        
+    def update(self,actor):
+        if self.frame % 2 == 0:
+            actor.changeSpriteImage(self.subImage % 7)
+        self.subImage += 1
+            
+        
+        actor.checkForGround()
+        if actor.grounded:
+            actor.landingLag = 28
+            actor.doLand()
+        if self.frame == self.lastFrame:
+            actor.changeAction(Fall())
+        self.frame += 1
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
 ########################################################

@@ -71,22 +71,9 @@ class Fighter(abstractFighter.AbstractFighter):
         elif self.keysContain(self.keyBindings.k_up):
             pass
         elif self.keysContain(self.keyBindings.k_down):
-            pass
+            self.changeAction(self.actions.DownAttack())
         else:
             self.changeAction(self.actions.NeutralAttack())   
-              
-    def doNeutralAttack(self):
-        if isinstance(self.current_action,self.actions.NeutralAttack):
-            self.current_action.nextJab = True
-            return
-        
-        elif isinstance(self.current_action, self.actions.NeutralAttack2):
-            self.current_action.nextJab = True
-            return
-            
-        newAction = self.actions.NeutralAttack()
-        if self.current_action.canBeInterrupted(newAction):
-            self.changeAction(self.actions.NeutralAttack())     
     
     def doAirAttack(self):
         if not (self.keysContain(self.keyBindings.k_left) or self.keysContain(self.keyBindings.k_right) 

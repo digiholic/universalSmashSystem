@@ -47,9 +47,9 @@ class Stage():
         if self.preferred_zoomLevel != self.zoomLevel:
             diff = self.zoomLevel - self.preferred_zoomLevel
             if diff > 0: #If the camera is too narrow
-                self.zoomLevel -= min([0.05,diff])
+                self.zoomLevel -= min([0.1,diff])
             else:
-                self.zoomLevel += min([0.05,-diff])
+                self.zoomLevel += min([0.1,-diff])
             self.camera_position.width  = round(float(settingsManager.getSetting('windowWidth'))  * self.zoomLevel)
             self.camera_position.height = round(float(settingsManager.getSetting('windowHeight')) * self.zoomLevel)
         if self.camera_position.x != self.camera_preferred_position.x:
@@ -61,9 +61,9 @@ class Stage():
         if self.camera_position.y != self.camera_preferred_position.y:
             diff = self.camera_position.y - self.camera_preferred_position.y
             if diff > 0: #If the camera is too far to the bottom
-                self.camera_position.y -= min([10,diff])
+                self.camera_position.y -= min([20,diff])
             else: #If the camera is too far to the top
-                self.camera_position.y += min([10,-diff])
+                self.camera_position.y += min([20,-diff])
         
     def centerCamera(self,center):
         self.camera_preferred_position.width  = round(settingsManager.getSetting('windowWidth')  * self.preferred_zoomLevel)

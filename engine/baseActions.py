@@ -191,6 +191,8 @@ def airState(actor):
         if actor.change_y >= 0:
             actor.change_y = actor.var['maxFallSpeed']
             actor.landingLag = 14
+    if actor.bufferContains(actor.keyBindings.k_attack):
+        actor.doAirAttack()
             
 def moveState(actor, direction):
     if actor.bufferContains(actor.keyBindings.k_jump):
