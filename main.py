@@ -18,6 +18,7 @@ def main(debug = False):
     background = background.convert()
     background.fill((128, 128, 128))
     current_stage = stage.Stage()
+    active_hitboxes = pygame.sprite.Group()
     
     #gameObjects
     currentFighters = []
@@ -66,14 +67,18 @@ def main(debug = False):
         current_stage.draw(screen)
         for obj in gameObjects:
             obj.update()
+            if hasattr(obj,'active_hitboxes'):
+                active_hitboxes.add(obj.active_hitboxes)
+            
+            
             offset = current_stage.stageToScreen(obj.rect)
             scale =  current_stage.getScale()
             obj.draw(screen,offset,scale)
-            hitbox_collisions = pygame.sprite.spritecollide(obj, current_stage.active_hitboxes, False)
+            hitbox_collisions = pygame.sprite.spritecollide(obj, active_hitboxes, False)
             for hbox in hitbox_collisions:
                 if hbox.owner != obj:
                     hbox.onCollision(obj)
-            for hbox in current_stage.active_hitboxes:
+            for hbox in active_hitboxes:
                 hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
               
         clock.tick(60)    

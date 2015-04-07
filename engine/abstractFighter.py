@@ -19,6 +19,11 @@ class AbstractFighter():
         self.currentKeys = []
         self.inputBuffer = InputBuffer()
         self.keysHeld = []
+        self.active_hitboxes = pygame.sprite.Group()
+        
+        # HitboxLock is a list of hitboxes that will not hit the fighter again for a given amount of time.
+        # Each entry in the list is in the form of (frames remaining, owner, hitbox ID)
+        self.hitboxLock = []
         
         #initialize the action
         self.current_action = None
@@ -50,10 +55,15 @@ class AbstractFighter():
         if self.grounded: self.accel(self.var['friction'])
         else: self.accel(self.var['airControl'])
         
+        for lock in self.hitboxLock:
+            if lock[0] <= 0:
+                self.hitboxLock.remove(lock)
+            else:
+                lock[0] -= 1
+        
         #Step three, change state and update
         self.current_action.stateTransitions(self)
         self.current_action.update(self) #update our action              
-        self.gameState.active_hitboxes.add(self.current_action.hitboxes)
         
         # Gravity
         self.calc_grav()
@@ -240,7 +250,15 @@ class AbstractFighter():
         
     def changeSpriteImage(self,frame):
         self.sprite.getImageAtIndex(frame)
-
+    
+    # This will "lock" the hitbox so that another hitbox with the same ID from the same fighter won't hit again.
+    # Returns true if it was successful, false if it already exists in the lock.
+    def lockHitbox(self,hbox,time):
+        for lock in self.hitboxLock:
+            if lock[1] == hbox.owner and lock[2] == hbox.hitbox_id:
+                return False
+        self.hitboxLock.append([time,hbox.owner,hbox.hitbox_id])
+        return True
     
 ########################################################
 #                 ENGINE FUNCTIONS                     #

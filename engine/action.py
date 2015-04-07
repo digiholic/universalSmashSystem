@@ -8,7 +8,6 @@ class Action():
         self.frame = startingFrame
         self.lastFrame = length
         self.actor = None
-        self.hitboxes = pygame.sprite.Group()
         self.var = {}
         
     

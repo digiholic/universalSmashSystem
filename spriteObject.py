@@ -104,6 +104,7 @@ class SheetSprite(ImageSprite):
         self.image = self.sheet.subsurface(self.sheet.get_clip())
         self.image = self.image.convert_alpha()
         #self.color_surface(self.image, 0, 255, 255)
+        #self.recolor([0,0,0], [0,0,255])
         
         if self.flip: self.image = pygame.transform.flip(self.image,True,False)
         self.rect = self.image.get_rect(center=self.rect.center)
@@ -115,9 +116,9 @@ class SheetSprite(ImageSprite):
         arr[:,:,2] = blue
         
     def recolor(self,fromColor,toColor):
-        arr = pygame.surfarray.pixels2d(self.image)
-        def funct(x): return (toColor if x == fromColor else x)
-        map(funct,arr)
+        arr = pygame.PixelArray(self.image)
+        arr.replace(fromColor,toColor)
+        del arr
                             
 class RectSprite(Sprite):
     def __init__(self,topleft,size,color=[0,0,0]):
