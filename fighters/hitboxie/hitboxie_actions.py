@@ -52,8 +52,14 @@ class DownAttack(action.Action):
         actor.change_x = 0
         actor.preferred_xsped = 0
         actor.changeSprite("hitboxie_dsmash",0)
-        #self.dsmashHitbox = self.outwardHitbox(actor)
-        #self.dsmashSweetspot
+        self.dsmashHitbox1 = hitbox.DamageHitbox([34,26],[24,52],actor,
+                 12,10,1.2,20)
+        self.dsmashHitbox2 = hitbox.DamageHitbox([-34,26],[24,52],actor,
+                 12,10,1.2,160)
+    
+    def tearDown(self,actor,other):
+        self.dsmashHitbox1.kill()
+        self.dsmashHitbox2.kill()
         
     def update(self,actor):
         if self.frame == 0:
@@ -72,6 +78,8 @@ class DownAttack(action.Action):
             actor.changeSpriteImage(6)
         elif self.frame == 15:
             actor.changeSpriteImage(7)
+            self.hitboxes.add(self.dsmashHitbox1)
+            self.hitboxes.add(self.dsmashHitbox2)
             #create hitbox
         elif self.frame == 17:
             actor.changeSpriteImage(8)
@@ -92,13 +100,13 @@ class DownAttack(action.Action):
             actor.doIdle()
         self.frame += 1
         
-            
+                    
 class ForwardAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 42)
     
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,15,5,1.0,40)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,15,5,1.5,40)
             
     def update(self,actor):
         if self.frame == 0:
@@ -143,20 +151,36 @@ class NeutralAir(action.Action):
         actor.preferred_xsped = 0
         actor.changeSprite("hitboxie_nair",0)
         self.subImage = 0
-        #self.dsmashHitbox = self.outwardHitbox(actor)
+        self.nairHitbox = hitbox.DamageHitbox([0,0],[72,72],actor,10,10,1.0,60)
         #self.dsmashSweetspot
-        
+    
+    def stateTransitions(self, actor):
+        if actor.bufferContains(actor.keyBindings.k_down):
+            if actor.change_y >= 0:
+                actor.change_y = actor.var['maxFallSpeed']
+        baseActions.airControl(actor)
+    
+    def tearDown(self,actor,other):
+        self.nairHitbox.kill()
+    
     def update(self,actor):
+        actor.landingLag = 28
         if self.frame % 2 == 0:
             actor.changeSpriteImage(self.subImage % 7)
         self.subImage += 1
-            
-        
-        actor.checkForGround()
-        if actor.grounded:
-            actor.landingLag = 28
-            actor.doLand()
+        if self.frame == 2:
+            self.hitboxes.add(self.nairHitbox)
+        if self.frame > 2:
+            self.nairHitbox.rect.center = actor.rect.center
+        if self.frame == 6:
+            self.nairHitbox.damage = 8
+            self.nairHitbox.baseKnockback = 9
+        elif self.frame == 18:
+            self.nairHitbox.damage = 4
+            self.nairHitbox.baseKnockback = 7
         if self.frame == self.lastFrame:
+            self.nairHitbox.kill()
+            actor.landingLag = 14
             actor.changeAction(Fall())
         self.frame += 1
 ########################################################

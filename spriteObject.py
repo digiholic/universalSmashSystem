@@ -100,11 +100,25 @@ class SheetSprite(ImageSprite):
         self.sheet = pygame.image.load(os.path.join(self.imagePrefix, self.imageText + ".png"))
         self.sheet.set_clip(pygame.Rect(self.index * self.offset, 0, self.offset,self.sheet.get_height()))
         
+        #self.image = self.sheet.subsurface(self.sheet.get_clip())
         self.image = self.sheet.subsurface(self.sheet.get_clip())
+        self.image = self.image.convert_alpha()
+        #self.color_surface(self.image, 0, 255, 255)
         
         if self.flip: self.image = pygame.transform.flip(self.image,True,False)
         self.rect = self.image.get_rect(center=self.rect.center)
         
+    def color_surface(self,surface, red, green, blue):
+        arr = pygame.surfarray.pixels3d(surface)
+        arr[:,:,0] = red
+        arr[:,:,1] = green
+        arr[:,:,2] = blue
+        
+    def recolor(self,fromColor,toColor):
+        arr = pygame.surfarray.pixels2d(self.image)
+        def funct(x): return (toColor if x == fromColor else x)
+        map(funct,arr)
+                            
 class RectSprite(Sprite):
     def __init__(self,topleft,size,color=[0,0,0]):
         Sprite.__init__(self,topleft)

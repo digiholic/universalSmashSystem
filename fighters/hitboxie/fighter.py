@@ -76,9 +76,16 @@ class Fighter(abstractFighter.AbstractFighter):
             self.changeAction(self.actions.NeutralAttack())   
     
     def doAirAttack(self):
-        if not (self.keysContain(self.keyBindings.k_left) or self.keysContain(self.keyBindings.k_right) 
-                or self.keysContain(self.keyBindings.k_up) or self.keysContain(self.keyBindings.k_down)):
-            self.changeAction(self.actions.NeutralAir())
+        (forward, backward) = self.getForwardBackwardKeys()
+        if (self.keysContain(forward)):
+            pass
+        elif (self.keysContain(backward)):
+            pass
+        elif(self.keysContain(self.keyBindings.k_up)):
+            pass
+        elif (self.keysContain(self.keyBindings.k_down)):
+            pass
+        else: self.changeAction(self.actions.NeutralAir())
             
 ########################################################
 #                  STATE CHANGERS                      #

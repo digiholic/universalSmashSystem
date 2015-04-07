@@ -285,9 +285,9 @@ class AbstractFighter():
     def draw(self,screen,offset,scale):
         #spriteObject.RectSprite(self.rect.topleft, self.rect.size).draw(screen)
         self.sprite.draw(screen,offset,scale)
-        for hbox in self.current_action.hitboxes:
-            offset = self.gameState.stageToScreen(hbox.rect)
-            hbox.draw(screen,offset,scale)
+        #for hbox in self.current_action.hitboxes:
+            #offset = self.gameState.stageToScreen(hbox.rect)
+            #hbox.draw(screen,offset,scale)
         
     #Gets the proper direction, adjusted for facing
     def getForwardWithOffset(self,offSet = 0):

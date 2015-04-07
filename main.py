@@ -73,7 +73,8 @@ def main(debug = False):
             for hbox in hitbox_collisions:
                 if hbox.owner != obj:
                     hbox.onCollision(obj)
-        
+            for hbox in current_stage.active_hitboxes:
+                hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
               
         clock.tick(60)    
         pygame.display.flip()
