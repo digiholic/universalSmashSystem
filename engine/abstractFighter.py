@@ -201,11 +201,23 @@ class AbstractFighter():
         
     def dealDamage(self, damage):
         self.damage += damage
+        if self.damage >= 999:
+            self.damage = 999
     
-    def applyKnockback(self, kb, kbg, trajectory):
+    def applyKnockback(self, damage, kb, kbg, trajectory):
         self.change_x = 0
         self.change_y = 0
-        totalKB = (kb + kbg*self.damage) / self.var['weight']
+        self.dealDamage(damage)
+        
+        p = float(self.damage)
+        d = float(damage)
+        w = float(self.var['weight'])
+        s = float(kbg)
+        b = float(kb)
+        
+        # Thank you, ssbwiki!
+        totalKB = (((((p/10) + (p*d)/20) * (200/(w+100))*1.4) + 5) * s) + b
+        
         #Directional Incluence
         if (trajectory < 45 or trajectory > 315) or (trajectory < 225 and trajectory > 135):
             if self.keysContain(self.keyBindings.k_up):
@@ -331,7 +343,6 @@ def getDirectionBetweenPoints(p1, p2):
     (x2, y2) = p2
     dx = x2 - x1
     dy = y1 - y2
-    print dy, "-", dx
     return (180 * math.atan2(dy, dx)) / math.pi 
     
 

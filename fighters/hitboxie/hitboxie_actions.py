@@ -19,7 +19,7 @@ class NeutralAttack(action.Action):
     # Since this hitbox if specifically for this attack, we can hard code in the values.
     class outwardHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
-            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 2, 8, 0.6, 0, 60, 0)
+            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 2, 8, 0.2, 0, 20, 0)
             
         def onCollision(self,other):
             self.trajectory = abstractFighter.getDirectionBetweenPoints(self.owner.rect.midbottom, other.rect.center)
@@ -49,9 +49,9 @@ class DownAttack(action.Action):
         actor.preferred_xsped = 0
         actor.changeSprite("hitboxie_dsmash",0)
         self.dsmashHitbox1 = hitbox.DamageHitbox([34,26],[24,52],actor,
-                 12,10,1.2,20,60,1)
+                 12,8,0.75,20,60,1)
         self.dsmashHitbox2 = hitbox.DamageHitbox([-34,26],[24,52],actor,
-                 12,10,1.2,160,60,1)
+                 12,8,0.75,160,60,1)
     
     def tearDown(self,actor,other):
         self.dsmashHitbox1.kill()
@@ -102,7 +102,7 @@ class ForwardAttack(action.Action):
         action.Action.__init__(self, 42)
     
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,15,5,1.5,40,60,0)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,12,1,1.0,40,60,0)
             
     def update(self,actor):
         if self.frame == 0:
@@ -147,7 +147,7 @@ class NeutralAir(action.Action):
         actor.preferred_xsped = 0
         actor.changeSprite("hitboxie_nair",0)
         self.subImage = 0
-        self.nairHitbox = hitbox.DamageHitbox([0,0],[72,72],actor,10,10,1.0,60,60,0)
+        self.nairHitbox = hitbox.DamageHitbox([0,0],[72,72],actor,10,4,0.6,60,60,0)
         #self.dsmashSweetspot
     
     def stateTransitions(self, actor):
@@ -170,10 +170,10 @@ class NeutralAir(action.Action):
             self.nairHitbox.rect.center = actor.rect.center
         if self.frame == 6:
             self.nairHitbox.damage = 8
-            self.nairHitbox.baseKnockback = 9
+            self.nairHitbox.baseKnockback = 5
         elif self.frame == 18:
             self.nairHitbox.damage = 4
-            self.nairHitbox.baseKnockback = 7
+            self.nairHitbox.baseKnockback = 2
         if self.frame == self.lastFrame:
             self.nairHitbox.kill()
             actor.landingLag = 14
@@ -256,7 +256,6 @@ class Pivot(baseActions.Pivot):
         
     def tearDown(self,actor,newAction):
         if isinstance(newAction, Move):
-            print 'pivot'
             newAction.accel = False
         
 class NeutralAction(baseActions.NeutralAction):

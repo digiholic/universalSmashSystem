@@ -5,7 +5,7 @@ import main
 class Fighter(abstractFighter.AbstractFighter):
     def __init__(self,playerNum):
         var = {
-                'weight': 1.0,
+                'weight': 100,
                 'gravity': .5,
                 'maxFallSpeed': 20,
                 'maxGroundSpeed': 6,

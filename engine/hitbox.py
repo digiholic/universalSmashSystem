@@ -6,7 +6,6 @@ class Hitbox(spriteObject.RectSprite):
         self.center = center
         if owner.facing == -1:
             self.center[0] = -self.center[0]
-        print self.center, owner.rect.center
         spriteObject.RectSprite.__init__(self,[0,0],size,[255,0,0])
         self.rect.center = [owner.rect.center[0] + self.center[0], owner.rect.center[1] + self.center[1]]
         self.owner = owner
@@ -36,9 +35,7 @@ class DamageHitbox(Hitbox):
         
     def onCollision(self,other):
         if other.lockHitbox(self,self.hitstun):
-            other.dealDamage(self.damage)
-        
-            other.applyKnockback(self.baseKnockback, self.knockbackGrowth, self.trajectory)
+            other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory)
             print other.damage
         
     def update(self):

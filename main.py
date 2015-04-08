@@ -55,8 +55,7 @@ def main(debug = False):
                 if event.key == pygame.K_ESCAPE:
                     return
                 elif event.key == pygame.K_k:
-                    sandbag.applyKnockback(10, 0.5, 35)
-                    sandbag.dealDamage(10)
+                    sandbag.dealDamage(999)
                 for fight in currentFighters:
                     fight.keyReleased(event.key)
                                
