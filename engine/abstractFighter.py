@@ -2,6 +2,7 @@ import pygame
 import engine.baseActions as baseActions
 import math
 import settingsManager
+import spriteObject
 
 class AbstractFighter():
     
@@ -16,6 +17,7 @@ class AbstractFighter():
         #Initialize engine variables
         self.keyBindings = Keybindings(settingsManager.getSetting('controls_' + str(playerNum)))
         self.sprite = sprite
+        self.mask = None
         self.currentKeys = []
         self.inputBuffer = InputBuffer()
         self.keysHeld = []
@@ -65,6 +67,7 @@ class AbstractFighter():
         self.current_action.stateTransitions(self)
         self.current_action.update(self) #update our action              
         
+        if self.mask: self.mask = self.mask.update()
         # Gravity
         self.calc_grav()
         self.checkForGround()
@@ -315,6 +318,7 @@ class AbstractFighter():
     def draw(self,screen,offset,scale):
         #spriteObject.RectSprite(self.rect.topleft, self.rect.size).draw(screen)
         self.sprite.draw(screen,offset,scale)
+        if self.mask: self.mask.draw(screen,offset,scale)
         #for hbox in self.current_action.hitboxes:
             #offset = self.gameState.stageToScreen(hbox.rect)
             #hbox.draw(screen,offset,scale)
@@ -325,6 +329,9 @@ class AbstractFighter():
             return offSet
         else:
             return 180 - offSet
+        
+    def createMask(self,color,duration,pulse = False,pulseSize = 16):
+        self.mask = spriteObject.MaskSprite(self.sprite,color,duration,pulse, pulseSize)
     
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #

@@ -110,6 +110,7 @@ class ForwardAttack(action.Action):
             actor.preferred_xspeed = 0
             actor.changeSprite("hitboxie_fsmash",0)
         elif self.frame == 3:
+            actor.createMask([255,255,0],15,True,32)
             actor.changeSpriteImage(1)
         elif self.frame == 6:
             actor.changeSpriteImage(2)

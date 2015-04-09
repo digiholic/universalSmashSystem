@@ -1,5 +1,6 @@
 import pygame
 import os
+from _ctypes import Array
 
 class Sprite(pygame.sprite.Sprite):
     #Create with image
@@ -103,23 +104,76 @@ class SheetSprite(ImageSprite):
         #self.image = self.sheet.subsurface(self.sheet.get_clip())
         self.image = self.sheet.subsurface(self.sheet.get_clip())
         self.image = self.image.convert_alpha()
-        #self.color_surface(self.image, 0, 255, 255)
+        #self.color_surface([0, 255, 255])
         #self.recolor([0,0,0], [0,0,255])
         
         if self.flip: self.image = pygame.transform.flip(self.image,True,False)
         self.rect = self.image.get_rect(center=self.rect.center)
         
-    def color_surface(self,surface, red, green, blue):
-        arr = pygame.surfarray.pixels3d(surface)
-        arr[:,:,0] = red
-        arr[:,:,1] = green
-        arr[:,:,2] = blue
+    def color_surface(self,color):
+        arr = pygame.surfarray.pixels3d(self.image)
+        arr[:,:,0] = color[0]
+        arr[:,:,1] = color[1]
+        arr[:,:,2] = color[2]
         
     def recolor(self,fromColor,toColor):
         arr = pygame.PixelArray(self.image)
         arr.replace(fromColor,toColor)
         del arr
-                            
+
+class MaskSprite(ImageSprite):
+    def __init__(self, parentSprite,color,duration,pulse = False,pulseSize = 16):
+        self.parentSprite = parentSprite
+        self.duration = duration
+        self.pulse = pulse
+        self.pulseSize = pulseSize
+        self.color = color
+        if self.pulse: self.alpha = 200
+        else: self.alpha = 128
+        self.visible = True
+        
+        
+        self.image = self.parentSprite.image.copy()
+        self.color_surface(self.color)
+        
+        
+    def color_surface(self,color):
+        arr = pygame.surfarray.pixels3d(self.image)
+        arr[:,:,0] = color[0]
+        arr[:,:,1] = color[1]
+        arr[:,:,2] = color[2]
+        del arr
+        
+        arr = pygame.surfarray.pixels_alpha(self.image)
+        arr[arr>self.alpha] = self.alpha
+        del arr
+        
+    
+    def update(self):
+        if self.duration > 0:
+            if self.pulse:
+                self.alpha -= self.pulseSize
+                if self.alpha > 200:
+                    self.alpha = 200
+                    self.pulseSize = -self.pulseSize
+                elif self.alpha < 0:
+                    self.alpha = 0
+                    self.pulseSize = -self.pulseSize
+                    
+            
+            self.duration -= 1
+            self.image = self.parentSprite.image.copy()
+            self.color_surface(self.color)
+            
+            self.rect = self.parentSprite.rect
+            
+            return self
+        else:
+            return None
+    
+    def draw(self, screen, offset, scale):
+        Sprite.draw(self, screen, offset, scale)
+           
 class RectSprite(Sprite):
     def __init__(self,topleft,size,color=[0,0,0]):
         Sprite.__init__(self,topleft)
@@ -135,6 +189,7 @@ class RectSprite(Sprite):
         self.rect.topleft = self.topleft    
         
         self.image.set_alpha(128)
+        
 class TextSprite(Sprite):
     def __init__(self,topleft,text,font = None,color=[255,255,255],background=None):
         Sprite.__init__(self,topleft)
