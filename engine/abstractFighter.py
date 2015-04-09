@@ -146,12 +146,14 @@ class AbstractFighter():
 ########################################################
 #                  ACTION SETTERS                      #
 ########################################################
-# These functions are meant to be overridden. They are
-# provided so the baseActions can change the AbstractFighter's
-# actions. If you've changed any of the base actions
-# for the fighter (including adding a sprite change)
-# override the corresponding method and have it set
-# an instance of your overridden action.
+    """
+    These functions are meant to be overridden. They are
+    provided so the baseActions can change the AbstractFighter's
+    actions. If you've changed any of the base actions
+    for the fighter (including adding a sprite change)
+    override the corresponding method and have it set
+    an instance of your overridden action.
+    """
 
     def changeAction(self,newAction):
         newAction.setUp(self)
@@ -186,17 +188,26 @@ class AbstractFighter():
     def doAirAttack(self):
         return None
    
-   
+    def doShield(self):
+        self.changeAction(baseActions.Shield())
+        
+    def doForwardRoll(self):
+        self.changeAction(baseActions.ForwardRoll())
+    
+    def doBackwardRoll(self):
+        self.changeAction(baseActions.BackwardRoll())
 ########################################################
 #                  STATE CHANGERS                      #
 ########################################################
-# These involve the game engine. They will likely be
-# sufficient for your character implementation, although
-# in a heavily modified game engine, these might no
-# longer be relevant. Override only if you're changing
-# the core functionality of the fighter system. Extend
-# as you see fit, if you need to tweak sprites or
-# set flags.
+    """
+    These involve the game engine. They will likely be
+    sufficient for your character implementation, although
+    in a heavily modified game engine, these might no
+    longer be relevant. Override only if you're changing
+    the core functionality of the fighter system. Extend
+    as you see fit, if you need to tweak sprites or
+    set flags.
+    """
     
     def flip(self):
         self.facing = -self.facing
@@ -278,12 +289,14 @@ class AbstractFighter():
 ########################################################
 #                 ENGINE FUNCTIONS                     #
 ########################################################
-# These functions are not meant to be overridden, and
-# likely won't need to be extended. Most of these are
-# input/output related, and shouldn't be trifled with.
-# Many of them reference outside variables, so 
-# functionality can be changed by tweaking those values.
-# Edit at your own risk.
+    """
+    These functions are not meant to be overridden, and
+    likely won't need to be extended. Most of these are
+    input/output related, and shouldn't be trifled with.
+    Many of them reference outside variables, so 
+    functionality can be changed by tweaking those values.
+    Edit at your own risk.
+    """
 
     def keyPressed(self,key):
         self.inputBuffer.append((key,True))

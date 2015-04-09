@@ -169,6 +169,27 @@ class Land(action.Action):
         actor.preferred_xspeed = 0
         self.frame+= 1
 
+class Shield(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 5)
+        self.shieldFrame = 4
+        
+    def update(self, actor):
+        if self.frame == self.shieldFrame:
+            if actor.keysContain(actor.keyBindings.k_shield):
+                actor.shieldDamage(1)
+            else:
+                self.frame += 1
+        elif self.frame == self.lastFrame:
+            actor.doIdle()
+        else: self.frame += 1
+        
+class ForwardRoll(action.Action):
+    pass
+
+class BackwardRoll(action.Action):
+    pass
+        
 ########################################################
 #               TRANSITION STATES                     #
 ########################################################
@@ -204,6 +225,17 @@ def moveState(actor, direction):
         print "attacking"
         actor.doGroundAttack()
             
+def shieldState(actor):
+    (key,invkey) = actor.getForwardBackwardKeys()
+    if actor.bufferContains(actor.keyBinding.k_jump):
+        actor.doJump()
+    elif actor.bufferContains(actor.keyBinding.k_attack):
+        pass
+        #grab
+    elif actor.bufferContains(key):
+        actor.doForwardRoll()
+    elif actor.bufferContains(invkey):
+        actor.doBackwardRoll()
 
 ########################################################
 #             BEGIN HELPER METHODS                     #
