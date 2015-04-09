@@ -173,6 +173,9 @@ class Shield(action.Action):
     def __init__(self):
         action.Action.__init__(self, 5)
         self.shieldFrame = 4
+    
+    def stateTransitions(self, actor):
+        shieldState(actor)
         
     def update(self, actor):
         if self.frame == self.shieldFrame:
@@ -185,10 +188,98 @@ class Shield(action.Action):
         else: self.frame += 1
         
 class ForwardRoll(action.Action):
-    pass
-
+    def __init__(self):
+        action.Action.__init__(self, 46)
+        self.startInvulnFrame = 6
+        self.endInvulnFrame = 34
+        
+    def update(self, actor):
+        if self.frame == 1:
+            actor.change_x = actor.facing * 10
+        elif self.frame == self.startInvulnFrame:
+            actor.createMask([255,255,255], 22, True, 24)
+            #actor.invulnerable
+        elif self.frame == self.endInvulnFrame:
+            actor.flip()
+            actor.change_x = 0
+            #actor.vulnerable
+        elif self.frame == self.lastFrame:
+            if actor.keysContain(actor.keyBindings.k_shield):
+                actor.doShield()
+            else:
+                actor.doIdle()
+        self.frame += 1
+        
 class BackwardRoll(action.Action):
-    pass
+    def __init__(self):
+        action.Action.__init__(self, 50)
+        self.startInvulnFrame = 6
+        self.endInvulnFrame = 34
+        
+    def update(self, actor):
+        if self.frame == 1:
+            actor.change_x = actor.facing * -10
+        elif self.frame == self.startInvulnFrame:
+            actor.createMask([255,255,255], 22, True, 24)
+            #actor.invulnerable
+        elif self.frame == self.endInvulnFrame:
+            actor.change_x = 0
+            #actor.vulnerable
+        elif self.frame == self.lastFrame:
+            if actor.keysContain(actor.keyBindings.k_shield):
+                actor.doShield()
+            else:
+                actor.doIdle()
+        self.frame += 1
+        
+class SpotDodge(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 24)
+        self.startInvulnFrame = 4
+        self.endInvulnFrame = 20
+        
+    def update(self,actor):
+        if self.frame == 1:
+            actor.change_x = 0
+        elif self.frame == self.startInvulnFrame:
+            actor.createMask([255,255,255],16,True,24)
+            #actor.invulnerable
+        elif self.frame == self.endInvulnFrame:
+            pass
+            #actor.vulnerable
+        elif self.frame == self.lastFrame:
+            if actor.keysContain(actor.keyBindings.k_shield):
+                actor.doShield()
+            else:
+                actor.doIdle()
+        self.frame += 1
+        
+class AirDodge(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 24)
+        self.startInvulnFrame = 4
+        self.endInvulnFrame = 20
+    
+    def setUp(self,actor):
+        actor.landingLag = 24
+        
+    def tearDown(self,actor,other):
+        if actor.mask: actor.mask = None
+        #remove invuln
+    
+    def stateTransitions(self, actor):
+        airControl(actor)
+            
+    def update(self,actor):
+        if self.frame == self.startInvulnFrame:
+            actor.createMask([255,255,255],16,True,24)
+            #actor.invulnerable
+        elif self.frame == self.endInvulnFrame:
+            pass
+            #actor.vulnerable
+        elif self.frame == self.lastFrame:
+            actor.doFall()
+        self.frame += 1
         
 ########################################################
 #               TRANSITION STATES                     #
@@ -202,6 +293,8 @@ def neutralState(actor):
         actor.doGroundMove(180)
     elif actor.bufferContains(actor.keyBindings.k_right,8):
         actor.doGroundMove(0)
+    elif actor.bufferContains(actor.keyBindings.k_shield,8):
+        actor.doShield()
     
 
 def airState(actor):
@@ -214,6 +307,8 @@ def airState(actor):
             actor.landingLag = 14
     if actor.bufferContains(actor.keyBindings.k_attack):
         actor.doAirAttack()
+    if actor.bufferContains(actor.keyBindings.k_shield):
+        actor.doAirDodge()
             
 def moveState(actor, direction):
     if actor.bufferContains(actor.keyBindings.k_jump):
@@ -227,16 +322,17 @@ def moveState(actor, direction):
             
 def shieldState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
-    if actor.bufferContains(actor.keyBinding.k_jump):
+    if actor.bufferContains(actor.keyBindings.k_jump):
         actor.doJump()
-    elif actor.bufferContains(actor.keyBinding.k_attack):
+    elif actor.bufferContains(actor.keyBindings.k_attack):
         pass
         #grab
     elif actor.bufferContains(key):
         actor.doForwardRoll()
     elif actor.bufferContains(invkey):
         actor.doBackwardRoll()
-
+    elif actor.bufferContains(actor.keyBindings.k_down):
+        actor.doSpotDodge()
 ########################################################
 #             BEGIN HELPER METHODS                     #
 ########################################################

@@ -22,6 +22,7 @@ class AbstractFighter():
         self.inputBuffer = InputBuffer()
         self.keysHeld = []
         self.active_hitboxes = pygame.sprite.Group()
+        self.shieldIntegrity = 100
         
         # HitboxLock is a list of hitboxes that will not hit the fighter again for a given amount of time.
         # Each entry in the list is in the form of (frames remaining, owner, hitbox ID)
@@ -65,7 +66,7 @@ class AbstractFighter():
         
         #Step three, change state and update
         self.current_action.stateTransitions(self)
-        self.current_action.update(self) #update our action              
+        self.current_action.update(self) #update our action             
         
         if self.mask: self.mask = self.mask.update()
         # Gravity
@@ -176,6 +177,9 @@ class AbstractFighter():
     def doLand(self):
         self.current_action = baseActions.Land()
     
+    def doFall(self):
+        self.changeAction(baseActions.Fall())
+        
     def doGroundJump(self):
         self.current_action = baseActions.Jump()
     
@@ -196,6 +200,13 @@ class AbstractFighter():
     
     def doBackwardRoll(self):
         self.changeAction(baseActions.BackwardRoll())
+        
+    def doSpotDodge(self):
+        self.changeAction(baseActions.SpotDodge())
+        
+    def doAirDodge(self):
+        self.changeAction(baseActions.AirDodge())
+        
 ########################################################
 #                  STATE CHANGERS                      #
 ########################################################
@@ -285,6 +296,9 @@ class AbstractFighter():
                 return False
         self.hitboxLock.append([time,hbox.owner,hbox.hitbox_id])
         return True
+    
+    def shieldDamage(self,damage):
+        self.shieldIntegrity -= 1
     
 ########################################################
 #                 ENGINE FUNCTIONS                     #

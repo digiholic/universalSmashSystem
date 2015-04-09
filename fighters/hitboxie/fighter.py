@@ -33,7 +33,10 @@ class Fighter(abstractFighter.AbstractFighter):
     
     def doIdle(self):
         self.changeAction(self.actions.NeutralAction())
-            
+    
+    def doFall(self):
+        self.changeAction(self.actions.Fall())
+                
     def doLand(self):
         self.changeAction(self.actions.Land())
         
@@ -60,6 +63,22 @@ class Fighter(abstractFighter.AbstractFighter):
         else:
             if self.jumps > 0:
                 self.changeAction(self.actions.AirJump())
+                
+    def doShield(self):
+        self.changeAction(self.actions.Shield())
+        
+    def doForwardRoll(self):
+        self.changeAction(self.actions.ForwardRoll())
+    
+    def doBackwardRoll(self):
+        self.changeAction(self.actions.BackwardRoll())
+        
+    def doSpotDodge(self):
+        self.changeAction(self.actions.SpotDodge())
+        
+    def doAirDodge(self):
+        self.changeAction(self.actions.AirDodge())
+     
     
     def doGroundAttack(self):
         (key, invkey) = self.getForwardBackwardKeys()

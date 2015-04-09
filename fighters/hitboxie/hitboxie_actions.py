@@ -357,9 +357,67 @@ class Land(baseActions.Land):
                     actor.changeSpriteImage(self.frame / 3)
         
         baseActions.Land.update(self, actor)
-            
         
+class Shield(baseActions.Shield):
+    def __init__(self):
+        baseActions.Shield.__init__(self)
+    
+    def update(self,actor):
+        if self.frame == 0:
+            actor.changeSprite("hitboxie_jump")
+        baseActions.Shield.update(self, actor)
         
+class ForwardRoll(baseActions.ForwardRoll):
+    def __init__(self):
+        baseActions.ForwardRoll.__init__(self)
+        
+    def update(self,actor):
+        if self.frame == 0:
+            actor.changeSprite("hitboxie_land",1)
+        elif self.frame == self.endInvulnFrame:
+            actor.changeSprite("hitboxie_land",0)
+        baseActions.ForwardRoll.update(self, actor)
+        
+class BackwardRoll(baseActions.BackwardRoll):
+    def __init__(self):
+        baseActions.BackwardRoll.__init__(self)
+        
+    def update(self,actor):
+        if self.frame == 0:
+            actor.changeSprite("hitboxie_land",1)
+        elif self.frame == self.endInvulnFrame:
+            actor.changeSprite("hitboxie_land",0)
+        baseActions.BackwardRoll.update(self, actor)
+        
+class SpotDodge(baseActions.SpotDodge):
+    def __init__(self):
+        baseActions.SpotDodge.__init__(self)
+        
+    def update(self,actor):
+        if self.frame == 0:
+            actor.changeSprite("hitboxie_land",0)
+        if self.frame < 4:
+            actor.changeSpriteImage(self.frame)
+        elif self.frame == 21:
+            actor.changeSpriteImage(2)
+        elif self.frame == 22:
+            actor.changeSpriteImage(1)
+        elif self.frame == 23:
+            actor.changeSpriteImage(0)
+        baseActions.SpotDodge.update(self, actor)
+        
+class AirDodge(baseActions.AirDodge):
+    def __init__(self):
+        baseActions.AirDodge.__init__(self)
+        
+    def update(self,actor):
+        if self.frame == 0:
+            actor.changeSprite("hitboxie_nair",0)
+        elif self.frame == self.startInvulnFrame:
+            actor.changeSpriteImage(1)
+        elif self.frame == self.endInvulnFrame:
+            actor.changeSpriteImage(0)
+        baseActions.AirDodge.update(self, actor)
 ########################################################
 #             BEGIN HELPER METHODS                     #
 ########################################################
