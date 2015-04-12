@@ -176,16 +176,38 @@ class Shield(action.Action):
     
     def stateTransitions(self, actor):
         shieldState(actor)
+    
+    def tearDown(self, actor, newAction):
+        actor.shield = False
         
     def update(self, actor):
         if self.frame == self.shieldFrame:
+            actor.shield = True
+            actor.startShield()
             if actor.keysContain(actor.keyBindings.k_shield):
                 actor.shieldDamage(1)
             else:
                 self.frame += 1
         elif self.frame == self.lastFrame:
+            actor.shield = False
             actor.doIdle()
         else: self.frame += 1
+
+class ShieldBreak(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 5)
+        
+    def update(self,actor):
+        if self.frame == 0:
+            actor.shield = False
+            actor.change_y = -15
+        elif self.frame == self.lastFrame:
+            if actor.shieldIntegrity == 100:
+                actor.doIdle()
+            else:
+                actor.shieldIntegrity += .5
+                self.frame -= 1
+        self.frame += 1
         
 class ForwardRoll(action.Action):
     def __init__(self):

@@ -3,6 +3,7 @@ import engine.baseActions as baseActions
 import math
 import settingsManager
 import spriteObject
+import engine.article as article
 
 class AbstractFighter():
     
@@ -22,7 +23,9 @@ class AbstractFighter():
         self.inputBuffer = InputBuffer()
         self.keysHeld = []
         self.active_hitboxes = pygame.sprite.Group()
+        self.shield = False
         self.shieldIntegrity = 100
+        self.articles = pygame.sprite.Group()
         
         # HitboxLock is a list of hitboxes that will not hit the fighter again for a given amount of time.
         # Each entry in the list is in the form of (frames remaining, owner, hitbox ID)
@@ -69,6 +72,12 @@ class AbstractFighter():
         self.current_action.update(self) #update our action             
         
         if self.mask: self.mask = self.mask.update()
+        self.shieldIntegrity += 0.1
+        if self.shieldIntegrity > 100: self.shieldIntegrity = 100
+        
+        for art in self.articles:
+            art.update()
+            
         # Gravity
         self.calc_grav()
         self.checkForGround()
@@ -110,8 +119,10 @@ class AbstractFighter():
         #Update Sprite
         self.sprite.rect = self.rect
     
-    # Change speed to get closer to the preferred speed without going over.
-    # xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['airControl']
+    """
+    Change speed to get closer to the preferred speed without going over.
+    xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['airControl']
+    """
     def accel(self,xFactor):
         if self.change_x > self.preferred_xspeed: #if we're going too fast
             diff = self.change_x - self.preferred_xspeed
@@ -130,8 +141,10 @@ class AbstractFighter():
        
         if self.grounded: self.jumps = self.var['jumps']
     
-    # Check if the fighter is on the ground.
-    # Returns True if fighter is grounded, False if airborne.
+    """
+    Check if the fighter is on the ground.
+    Sets the fighter's Grounded flag.
+    """
     def checkForGround(self):
         #Check if there's a platform below us to update the grounded flag 
         self.rect.y += 2
@@ -194,6 +207,9 @@ class AbstractFighter():
    
     def doShield(self):
         self.changeAction(baseActions.Shield())
+        
+    def doShieldBreak(self):
+        self.changeAction(baseActions.ShieldBreak())
         
     def doForwardRoll(self):
         self.changeAction(baseActions.ForwardRoll())
@@ -297,8 +313,14 @@ class AbstractFighter():
         self.hitboxLock.append([time,hbox.owner,hbox.hitbox_id])
         return True
     
+    def startShield(self):
+        self.articles.add(article.ShieldArticle("shield_bubble",self))
+        
     def shieldDamage(self,damage):
-        self.shieldIntegrity -= 1
+        if self.shieldIntegrity > 0:
+            self.shieldIntegrity -= 1
+        elif self.shieldIntegrity <= 0:
+            self.doShieldBreak()
     
 ########################################################
 #                 ENGINE FUNCTIONS                     #
@@ -343,12 +365,11 @@ class AbstractFighter():
         else: return (self.keyBindings.k_left,self.keyBindings.k_right)
         
     def draw(self,screen,offset,scale):
-        #spriteObject.RectSprite(self.rect.topleft, self.rect.size).draw(screen)
         self.sprite.draw(screen,offset,scale)
         if self.mask: self.mask.draw(screen,offset,scale)
-        #for hbox in self.current_action.hitboxes:
-            #offset = self.gameState.stageToScreen(hbox.rect)
-            #hbox.draw(screen,offset,scale)
+        for art in self.articles:
+            art.draw(screen,offset,scale)
+        
         
     #Gets the proper direction, adjusted for facing
     def getForwardWithOffset(self,offSet = 0):

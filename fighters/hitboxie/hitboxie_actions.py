@@ -2,6 +2,7 @@ import engine.action as action
 import engine.baseActions as baseActions
 import engine.hitbox as hitbox
 import engine.abstractFighter as abstractFighter
+import spriteObject
 
 
 class NeutralAttack(action.Action):

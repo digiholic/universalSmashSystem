@@ -17,7 +17,7 @@ class Fighter(abstractFighter.AbstractFighter):
                 'jumpHeight': 8,
                 'airJumpHeight':10
                 }
-        sprite = spriteObject.SheetSprite("sandbag",[0,0],92,generateAlpha = False,file = __file__)
+        sprite = spriteObject.SheetSprite("sandbag",[0,0],92,generateAlpha = False,filepath = __file__)
         
         abstractFighter.AbstractFighter.__init__(self,
                                  playerNum,

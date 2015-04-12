@@ -16,13 +16,15 @@ class Fighter(abstractFighter.AbstractFighter):
                 'jumpHeight': 12,
                 'airJumpHeight':14
                 }
-        sprite = spriteObject.SheetSprite("hitboxie_idle",[0,0],92,generateAlpha= False,file = __file__)
+        sprite = spriteObject.SheetSprite("hitboxie_idle",[0,0],92,generateAlpha= False,filepath = __file__)
         abstractFighter.AbstractFighter.__init__(self,
                                  playerNum,
                                  sprite, #Start Sprite
                                  "HBoxie", #Name
                                  var)
         
+        self.shieldSprite = spriteObject.ImageSprite("shield-bubble",[0,0],generateAlpha = False, filepath = __file__)
+        self.shieldSprite.rect.center = self.rect.center
         self.actions = main.importFromURI(__file__,'hitboxie_actions.py')
         
         self.current_action = self.actions.NeutralAction()

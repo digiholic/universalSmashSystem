@@ -23,11 +23,11 @@ class Sprite(pygame.sprite.Sprite):
         screen.blit(blitSprite,pygame.Rect(newOff,(w,h)))
         
 class ImageSprite(Sprite):
-    def __init__(self,image,topleft, colorKey = [255,255,255],generateAlpha = True, file = __file__):
+    def __init__(self,image,topleft, colorKey = [255,255,255],generateAlpha = True, filepath = __file__):
         Sprite.__init__(self, topleft)
         
         self.index = 0
-        self.imagePrefix = os.path.join(os.path.dirname(file),"sprites/")
+        self.imagePrefix = os.path.join(os.path.dirname(filepath),"sprites/")
         self.imageText = image
         self.image = pygame.image.load(os.path.join(self.imagePrefix, self.imageText + ".png"))
         self.alpha = generateAlpha
@@ -63,13 +63,13 @@ class ImageSprite(Sprite):
         Sprite.draw(self, screen, offset, scale)
 
 class SheetSprite(ImageSprite):
-    def __init__(self,image,topleft,offset,colorKey = [255,255,255],generateAlpha = True,file = __file__):
+    def __init__(self,image,topleft,offset,colorKey = [255,255,255],generateAlpha = True,filepath = __file__):
         Sprite.__init__(self,topleft)
         
         self.index = 0
         self.offset = offset
         
-        self.imagePrefix = os.path.join(os.path.dirname(file),"sprites/")
+        self.imagePrefix = os.path.join(os.path.dirname(filepath),"sprites/")
         self.imageText = image
         
         self.sheet = pygame.image.load(os.path.join(self.imagePrefix, self.imageText + ".png"))
