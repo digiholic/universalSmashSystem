@@ -43,7 +43,10 @@ class ImageSprite(Sprite):
         except:
             print "Error loading sprite ", newImage, " Loading default"
             self.currentSprite = self.imageLibrary[self.startingImage]
-            
+    
+    def changeSubImage(self,index):
+        self.currentSprite.getImageAtIndex(index)
+        
     def draw(self,screen,offset,scale):
         self.currentSprite.draw(screen,offset,scale)
 
@@ -52,6 +55,7 @@ class SheetSprite(ImageSprite):
         Sprite.__init__(self)
         
         self.index = 0
+        self.maxIndex = sheet.get_width() / offset
         self.offset = offset
         
         self.sheet = sheet
@@ -69,9 +73,9 @@ class SheetSprite(ImageSprite):
     
     def buildSubimageList(self,sheet,offset):
         index = 0
-        maxIndex = sheet.get_width() / offset
+        
         imageList = []
-        while index < maxIndex:
+        while index < self.maxIndex:
             self.sheet.set_clip(pygame.Rect(index * offset, 0, offset,sheet.get_height()))
             image = sheet.subsurface(sheet.get_clip())
             #image = image.convert_alpha()
@@ -80,7 +84,7 @@ class SheetSprite(ImageSprite):
         return imageList
        
     def getImageAtIndex(self,index):
-        self.index = index
+        self.index = index % self.maxIndex
         self.image = self.imageList[self.index]
         
     def draw(self,screen,offset,scale):
@@ -152,9 +156,9 @@ def test():
     pygame.init()
     screen = pygame.display.set_mode([640,480])
     pygame.display.set_caption("USS Sprite Viewer")
-    sprites = ImageSprite("fighters/hitboxie/sprites", "hitboxie_", "idle", 92)
-    
+    sprites = ImageSprite("fighters/hitboxie/sprites", "hitboxie_", "dsmash", 92)
     clock = pygame.time.Clock()
+    index = 0
     
     while 1:
         for event in pygame.event.get():
@@ -163,48 +167,12 @@ def test():
         
         screen.fill([100, 100, 100])
         
-        sprites.draw(screen, [0,0], 1.0)
         
-        clock.tick(60)    
+        sprites.draw(screen, [0,0], 1.0)
+        sprites.changeSubImage(index)
+        index += 1
+        
+        clock.tick(20)    
         pygame.display.flip()
     
-if __name__  == '__main__': test()
-       
-class RectSprite(Sprite):
-    def __init__(self,topleft,size,color=[0,0,0]):
-        Sprite.__init__(self,topleft)
-        
-        self.topleft = topleft
-        self.size = size
-        self.color = color  
-        
-        self.image = pygame.Surface(self.size)
-        self.image.fill(self.color)
-        
-        self.rect = self.image.get_rect()
-        self.rect.topleft = self.topleft    
-        
-        self.image.set_alpha(128)
-        
-class TextSprite(Sprite):
-    def __init__(self,topleft,text,font = None,color=[255,255,255],background=None):
-        Sprite.__init__(self,topleft)
-        
-        if (font is None):
-            self.font = pygame.font.SysFont("monospace", 20)
-        else:
-            self.font = font
-        
-        self.text = text
-        self.color = color
-        self.background = background
-        
-        self.image = self.font.render(text,1,color)
-        
-        self.rect = self.image.get_rect()
-        self.rect.topleft = self.topleft
-    
-    def update(self):
-        self.image = self.font.render(self.text,1,self.color)
-        
-    
+if __name__  == '__main__': test()      
