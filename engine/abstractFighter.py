@@ -54,6 +54,7 @@ class AbstractFighter():
         self.gameState = None
         
     def update(self):
+        print self.sprite, self.sprite.alpha
         #Step one, push the input buffer
         self.inputBuffer.push()
         

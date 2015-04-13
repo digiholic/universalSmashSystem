@@ -11,7 +11,7 @@ class Article():
     
 class ShieldArticle(Article):
     def __init__(self,image,owner):
-        self.sprite = spriteObject.ImageSprite(image,owner.topleft)
+        self.sprite = spriteObject.ImageSprite(image,owner.rect.topleft)
         self.owner = owner
         self.sprite.rect.center = owner.rect.center
     

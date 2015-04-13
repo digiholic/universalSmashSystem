@@ -27,7 +27,7 @@ class ImageSprite(Sprite):
         Sprite.__init__(self, topleft)
         
         self.index = 0
-        self.imagePrefix = os.path.join(os.path.dirname(filepath),"sprites/")
+        self.imagePrefix = os.path.join(os.path.dirname(filepath),"sprites")
         self.imageText = image
         self.image = pygame.image.load(os.path.join(self.imagePrefix, self.imageText + ".png"))
         self.alpha = generateAlpha
