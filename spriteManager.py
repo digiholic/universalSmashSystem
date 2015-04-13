@@ -13,7 +13,8 @@ class Sprite(pygame.sprite.Sprite):
         screen.blit(blitSprite,pygame.Rect(newOff,(w,h)))
         
 class ImageSprite(Sprite):
-    def __init__(self,directory,prefix,startingImage,offset):
+    def __init__(self,directory,prefix,startingImage,offset,colorMap = {}):
+        self.colorMap = colorMap
         self.imageLibrary = self.buildImageLibrary(ImageLibrary(directory,prefix), offset)
         self.currentSprite = self.imageLibrary[startingImage]
         
@@ -25,7 +26,7 @@ class ImageSprite(Sprite):
     def buildImageLibrary(self,lib,offset):
         library = {}
         for key,value in lib.imageDict.iteritems():
-            library[key] = SheetSprite(value,offset)
+            library[key] = SheetSprite(value,offset,self.colorMap)
         return library
     
     def getImageAtIndex(self,index):
@@ -51,9 +52,10 @@ class ImageSprite(Sprite):
         self.currentSprite.draw(screen,offset,scale)
 
 class SheetSprite(ImageSprite):
-    def __init__(self,sheet,offset=0):
+    def __init__(self,sheet,offset=0,colorMap = {}):
         Sprite.__init__(self)
         
+        self.colorMap = colorMap
         self.index = 0
         self.maxIndex = sheet.get_width() / offset
         self.offset = offset
@@ -64,7 +66,7 @@ class SheetSprite(ImageSprite):
             self.imageList = self.buildSubimageList(sheet,offset)
         else:
             self.imageList = [sheet]
-        
+            
         self.flip = False
         self.angle = 0
         
@@ -79,10 +81,18 @@ class SheetSprite(ImageSprite):
             self.sheet.set_clip(pygame.Rect(index * offset, 0, offset,sheet.get_height()))
             image = sheet.subsurface(sheet.get_clip())
             #image = image.convert_alpha()
+            for fromColor,toColor in self.colorMap.iteritems():
+                self.recolor(image, list(fromColor), list(toColor))
             imageList.append(image)
             index += 1
         return imageList
-       
+    
+    def recolor(self,image,fromColor,toColor):
+        
+        arr = pygame.PixelArray(image)
+        arr.replace(fromColor,toColor)
+        del arr  
+        
     def getImageAtIndex(self,index):
         self.index = index % self.maxIndex
         self.image = self.imageList[self.index]
@@ -156,7 +166,9 @@ def test():
     pygame.init()
     screen = pygame.display.set_mode([640,480])
     pygame.display.set_caption("USS Sprite Viewer")
-    sprites = ImageSprite("fighters/hitboxie/sprites", "hitboxie_", "dsmash", 92)
+    sprites = ImageSprite("fighters/hitboxie/sprites", "hitboxie_", "dsmash", 92, {(0,0,0)       : (0,0,255),
+                                                                                   (128,128,128) : (0,0,128),
+                                                                                   (166,166,166) : (0,0,200)})
     clock = pygame.time.Clock()
     index = 0
     
