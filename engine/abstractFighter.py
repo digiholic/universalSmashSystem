@@ -54,7 +54,6 @@ class AbstractFighter():
         self.gameState = None
         
     def update(self):
-        print self.sprite, self.sprite.alpha
         #Step one, push the input buffer
         self.inputBuffer.push()
         
@@ -96,7 +95,7 @@ class AbstractFighter():
                 # Otherwise if we are moving left, do the opposite.
                 self.rect.left = block.rect.right
         
-        #Execute vertial movement
+        #Execute vertical movement
         self.rect.y += self.change_y
         block_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
         
@@ -111,7 +110,8 @@ class AbstractFighter():
             # Stop our vertical movement
             self.change_y = 0
         
-        #Check for deaths    
+        #Check for deaths  
+        #TODO: Do this better  
         if self.rect.right < self.gameState.blast_line.left: self.die()
         if self.rect.left > self.gameState.blast_line.right: self.die()
         if self.rect.top > self.gameState.blast_line.bottom: self.die()
@@ -154,6 +154,9 @@ class AbstractFighter():
         if (len(platform_hit_list) > 0): self.grounded = True
         else: self.grounded = False
     
+    """
+    A simple function that converts the facing variable into a direction in degrees.
+    """
     def getFacingDirection(self):
         if self.facing == 1: return 0
         else: return 180
@@ -237,15 +240,42 @@ class AbstractFighter():
     set flags.
     """
     
+    """
+    Flip the fighter so he is now facint the other way.
+    Also flips the sprite for you.
+    """
     def flip(self):
         self.facing = -self.facing
         self.sprite.flipX()
-        
+    
+    """
+    Deal damage to the fighter.
+    Checks to make sure the damage caps at 999.
+    If you want to have higher damage, override this function and remove it.
+    This function is called in the applyKnockback function, so you shouldn't
+    need to call this function directly for normal attacks, although you can
+    for things like poison, non-knockback attacks, etc.
+    """ 
     def dealDamage(self, damage):
         self.damage += damage
         if self.damage >= 999:
             self.damage = 999
     
+    """
+    Do Knockback to the fighter.
+    
+    damage - the damage dealt by the attack. This is used in some calculations, so it is applied here.
+    kb - the base knockback of the attack.
+    kbg - the knockback growth ratio of the attack.
+    trajectory - the direction the attack sends the fighter, in degrees, with 0 being right, 90 being upward, 180 being left.
+                 This is an absolute direction, irrelevant of either character's facing direction. Those tend to be taken
+                 into consideration in the hitbox collision event itself, to allow the hitbox to also take in the attacker's
+                 current state as well as the fighter receiving knockback.
+    
+    The knockback calculation is derived from the SSBWiki, and a bit of information from ColinJF and Amazing Ampharos on Smashboards,
+    it is based off of Super Smash Bros. Brawl's knockback calculation, which is the one with the most information available (due to
+    all the modding)
+    """
     def applyKnockback(self, damage, kb, kbg, trajectory):
         self.change_x = 0
         self.change_y = 0
@@ -270,6 +300,17 @@ class AbstractFighter():
         self.preferred_xspeed = 0
         self.preferred_yspeed = 0
     
+    """
+    Set the actor's speed. Instead of modifying the change_x and change_y values manually,
+    this will calculate what they should be set at if you want to give a direction and
+    magnitude instead.
+    
+    speed - the total speed you want the fighter to move
+    direction - the angle of the speed vector, 0 being right, 90 being up, 180 being left.
+    preferred - whether or not this should be changing the preferred speed instead of modifying it directly.
+                defaults to True, meaning this will change the preferred speed (meaning the fighter will accelerate/decelerate to that speed)
+                if set to False, the fighter's speed will instantly change to that speed.
+    """
     def setSpeed(self,speed,direction,preferred = True):
         vectors = getXYFromDM(direction,speed)
         x = vectors.pop(0)
@@ -305,8 +346,13 @@ class AbstractFighter():
     def changeSpriteImage(self,frame):
         self.sprite.getImageAtIndex(frame)
     
-    # This will "lock" the hitbox so that another hitbox with the same ID from the same fighter won't hit again.
-    # Returns true if it was successful, false if it already exists in the lock.
+    """
+    This will "lock" the hitbox so that another hitbox with the same ID from the same fighter won't hit again.
+    Returns true if it was successful, false if it already exists in the lock.
+    
+    hbox - the hitbox we are checking for
+    time - the time to lock the hitbox
+    """
     def lockHitbox(self,hbox,time):
         for lock in self.hitboxLock:
             if lock[1] == hbox.owner and lock[2] == hbox.hitbox_id:

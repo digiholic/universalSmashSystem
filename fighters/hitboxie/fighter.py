@@ -9,7 +9,7 @@ def getFighter(playerNum):
     return fight.Hitboxie(playerNum)
 
 """
-The ColorMap class is used to dictate all of the possible palette swaps of a fighter.
+The ColorMap class is used to dictate a possible palette swap of a fighter.
 
 colorDict is a Dictionary mapping a color in the original sprite sheet to a color that it
 should be changed to. As an example here, Hitboxie only has one color to change, and that
