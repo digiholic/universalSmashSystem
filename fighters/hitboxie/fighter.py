@@ -1,128 +1,62 @@
-import engine.abstractFighter as abstractFighter
-import spriteObject
 import main
 
-class Fighter(abstractFighter.AbstractFighter):
-    def __init__(self,playerNum):
-        var = {
-                'weight': 100,
-                'gravity': .5,
-                'maxFallSpeed': 20,
-                'maxGroundSpeed': 6,
-                'maxAirSpeed': 6,
-                'friction': 0.2,
-                'airControl': 0.6,
-                'jumps': 1,
-                'jumpHeight': 12,
-                'airJumpHeight':14
-                }
-        sprite = spriteObject.SheetSprite("hitboxie_idle",[0,0],92,generateAlpha= False,filepath = __file__)
-        abstractFighter.AbstractFighter.__init__(self,
-                                 playerNum,
-                                 sprite, #Start Sprite
-                                 "HBoxie", #Name
-                                 var)
-        
-        self.shieldSprite = spriteObject.ImageSprite("shield-bubble",[0,0],generateAlpha = False, filepath = __file__)
-        self.shieldSprite.rect.center = self.rect.center
-        self.actions = main.importFromURI(__file__,'hitboxie_actions.py')
-        
-        self.current_action = self.actions.NeutralAction()
-        
-########################################################
-#                  ACTION SETTERS                      #
-########################################################
+"""
+This method returns an instance of the fighter.
+"""
+def getFighter(playerNum):
+    fight = main.importFromURI(__file__,'hitboxie.py')
     
-    def doIdle(self):
-        self.changeAction(self.actions.NeutralAction())
-    
-    def doFall(self):
-        self.changeAction(self.actions.Fall())
-                
-    def doLand(self):
-        self.changeAction(self.actions.Land())
-        
-    def doStop(self):
-        if self.grounded:
-            self.changeAction(self.actions.Stop())
-            
-    def doGroundMove(self,direction,run=False):
-        if run: newAction = self.actions.Run()
-        else: newAction = self.actions.Move()
-        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
-            self.flip()
-        self.changeAction(newAction)
-        
-    def doPivot(self):
-        newAction = self.actions.Pivot()
-        #if self.current_action.canBeInterrupted(newAction):
-        self.flip()
-        self.changeAction(newAction)
-    
-    def doJump(self):
-        if self.grounded:
-            self.changeAction(self.actions.Jump())
-        else:
-            if self.jumps > 0:
-                self.changeAction(self.actions.AirJump())
-                
-    def doShield(self):
-        self.changeAction(self.actions.Shield())
-        
-    def doForwardRoll(self):
-        self.changeAction(self.actions.ForwardRoll())
-    
-    def doBackwardRoll(self):
-        self.changeAction(self.actions.BackwardRoll())
-        
-    def doSpotDodge(self):
-        self.changeAction(self.actions.SpotDodge())
-        
-    def doAirDodge(self):
-        self.changeAction(self.actions.AirDodge())
-     
-    
-    def doGroundAttack(self):
-        (key, invkey) = self.getForwardBackwardKeys()
-        if self.keysContain(key):
-            self.changeAction(self.actions.ForwardAttack())
-        elif self.keysContain(invkey):
-            self.flip()
-            self.changeAction(self.actions.ForwardAttack())
-        elif self.keysContain(self.keyBindings.k_up):
-            pass
-        elif self.keysContain(self.keyBindings.k_down):
-            self.changeAction(self.actions.DownAttack())
-        else:
-            self.changeAction(self.actions.NeutralAttack())   
-    
-    def doAirAttack(self):
-        (forward, backward) = self.getForwardBackwardKeys()
-        if (self.keysContain(forward)):
-            pass
-        elif (self.keysContain(backward)):
-            pass
-        elif(self.keysContain(self.keyBindings.k_up)):
-            pass
-        elif (self.keysContain(self.keyBindings.k_down)):
-            pass
-        else: self.changeAction(self.actions.NeutralAir())
-            
-########################################################
-#                  STATE CHANGERS                      #
-########################################################
-        
-    def die(self):
-        abstractFighter.AbstractFighter.die(self)
-        self.changeAction(self.actions.Fall())
-    
-    def applyKnockback(self,kb,kbg,trajectory):
-        abstractFighter.AbstractFighter.applyKnockback(self, kb, kbg, trajectory)
-        self.changeAction(self.actions.HitStun(40,trajectory))
-        
-########################################################
-#                 ENGINE FUNCTIONS                     #
-########################################################
+    return fight.Hitboxie(playerNum)
 
-    def keyPressed(self,key):
-        abstractFighter.AbstractFighter.keyPressed(self,key)
+"""
+The ColorMap class is used to dictate all of the possible palette swaps of a fighter.
+
+colorDict is a Dictionary mapping a color in the original sprite sheet to a color that it
+should be changed to. As an example here, Hitboxie only has one color to change, and that
+is black (0,0,0), so a dict can easily be defined in one line. For a more complicated
+color map, you could break it up into multiple lines. For example, to change all of Hitboxie's
+colors, including his border, it would be something like this:
+
+{(0,0,0}       : (0,0,255),
+ (128,128,128) : (0,0,128),
+ (166,166,166) : (0,0,200)}
+
+keyColor is simply the color that shows on the CSS screen when selecting your palette.
+This color should be indicative of the overall color of the palette, so players can
+easily coordinate team colors or pick their favorite color without needed to know what
+the palette looks like.
+
+newCSSImg is a path to the character select screen portrait for that palette. It is not
+necessary, and if None is given, it will simply use the normal portrait. The CSS Images
+are likely not quite as simple as the sprites, so doing a color replace on that with the
+same map will often lead to undesirable results.
+"""
+class ColorMap():
+    def __ini__(self,colorDict,keyColor,newCSSImg = None):
+        self.colorDict = colorDict
+        self.keyColor = keyColor
+        self.newCSSImg = newCSSImg
+        
+colorMaps = [ColorMap({(0,0,0) : (0,0,0)      }, (0,0,0),       None),
+             ColorMap({(0,0,0) : (0,0,255)    }, (0,0,255),     None),
+             ColorMap({(0,0,0) : (0,255,0)    }, (0,255,0),     None),
+             ColorMap({(0,0,0) : (255,0,0)    }, (255,0,0),     None),
+             ColorMap({(0,0,0) : (255,255,0)  }, (255,255,0),   None),
+             ColorMap({(0,0,0) : (0,255,255)  }, (0,255,255),   None),
+             ColorMap({(0,0,0) : (255,0,255)  }, (255,0,255),   None),
+             ColorMap({(0,0,0) : (255,255,255)}, (255,255,255), None),
+             ]
+
+def getColor(n):
+    global colorMaps
+    return colorMaps[n]
+
+
+"""
+This function is called when the character is clicked on in the CSS.
+This is where you can select variant costumes, colors, and whatever
+else you want to make selectable at the screen, such as variant
+ultimate attacks, special moves, or even physics tweaks.
+"""
+def onCSSClick():
+    pass

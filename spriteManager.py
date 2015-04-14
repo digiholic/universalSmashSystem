@@ -1,6 +1,5 @@
 import pygame
 import os
-from _ctypes import Array
 
 class Sprite(pygame.sprite.Sprite):
     
