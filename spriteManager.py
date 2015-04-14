@@ -18,7 +18,7 @@ class ImageSprite(Sprite):
         self.currentSprite = self.imageLibrary[startingImage]
         
         self.startingImage = startingImage
-        self.rect = self.currentSprite.image.get_rect().center
+        self.rect = self.currentSprite.image.get_rect()
         self.flip = False
         self.angle = 0
         
@@ -28,24 +28,22 @@ class ImageSprite(Sprite):
             library[key] = SheetSprite(value,offset,self.colorMap)
         return library
     
-    def getImageAtIndex(self,index):
-        self.index = index
-        self.changeImage(self.imageText + str(self.index))
-        
     def flipX(self):
         self.flip = not self.flip
-        
+            
     def changeImage(self,newImage):
         try:
             self.currentSprite = self.imageLibrary[newImage]
-            if self.flip: self.image = pygame.transform.flip(self.currentSprite.image,True,False)
             self.rect = self.currentSprite.image.get_rect(center=self.rect.center)
         except:
             print "Error loading sprite ", newImage, " Loading default"
             self.currentSprite = self.imageLibrary[self.startingImage]
     
     def changeSubImage(self,index):
+        print "<", self.flip
+        self.index = index
         self.currentSprite.getImageAtIndex(index)
+        if self.flip: self.currentSprite.flipX()
         
     def draw(self,screen,offset,scale):
         self.currentSprite.draw(screen,offset,scale)
@@ -86,13 +84,17 @@ class SheetSprite(ImageSprite):
             index += 1
         return imageList
     
-    def recolor(self,image,fromColor,toColor):
+    def flipX(self):
+        self.flip = not self.flip
+        self.image = pygame.transform.flip(self.image,True,False)
         
+    def recolor(self,image,fromColor,toColor):
         arr = pygame.PixelArray(image)
         arr.replace(fromColor,toColor)
         del arr  
         
     def getImageAtIndex(self,index):
+        print self.flip,">"
         self.index = index % self.maxIndex
         self.image = self.imageList[self.index]
         

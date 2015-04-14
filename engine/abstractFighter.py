@@ -341,10 +341,10 @@ class AbstractFighter():
         
     def changeSprite(self,newSprite,frame=0):
         self.sprite.changeImage(newSprite)
-        if frame != 0: self.sprite.getImageAtIndex(frame)
+        if frame != 0: self.sprite.changeSubImage(frame)
         
     def changeSpriteImage(self,frame):
-        self.sprite.getImageAtIndex(frame)
+        self.sprite.changeSubImage(frame)
     
     """
     This will "lock" the hitbox so that another hitbox with the same ID from the same fighter won't hit again.
@@ -381,6 +381,12 @@ class AbstractFighter():
     Edit at your own risk.
     """
 
+    """
+    Add a key to the buffer. This function should be adding
+    to the buffer, and ONLY adding to the buffer. Any sort
+    of calculations and state changes should probably be done
+    in the stateTransitions function of the current action.
+    """
     def keyPressed(self,key):
         self.inputBuffer.append((key,True))
         self.keysHeld.append(key)
@@ -390,7 +396,10 @@ class AbstractFighter():
         elif key == self.keyBindings.k_right:
             if self.keysContain(self.keyBindings.k_left):
                 self.keyReleased(self.keyBindings.k_left)
-        
+    
+    """
+    As above, but opposite.
+    """ 
     def keyReleased(self,key):
         if self.keysContain(key):
             self.inputBuffer.append((key,False))
@@ -398,15 +407,33 @@ class AbstractFighter():
             return True
         else: return False
     
-    
+    """
+    A wrapper for the InputBuffer.contains function, since this will be called a lot.
+    For a full description of the arguments, see the entry in InputBuffer.
+    """
     def bufferContains(self,key, distanceBack = 0, state=True, andReleased=False, notReleased=False):
         return self.inputBuffer.contains(key, distanceBack, state, andReleased, notReleased)
     
-    #This checks for keys that are currently being held, whether or not they've actually been pressed recently.
+    """
+    This checks for keys that are currently being held, whether or not they've actually been pressed recently.
+    This is used, for example, to transition from a landing state into a running one. Using the InputBuffer
+    would mean that you'd either need to iterate over the WHOLE buffer and look for one less release than press,
+    or limit yourself to having to press the button before landing, whether you were moving in the air or not.
+    If you are looking for a button PRESS, use bufferContains. If you are looking for IF A KEY IS STILL BEING HELD,
+    this is your function.
+    """
     def keysContain(self,key):
         return (self.keysHeld.count(key) != 0)    
     
-    #This returns a tuple of the key for forward, then backward
+    """
+    This returns a tuple of the key for forward, then backward
+    Useful for checking if the fighter is pivoting, or doing a back air, or getting the
+    proper key to dash-dance, etc.
+    
+    The best way to use this is something like
+    (key,invkey) = actor.getForwardBackwardKeys()
+    which will assign the variable "key" to the forward key, and "invkey" to the backward key.
+    """
     def getForwardBackwardKeys(self):
         if self.facing == 1: return (self.keyBindings.k_right,self.keyBindings.k_left)
         else: return (self.keyBindings.k_left,self.keyBindings.k_right)
@@ -419,6 +446,15 @@ class AbstractFighter():
         
         
     #Gets the proper direction, adjusted for facing
+    """
+    Use this function to get a direction that is angled from the direction the fighter
+    is facing, rather than angled from right. For example, sending the opponent 30 degrees
+    is fine when facing right, but if you're facing left, you'd still be sending them to the right!
+    
+    Hitboxes use this calculation a lot. It'll return the proper angle that is the given offset
+    from "forward". Defaults to 0, which will give either 0 or 180, depending on the direction
+    of the fighter.
+    """
     def getForwardWithOffset(self,offSet = 0):
         if self.facing == 1:
             return offSet
@@ -433,12 +469,19 @@ class AbstractFighter():
 ########################################################
 # Functions that don't require a fighter instance to use
         
-#A helper function to get the X and Y magnitudes from the Direction and Magnitude of a trajectory
+"""
+A helper function to get the X and Y magnitudes from the Direction and Magnitude of a trajectory
+"""
 def getXYFromDM(direction,magnitude):
     rad = math.radians(direction)
     x = round(math.cos(rad) * magnitude,5)
     y = -round(math.sin(rad) * magnitude,5)
     return [x,y]
+
+"""
+Get the direction between two points. 0 means the second point is to the right of the first,
+90 is straight above, 180 is straight left. Used in some knockback calculations.
+"""
 
 def getDirectionBetweenPoints(p1, p2):
     (x1, y1) = p1
@@ -451,6 +494,11 @@ def getDirectionBetweenPoints(p1, p2):
 ########################################################
 #                   KEYBINDINGS                        #
 ########################################################
+"""
+The Keybindings object is just a shorthand for looking up
+the keys in the game settings. A dictionary is passed
+that maps the action to the key that does it.
+"""
 class Keybindings():
     
     def __init__(self,keyBindings):
@@ -467,6 +515,13 @@ class Keybindings():
 ########################################################
 #                  INPUT BUFFER                        #
 ########################################################        
+"""
+The input buffer is a list of all of the buttons pressed and released,
+and the frames they're put in on. It's used to check for buttons that
+were pressed in the past, such as for a wall tech, or a buffered jump,
+but can also be used to re-create the entire battle (once a replay manager
+is set up)
+"""
 class InputBuffer():
     
     def __init__(self):
@@ -474,16 +529,29 @@ class InputBuffer():
         self.workingBuff = []
         self.lastIndex = 0
       
-    #Put an empty list at the head of the buffer. This is called at the head of every frame.
-    #Inputs are pushed on to the list at index 0
+    """
+    Pushes the buttons for the frame into the buffer, then extends the index by one.
+    """
     def push(self):
         self.buffer.append(self.workingBuff)
         self.workingBuff = []
         self.lastIndex += 1
-        
+     
+    """
+    The big function. This checks if the buffer contains a key, with a lot of configurability.
+    
+    key - the key to look for
+    distance-Back - how many frames to look back, if set to 0, will check only the current frame.
+    state - Whether to check for a press (True) or release (False). Set this flag to False if you want
+            to look for when a button was released.
+    andReleased - Check if the button was pressed AND released in the given distance. Technically, this can also
+                  be used with state=False to check for a button that was released then pressed again in the time
+                  frame, but I can't think of a situation that would be useful in.
+    notReleased - Check if the button was pressed in the given distance, and is still being held.
+    """
     def contains(self,key, distanceBack = 0, state=True, andReleased=False, notReleased=False):
         js = [] #If the key shows up multiple times, we might need to check all of them.
-        if distanceBack > self.lastIndex: distanceBack = self.lastIndex
+        if distanceBack > self.lastIndex: distanceBack = self.lastIndex #So we don't check farther back than we have data for
         for i in range(self.lastIndex,(self.lastIndex - distanceBack - 1), -1):
             #first, check if the key exists in the distance.
             buff = self.buffer[i]
@@ -505,9 +573,11 @@ class InputBuffer():
         if notReleased: return True
         #... do the opposite of above.
         
-        return False #This statement should never be reached. If you do, have a boolean.
+        return False #This statement should never be reached. If you do, enjoy your boolean.
                 
-    #Get a sub-buffer of N frames
+    """
+    Get a sub-buffer of N frames
+    """
     def getLastNFrames(self,n):
         retBuffer = []
         if n > self.lastIndex: n = self.lastIndex
@@ -515,5 +585,9 @@ class InputBuffer():
             retBuffer.append(self.buffer[i])
         return retBuffer
     
+    """
+    put a key into the current working buffer. The working buffer is all of the inputs for
+    one frame, before the frame is actually executed.
+    """
     def append(self,key):
         self.workingBuff.append(key)

@@ -12,7 +12,7 @@ class NeutralAttack(action.Action):
     def setUp(self, actor):
         actor.change_x = 0
         actor.preferred_xsped = 0
-        actor.changeSprite("hitboxie_neutral",0)
+        actor.changeSprite("neutral",0)
         self.jabHitbox = self.outwardHitbox(actor)
     
     # Here's an example of creating an anonymous hitbox class.
@@ -48,7 +48,7 @@ class DownAttack(action.Action):
     def setUp(self, actor):
         actor.change_x = 0
         actor.preferred_xsped = 0
-        actor.changeSprite("hitboxie_dsmash",0)
+        actor.changeSprite("dsmash",0)
         self.dsmashHitbox1 = hitbox.DamageHitbox([34,26],[24,52],actor,
                  12,8,0.75,20,60,1)
         self.dsmashHitbox2 = hitbox.DamageHitbox([-34,26],[24,52],actor,
@@ -109,7 +109,7 @@ class ForwardAttack(action.Action):
         if self.frame == 0:
             actor.change_x = 0
             actor.preferred_xspeed = 0
-            actor.changeSprite("hitboxie_fsmash",0)
+            actor.changeSprite("fsmash",0)
         elif self.frame == 3:
             actor.createMask([255,255,0],15,True,32)
             actor.changeSpriteImage(1)
@@ -147,7 +147,7 @@ class NeutralAir(action.Action):
     def setUp(self, actor):
         actor.change_x = 0
         actor.preferred_xsped = 0
-        actor.changeSprite("hitboxie_nair",0)
+        actor.changeSprite("nair",0)
         self.subImage = 0
         self.nairHitbox = hitbox.DamageHitbox([0,0],[72,72],actor,10,4,0.6,60,60,0)
         #self.dsmashSweetspot
@@ -193,7 +193,7 @@ class Move(baseActions.Move):
     def update(self, actor):
         if self.accel:
             if (self.frame == 0):
-                actor.changeSprite("hitboxie_run",0)
+                actor.changeSprite("run",0)
             elif (self.frame == 3):
                 actor.changeSpriteImage(1)
             elif (self.frame == 6):
@@ -204,7 +204,7 @@ class Move(baseActions.Move):
                 actor.changeSpriteImage(4)
         else:
             if (self.frame == 0):
-                actor.changeSprite("hitboxie_run",4)
+                actor.changeSprite("run",4)
                 
         if actor.grounded == False:
             actor.current_action = Fall()
@@ -220,7 +220,7 @@ class Run(baseActions.Run):
     def update(self, actor):
         if self.accel:
             if (self.frame == 0):
-                actor.changeSprite("hitboxie_run",0)
+                actor.changeSprite("run",0)
             elif (self.frame == 3):
                 actor.changeSpriteImage(1)
             elif (self.frame == 6):
@@ -231,7 +231,7 @@ class Run(baseActions.Run):
                 actor.changeSpriteImage(4)
         else:
             if (self.frame == 0):
-                actor.changeSprite("hitboxie_run",4)
+                actor.changeSprite("run",4)
                 
         if actor.grounded == False:
             actor.current_action = Fall()
@@ -245,7 +245,7 @@ class Pivot(baseActions.Pivot):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.changeSprite("hitboxie_pivot",4)
+            actor.changeSprite("pivot",4)
         elif self.frame == 2:
             actor.changeSpriteImage(3)
         elif self.frame == 4:
@@ -265,7 +265,9 @@ class NeutralAction(baseActions.NeutralAction):
         baseActions.NeutralAction.__init__(self,1)
         
     def update(self, actor):
-        actor.changeSprite("hitboxie_idle")
+        if self.frame == 0:
+            actor.changeSprite("idle")
+            self.frame += 1
         if actor.grounded == False: actor.current_action = Fall()
         
 class Stop(baseActions.Stop):
@@ -274,7 +276,7 @@ class Stop(baseActions.Stop):
     
     def update(self, actor):
         if self.frame == 0:
-            actor.changeSprite("hitboxie_pivot",0)
+            actor.changeSprite("pivot",0)
         elif self.frame == 3:
             actor.changeSpriteImage(1)
         elif self.frame == 6:
@@ -292,7 +294,7 @@ class HitStun(baseActions.HitStun):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.changeSprite("hitboxie_fall")
+            actor.changeSprite("fall")
             
         if self.frame == self.lastFrame:
             actor.current_action = Fall()
@@ -304,7 +306,7 @@ class Jump(baseActions.Jump):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.changeSprite("hitboxie_land",0)
+            actor.changeSprite("land",0)
         elif self.frame == 2:
             actor.changeSpriteImage(1)
         elif self.frame == 4:
@@ -312,7 +314,7 @@ class Jump(baseActions.Jump):
         elif self.frame == 6:
             actor.changeSpriteImage(3)
         elif self.frame == 8:
-            actor.changeSprite("hitboxie_jump")
+            actor.changeSprite("jump")
         elif self.frame == self.lastFrame:
             actor.current_action = Fall()
         baseActions.Jump.update(self, actor)
@@ -324,7 +326,7 @@ class AirJump(baseActions.AirJump):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.changeSprite("hitboxie_airjump",0)
+            actor.changeSprite("airjump",0)
         elif self.frame == 2:
             actor.changeSpriteImage(1)
         elif self.frame == 4:
@@ -342,7 +344,7 @@ class Fall(baseActions.Fall):
         baseActions.Fall.__init__(self)
         
     def update(self,actor):
-        actor.changeSprite("hitboxie_jump")
+        actor.changeSprite("jump")
         baseActions.Fall.update(self, actor)
             
 class Land(baseActions.Land):
@@ -351,7 +353,7 @@ class Land(baseActions.Land):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.changeSprite("hitboxie_land",0)
+            actor.changeSprite("land",0)
         else:
             if self.frame < 12:
                 if self.frame % 3 == 0:
@@ -365,7 +367,7 @@ class Shield(baseActions.Shield):
     
     def update(self,actor):
         if self.frame == 0:
-            actor.changeSprite("hitboxie_jump")
+            actor.changeSprite("jump")
         baseActions.Shield.update(self, actor)
         
 class ForwardRoll(baseActions.ForwardRoll):
@@ -374,9 +376,9 @@ class ForwardRoll(baseActions.ForwardRoll):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.changeSprite("hitboxie_land",1)
+            actor.changeSprite("land",1)
         elif self.frame == self.endInvulnFrame:
-            actor.changeSprite("hitboxie_land",0)
+            actor.changeSprite("land",0)
         baseActions.ForwardRoll.update(self, actor)
         
 class BackwardRoll(baseActions.BackwardRoll):
@@ -385,9 +387,9 @@ class BackwardRoll(baseActions.BackwardRoll):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.changeSprite("hitboxie_land",1)
+            actor.changeSprite("land",1)
         elif self.frame == self.endInvulnFrame:
-            actor.changeSprite("hitboxie_land",0)
+            actor.changeSprite("land",0)
         baseActions.BackwardRoll.update(self, actor)
         
 class SpotDodge(baseActions.SpotDodge):
@@ -396,7 +398,7 @@ class SpotDodge(baseActions.SpotDodge):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.changeSprite("hitboxie_land",0)
+            actor.changeSprite("land",0)
         if self.frame < 4:
             actor.changeSpriteImage(self.frame)
         elif self.frame == 21:
@@ -413,7 +415,7 @@ class AirDodge(baseActions.AirDodge):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.changeSprite("hitboxie_nair",0)
+            actor.changeSprite("nair",0)
         elif self.frame == self.startInvulnFrame:
             actor.changeSpriteImage(1)
         elif self.frame == self.endInvulnFrame:

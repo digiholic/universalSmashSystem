@@ -24,7 +24,7 @@ def main(debug = False):
     currentFighters = []
     
     fight = importFromURI(__file__,'fighters/hitboxie/fighter.py')
-    testBoxie = fight.getFighter(0)
+    testBoxie = fight.getFighter(0,0)
     testBoxie.rect.midtop = current_stage.size.midtop
     testBoxie.gameState = current_stage
     

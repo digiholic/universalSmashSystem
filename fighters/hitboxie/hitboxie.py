@@ -1,9 +1,10 @@
 import engine.abstractFighter as abstractFighter
 import spriteObject
+import spriteManager
 import main
 
 class Hitboxie(abstractFighter.AbstractFighter):
-    def __init__(self,playerNum):
+    def __init__(self,playerNum,sprites):
         var = {
                 'weight': 100,
                 'gravity': .5,
@@ -16,10 +17,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'jumpHeight': 12,
                 'airJumpHeight':14
                 }
-        sprite = spriteObject.SheetSprite("hitboxie_idle",[0,0],92,generateAlpha= False,filepath = __file__)
         abstractFighter.AbstractFighter.__init__(self,
                                  playerNum,
-                                 sprite, #Start Sprite
+                                 sprites, #Start Sprite
                                  "HBoxie", #Name
                                  var)
         

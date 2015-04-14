@@ -1,12 +1,6 @@
 import main
-
-"""
-This method returns an instance of the fighter.
-"""
-def getFighter(playerNum):
-    fight = main.importFromURI(__file__,'hitboxie.py')
-    
-    return fight.Hitboxie(playerNum)
+import spriteManager
+import os
 
 """
 The ColorMap class is used to dictate a possible palette swap of a fighter.
@@ -32,7 +26,7 @@ are likely not quite as simple as the sprites, so doing a color replace on that 
 same map will often lead to undesirable results.
 """
 class ColorMap():
-    def __ini__(self,colorDict,keyColor,newCSSImg = None):
+    def __init__(self,colorDict,keyColor,newCSSImg = None):
         self.colorDict = colorDict
         self.keyColor = keyColor
         self.newCSSImg = newCSSImg
@@ -60,3 +54,22 @@ ultimate attacks, special moves, or even physics tweaks.
 """
 def onCSSClick():
     pass
+
+
+"""
+This method returns an instance of the fighter.
+"""
+def getFighter(playerNum,colorNum):
+    #The file that contains your implementation of abstractFighter
+    fight = main.importFromURI(__file__,'hitboxie.py')
+    #The sprites directory
+    directory = os.path.join(os.path.dirname(__file__),"sprites")
+    #The prefix that indicates the sprites to be used for this character/costume
+    prefix = "hitboxie_"
+    #The width of each image in the sheets. This should always be consistent between sprites
+    imgwidth = 92
+    
+    color = getColor(colorNum)
+    sprites = spriteManager.ImageSprite(directory,prefix,"idle",imgwidth,color.colorDict)
+    
+    return fight.Hitboxie(playerNum,sprites)
