@@ -80,7 +80,7 @@ def main(debug = False):
             for hbox in active_hitboxes:
                 hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
               
-        clock.tick(60)    
+        clock.tick(20)    
         pygame.display.flip()
 
 def importFromURI(file, uri, absl=False):

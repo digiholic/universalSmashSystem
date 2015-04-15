@@ -10,7 +10,52 @@ class Sprite(pygame.sprite.Sprite):
         newOff = (int(offset[0] * scale), int(offset[1] * scale))
         blitSprite = pygame.transform.smoothscale(self.image, (w,h))
         screen.blit(blitSprite,pygame.Rect(newOff,(w,h)))
+  
+class SpriteHandler(Sprite):
+    def __init__(self,directory,prefix,startingImage,offset,colorMap = {}):
+        self.colorMap = colorMap
+        self.imageLibrary = self.buildImageLibrary(ImageLibrary(directory,prefix), offset)
+        self.currentSprite = self.imageLibrary[startingImage]
         
+        self.startingImage = startingImage
+        self.rect = self.currentSprite.image.get_rect()
+        self.flip = False
+        self.angle = 0
+    
+    def buildImageLibrary(self,lib,offset):
+        library = {}
+        for key,value in lib.imageDict.iteritems():
+            library[key] = self.buldSubimageList(value,offset)
+        return library    
+    
+    def buildSubimageList(self,sheet,offset):
+        index = 0
+        imageList = []
+        while index < sheet.get_width() / offset:
+            self.sheet.set_clip(pygame.Rect(index * offset, 0, offset,sheet.get_height()))
+            image = sheet.subsurface(sheet.get_clip())
+            for fromColor,toColor in self.colorMap.iteritems():
+                self.recolor(image, list(fromColor), list(toColor))
+            imageList.append(image)
+            index += 1
+        return imageList
+    
+    def changeImage(self,newImage):
+        try:
+            self.currentSprite = self.imageLibrary[newImage]
+            self.rect = self.currentSprite.image.get_rect(center=self.rect.center)
+        except:
+            print "Error loading sprite ", newImage, " Loading default"
+            self.currentSprite = self.imageLibrary[self.startingImage]
+            
+    def changeSubImage(self,index):
+        self.index = index
+        self.currentSprite.getImageAtIndex(index)
+        if self.flip: self.currentSprite.flipX()
+        
+    def draw(self,screen,offset,scale):
+        self.currentSprite.draw(screen,offset,scale)
+            
 class ImageSprite(Sprite):
     def __init__(self,directory,prefix,startingImage,offset,colorMap = {}):
         self.colorMap = colorMap
@@ -40,7 +85,6 @@ class ImageSprite(Sprite):
             self.currentSprite = self.imageLibrary[self.startingImage]
     
     def changeSubImage(self,index):
-        print "<", self.flip
         self.index = index
         self.currentSprite.getImageAtIndex(index)
         if self.flip: self.currentSprite.flipX()
@@ -94,14 +138,14 @@ class SheetSprite(ImageSprite):
         del arr  
         
     def getImageAtIndex(self,index):
-        print self.flip,">"
         self.index = index % self.maxIndex
         self.image = self.imageList[self.index]
         
     def draw(self,screen,offset,scale):
         Sprite.draw(self, screen, offset, scale)
         
-class MaskSprite(ImageSprite):
+        
+class MaskSprite(SheetSprite):
     def __init__(self, parentSprite,color,duration,pulse = False,pulseSize = 16):
         self.parentSprite = parentSprite
         self.duration = duration
@@ -112,7 +156,7 @@ class MaskSprite(ImageSprite):
         else: self.alpha = 128
         self.visible = True
         
-        self.image = self.parentSprite.image.copy()
+        self.image = self.parentSprite.currentSprite.image.copy()
         self.color_surface(self.color)
         
         
@@ -139,7 +183,7 @@ class MaskSprite(ImageSprite):
                     self.alpha = 0
                     self.pulseSize = -self.pulseSize 
             self.duration -= 1
-            self.image = self.parentSprite.image.copy()
+            self.image = self.parentSprite.currentSprite.image.copy()
             self.color_surface(self.color)
             
             self.rect = self.parentSprite.rect

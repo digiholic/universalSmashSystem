@@ -2,7 +2,7 @@ import pygame
 import engine.baseActions as baseActions
 import math
 import settingsManager
-import spriteObject
+import spriteManager
 import engine.article as article
 
 class AbstractFighter():
@@ -462,7 +462,7 @@ class AbstractFighter():
             return 180 - offSet
         
     def createMask(self,color,duration,pulse = False,pulseSize = 16):
-        self.mask = spriteObject.MaskSprite(self.sprite,color,duration,pulse, pulseSize)
+        self.mask = spriteManager.MaskSprite(self.sprite,color,duration,pulse, pulseSize)
     
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
