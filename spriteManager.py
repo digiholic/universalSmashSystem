@@ -15,24 +15,42 @@ class SpriteHandler(Sprite):
     def __init__(self,directory,prefix,startingImage,offset,colorMap = {}):
         self.colorMap = colorMap
         self.imageLibrary = self.buildImageLibrary(ImageLibrary(directory,prefix), offset)
-        self.currentSprite = self.imageLibrary[startingImage]
         
         self.startingImage = startingImage
-        self.rect = self.currentSprite.image.get_rect()
-        self.flip = False
-        self.angle = 0
-    
+         
+        self.flip = "right"
+        self.currentSheet = startingImage
+        self.index = 0
+        
+        print self.imageLibrary[self.flip]
+        self.image = self.imageLibrary[self.flip][self.startingImage][self.index]
+        self.rect = self.image.get_rect()
+        
+    def flipX(self):
+        if self.flip == "right": self.flip = "left"
+        else: self.flip = "right"
+        print "flip"
+            
     def buildImageLibrary(self,lib,offset):
         library = {}
+        flippedLibrary = {}
         for key,value in lib.imageDict.iteritems():
-            library[key] = self.buldSubimageList(value,offset)
-        return library    
-    
+            imageList = self.buildSubimageList(value,offset)
+            library[key] = imageList
+            flipList = []
+            for image in imageList:
+                img = image.copy()
+                img = pygame.transform.flip(img,True,False)
+                flipList.append(img)
+            flippedLibrary[key] = flipList
+
+        return {"right": library, "left": flippedLibrary}
+        
     def buildSubimageList(self,sheet,offset):
         index = 0
         imageList = []
         while index < sheet.get_width() / offset:
-            self.sheet.set_clip(pygame.Rect(index * offset, 0, offset,sheet.get_height()))
+            sheet.set_clip(pygame.Rect(index * offset, 0, offset,sheet.get_height()))
             image = sheet.subsurface(sheet.get_clip())
             for fromColor,toColor in self.colorMap.iteritems():
                 self.recolor(image, list(fromColor), list(toColor))
@@ -40,21 +58,33 @@ class SpriteHandler(Sprite):
             index += 1
         return imageList
     
-    def changeImage(self,newImage):
-        try:
-            self.currentSprite = self.imageLibrary[newImage]
-            self.rect = self.currentSprite.image.get_rect(center=self.rect.center)
-        except:
-            print "Error loading sprite ", newImage, " Loading default"
-            self.currentSprite = self.imageLibrary[self.startingImage]
-            
-    def changeSubImage(self,index):
-        self.index = index
-        self.currentSprite.getImageAtIndex(index)
-        if self.flip: self.currentSprite.flipX()
+    def recolor(self,image,fromColor,toColor):
+        arr = pygame.PixelArray(image)
+        arr.replace(fromColor,toColor)
+        del arr  
         
+    
+    def changeImage(self,newImage,subImage = 0):
+        self.currentSheet = newImage
+        self.index = subImage
+        
+    def changeSubImage(self,index):
+        self.index = index % len(self.imageLibrary[self.flip][self.currentSheet])
+    
+    def get_image(self):
+        try:
+            self.image = self.imageLibrary[self.flip][self.currentSheet][self.index]
+            self.rect = self.image.get_rect(center=self.rect.center)
+        except:
+            print "Error loading sprite ", self.currentSheet, " Loading default"
+            self.image = self.imageLibrary[self.flip][self.startingImage][0]
+            self.rect = self.image.get_rect(center=self.rect.center)
+        
+        return self.image
+    
     def draw(self,screen,offset,scale):
-        self.currentSprite.draw(screen,offset,scale)
+        self.get_image()
+        Sprite.draw(self,screen,offset,scale)
             
 class ImageSprite(Sprite):
     def __init__(self,directory,prefix,startingImage,offset,colorMap = {}):
@@ -156,7 +186,7 @@ class MaskSprite(SheetSprite):
         else: self.alpha = 128
         self.visible = True
         
-        self.image = self.parentSprite.currentSprite.image.copy()
+        self.image = self.parentSprite.image.copy()
         self.color_surface(self.color)
         
         
@@ -183,7 +213,7 @@ class MaskSprite(SheetSprite):
                     self.alpha = 0
                     self.pulseSize = -self.pulseSize 
             self.duration -= 1
-            self.image = self.parentSprite.currentSprite.image.copy()
+            self.image = self.parentSprite.image.copy()
             self.color_surface(self.color)
             
             self.rect = self.parentSprite.rect
@@ -205,13 +235,13 @@ class ImageLibrary():
                 sprite = pygame.image.load(os.path.join(self.directory,f))
                 sprite = sprite.convert_alpha()
                 self.imageDict[spriteName] = sprite
-                print sprite.get_alpha(), spriteName, self.imageDict[spriteName]
+                #print sprite.get_alpha(), spriteName, self.imageDict[spriteName]
 
 def test():
     pygame.init()
     screen = pygame.display.set_mode([640,480])
     pygame.display.set_caption("USS Sprite Viewer")
-    sprites = ImageSprite("fighters/hitboxie/sprites", "hitboxie_", "dsmash", 92, {(0,0,0)       : (0,0,255),
+    sprites = SpriteHandler("fighters/hitboxie/sprites", "hitboxie_", "run", 92, {(0,0,0)       : (0,0,255),
                                                                                    (128,128,128) : (0,0,128),
                                                                                    (166,166,166) : (0,0,200)})
     clock = pygame.time.Clock()
@@ -221,6 +251,8 @@ def test():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return -1
+            if event.type == pygame.KEYDOWN:
+                sprites.flipX()
         
         screen.fill([100, 100, 100])
         

@@ -70,6 +70,6 @@ def getFighter(playerNum,colorNum):
     imgwidth = 92
     
     color = getColor(colorNum)
-    sprites = spriteManager.ImageSprite(directory,prefix,"idle",imgwidth,color.colorDict)
+    sprites = spriteManager.SpriteHandler(directory,prefix,"idle",imgwidth,color.colorDict)
     
     return fight.Hitboxie(playerNum,sprites)
