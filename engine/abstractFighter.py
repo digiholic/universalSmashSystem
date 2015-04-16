@@ -361,7 +361,7 @@ class AbstractFighter():
         return True
     
     def startShield(self):
-        self.articles.add(article.ShieldArticle("shield_bubble",self))
+        self.articles.add(article.ShieldArticle("fighters/hitboxie/sprites/shield-bubble.png",self))
         
     def shieldDamage(self,damage):
         if self.shieldIntegrity > 0:

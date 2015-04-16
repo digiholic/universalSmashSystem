@@ -87,40 +87,11 @@ class SpriteHandler(Sprite):
         Sprite.draw(self,screen,offset,scale)
             
 class ImageSprite(Sprite):
-    def __init__(self,directory,prefix,startingImage,offset,colorMap = {}):
-        self.colorMap = colorMap
-        self.imageLibrary = self.buildImageLibrary(ImageLibrary(directory,prefix), offset)
-        self.currentSprite = self.imageLibrary[startingImage]
-        
-        self.startingImage = startingImage
-        self.rect = self.currentSprite.image.get_rect()
-        self.flip = False
-        self.angle = 0
-        
-    def buildImageLibrary(self,lib,offset):
-        library = {}
-        for key,value in lib.imageDict.iteritems():
-            library[key] = SheetSprite(value,offset,self.colorMap)
-        return library
-    
-    def flipX(self):
-        self.flip = not self.flip
-            
-    def changeImage(self,newImage):
-        try:
-            self.currentSprite = self.imageLibrary[newImage]
-            self.rect = self.currentSprite.image.get_rect(center=self.rect.center)
-        except:
-            print "Error loading sprite ", newImage, " Loading default"
-            self.currentSprite = self.imageLibrary[self.startingImage]
-    
-    def changeSubImage(self,index):
-        self.index = index
-        self.currentSprite.getImageAtIndex(index)
-        if self.flip: self.currentSprite.flipX()
-        
-    def draw(self,screen,offset,scale):
-        self.currentSprite.draw(screen,offset,scale)
+    def __init__(self,path):
+        Sprite.__init__(self)
+        self.image = pygame.image.load(path)
+        self.rect = self.image.get_rect()
+
 
 class SheetSprite(ImageSprite):
     def __init__(self,sheet,offset=0,colorMap = {}):
@@ -198,7 +169,7 @@ class MaskSprite(SheetSprite):
         del arr
         
         arr = pygame.surfarray.pixels_alpha(self.image)
-        arr[arr>self.alpha] = self.alpha
+        arr[arr!=0] = self.alpha
         del arr
         
     
@@ -209,11 +180,10 @@ class MaskSprite(SheetSprite):
                 if self.alpha > 200:
                     self.alpha = 200
                     self.pulseSize = -self.pulseSize
-                elif self.alpha < 0:
-                    self.alpha = 0
+                elif self.alpha < 16:
+                    self.alpha = 16
                     self.pulseSize = -self.pulseSize 
             self.duration -= 1
-            self.image = self.parentSprite.image.copy()
             self.color_surface(self.color)
             
             self.rect = self.parentSprite.rect

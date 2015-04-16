@@ -195,7 +195,7 @@ class Shield(action.Action):
 
 class ShieldBreak(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 5)
+        action.Action.__init__(self, 2)
         
     def update(self,actor):
         if self.frame == 0:
@@ -205,7 +205,7 @@ class ShieldBreak(action.Action):
             if actor.shieldIntegrity == 100:
                 actor.doIdle()
             else:
-                actor.shieldIntegrity += .5
+                actor.shieldIntegrity += .25
                 self.frame -= 1
         self.frame += 1
         

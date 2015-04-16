@@ -23,8 +23,6 @@ class Hitboxie(abstractFighter.AbstractFighter):
                                  "HBoxie", #Name
                                  var)
         
-        self.shieldSprite = spriteObject.ImageSprite("shield-bubble",[0,0],generateAlpha = False, filepath = __file__)
-        self.shieldSprite.rect.center = self.rect.center
         self.actions = main.importFromURI(__file__,'hitboxie_actions.py')
         
         self.current_action = self.actions.NeutralAction()
@@ -68,6 +66,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 
     def doShield(self):
         self.changeAction(self.actions.Shield())
+    
+    def doShieldBreak(self):
+        self.changeAction(self.actions.ShieldBreak())
         
     def doForwardRoll(self):
         self.changeAction(self.actions.ForwardRoll())
