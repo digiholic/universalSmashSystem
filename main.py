@@ -72,10 +72,13 @@ def main(debug = False):
             offset = current_stage.stageToScreen(obj.rect)
             scale =  current_stage.getScale()
             obj.draw(screen,offset,scale)
-            hitbox_collisions = pygame.sprite.spritecollide(obj, active_hitboxes, False)
-            for hbox in hitbox_collisions:
-                if hbox.owner != obj:
-                    hbox.onCollision(obj)
+            if hasattr(obj, 'hurtbox'):
+                offset = current_stage.stageToScreen(obj.hurtbox.rect)
+                obj.hurtbox.draw(screen,offset,scale)
+                hitbox_collisions = pygame.sprite.spritecollide(obj.hurtbox, active_hitboxes, False)
+                for hbox in hitbox_collisions:
+                    if hbox.owner != obj:
+                        hbox.onCollision(obj)
             for hbox in active_hitboxes:
                 hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
               

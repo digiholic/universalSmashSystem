@@ -33,6 +33,7 @@ class AbstractFighter():
         
         #initialize the action
         self.current_action = None
+        self.hurtbox = spriteManager.RectSprite(self.sprite.boundingRect,[255,255,0])
         
         #state variables and flags
         self.angle = 0
@@ -66,6 +67,10 @@ class AbstractFighter():
                 self.hitboxLock.remove(lock)
             else:
                 lock[0] -= 1
+        
+        # We set the hurbox to be the Bounding Rect of the sprite.
+        # It is done here, so that the hurtbox can be changed by the action.
+        self.hurtbox.rect = self.sprite.boundingRect
         
         #Step three, change state and update
         self.current_action.stateTransitions(self)
