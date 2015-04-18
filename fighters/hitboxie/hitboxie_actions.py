@@ -434,6 +434,7 @@ class AirDodge(baseActions.AirDodge):
         elif self.frame == self.endInvulnFrame:
             actor.changeSpriteImage(0)
         baseActions.AirDodge.update(self, actor)
+        
 ########################################################
 #             BEGIN HELPER METHODS                     #
 ########################################################

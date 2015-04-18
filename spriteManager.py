@@ -2,6 +2,8 @@ import pygame
 import os
 
 class Sprite(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
     
     def draw(self,screen,offset,scale):
         #TODO: Check for bit depth first, inform user about alpha
@@ -13,6 +15,7 @@ class Sprite(pygame.sprite.Sprite):
   
 class SpriteHandler(Sprite):
     def __init__(self,directory,prefix,startingImage,offset,colorMap = {}):
+        Sprite.__init__(self)
         self.colorMap = colorMap
         self.imageLibrary = self.buildImageLibrary(ImageLibrary(directory,prefix), offset)
         
@@ -67,9 +70,11 @@ class SpriteHandler(Sprite):
     def changeImage(self,newImage,subImage = 0):
         self.currentSheet = newImage
         self.index = subImage
+        self.get_image()
         
     def changeSubImage(self,index):
         self.index = index % len(self.imageLibrary[self.flip][self.currentSheet])
+        self.get_image()
     
     def get_image(self):
         try:
@@ -79,7 +84,6 @@ class SpriteHandler(Sprite):
             print "Error loading sprite ", self.currentSheet, " Loading default"
             self.image = self.imageLibrary[self.flip][self.startingImage][0]
             self.rect = self.image.get_rect(center=self.rect.center)
-        
         return self.image
     
     def draw(self,screen,offset,scale):
@@ -146,8 +150,9 @@ class SheetSprite(ImageSprite):
         Sprite.draw(self, screen, offset, scale)
         
         
-class MaskSprite(SheetSprite):
+class MaskSprite(ImageSprite):
     def __init__(self, parentSprite,color,duration,pulse = False,pulseSize = 16):
+        Sprite.__init__(self)
         self.parentSprite = parentSprite
         self.duration = duration
         self.pulse = pulse
@@ -184,6 +189,7 @@ class MaskSprite(SheetSprite):
                     self.alpha = 16
                     self.pulseSize = -self.pulseSize 
             self.duration -= 1
+            self.image = self.parentSprite.image.copy()
             self.color_surface(self.color)
             
             self.rect = self.parentSprite.rect
