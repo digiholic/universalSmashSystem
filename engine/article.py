@@ -33,8 +33,8 @@ class ShieldArticle(Article):
    
     def draw(self,screen,offset,zoom):
         # This is all the same as the base Draw method. We're overriding because we need to put some code in the middle of it.
-        h = int(round(self.rect.height * zoom))
-        w = int(round(self.rect.width * zoom))
+        h = int(round(self.owner.rect.height * zoom))
+        w = int(round(self.owner.rect.width * zoom))
         newOff = (int(offset[0] * zoom), int(offset[1] * zoom))
         
         # What this does:

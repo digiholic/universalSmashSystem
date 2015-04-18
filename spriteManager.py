@@ -27,13 +27,44 @@ class SpriteHandler(Sprite):
         
         print self.imageLibrary[self.flip]
         self.image = self.imageLibrary[self.flip][self.startingImage][self.index]
+        
         self.rect = self.image.get_rect()
+        self.boundingRect = self.getBoundingBox()
         
     def flipX(self):
         if self.flip == "right": self.flip = "left"
         else: self.flip = "right"
-        print "flip"
+    
+    def getBoundingBox(self):
+        boundingRect = self.image.get_bounding_rect()
+        boundingRect.top += self.rect.top
+        boundingRect.left += self.rect.left
+        return boundingRect
             
+    def changeImage(self,newImage,subImage = 0):
+        self.currentSheet = newImage
+        self.index = subImage
+        self.get_image()
+        
+    def changeSubImage(self,index):
+        self.index = index % len(self.imageLibrary[self.flip][self.currentSheet])
+        self.get_image()
+    
+    def get_image(self):
+        try:
+            self.image = self.imageLibrary[self.flip][self.currentSheet][self.index]
+        except:
+            print "Error loading sprite ", self.currentSheet, " Loading default"
+            self.image = self.imageLibrary[self.flip][self.startingImage][0]
+        
+        self.rect = self.image.get_rect(center=self.rect.center)
+        self.boundingRect = self.getBoundingBox()
+        return self.image
+    
+    def draw(self,screen,offset,scale):
+        self.get_image()
+        Sprite.draw(self,screen,offset,scale)
+    
     def buildImageLibrary(self,lib,offset):
         library = {}
         flippedLibrary = {}
@@ -66,29 +97,6 @@ class SpriteHandler(Sprite):
         arr.replace(fromColor,toColor)
         del arr  
         
-    
-    def changeImage(self,newImage,subImage = 0):
-        self.currentSheet = newImage
-        self.index = subImage
-        self.get_image()
-        
-    def changeSubImage(self,index):
-        self.index = index % len(self.imageLibrary[self.flip][self.currentSheet])
-        self.get_image()
-    
-    def get_image(self):
-        try:
-            self.image = self.imageLibrary[self.flip][self.currentSheet][self.index]
-            self.rect = self.image.get_rect(center=self.rect.center)
-        except:
-            print "Error loading sprite ", self.currentSheet, " Loading default"
-            self.image = self.imageLibrary[self.flip][self.startingImage][0]
-            self.rect = self.image.get_rect(center=self.rect.center)
-        return self.image
-    
-    def draw(self,screen,offset,scale):
-        self.get_image()
-        Sprite.draw(self,screen,offset,scale)
             
 class ImageSprite(Sprite):
     def __init__(self,path):
@@ -213,6 +221,20 @@ class ImageLibrary():
                 self.imageDict[spriteName] = sprite
                 #print sprite.get_alpha(), spriteName, self.imageDict[spriteName]
 
+class RectSprite(Sprite):
+    def __init__(self,rect,color=[0,0,0]):
+        Sprite.__init__(self)
+        
+        self.color = color  
+        
+        self.image = pygame.Surface(rect.size)
+        self.image.fill(self.color)
+        
+        self.rect = self.image.get_rect()
+        self.rect.topleft = rect.topleft    
+        
+        self.image.set_alpha(128)
+        
 def test():
     pygame.init()
     screen = pygame.display.set_mode([640,480])

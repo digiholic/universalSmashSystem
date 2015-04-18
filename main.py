@@ -69,7 +69,6 @@ def main(debug = False):
             if hasattr(obj,'active_hitboxes'):
                 active_hitboxes.add(obj.active_hitboxes)
             
-            
             offset = current_stage.stageToScreen(obj.rect)
             scale =  current_stage.getScale()
             obj.draw(screen,offset,scale)

@@ -439,7 +439,9 @@ class AbstractFighter():
         else: return (self.keyBindings.k_left,self.keyBindings.k_right)
         
     def draw(self,screen,offset,scale):
+        spriteManager.RectSprite(self.rect).draw(screen, offset, scale)
         self.sprite.draw(screen,offset,scale)
+        
         if self.mask: self.mask.draw(screen,offset,scale)
         for art in self.articles:
             art.draw(screen,offset,scale)
