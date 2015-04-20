@@ -205,7 +205,6 @@ class ShieldBreak(action.Action):
             if actor.shieldIntegrity == 100:
                 actor.doIdle()
             else:
-                actor.shieldIntegrity += .25
                 self.frame -= 1
         self.frame += 1
         

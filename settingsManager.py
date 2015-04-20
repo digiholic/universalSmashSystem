@@ -1,5 +1,6 @@
 import pygame.constants
 import re
+import os
 from ConfigParser import SafeConfigParser
 
 settings = None
@@ -34,7 +35,7 @@ class Settings():
         
         
         parser = SafeConfigParser()
-        parser.read('settings.ini')
+        parser.read(os.path.join(os.path.dirname(__file__),'settings.ini'))
         
         self.setting = {}
         

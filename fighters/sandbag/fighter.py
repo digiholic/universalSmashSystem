@@ -34,3 +34,4 @@ class Fighter(abstractFighter.AbstractFighter):
     def update(self):
         abstractFighter.AbstractFighter.update(self)
         
+def cssIcon(): return None

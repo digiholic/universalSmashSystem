@@ -73,3 +73,9 @@ def getFighter(playerNum,colorNum):
     sprites = spriteManager.SpriteHandler(directory,prefix,"idle",imgwidth,color.colorDict)
     
     return fight.Hitboxie(playerNum,sprites)
+
+def cssIcon(): return spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__),"sprites","icon_hitboxie.png"))
+
+def cssName(): return "Hitboxie"
+
+def cssPortrait(): pass

@@ -77,7 +77,7 @@ class AbstractFighter():
         self.current_action.update(self) #update our action             
         
         if self.mask: self.mask = self.mask.update()
-        self.shieldIntegrity += 0.1
+        self.shieldIntegrity += 0.5
         if self.shieldIntegrity > 100: self.shieldIntegrity = 100
         
         for art in self.articles:
@@ -123,8 +123,9 @@ class AbstractFighter():
         if self.rect.bottom < self.gameState.blast_line.top: self.die()
         
         #Update Sprite
-        self.sprite.rect = self.rect
-    
+        self.sprite.updatePosition(self.rect)
+        self.hurtbox.rect = self.sprite.boundingRect
+        
     """
     Change speed to get closer to the preferred speed without going over.
     xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['airControl']

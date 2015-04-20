@@ -40,7 +40,11 @@ class SpriteHandler(Sprite):
         boundingRect.top += self.rect.top
         boundingRect.left += self.rect.left
         return boundingRect
-            
+    
+    def updatePosition(self,rect):
+        self.rect = rect
+        self.boundingRect = self.getBoundingBox()
+                
     def changeImage(self,newImage,subImage = 0):
         self.currentSheet = newImage
         self.index = subImage
