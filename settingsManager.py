@@ -24,6 +24,10 @@ def getNumbersFromString(string, many = False):
     else:
         return int(re.search(r'\d+', string).group())
 
+def boolean(string):
+    # Well, I already have the function made, might as well cover all the bases.
+    return string in ['true', 'True', 't', 'T', '1', '#T', 'y', 'yes', 'on', 'enabled']
+    
 class Settings():
     def __init__(self):
         self.KeyIdMap = {}
@@ -42,11 +46,15 @@ class Settings():
         # Getting the window information
         size = parser.get('window', 'windowSize')
         
-        self.setting['windowName']   = parser.get('window', 'windowName')
-        self.setting['windowSize']   = getNumbersFromString(size,True)
-        self.setting['windowWidth']  = self.setting['windowSize'][0]
-        self.setting['windowHeight'] = self.setting['windowSize'][1]
-        self.setting['frameCap']     = getNumbersFromString(parser.get('window', 'frameCap'))
+        self.setting['windowName']    = parser.get('window', 'windowName')
+        self.setting['windowSize']    = getNumbersFromString(size,True)
+        self.setting['windowWidth']   = self.setting['windowSize'][0]
+        self.setting['windowHeight']  = self.setting['windowSize'][1]
+        self.setting['frameCap']      = getNumbersFromString(parser.get('window', 'frameCap'))
+        
+        self.setting['showHitboxes']  = boolean(parser.get('graphics','displayHitboxes'))
+        self.setting['showHurtboxes'] = boolean(parser.get('graphics','displayHurtboxes'))
+        self.setting['showSpriteArea'] = boolean(parser.get('graphics','displaySpriteArea'))
         
         # Getting game information
         
@@ -57,8 +65,26 @@ class Settings():
         self.loadControls(parser)
         
     def loadGameSettings(self,parser,preset):
-        self.setting['gravityMultiplier'] = parser.get(preset, 'gravityMultiplier')
-        self.setting['weightMultiplier'] = parser.get(preset, 'weightMultiplier')
+        self.setting['gravity'] = parser.get(preset, 'gravityMultiplier')
+        self.setting['weight'] = parser.get(preset, 'weightMultiplier')
+        self.setting['friction'] = parser.get(preset, 'frictionMultiplier')
+        self.setting['airControl'] = parser.get(preset, 'airControlMultiplier')
+        self.setting['hitstun'] = parser.get(preset, 'hitstunMultiplier')
+        self.setting['hitlag'] = parser.get(preset, 'hitlagMultiplier')
+        
+        self.setting['ledgeConflict'] = parser.get(preset, 'ledgeConflict')
+        self.setting['ledgeSweetspotSize'] = parser.get(preset, 'ledgeSweetspotSize')
+        self.setting['ledgeSweetspotForwardOnly'] = boolean(parser.get(preset, 'ledgeSweetspotForwardOnly'))
+        self.setting['teamLedgeConflict'] = boolean(parser.get(preset, 'teamLedgeConflict'))
+        self.setting['ledgeInvincibilityTime'] = getNumbersFromString(parser.get(preset, 'ledgeInvincibilityTime'))
+        self.setting['regrabInvincibility'] = boolean(parser.get(preset, 'regrabInvincibility'))
+        self.setting['slowLedgeWakeupThreshold'] = getNumbersFromString(parser.get(preset, 'slowLedgeWakeupThreshold'))
+        
+        self.setting['airDodgeType'] = parser.get(preset, 'airDodgeType')
+        self.setting['freeDodgeSpecialFall'] = boolean(parser.get(preset, 'freeDodgeSpecialFall'))
+        self.setting['directionalDodgeWavedash'] = boolean(parser.get(preset, 'directionalDodgeWavedash'))
+
+
         
     def loadControls(self,parser):
         playerNum = 0

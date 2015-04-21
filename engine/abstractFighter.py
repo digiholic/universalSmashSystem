@@ -13,7 +13,7 @@ class AbstractFighter():
                  name,
                  var):
         
-        self.var = var
+        self.var = var    
         
         #Initialize engine variables
         self.keyBindings = Keybindings(settingsManager.getSetting('controls_' + str(playerNum)))
@@ -445,7 +445,7 @@ class AbstractFighter():
         else: return (self.keyBindings.k_left,self.keyBindings.k_right)
         
     def draw(self,screen,offset,scale):
-        spriteManager.RectSprite(self.rect).draw(screen, offset, scale)
+        if (settingsManager.getSetting('showSpriteArea')): spriteManager.RectSprite(self.rect).draw(screen, offset, scale)
         self.sprite.draw(screen,offset,scale)
         
         if self.mask: self.mask.draw(screen,offset,scale)
