@@ -5,20 +5,20 @@ import settingsManager
 
 
 class MusicManager:
-    def __init__(self):
+    def __init__(self,directory):
         self.myMusic = []
-        self.directory = os.path.join(os.path.dirname(settingsManager.__file__),"music")
+        self.directory = settingsManager.createPath(directory)
     
     def createSongData(self,path,name,prob):
         song = SongData(path,name,prob)
         self.saveSongData(song)
         
     def saveSongData(self,music):
-        f = open(os.path.join(self.directory,music.name+".tstm"),'w+')
+        f = open(os.path.join(self.directory,music.name+".tstm"),'wb')
         pickle.dump(music, f)
         
     def loadSongData(self,fname):
-        f = open(os.path.join(self.directory,fname+".tstm"),'r+')
+        f = open(os.path.join(self.directory,fname+".tstm"),'rb')
         ret = pickle.load(f)
         return ret
     
@@ -37,14 +37,14 @@ class SongData:
         pygame.mixer.music.stop()
 
 def test():
-    musicManager = MusicManager()
-    musicManager.createSongData("/home/digiholic/workspace/smashSystem/music/The Void - Lost Language (Original Edit).mp3", "The Void - Lost Language (NCS Release)", 100)
+    musicManager = MusicManager("music")
+    musicManager.createSongData(settingsManager.createPath("music\\The Void - Lost Language (Original Edit).ogg"), "The Void - Lost Language (NCS Release)",100)
     song = musicManager.loadSongData("The Void - Lost Language (NCS Release)")
     pygame.init()
     pygame.mixer.init()
     
     song.play()
-        
+    
     screen = pygame.display.set_mode([640,480])
     pygame.display.set_caption("USS Sprite Viewer")
     
@@ -53,8 +53,9 @@ def test():
             if event.type == pygame.QUIT:
                 return -1
             if event.type == pygame.KEYDOWN:
-                song.stop()
+                if event.key == pygame.K_SPACE: song.stop()
             
         screen.fill([100, 100, 100])
         pygame.display.flip()
+        
 if __name__  == '__main__': test()      

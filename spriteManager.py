@@ -107,8 +107,19 @@ class ImageSprite(Sprite):
         Sprite.__init__(self)
         self.image = pygame.image.load(path)
         self.rect = self.image.get_rect()
-
-
+    
+    def color_surface(self,color,alpha):
+        arr = pygame.surfarray.pixels3d(self.image)
+        arr[:,:,0] = color[0]
+        arr[:,:,1] = color[1]
+        arr[:,:,2] = color[2]
+        del arr
+    
+    def alpha(self,newAlpha):
+        arr = pygame.surfarray.pixels_alpha(self.image)
+        arr[arr!=0] = newAlpha
+        del arr
+        
 class SheetSprite(ImageSprite):
     def __init__(self,sheet,offset=0,colorMap = {}):
         Sprite.__init__(self)

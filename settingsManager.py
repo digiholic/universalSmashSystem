@@ -15,6 +15,9 @@ def getSetting(key = None):
     else:
         return settings
 
+def createPath(path):
+    return os.path.join(os.path.dirname(__file__),path)
+    
 def main():
     print getSetting().setting
     
