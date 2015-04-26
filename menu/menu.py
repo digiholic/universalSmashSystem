@@ -1,5 +1,6 @@
 import settingsManager
 import pygame
+import os
 from pygame.locals import *
 import main
 import spriteObject
@@ -100,5 +101,5 @@ class MenuButtonSprite(spriteObject.ImageSprite):
     def __init__(self, image, topleft, colorKey=[255, 255, 255], generateAlpha=True, filepath=__file__):
         spriteObject.ImageSprite.__init__(self, image, topleft, colorKey=colorKey, generateAlpha=generateAlpha, filepath=filepath)
         
-          
+        
 if __name__  == '__main__': main()

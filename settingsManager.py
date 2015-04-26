@@ -1,23 +1,45 @@
 import pygame.constants
 import re
 import os
+import imp
 from ConfigParser import SafeConfigParser
 
 settings = None
+sfxLib = None
 
 def getSetting(key = None):
     global settings
     if settings == None:
         settings = Settings()
-    
+        return settings
     if key:
         return settings.setting[key]
     else:
         return settings
 
+def getSfx():
+    global sfxLib
+    if sfxLib == None:
+        sfxLib = sfxLibrary()
+    return sfxLib
+    
 def createPath(path):
     return os.path.join(os.path.dirname(__file__),path)
+
+def importFromURI(filePath, uri, absl=False, suffix=""):
+    if not absl:
+        uri = os.path.normpath(os.path.join(os.path.dirname(filePath), uri))
+    path, fname = os.path.split(uri)
+    mname, ext = os.path.splitext(fname)
     
+    no_ext = os.path.join(path, mname)
+         
+    if os.path.exists(no_ext + '.py'):
+        try:
+            return imp.load_source((mname + suffix), no_ext + '.py')
+        except Exception as e:
+            print mname, e
+           
 def main():
     print getSetting().setting
     
@@ -104,6 +126,22 @@ class Settings():
                 }
             self.setting[groupName] = bindings
             playerNum += 1
+
+class sfxLibrary():
+    def __init__(self):
+        self.sounds = {}
+        supportedFileTypes = ['.wav', '.ogg']
+        directory = createPath("sfx")
+        
+        for f in os.listdir(directory):
+            fname, ext = os.path.splitext(f)
+            if supportedFileTypes.count(ext):
+                self.sounds[fname] = pygame.mixer.Sound(os.path.join(directory,f))
+        print "sounds: ", self.sounds
+                
+    def playSound(self,name):
+        self.sounds[name].play()
+        
 
         
 if __name__  == '__main__': main()
