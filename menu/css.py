@@ -20,6 +20,7 @@ class CSSScreen():
         background = background.convert()
     
         clock = pygame.time.Clock()
+        self.playerPanels = [PlayerPanel(0)]
         self.wheel = FighterWheel()
         self.wheelIncrement = 0
         self.holdtime = 0
@@ -75,8 +76,8 @@ class FighterWheel():
         
         self.currentIndex = 0
         self.currentFighter = self.fighters[0]
-        self.wheelSize = 7
-        self.visibleSprites = [None for x in range(self.wheelSize)]
+        self.wheelSize = 9
+        self.visibleSprites = [None for _ in range(self.wheelSize)]
         self.animateWheel()
         self.wheelShadow = spriteManager.ImageSprite(os.path.join(os.path.dirname(settingsManager.__file__),"sprites/cssbar_shadow.png"))
         
@@ -98,18 +99,32 @@ class FighterWheel():
         self.visibleSprites[0].alpha(255)
         
     def draw(self,screen):
-        center = 288
-        self.visibleSprites[0].draw(screen, [center, 256], 1.0)
+        center = 224
+        blankImage = pygame.Surface([512,64], pygame.SRCALPHA, 32).convert_alpha()
+        blankImage.blit(self.visibleSprites[0].image, [center,0])
         for i in range(1,(self.wheelSize/2)+1):
-            self.visibleSprites[2*i-1].draw(screen, [center + (64*i),256], 1.0)
-            self.visibleSprites[2*i].draw(screen, [center - (64*i),256], 1.0)
-
-        self.wheelShadow.draw(screen, [64,256], 1.0)
-                
+            blankImage.blit(self.visibleSprites[2*i-1].image, [center + (64*i),0])
+            blankImage.blit(self.visibleSprites[2*i].image, [center - (64*i),0])
+        
+        blankImage.blit(self.wheelShadow.image,[0,0])
+        screen.blit(blankImage, [64,256])
+                     
     def getFighterPortrait(self,fighter):
         portrait = fighter.cssIcon()
         if portrait == None:
             portrait = spriteManager.ImageSprite(os.path.join(os.path.dirname(settingsManager.__file__),"sprites","icon_unknown.png"))
         return portrait
-    
+
+class PlayerPanel(pygame.Surface):
+    def __init__(self,playerNum):
+        pygame.Surface.__init__(settingsManager.getSetting('windowWidth')/2,
+                                settingsManager.getSetting('windowHeight')/2)
+        self.playerNum = playerNum
+        self.wheel = FighterWheel()
+        self.active = False
+        self.controls = settingsManager.getSetting('controls_' + str(playerNum))
+        
+    def draw(self,screen):
+        self.wheel.draw(screen)
+        
 if __name__  == '__main__': CSSScreen()
