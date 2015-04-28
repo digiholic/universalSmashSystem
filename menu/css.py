@@ -62,7 +62,22 @@ class CSSScreen():
                 
             pygame.display.flip()
             clock.tick(60)
+
+class CSSWidget():
+    def __init__(self,panel,displayList,choicesList):
+        self.previousWidget = None
+        self.nextWidget = None
+        self.panel = panel
+        self.choices = []
+        for i,key in displayList:
+            self.choices.append((key,choicesList[i]))
         
+    def onConfirm(self):
+        pass
+    
+    def draw(self):
+        pass
+       
 class FighterWheel():
     def __init__(self):
         self.fighters = []
@@ -126,12 +141,14 @@ class PlayerPanel(pygame.Surface):
         self.playerNum = playerNum
         self.wheel = FighterWheel()
         self.active = False
+        self.activeObject = self.wheel
         
         self.wheelIncrement = 0
         self.holdtime = 0
         self.holdDistance = 0
         self.wheelOffset = [(self.get_width() - 256) / 2,
                             (self.get_height() - 32)]
+        self.bgSurface = None
     
     def update(self):
         if self.wheelIncrement != 0:
@@ -148,19 +165,36 @@ class PlayerPanel(pygame.Surface):
             else:
                 self.holdtime += 1
                 
+        if self.bgSurface and self.bgSurface.get_alpha() > 128:
+            self.bgSurface.set_alpha(self.bgSurface.get_alpha() - 10)
+                
     def keyPressed(self,key):
         if key != 'cancel' and self.active == False:
             self.active = True
             return
         if key == 'cancel' and self.active == True:
-            self.active = False
-            return
+            if self.activeObject == self.wheel:
+                self.active = False
+                return
+            else:
+                self.activeObject = self.wheel
+                self.bgSurface = None
+                return
         #TODO: Add more sound effects and shutter sprite
         
-        if key == 'left':      self.wheelIncrement = -1
-        elif key == 'right':   self.wheelIncrement = 1
-        elif key == 'confirm': print self.wheel.fighterAt(0)
-                
+        if key == 'left':
+            if self.activeObject == self.wheel:
+                self.wheelIncrement = -1
+        elif key == 'right':
+            if self.activeObject == self.wheel:
+                self.wheelIncrement = 1
+        elif key == 'confirm':
+            if self.activeObject == self.wheel:
+                print self.wheel.fighterAt(0)
+                self.bgSurface = self.copy()
+                self.bgSurface.set_alpha(240)
+                self.activeObject = None
+            
     def keyReleased(self,key):
         if key == 'right' or key == 'left':
             self.wheelIncrement = 0
@@ -170,7 +204,10 @@ class PlayerPanel(pygame.Surface):
     def draw(self,screen):
         if self.active:
             self.fill((0,0,0))
-            self.wheel.draw(self,self.wheelOffset)
+            if self.bgSurface:
+                self.blit(self.bgSurface,[0,0])
+            else:
+                self.wheel.draw(self,self.wheelOffset)
         else:
             self.fill(pygame.Color(settingsManager.getSetting('playerColor' + str(self.playerNum))))
             #draw closed shutter
