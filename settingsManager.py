@@ -87,6 +87,10 @@ class Settings():
         self.setting['showHurtboxes'] = self.getBoolean(parser,'graphics','displayHurtboxes')
         self.setting['showSpriteArea'] = self.getBoolean(parser,'graphics','displaySpriteArea')
         
+        self.setting['playerColor0'] = self.getString(parser, 'playerColors', 'player0')
+        self.setting['playerColor1'] = self.getString(parser, 'playerColors', 'player1')
+        self.setting['playerColor2'] = self.getString(parser, 'playerColors', 'player2')
+        self.setting['playerColor3'] = self.getString(parser, 'playerColors', 'player3')
         # Getting game information
         
         # The "preset" lets users define custom presets to switch between.

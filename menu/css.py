@@ -155,7 +155,8 @@ class PlayerPanel(pygame.Surface):
         if key == 'cancel' and self.active == True:
             self.active = False
             return
-            
+        #TODO: Add more sound effects and shutter sprite
+        
         if key == 'left':      self.wheelIncrement = -1
         elif key == 'right':   self.wheelIncrement = 1
         elif key == 'confirm': print self.wheel.fighterAt(0)
@@ -168,9 +169,10 @@ class PlayerPanel(pygame.Surface):
     
     def draw(self,screen):
         if self.active:
+            self.fill((0,0,0))
             self.wheel.draw(self,self.wheelOffset)
         else:
-            self.fill((self.playerNum*64,self.playerNum*64,self.playerNum*64))
+            self.fill(pygame.Color(settingsManager.getSetting('playerColor' + str(self.playerNum))))
             #draw closed shutter
         offset = [0,0]
         if self.playerNum == 1 or self.playerNum == 3: offset[0] = self.get_width()
