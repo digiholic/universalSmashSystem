@@ -27,11 +27,6 @@ class CSSScreen():
             self.playerControls.append(settingsManager.getControls(i))
             self.playerPanels.append(PlayerPanel(i))
         
-        self.wheel = FighterWheel()
-        self.wheelIncrement = 0
-        self.holdtime = 0
-        self.holdDistance = 0
-        
         while 1:
             #Start event loop
             for event in pygame.event.get():
@@ -43,34 +38,28 @@ class CSSScreen():
                     
                     for i,bindings in enumerate(self.playerControls):
                         if event.key == bindings['left']:
-                            self.wheelIncrement = -1
+                            self.playerPanels[i].keyPressed('left')    
                         elif event.key == bindings['right']:
-                            self.wheelIncrement = 1
+                            self.playerPanels[i].keyPressed('right')
                         elif event.key == bindings['attack']:
-                            print self.wheel.fighterAt(0)
+                            self.playerPanels[i].keyPressed('confirm')
+                        #TODO: Fix this when special button is added
+                        elif event.key == bindings['shield']:
+                            self.playerPanels[i].keyPressed('cancel')
                             
                 elif event.type == pygame.KEYUP:
-                    if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
-                        self.wheelIncrement = 0
-                        self.holdDistance = 0
-                        self.holdtime = 0
+                    for i,bindings in enumerate(self.playerControls):
+                        if event.key == bindings['left']:
+                            self.playerPanels[i].keyReleased('left')
+                        elif event.key == bindings['right']:
+                            self.playerPanels[i].keyReleased('right')             
             #End event loop
             
-            if self.wheelIncrement != 0:
-                if self.holdtime > self.holdDistance:
-                    if self.holdDistance == 0:
-                        self.holdDistance = 30
-                    elif self.holdDistance == 30:
-                        self.holdDistance = 20
-                    elif self.holdDistance == 20:
-                        self.holdDistance = 10
-                    settingsManager.getSfx().playSound('selectL')
-                    self.wheel.changeSelected(self.wheelIncrement)
-                    self.holdtime = 0
-                else:
-                    self.holdtime += 1
             screen.fill((128, 128, 128))
-            self.wheel.draw(screen)
+            for panel in self.playerPanels:
+                panel.update()
+                panel.draw(screen)
+                
             pygame.display.flip()
             clock.tick(60)
         
@@ -110,16 +99,16 @@ class FighterWheel():
         [spriteManager.ImageSprite.alpha(sprite, 128) for sprite in self.visibleSprites]
         self.visibleSprites[0].alpha(255)
         
-    def draw(self,screen):
-        center = 224
-        blankImage = pygame.Surface([512,64], pygame.SRCALPHA, 32).convert_alpha()
+    def draw(self, screen, location):
+        center = 112
+        blankImage = pygame.Surface([256,32], pygame.SRCALPHA, 32).convert_alpha()
         blankImage.blit(self.visibleSprites[0].image, [center,0])
         for i in range(1,(self.wheelSize/2)+1):
-            blankImage.blit(self.visibleSprites[2*i-1].image, [center + (64*i),0])
-            blankImage.blit(self.visibleSprites[2*i].image, [center - (64*i),0])
+            blankImage.blit(self.visibleSprites[2*i-1].image, [center + (32*i),0])
+            blankImage.blit(self.visibleSprites[2*i].image, [center - (32*i),0])
         
         blankImage.blit(self.wheelShadow.image,[0,0])
-        screen.blit(blankImage, [64,256])
+        screen.blit(blankImage, location)
                      
     def getFighterPortrait(self,fighter):
         portrait = fighter.cssIcon()
@@ -132,18 +121,60 @@ class PlayerPanel(pygame.Surface):
         pygame.Surface.__init__(self,(settingsManager.getSetting('windowWidth')/2,
                                 settingsManager.getSetting('windowHeight')/2))
         
+        print self.get_size()
         self.keys = settingsManager.getControls(playerNum)
         self.playerNum = playerNum
         self.wheel = FighterWheel()
         self.active = False
+        
+        self.wheelIncrement = 0
+        self.holdtime = 0
+        self.holdDistance = 0
+        self.wheelOffset = [(self.get_width() - 256) / 2,
+                            (self.get_height() - 32)]
     
+    def update(self):
+        if self.wheelIncrement != 0:
+            if self.holdtime > self.holdDistance:
+                if self.holdDistance == 0:
+                    self.holdDistance = 30
+                elif self.holdDistance == 30:
+                    self.holdDistance = 20
+                elif self.holdDistance == 20:
+                    self.holdDistance = 10
+                settingsManager.getSfx().playSound('selectL')
+                self.wheel.changeSelected(self.wheelIncrement)
+                self.holdtime = 0
+            else:
+                self.holdtime += 1
+                
     def keyPressed(self,key):
-        pass
-    
+        if key != 'cancel' and self.active == False:
+            self.active = True
+            return
+        if key == 'cancel' and self.active == True:
+            self.active = False
+            return
+            
+        if key == 'left':      self.wheelIncrement = -1
+        elif key == 'right':   self.wheelIncrement = 1
+        elif key == 'confirm': print self.wheel.fighterAt(0)
+                
     def keyReleased(self,key):
-        pass
+        if key == 'right' or key == 'left':
+            self.wheelIncrement = 0
+            self.holdDistance = 0
+            self.holdtime = 0
     
     def draw(self,screen):
-        self.wheel.draw(screen)
+        if self.active:
+            self.wheel.draw(self,self.wheelOffset)
+        else:
+            self.fill((self.playerNum*64,self.playerNum*64,self.playerNum*64))
+            #draw closed shutter
+        offset = [0,0]
+        if self.playerNum == 1 or self.playerNum == 3: offset[0] = self.get_width()
+        if self.playerNum == 2 or self.playerNum == 3: offset[1] = self.get_height()
+        screen.blit(self,offset)
         
 if __name__  == '__main__': CSSScreen()
