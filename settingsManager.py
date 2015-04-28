@@ -17,6 +17,26 @@ def getSetting(key = None):
     else:
         return settings
 
+def getControls(playerNum):
+    global settings
+    if settings == None:
+        settings = Settings()
+    
+    try:
+        return settings.setting['controls_' + str(playerNum)]
+    except:
+        settings.setting['controls_' + str(playerNum)] = {
+                                                          'left': None,
+                                                          'right': None,
+                                                          'up': None,
+                                                          'down': None,
+                                                          'jump': None,
+                                                          'attack': None,
+                                                          'shield': None
+                                                          }
+        
+        return settings.setting['controls_' + str(playerNum)]
+        
 def getSfx():
     global sfxLib
     if sfxLib == None:
@@ -40,19 +60,6 @@ def importFromURI(filePath, uri, absl=False, suffix=""):
         except Exception as e:
             print mname, e
            
-def main():
-    print getSetting().setting
-    
-def getNumbersFromString(string, many = False):
-    if many:
-        return map(int, re.findall(r'\d+', string))
-    else:
-        return int(re.search(r'\d+', string).group())
-
-def boolean(string):
-    # Well, I already have the function made, might as well cover all the bases.
-    return string in ['true', 'True', 't', 'T', '1', '#T', 'y', 'yes', 'on', 'enabled']
-    
 class Settings():
     def __init__(self):
         self.KeyIdMap = {}
@@ -69,17 +76,16 @@ class Settings():
         self.setting = {}
         
         # Getting the window information
-        size = parser.get('window', 'windowSize')
         
-        self.setting['windowName']    = parser.get('window', 'windowName')
-        self.setting['windowSize']    = getNumbersFromString(size,True)
+        self.setting['windowName']    = self.getString(parser,'window','windowName')
+        self.setting['windowSize']    = self.getNumber(parser, 'window', 'windowSize',True) 
         self.setting['windowWidth']   = self.setting['windowSize'][0]
         self.setting['windowHeight']  = self.setting['windowSize'][1]
-        self.setting['frameCap']      = getNumbersFromString(parser.get('window', 'frameCap'))
+        self.setting['frameCap']      = self.getNumber(parser, 'window', 'frameCap')
         
-        self.setting['showHitboxes']  = boolean(parser.get('graphics','displayHitboxes'))
-        self.setting['showHurtboxes'] = boolean(parser.get('graphics','displayHurtboxes'))
-        self.setting['showSpriteArea'] = boolean(parser.get('graphics','displaySpriteArea'))
+        self.setting['showHitboxes']  = self.getBoolean(parser, 'graphics', 'displayHitboxes')
+        self.setting['showHurtboxes'] = self.getBoolean(parser,'graphics','displayHurtboxes')
+        self.setting['showSpriteArea'] = self.getBoolean(parser,'graphics','displaySpriteArea')
         
         # Getting game information
         
@@ -90,26 +96,45 @@ class Settings():
         self.loadControls(parser)
         
     def loadGameSettings(self,parser,preset):
-        self.setting['gravity'] = parser.get(preset, 'gravityMultiplier')
-        self.setting['weight'] = parser.get(preset, 'weightMultiplier')
-        self.setting['friction'] = parser.get(preset, 'frictionMultiplier')
-        self.setting['airControl'] = parser.get(preset, 'airControlMultiplier')
-        self.setting['hitstun'] = parser.get(preset, 'hitstunMultiplier')
-        self.setting['hitlag'] = parser.get(preset, 'hitlagMultiplier')
+        self.setting['gravity'] = float(self.getNumber(parser, preset, 'gravityMultiplier'))
+        self.setting['weight'] = float(self.getNumber(parser, preset, 'weightMultiplier'))
+        self.setting['friction'] = float(self.getNumber(parser, preset, 'frictionMultiplier'))
+        self.setting['airControl'] = float(self.getNumber(parser, preset, 'airControlMultiplier'))
+        self.setting['hitstun'] = float(self.getNumber(parser, preset, 'hitstunMultiplier'))
+        self.setting['hitlag'] = float(self.getNumber(parser, preset, 'hitlagMultiplier'))
         
-        self.setting['ledgeConflict'] = parser.get(preset, 'ledgeConflict')
-        self.setting['ledgeSweetspotSize'] = parser.get(preset, 'ledgeSweetspotSize')
-        self.setting['ledgeSweetspotForwardOnly'] = boolean(parser.get(preset, 'ledgeSweetspotForwardOnly'))
-        self.setting['teamLedgeConflict'] = boolean(parser.get(preset, 'teamLedgeConflict'))
-        self.setting['ledgeInvincibilityTime'] = getNumbersFromString(parser.get(preset, 'ledgeInvincibilityTime'))
-        self.setting['regrabInvincibility'] = boolean(parser.get(preset, 'regrabInvincibility'))
-        self.setting['slowLedgeWakeupThreshold'] = getNumbersFromString(parser.get(preset, 'slowLedgeWakeupThreshold'))
+        self.setting['ledgeConflict'] = self.getString(parser, preset, 'ledgeConflict')
+        self.setting['ledgeSweetspotSize'] = self.getString(parser, preset, 'ledgeSweetspotSize')
+        self.setting['ledgeSweetspotForwardOnly'] = self.getBoolean(parser, preset, 'ledgeSweetspotForwardOnly')
+        self.setting['teamLedgeConflict'] = self.getBoolean(parser, preset, 'teamLedgeConflict')
+        self.setting['ledgeInvincibilityTime'] = self.getNumber(parser, preset, 'ledgeInvincibilityTime')
+        self.setting['regrabInvincibility'] = self.getBoolean(parser, preset, 'regrabInvincibility')
+        self.setting['slowLedgeWakeupThreshold'] = self.getNumber(parser, preset, 'slowLedgeWakeupThreshold')
         
-        self.setting['airDodgeType'] = parser.get(preset, 'airDodgeType')
-        self.setting['freeDodgeSpecialFall'] = boolean(parser.get(preset, 'freeDodgeSpecialFall'))
-        self.setting['directionalDodgeWavedash'] = boolean(parser.get(preset, 'directionalDodgeWavedash'))
-
-
+        self.setting['airDodgeType'] = self.getString(parser, preset, 'airDodgeType')
+        self.setting['freeDodgeSpecialFall'] = self.getBoolean(parser, preset, 'freeDodgeSpecialFall')
+        self.setting['enableWavedash'] = self.getBoolean(parser, preset, 'enableWavedash')
+    
+    def getString(self,parser,preset,key):
+        try:
+            return parser.get(preset,key)
+        except Exception,e:
+            print e
+            return ""
+    
+    def getBoolean(self,parser,preset,key):
+        try:
+            return boolean(parser.get(preset,key))
+        except Exception,e:
+            print e
+            return False
+        
+    def getNumber(self,parser,preset,key,islist = False):
+        try:
+            return getNumbersFromString(parser.get(preset,key),islist)
+        except Exception,e:
+            print e
+            return 0
         
     def loadControls(self,parser):
         playerNum = 0
@@ -126,7 +151,7 @@ class Settings():
                 }
             self.setting[groupName] = bindings
             playerNum += 1
-
+                
 class sfxLibrary():
     def __init__(self):
         self.sounds = {}
@@ -142,6 +167,18 @@ class sfxLibrary():
     def playSound(self,name):
         self.sounds[name].play()
         
+def main():
+    print getSetting().setting
+    
+def getNumbersFromString(string, many = False):
+    if many:
+        return map(int, re.findall(r'\d+', string))
+    else:
+        return int(re.search(r'\d+', string).group())
 
+def boolean(string):
+    # Well, I already have the function made, might as well cover all the bases.
+    return string in ['true', 'True', 't', 'T', '1', '#T', 'y', 'yes', 'on', 'enabled']
+    
         
 if __name__  == '__main__': main()

@@ -20,30 +20,42 @@ class CSSScreen():
         background = background.convert()
     
         clock = pygame.time.Clock()
-        self.playerPanels = [PlayerPanel(0)]
+        self.playerControls = []
+        self.playerPanels = []
+        
+        for i in range(0,4):
+            self.playerControls.append(settingsManager.getControls(i))
+            self.playerPanels.append(PlayerPanel(i))
+        
         self.wheel = FighterWheel()
         self.wheelIncrement = 0
         self.holdtime = 0
         self.holdDistance = 0
         
         while 1:
+            #Start event loop
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        self.wheelIncrement = -1
-                    elif event.key == pygame.K_RIGHT:
-                        self.wheelIncrement = 1
-                    elif event.key == pygame.K_ESCAPE:
+                    if event.key == pygame.K_ESCAPE:
                         return
-                    elif event.key == pygame.K_z:
-                        print self.wheel.fighterAt(0)
+                    
+                    for i,bindings in enumerate(self.playerControls):
+                        if event.key == bindings['left']:
+                            self.wheelIncrement = -1
+                        elif event.key == bindings['right']:
+                            self.wheelIncrement = 1
+                        elif event.key == bindings['attack']:
+                            print self.wheel.fighterAt(0)
+                            
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_RIGHT or event.key == pygame.K_LEFT:
                         self.wheelIncrement = 0
                         self.holdDistance = 0
                         self.holdtime = 0
+            #End event loop
+            
             if self.wheelIncrement != 0:
                 if self.holdtime > self.holdDistance:
                     if self.holdDistance == 0:
@@ -117,13 +129,20 @@ class FighterWheel():
 
 class PlayerPanel(pygame.Surface):
     def __init__(self,playerNum):
-        pygame.Surface.__init__(settingsManager.getSetting('windowWidth')/2,
-                                settingsManager.getSetting('windowHeight')/2)
+        pygame.Surface.__init__(self,(settingsManager.getSetting('windowWidth')/2,
+                                settingsManager.getSetting('windowHeight')/2))
+        
+        self.keys = settingsManager.getControls(playerNum)
         self.playerNum = playerNum
         self.wheel = FighterWheel()
         self.active = False
-        self.controls = settingsManager.getSetting('controls_' + str(playerNum))
-        
+    
+    def keyPressed(self,key):
+        pass
+    
+    def keyReleased(self,key):
+        pass
+    
     def draw(self,screen):
         self.wheel.draw(screen)
         
