@@ -4,6 +4,8 @@ import os
 import imp
 import pygame
 import menu
+import battle
+import stages.stage as stage
 
 class CSSScreen():
     def __init__(self):
@@ -43,6 +45,10 @@ class CSSScreen():
                             self.playerPanels[i].keyPressed('right')
                         elif event.key == bindings['attack']:
                             self.playerPanels[i].keyPressed('confirm')
+                            if self.checkForSelections():
+                                print self.getFightersFromPanels()
+                                currentBattle = battle.Battle(battle.Rules(),self.getFightersFromPanels(),stage.Stage())
+                                currentBattle.startBattle(screen)
                         #TODO: Fix this when special button is added
                         elif event.key == bindings['shield']:
                             self.playerPanels[i].keyPressed('cancel')
@@ -63,6 +69,19 @@ class CSSScreen():
             pygame.display.flip()
             clock.tick(60)
 
+    def checkForSelections(self):
+        for panel in self.playerPanels:
+            if panel.active and panel.chosenFighter == None:
+                return False
+        return True
+    
+    def getFightersFromPanels(self):
+        fighterList = []
+        for num,panel in enumerate(self.playerPanels):
+            if panel.active:
+                fighterList.append(panel.chosenFighter.getFighter(num,0))
+        return fighterList
+    
 class CSSWidget():
     def __init__(self,panel,displayList,choicesList):
         self.previousWidget = None
@@ -136,12 +155,12 @@ class PlayerPanel(pygame.Surface):
         pygame.Surface.__init__(self,(settingsManager.getSetting('windowWidth')/2,
                                 settingsManager.getSetting('windowHeight')/2))
         
-        print self.get_size()
         self.keys = settingsManager.getControls(playerNum)
         self.playerNum = playerNum
         self.wheel = FighterWheel()
         self.active = False
         self.activeObject = self.wheel
+        self.chosenFighter = None
         
         self.wheelIncrement = 0
         self.holdtime = 0
@@ -178,6 +197,7 @@ class PlayerPanel(pygame.Surface):
                 return
             else:
                 self.activeObject = self.wheel
+                self.chosenFighter = None
                 self.bgSurface = None
                 return
         #TODO: Add more sound effects and shutter sprite
@@ -190,11 +210,11 @@ class PlayerPanel(pygame.Surface):
                 self.wheelIncrement = 1
         elif key == 'confirm':
             if self.activeObject == self.wheel:
-                print self.wheel.fighterAt(0)
                 self.bgSurface = self.copy()
                 self.bgSurface.set_alpha(240)
                 self.activeObject = None
-            
+                self.chosenFighter = self.wheel.fighterAt(0)
+                
     def keyReleased(self,key):
         if key == 'right' or key == 'left':
             self.wheelIncrement = 0

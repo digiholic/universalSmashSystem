@@ -35,3 +35,6 @@ class Fighter(abstractFighter.AbstractFighter):
         abstractFighter.AbstractFighter.update(self)
         
 def cssIcon(): return None
+
+def getFighter(playerNum,colorNum):
+    return Fighter(playerNum)
