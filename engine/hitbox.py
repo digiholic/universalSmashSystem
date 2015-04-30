@@ -1,4 +1,5 @@
 import spriteObject
+from engine.abstractFighter import AbstractFighter
 
 class Hitbox(spriteObject.RectSprite):
     def __init__(self,center,size,owner,hitbox_id=0):
@@ -34,6 +35,7 @@ class DamageHitbox(Hitbox):
         self.hitstun = hitstun
         
     def onCollision(self,other):
+        print other
         if other.lockHitbox(self,self.hitstun):
             other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory)
             print other.damage

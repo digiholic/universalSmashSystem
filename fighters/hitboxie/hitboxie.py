@@ -117,8 +117,8 @@ class Hitboxie(abstractFighter.AbstractFighter):
         abstractFighter.AbstractFighter.die(self)
         self.changeAction(self.actions.Fall())
     
-    def applyKnockback(self,kb,kbg,trajectory):
-        abstractFighter.AbstractFighter.applyKnockback(self, kb, kbg, trajectory)
+    def applyKnockback(self,damage,kb,kbg,trajectory):
+        abstractFighter.AbstractFighter.applyKnockback(self, damage, kb, kbg, trajectory)
         self.changeAction(self.actions.HitStun(40,trajectory))
         
 ########################################################
