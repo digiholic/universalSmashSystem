@@ -46,7 +46,6 @@ class CSSScreen():
                         elif event.key == bindings['attack']:
                             self.playerPanels[i].keyPressed('confirm')
                             if self.checkForSelections():
-                                print self.getFightersFromPanels()
                                 currentBattle = battle.Battle(battle.Rules(),self.getFightersFromPanels(),stage.Stage())
                                 currentBattle.startBattle(screen)
                         #TODO: Fix this when special button is added
@@ -79,7 +78,7 @@ class CSSScreen():
         fighterList = []
         for num,panel in enumerate(self.playerPanels):
             if panel.active:
-                fighterList.append(panel.chosenFighter.getFighter(num,0))
+                fighterList.append(panel.chosenFighter.getFighter(num,num))
         return fighterList
     
 class CSSWidget():

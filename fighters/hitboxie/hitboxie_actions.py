@@ -153,7 +153,7 @@ class NeutralAir(action.Action):
         actor.preferred_xsped = 0
         actor.changeSprite("nair",0)
         self.subImage = 0
-        self.nairHitbox = hitbox.DamageHitbox([0,0],[72,72],actor,10,4,0.6,60,60,0)
+        self.nairHitbox = hitbox.DamageHitbox([0,0],[72,72],actor,10,4,0.6,361,60,0)
         #self.dsmashSweetspot
     
     def stateTransitions(self, actor):
@@ -296,13 +296,16 @@ class HitStun(baseActions.HitStun):
     def __init__(self,hitstun,direction):
         baseActions.HitStun.__init__(self, hitstun, direction)
         
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("jump")
-            
+    def update(self,actor):          
         if self.frame == self.lastFrame:
             actor.current_action = Fall()
         baseActions.HitStun.update(self, actor)
+        
+        if self.frame == 1:
+            if actor.grounded:
+                actor.changeSprite("land",1)
+            else:
+                actor.changeSprite("jump")
              
 class Jump(baseActions.Jump):
     def __init__(self):

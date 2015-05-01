@@ -89,10 +89,12 @@ class HitStun(action.Action):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.grounded = False
-            (dir,mag) = actor.getDirectionMagnitude()
-            if mag > 10:
-                actor.rotateSprite(self.direction)
+            (direct,mag) = actor.getDirectionMagnitude()
+            print "direction:", direct
+            if direct != 0 and direct != 180:
+                actor.grounded = False
+                if mag > 10:
+                    actor.rotateSprite(self.direction)
             actor.preferred_xspeed = 0
             
         if self.frame == self.lastFrame:

@@ -29,7 +29,6 @@ class SpriteHandler(Sprite):
         self.index = 0
         self.angle = 0
         
-        print self.imageLibrary[self.flip]
         self.image = self.imageLibrary[self.flip][self.startingImage][self.index]
         
         self.rect = self.image.get_rect()

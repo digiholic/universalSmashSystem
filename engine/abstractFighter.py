@@ -297,17 +297,24 @@ class AbstractFighter():
         # Thank you, ssbwiki!
         totalKB = (((((p/10) + (p*d)/20) * (200/(w+100))*1.4) + 5) * s) + b
         
+        #"Sakurai Angle" calculation
+        if trajectory == 361:
+            if self.grounded:
+                if totalKB < 30: trajectory = 0
+                else: trajectory = 43
+            else: trajectory = 43
+            print trajectory
+            
         #Directional Incluence
         if (trajectory < 45 or trajectory > 315) or (trajectory < 225 and trajectory > 135):
             if self.keysContain(self.keyBindings.k_up):
                 trajectory += 15
             if self.keysContain(self.keyBindings.k_down):
                 trajectory -= 15
+        print totalKB, trajectory
         self.setSpeed(totalKB, trajectory, False)
         self.preferred_xspeed = 0
         self.preferred_yspeed = 0
-        
-        print totalKB
     
     """
     Set the actor's speed. Instead of modifying the change_x and change_y values manually,
@@ -330,7 +337,6 @@ class AbstractFighter():
             self.change_y = y
         
     def rotateSprite(self,direction):
-        print direction
         self.sprite.rotate(-1 * (90 - direction))
             
     def unRotate(self):
