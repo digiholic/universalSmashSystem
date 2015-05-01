@@ -83,11 +83,16 @@ class HitStun(action.Action):
     def __init__(self,hitstun,direction):
         action.Action.__init__(self, hitstun)
         self.direction = direction
-    
+        
+    def tearDown(self, actor, newAction):
+        actor.unRotate()
+        
     def update(self,actor):
         if self.frame == 0:
             actor.grounded = False
-            actor.rotateSprite(self.direction)
+            (dir,mag) = actor.getDirectionMagnitude()
+            if mag > 10:
+                actor.rotateSprite(self.direction)
             actor.preferred_xspeed = 0
             
         if self.frame == self.lastFrame:

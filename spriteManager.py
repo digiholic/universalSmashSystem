@@ -4,6 +4,7 @@ import os
 class Sprite(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
+        self.angle = 0
     
     def draw(self,screen,offset,scale):
         #TODO: Check for bit depth first, inform user about alpha
@@ -11,6 +12,8 @@ class Sprite(pygame.sprite.Sprite):
         w = int(round(self.rect.width * scale))
         newOff = (int(offset[0] * scale), int(offset[1] * scale))
         blitSprite = pygame.transform.smoothscale(self.image, (w,h))
+        if self.angle != 0:
+            blitSprite = pygame.transform.rotate(blitSprite,self.angle)
         screen.blit(blitSprite,pygame.Rect(newOff,(w,h)))
   
 class SpriteHandler(Sprite):
@@ -24,6 +27,7 @@ class SpriteHandler(Sprite):
         self.flip = "right"
         self.currentSheet = startingImage
         self.index = 0
+        self.angle = 0
         
         print self.imageLibrary[self.flip]
         self.image = self.imageLibrary[self.flip][self.startingImage][self.index]
@@ -54,6 +58,8 @@ class SpriteHandler(Sprite):
         self.index = index % len(self.imageLibrary[self.flip][self.currentSheet])
         self.get_image()
     
+    def rotate(self,angle = 0):
+        self.angle = angle
     def get_image(self):
         try:
             self.image = self.imageLibrary[self.flip][self.currentSheet][self.index]

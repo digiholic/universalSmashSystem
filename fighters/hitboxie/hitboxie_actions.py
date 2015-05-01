@@ -14,12 +14,17 @@ class NeutralAttack(action.Action):
         actor.changeSprite("neutral",0)
         self.jabHitbox = self.outwardHitbox(actor)
     
+    def stateTransitions(self, actor):
+        if self.frame == self.lastFrame:
+            if actor.keysContain(actor.keyBindings.k_attack):
+                self.frame = 0
+                
     # Here's an example of creating an anonymous hitbox class.
     # This one calculates its trajectory based off of the angle between the two fighters.
     # Since this hitbox if specifically for this attack, we can hard code in the values.
     class outwardHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
-            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 2, 8, 0.2, 0, 20, 0)
+            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 2, 8, 0.2, 0, 5, 0)
             
         def onCollision(self,other):
             self.trajectory = abstractFighter.getDirectionBetweenPoints(self.owner.rect.midbottom, other.rect.center)
@@ -293,7 +298,7 @@ class HitStun(baseActions.HitStun):
         
     def update(self,actor):
         if self.frame == 0:
-            actor.changeSprite("fall")
+            actor.changeSprite("jump")
             
         if self.frame == self.lastFrame:
             actor.current_action = Fall()
