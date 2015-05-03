@@ -193,12 +193,17 @@ grabbable is a tuple of booleans, determining if the corresponding ledge
 is grabble, so a (True,False) would mean the left edge is grabbable,
 but the right edge is not.
 """
-class Platform():
+class Platform(pygame.Rect):
     def __init__(self,leftPoint, rightPoint,grabbable = (False,False)):
         self.leftPoint = leftPoint
         self.rightPoint = rightPoint
+        self.xdist = rightPoint[0] - leftPoint[0]
+        self.ydist = rightPoint[1] - leftPoint[1]
         self.angle = self.getDirectionBetweenPoints(leftPoint, rightPoint)
+        
         self.playersOn = []
+        pygame.Rect.__init__(leftPoint, [self.xdist,self.ydist])
+         
         ledgeSize = settingsManager.getSetting('ledgeSweetspotSize')
         if True in grabbable:
             if ledgeSize.lower() == 'large':
@@ -220,10 +225,10 @@ class Platform():
         
         
     def playerCollide(self,player):
-        pass
+        self.playersOn.append(player)
     
     def playerLeaves(self,player):
-        pass
+        self.playersOn.remove(player)
     
     def ledgeGrabbed(self,fighter):
         pass
