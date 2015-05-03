@@ -196,13 +196,13 @@ class Stage():
     Draws the background elements in order.
     """
     def drawBG(self,screen):
-        for plat in self.platform_list: 
-            platSprite = spriteObject.RectSprite(plat.topleft,plat.size)
-            platSprite.draw(screen,self.stageToScreen(platSprite.rect),self.getScale())
         for sprite in self.backgroundSprites:        
             sprite.draw(screen,self.stageToScreen(sprite.rect),self.getScale())
             
     def drawFG(self,screen):
+        for plat in self.platform_list: 
+            platSprite = spriteObject.RectSprite(plat.rect.topleft,plat.rect.size)
+            platSprite.draw(screen,self.stageToScreen(platSprite.rect),self.getScale())
         for sprite in self.foregroundSprites:
             sprite.draw(screen,self.stageToScreen(sprite.rect),self.getScale())
 
@@ -214,7 +214,7 @@ grabbable is a tuple of booleans, determining if the corresponding ledge
 is grabble, so a (True,False) would mean the left edge is grabbable,
 but the right edge is not.
 """
-class Platform(pygame.Rect):
+class Platform(pygame.sprite.Sprite):
     def __init__(self,leftPoint, rightPoint,grabbable = (False,False)):
         self.leftPoint = leftPoint
         self.rightPoint = rightPoint
@@ -223,7 +223,7 @@ class Platform(pygame.Rect):
         self.angle = self.getDirectionBetweenPoints(leftPoint, rightPoint)
         
         self.playersOn = []
-        pygame.Rect.__init__(self,[leftPoint[0],min(leftPoint[1],rightPoint[1])], [self.xdist,self.ydist])
+        self.rect = pygame.Rect([leftPoint[0],min(leftPoint[1],rightPoint[1])], [self.xdist,self.ydist])
         
         leftLedge = None
         rightLedge = None

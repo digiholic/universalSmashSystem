@@ -4,7 +4,6 @@ import math
 import settingsManager
 import spriteManager
 import engine.article as article
-from numpy.core.umath import square
 
 class AbstractFighter():
     
@@ -156,6 +155,7 @@ class AbstractFighter():
     def checkForGround(self):
         #Check if there's a platform below us to update the grounded flag 
         self.rect.y += 2
+        
         platform_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
         self.rect.y -= 2      
         if (len(platform_hit_list) > 0): self.grounded = True
