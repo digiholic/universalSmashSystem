@@ -87,11 +87,7 @@ class HitStun(action.Action):
     def update(self,actor):
         if self.frame == 0:
             actor.grounded = False
-            actor.rotateSprite(self.direction)
             actor.preferred_xspeed = 0
-            
-        if self.frame == self.lastFrame:
-            actor.unRotate()
             
         self.frame += 1
 
