@@ -35,7 +35,6 @@ class DamageHitbox(Hitbox):
         self.hitstun = hitstun
         
     def onCollision(self,other):
-        print other
         if other.lockHitbox(self,self.hitstun):
             other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory)
             print other.damage

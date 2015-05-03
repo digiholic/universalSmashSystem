@@ -4,6 +4,7 @@ import math
 import settingsManager
 import spriteManager
 import engine.article as article
+from numpy.core.umath import square
 
 class AbstractFighter():
     
@@ -296,12 +297,21 @@ class AbstractFighter():
         # Thank you, ssbwiki!
         totalKB = (((((p/10) + (p*d)/20) * (200/(w+100))*1.4) + 5) * s) + b
         
+        #"Sakurai Angle" calculation
+        if trajectory == 361:
+            if self.grounded:
+                if totalKB < 30: trajectory = 0
+                else: trajectory = 43
+            else: trajectory = 43
+            print trajectory
+            
         #Directional Incluence
         if (trajectory < 45 or trajectory > 315) or (trajectory < 225 and trajectory > 135):
             if self.keysContain(self.keyBindings.k_up):
                 trajectory += 15
             if self.keysContain(self.keyBindings.k_down):
                 trajectory -= 15
+        print totalKB, trajectory
         self.setSpeed(totalKB, trajectory, False)
         self.preferred_xspeed = 0
         self.preferred_yspeed = 0
@@ -318,9 +328,7 @@ class AbstractFighter():
                 if set to False, the fighter's speed will instantly change to that speed.
     """
     def setSpeed(self,speed,direction,preferred = True):
-        vectors = getXYFromDM(direction,speed)
-        x = vectors.pop(0)
-        y = vectors.pop(0)
+        (x,y) = getXYFromDM(direction,speed)
         if preferred:
             self.preferred_xspeed = x
             self.preferred_yspeed = y
@@ -329,15 +337,11 @@ class AbstractFighter():
             self.change_y = y
         
     def rotateSprite(self,direction):
-        self.angle += -direction
-        self.sprite.image = pygame.transform.rotate(self.sprite.image,-direction)
-        #self.rect = self.sprite.image.get_rect(center=self.rect.center)
+        self.sprite.rotate(-1 * (90 - direction))
             
     def unRotate(self):
-        self.sprite.image = pygame.transform.rotate(self.sprite.image, -self.angle)
-        #self.rect = self.sprite.image.get_rect(center=self.rect.center)
-        self.angle = 0
-    
+        self.sprite.rotate()
+        
     def die(self):
         self.damage = 0
         self.change_x = 0
@@ -471,6 +475,26 @@ class AbstractFighter():
         
     def createMask(self,color,duration,pulse = False,pulseSize = 16):
         self.mask = spriteManager.MaskSprite(self.sprite,color,duration,pulse, pulseSize)
+        
+    def getDirectionMagnitude(self):
+        if self.change_x == 0:
+            magnitude = self.change_y
+            direction = 90 if self.change_y < 0 else 270
+            return (direction,magnitude)
+        if self.change_y == 0:
+            magnitude = self.change_x
+            direction = 0 if self.change_x > 0 else 180
+            return(direction,magnitude)
+        
+        direction = math.atan(float(-self.change_y)/float(self.change_x))
+        direction = math.degrees(direction)
+        if direction < 0: direction = 180 + direction
+        direction = round(direction)
+        magnitude = math.sqrt(math.pow(self.change_x, 2) + math.pow(-self.change_y, 2))
+        
+        return (direction,magnitude)
+        
+        
     
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
@@ -484,7 +508,7 @@ def getXYFromDM(direction,magnitude):
     rad = math.radians(direction)
     x = round(math.cos(rad) * magnitude,5)
     y = -round(math.sin(rad) * magnitude,5)
-    return [x,y]
+    return (x,y)
 
 """
 Get the direction between two points. 0 means the second point is to the right of the first,
