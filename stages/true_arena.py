@@ -2,6 +2,7 @@ import stages.stage as stage
 import pygame
 import settingsManager
 import spriteManager
+import os
 
 def getStage():
     return TrueArena()
@@ -14,14 +15,11 @@ class TrueArena(stage.Stage):
         self.camera_maximum = pygame.Rect(48,32,2064,1376)
         self.blast_line = pygame.Rect(0,0,2160,1440)
         
-        self.camera_position.midtop = self.size.midtop
-        self.camera_preferred_position.midtop = self.size.midtop
+        #self.platform_list = [spriteObject.RectSprite([552,824],[798,342])]
+        self.platform_list = [stage.Platform([552,824],[1350,824])]
         
-        self.deadZone = [64,32]
+        bgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__),"sprites/fd.png"))
+        bgSprite.rect.topleft = [494,790]
+        self.backgroundSprites.append(bgSprite)
         
-        self.platform_list = [spriteObject.RectSprite([552,824],[798,342])]
-        
-        self.sprite = spriteObject.ImageSprite("fd",[494,790],generateAlpha=False,filepath = __file__)
-        
-        self.preferred_zoomLevel = 1.0
-        self.zoomLevel = 1.0
+        self.initializeCamera()

@@ -1,5 +1,6 @@
 import pygame
-import stages.stage as stage
+import stages.stage
+import stages.true_arena as stage
 import settingsManager
 import imp
 import os
@@ -17,7 +18,7 @@ def main(debug = False):
     background = pygame.Surface(screen.get_size())
     background = background.convert()
     background.fill((128, 128, 128))
-    current_stage = stage.Stage()
+    current_stage = stage.TrueArena()
     active_hitboxes = pygame.sprite.Group()
     
     #gameObjects
@@ -63,7 +64,7 @@ def main(debug = False):
         
         current_stage.update()
         current_stage.cameraUpdate()
-        current_stage.draw(screen)
+        current_stage.drawBG(screen)
         for obj in gameObjects:
             obj.update()
             if hasattr(obj,'active_hitboxes'):
@@ -84,7 +85,8 @@ def main(debug = False):
             if (settings['showHitboxes']):
                 for hbox in active_hitboxes:
                     hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
-              
+        
+        current_stage.drawFG(screen)      
         clock.tick(60)    
         pygame.display.flip()
 

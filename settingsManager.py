@@ -108,7 +108,8 @@ class Settings():
         self.setting['hitlag'] = float(self.getNumber(parser, preset, 'hitlagMultiplier'))
         
         self.setting['ledgeConflict'] = self.getString(parser, preset, 'ledgeConflict')
-        self.setting['ledgeSweetspotSize'] = self.getString(parser, preset, 'ledgeSweetspotSize')
+        sweetSpotDict = {'large': [128,128], 'medium': [64,64], 'small': [32,32]}
+        self.setting['ledgeSweetspotSize'] = sweetSpotDict[self.getString(parser, preset, 'ledgeSweetspotSize')]
         self.setting['ledgeSweetspotForwardOnly'] = self.getBoolean(parser, preset, 'ledgeSweetspotForwardOnly')
         self.setting['teamLedgeConflict'] = self.getBoolean(parser, preset, 'teamLedgeConflict')
         self.setting['ledgeInvincibilityTime'] = self.getNumber(parser, preset, 'ledgeInvincibilityTime')
@@ -121,7 +122,7 @@ class Settings():
     
     def getString(self,parser,preset,key):
         try:
-            return parser.get(preset,key)
+            return parser.get(preset,key).lower()
         except Exception,e:
             print e
             return ""
@@ -155,7 +156,7 @@ class Settings():
                 }
             self.setting[groupName] = bindings
             playerNum += 1
-                
+            
 class sfxLibrary():
     def __init__(self):
         self.sounds = {}
