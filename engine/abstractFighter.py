@@ -13,7 +13,7 @@ class AbstractFighter():
                  name,
                  var):
         
-        self.var = var    
+        self.var = var
         
         #Initialize engine variables
         self.keyBindings = Keybindings(settingsManager.getSetting('controls_' + str(playerNum)))
@@ -234,6 +234,14 @@ class AbstractFighter():
     def doAirDodge(self):
         self.changeAction(baseActions.AirDodge())
         
+    def doLedgeGrab(self,ledge):
+        self.changeAction(baseActions.LedgeGrab(ledge))
+        
+    def doLedgeGetup(self):
+        print "getup"
+        
+    def doGetTrumped(self):
+        print "trumped"
 ########################################################
 #                  STATE CHANGERS                      #
 ########################################################

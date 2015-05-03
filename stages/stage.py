@@ -8,6 +8,7 @@ class Stage():
         #Platforms are static, non-moving interactables.
         #They are never updated after creation, to save on memory.
         self.platform_list = []
+        self.platform_ledges = []
         
         #Entities are updated whenever the frame is drawn.
         #If it changes at all on the stage, it is an entity
@@ -203,6 +204,9 @@ class Stage():
         for plat in self.platform_list: 
             platSprite = spriteObject.RectSprite(plat.rect.topleft,plat.rect.size)
             platSprite.draw(screen,self.stageToScreen(platSprite.rect),self.getScale())
+        for ledge in self.platform_ledges:
+            ledgeSprite = spriteObject.RectSprite(ledge.rect.topleft,ledge.rect.size,[0,0,255])
+            ledgeSprite.draw(screen,self.stageToScreen(ledge.rect),self.getScale())
         for sprite in self.foregroundSprites:
             sprite.draw(screen,self.stageToScreen(sprite.rect),self.getScale())
 
@@ -216,6 +220,7 @@ but the right edge is not.
 """
 class Platform(pygame.sprite.Sprite):
     def __init__(self,leftPoint, rightPoint,grabbable = (False,False)):
+        pygame.sprite.Sprite.__init__(self)
         self.leftPoint = leftPoint
         self.rightPoint = rightPoint
         self.xdist = max(1,rightPoint[0] - leftPoint[0])
@@ -229,7 +234,7 @@ class Platform(pygame.sprite.Sprite):
         rightLedge = None
         if grabbable[0]: leftLedge = Ledge(self,'left')
         if grabbable[1]: rightLedge = Ledge(self,'right')
-        self.ledges = (leftLedge,rightLedge)
+        self.ledges = [leftLedge,rightLedge]
         
     def playerCollide(self,player):
         self.playersOn.append(player)
@@ -252,13 +257,15 @@ Ledge object. This is what the fighter interacts with.
 It has a parent platform, and a side of that platform.
 Most of the attributes of the ledge are altered by the settings.
 """
-class Ledge(pygame.Rect):
+class Ledge(pygame.sprite.Sprite):
     def __init__(self,plat,side):
-        pygame.Rect.__init__([0,0],settingsManager.getSetting('ledgeSweetspotSize'))
-        if side == 'left': self.topright = plat.leftPoint
-        else: self.topleft = plat.rightPoint
+        pygame.sprite.Sprite.__init__(self)
+        self.rect = pygame.Rect([0,0],settingsManager.getSetting('ledgeSweetspotSize'))
+        self.side = side
+        if side == 'left': self.rect.midtop = plat.leftPoint
+        else: self.rect.midtop = plat.rightPoint
         self.fightersGrabbed = [] # this is a list in case "Ledge Conflict" is set to "share"
-    
+        
     """
     When a fighter wants to grab the ledge, this function is called.
     This function determines if a fighter is successful in his grab
@@ -268,12 +275,12 @@ class Ledge(pygame.Rect):
     def fighterGrabs(self,fighter):
         if len(self.fightersGrabbed) == 0: # if no one's on the ledge, we don't care about conflict resolution
             self.fightersGrabbed.append(fighter)
-            fighter.doLedgeGrab()
+            fighter.doLedgeGrab(self)
         else: # someone's already here
             conflict = settingsManager.getSetting('ledgeConflict')
             if conflict == 'share':
                 self.fightersGrabbed.append(fighter)
-                fighter.doLedgeGrab()
+                fighter.doLedgeGrab(self)
             elif conflict == 'hog':
                 return
             elif conflict == 'trump':
@@ -281,7 +288,7 @@ class Ledge(pygame.Rect):
                     self.fighterLeaves(other)
                     other.doGetTrumped()
                 self.fightersGrabbed.append(fighter)
-                fighter.doLedgeGrab()
+                fighter.doLedgeGrab(self)
     
     """
     A simple wrapper function to take someone off of the

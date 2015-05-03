@@ -82,7 +82,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def doAirDodge(self):
         self.changeAction(self.actions.AirDodge())
      
-    
+    def doLedgeGrab(self,ledge):
+        self.changeAction(self.actions.LedgeGrab(ledge))
+        
     def doGroundAttack(self):
         (key, invkey) = self.getForwardBackwardKeys()
         if self.keysContain(key):

@@ -441,7 +441,22 @@ class AirDodge(baseActions.AirDodge):
         elif self.frame == self.endInvulnFrame:
             actor.changeSpriteImage(0)
         baseActions.AirDodge.update(self, actor)
+
+class LedgeGrab(baseActions.LedgeGrab):
+    def __init__(self,ledge):
+        baseActions.LedgeGrab.__init__(self, ledge)
+        self.sweetSpotLocation = [64,64]
         
+    def update(self,actor):
+        if self.ledge.side == 'left':
+            if actor.facing == -1:
+                actor.flip()
+            actor.rect.topright = self.ledge.rect.midtop
+        else:
+            if actor.facing == 1:
+                actor.flip()
+            actor.rect.topleft = self.ledge.rect.midtop
+        baseActions.LedgeGrab.update(self, actor)
 ########################################################
 #             BEGIN HELPER METHODS                     #
 ########################################################

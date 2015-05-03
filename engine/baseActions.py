@@ -1,4 +1,5 @@
 import engine.action as action
+import pygame
            
 class Move(action.Action):
     def __init__(self,length):
@@ -149,10 +150,10 @@ class AirJump(action.Action):
 class Fall(action.Action):
     def __init__(self):
         action.Action.__init__(self, 1)
-
     
     def stateTransitions(self,actor):
         airState(actor)
+        grabLedges(actor)
         
     def update(self,actor):
         actor.grounded = False
@@ -309,6 +310,20 @@ class AirDodge(action.Action):
             actor.doFall()
         self.frame += 1
         
+class LedgeGrab(action.Action):
+    def __init__(self,ledge):
+        action.Action.__init__(self, 1)
+        self.ledge = ledge
+        
+    def tearDown(self,actor,newAction):
+        self.ledge.fighterLeaves(actor)
+        
+    def stateTransitions(self,actor):
+        ledgeState(actor)
+        
+    def update(self,actor):
+        actor.jumps = actor.var['jumps']
+        actor.change_y = 0
 ########################################################
 #               TRANSITION STATES                     #
 ########################################################
@@ -361,6 +376,16 @@ def shieldState(actor):
         actor.doBackwardRoll()
     elif actor.bufferContains(actor.keyBindings.k_down):
         actor.doSpotDodge()
+
+def ledgeState(actor):
+    (key,invkey) = actor.getForwardBackwardKeys()
+    if actor.bufferContains(key):
+        print "up"
+        actor.doLedgeGetup
+    elif actor.bufferContains(invkey):
+        actor.change_y = 0
+        actor.change_x = 0
+        actor.doFall()
 ########################################################
 #             BEGIN HELPER METHODS                     #
 ########################################################
@@ -375,7 +400,19 @@ def airControl(actor):
         actor.preferred_xspeed = 0
     elif (actor.change_x > 0) and not actor.keysHeld.count(actor.keyBindings.k_right):
         actor.preferred_xspeed = 0
-        
+    
     actor.checkForGround()
     if actor.grounded:
         actor.doLand()
+
+def grabLedges(actor):
+    # Check if we're colliding with any ledges.
+    ledge_hit_list = pygame.sprite.spritecollide(actor, actor.gameState.platform_ledges, False)
+    for ledge in ledge_hit_list:
+        # Don't grab any ledges if the actor is holding down
+        if actor.keysContain(actor.keyBindings.k_down) == False:
+            # If the ledge is on the left side of a platform, and we're holding right
+            if ledge.side == 'left' and actor.keysContain(actor.keyBindings.k_right):
+                ledge.fighterGrabs(actor)
+            elif ledge.side == 'right' and actor.keysContain(actor.keyBindings.k_left):
+                ledge.fighterGrabs(actor)
