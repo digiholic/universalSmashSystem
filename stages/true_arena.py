@@ -15,7 +15,9 @@ class TrueArena(stage.Stage):
         self.blast_line = pygame.Rect(0,0,2160,1440)
         
         #self.platform_list = [spriteObject.RectSprite([552,824],[798,342])]
-        self.platform_list = [stage.Platform([552,824],[1350,824],(True,True))]
+        self.platform_list = [stage.Platform([552,824], [1350,824],(True,True)),
+                              stage.Platform([552,824], [552,1166]),
+                              stage.Platform([1350,824],[1350,1166])]
         for plat in self.platform_list:
             for ledge in plat.ledges:
                 if ledge != None:

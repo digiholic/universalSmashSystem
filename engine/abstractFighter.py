@@ -89,20 +89,23 @@ class AbstractFighter():
         
         #Execute horizontal movement        
         self.rect.x += self.change_x
-        block_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
+        #block_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
+        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         
         for block in block_hit_list:
             # If we are moving right,
             # set our right side to the left side of the item we hit
-            if self.change_x > 0:
-                self.rect.right = block.rect.left
-            elif self.change_x < 0:
-                # Otherwise if we are moving left, do the opposite.
-                self.rect.left = block.rect.right
-        
+            if self.change_x > 0: 
+                self.hurtbox.rect.right = block.rect.left
+                self.rect.center = self.hurtbox.rect.center
+            elif self.change_x < 0: 
+                self.hurtbox.rect.left = block.rect.right
+                self.rect.center = self.hurtbox.rect.center
+                
         #Execute vertical movement
         self.rect.y += self.change_y
-        block_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
+        #block_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
+        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         
         
         for block in block_hit_list:
@@ -156,7 +159,8 @@ class AbstractFighter():
         #Check if there's a platform below us to update the grounded flag 
         self.rect.y += 2
         
-        platform_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
+        #platform_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
+        platform_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         self.rect.y -= 2      
         if (len(platform_hit_list) > 0): self.grounded = True
         else: self.grounded = False
@@ -502,7 +506,15 @@ class AbstractFighter():
         
         return (direction,magnitude)
         
-        
+    """
+    Pixel Perfect Collision.
+    This will return a list of all sprites in the given group
+    that collide with the fighter, not counting transparency.
+    """
+    def getCollisionsWith(self,spriteGroup):
+        self.sprite.updatePosition(self.rect)
+        collideSprite = spriteManager.RectSprite(self.sprite.boundingRect)
+        return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
     
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #

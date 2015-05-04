@@ -451,11 +451,13 @@ class LedgeGrab(baseActions.LedgeGrab):
         if self.ledge.side == 'left':
             if actor.facing == -1:
                 actor.flip()
-            actor.rect.topright = self.ledge.rect.midtop
+            actor.hurtbox.rect.topright = self.ledge.rect.midtop
+            actor.rect.center = actor.hurtbox.rect.center
         else:
             if actor.facing == 1:
                 actor.flip()
-            actor.rect.topleft = self.ledge.rect.midtop
+            actor.hurtbox.rect.topleft = self.ledge.rect.midtop
+            actor.rect.center = actor.hurtbox.rect.center
         baseActions.LedgeGrab.update(self, actor)
 ########################################################
 #             BEGIN HELPER METHODS                     #

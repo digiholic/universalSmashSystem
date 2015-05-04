@@ -38,6 +38,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
         self.changeAction(self.actions.Fall())
                 
     def doLand(self):
+        print "grounded", self.grounded
         self.changeAction(self.actions.Land())
         
     def doStop(self):
