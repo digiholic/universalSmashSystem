@@ -383,6 +383,7 @@ def ledgeState(actor):
         print "up"
         actor.doLedgeGetup
     elif actor.bufferContains(invkey):
+        actor.ledgeLock = True
         actor.change_y = 0
         actor.change_x = 0
         actor.doFall()
@@ -407,12 +408,13 @@ def airControl(actor):
 
 def grabLedges(actor):
     # Check if we're colliding with any ledges.
-    ledge_hit_list = pygame.sprite.spritecollide(actor, actor.gameState.platform_ledges, False)
-    for ledge in ledge_hit_list:
-        # Don't grab any ledges if the actor is holding down
-        if actor.keysContain(actor.keyBindings.k_down) == False:
-            # If the ledge is on the left side of a platform, and we're holding right
-            if ledge.side == 'left' and actor.keysContain(actor.keyBindings.k_right):
-                ledge.fighterGrabs(actor)
-            elif ledge.side == 'right' and actor.keysContain(actor.keyBindings.k_left):
-                ledge.fighterGrabs(actor)
+    if not actor.ledgeLock: #If we're not allowed to re-grab, don't bother calculating
+        ledge_hit_list = pygame.sprite.spritecollide(actor, actor.gameState.platform_ledges, False)
+        for ledge in ledge_hit_list:
+            # Don't grab any ledges if the actor is holding down
+            if actor.keysContain(actor.keyBindings.k_down) == False:
+                # If the ledge is on the left side of a platform, and we're holding right
+                if ledge.side == 'left' and actor.keysContain(actor.keyBindings.k_right):
+                    ledge.fighterGrabs(actor)
+                elif ledge.side == 'right' and actor.keysContain(actor.keyBindings.k_left):
+                    ledge.fighterGrabs(actor)

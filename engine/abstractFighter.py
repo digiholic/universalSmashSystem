@@ -34,6 +34,9 @@ class AbstractFighter():
         # Each entry in the list is in the form of (frames remaining, owner, hitbox ID)
         self.hitboxLock = []
         
+        # When a fighter lets go of a ledge, he can't grab another one until he gets out of the area.
+        self.ledgeLock = False
+        
         #initialize the action
         self.current_action = None
         self.hurtbox = spriteManager.RectSprite(self.sprite.boundingRect,[255,255,0])
@@ -71,6 +74,11 @@ class AbstractFighter():
             else:
                 lock[0] -= 1
         
+        if self.ledgeLock:
+            ledges = pygame.sprite.spritecollide(self, self.gameState.platform_ledges, False)
+            if len(ledges) == 0: # If we've cleared out of all of the ledges
+                self.ledgeLock = False
+                
         # We set the hurbox to be the Bounding Rect of the sprite.
         # It is done here, so that the hurtbox can be changed by the action.
         self.hurtbox.rect = self.sprite.boundingRect
@@ -95,11 +103,11 @@ class AbstractFighter():
         
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         
-        for block in block_hit_list:
+        if len(block_hit_list) > 0:
             # If we are moving right,
             # set our right side to the left side of the item we hit
             
-            self.eject(block)
+            self.eject(block_hit_list.pop())
                 
         #Execute vertical movement
         self.rect.y += self.change_y
@@ -107,9 +115,9 @@ class AbstractFighter():
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         
         
-        for block in block_hit_list:
+        if len(block_hit_list) > 0:
             # Reset our position based on the top/bottom of the object.
-            self.eject(block)
+            self.eject(block_hit_list.pop())
  
             # Stop our vertical movement
             self.change_y = 0
@@ -555,11 +563,15 @@ class AbstractFighter():
             
         if abs(dx) < abs(dy):
             self.rect.x += dx
+            self.sprite.boundingRect.x += dx
         elif abs(dy) < abs(dx):
             self.rect.y += dy
+            self.sprite.boundingRect.y += dy
         else:
             self.rect.x += dx
             self.rect.y += dy
+            self.sprite.boundingRect.x += dx
+            self.sprite.boundingRect.y += dy
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
