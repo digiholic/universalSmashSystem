@@ -17,15 +17,18 @@ class AbstractFighter():
         
         #Initialize engine variables
         self.keyBindings = Keybindings(settingsManager.getSetting('controls_' + str(playerNum)))
-        self.sprite = sprite
-        self.mask = None
         self.currentKeys = []
         self.inputBuffer = InputBuffer()
         self.keysHeld = []
+        
+        self.sprite = sprite
+        self.mask = None
+        
         self.active_hitboxes = pygame.sprite.Group()
+        self.articles = pygame.sprite.Group()
+        
         self.shield = False
         self.shieldIntegrity = 100
-        self.articles = pygame.sprite.Group()
         
         # HitboxLock is a list of hitboxes that will not hit the fighter again for a given amount of time.
         # Each entry in the list is in the form of (frames remaining, owner, hitbox ID)
@@ -89,18 +92,14 @@ class AbstractFighter():
         
         #Execute horizontal movement        
         self.rect.x += self.change_x
-        #block_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
+        
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         
         for block in block_hit_list:
             # If we are moving right,
             # set our right side to the left side of the item we hit
-            if self.change_x > 0: 
-                self.hurtbox.rect.right = block.rect.left
-                self.rect.center = self.hurtbox.rect.center
-            elif self.change_x < 0: 
-                self.hurtbox.rect.left = block.rect.right
-                self.rect.center = self.hurtbox.rect.center
+            
+            self.eject(block)
                 
         #Execute vertical movement
         self.rect.y += self.change_y
@@ -110,10 +109,7 @@ class AbstractFighter():
         
         for block in block_hit_list:
             # Reset our position based on the top/bottom of the object.
-            if self.change_y > 0:
-                self.rect.bottom = block.rect.top
-            elif self.change_y < 0:
-                self.rect.top = block.rect.bottom
+            self.eject(block)
  
             # Stop our vertical movement
             self.change_y = 0
@@ -515,7 +511,56 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
         collideSprite = spriteManager.RectSprite(self.sprite.boundingRect)
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
-    
+        
+        
+    def eject(self,other):
+        # Get the number of pixels we need to exit from the left
+        if self.sprite.boundingRect.right > other.rect.left:
+            dxLeft = self.sprite.boundingRect.right - other.rect.left
+        else: dxLeft = -1
+        
+        if self.sprite.boundingRect.left < other.rect.right:
+            dxRight = other.rect.right - self.sprite.boundingRect.left
+        else: dxRight = -1
+        
+        if dxLeft == -1 and dxRight == -1: # If neither of our sides are inside the block
+            dx = 0 # Don't move sideways
+        elif dxLeft == -1: # If one of our sides is in, and it's not left,
+            dx = dxRight
+        elif dxRight == -1: # If one of our sides is in, and it's not right,
+            dx = -dxLeft
+        elif dxLeft < dxRight: # our distance out to the left is smaller than right
+            dx = -dxLeft
+        else: # our distance out to the right is smaller than the left
+            dx = dxRight
+        
+        if self.sprite.boundingRect.bottom > other.rect.top:
+            dyUp = self.sprite.boundingRect.bottom - other.rect.top
+        else: dyUp = -1
+        
+        if self.sprite.boundingRect.top < other.rect.bottom:
+            dyDown = other.rect.bottom - self.sprite.boundingRect.top
+        else: dyDown = -1
+        
+        if dyUp == -1 and dyDown == -1: # If neither of our sides are inside the block
+            dy = 0 # Don't move sideways
+        elif dyUp == -1: # If one of our sides is in, and it's not left,
+            dy = dyDown
+        elif dyDown == -1: # If one of our sides is in, and it's not right,
+            dy = -dyUp
+        elif dyUp < dyDown: # our distance out to the left is smaller than right
+            dy = -dyUp
+        else: # our distance out to the right is smaller than the left
+            dy = dyDown
+            
+        if abs(dx) < abs(dy):
+            self.rect.x += dx
+        elif abs(dy) < abs(dx):
+            self.rect.y += dy
+        else:
+            self.rect.x += dx
+            self.rect.y += dy
+        
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
 ########################################################
