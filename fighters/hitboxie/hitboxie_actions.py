@@ -448,6 +448,7 @@ class LedgeGrab(baseActions.LedgeGrab):
         self.sweetSpotLocation = [64,64]
         
     def update(self,actor):
+        actor.changeSprite('jump')
         if self.ledge.side == 'left':
             if actor.facing == -1:
                 actor.flip()

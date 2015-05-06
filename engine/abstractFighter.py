@@ -53,7 +53,7 @@ class AbstractFighter():
         self.change_y = 0
         self.preferred_xspeed = 0
         self.preferred_yspeed = 0
-
+        
         #facing right = 1, left = -1
         self.facing = 1
         
@@ -93,40 +93,35 @@ class AbstractFighter():
         
         for art in self.articles:
             art.update()
-        
-        # If our sprite got us stuck in the wall, let's get unstuck
-        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)       
-        while len(block_hit_list) > 0:
-            # Reset our position based on the top/bottom of the object.
-            self.eject(block_hit_list.pop())
-     
+            
         # Gravity
         self.calc_grav()
-        self.checkForGround() 
-                
-        #Execute horizontal movement        
-        block_hit_before = self.getCollisionsWith(self.gameState.platform_list)
-        self.rect.x += self.change_x
-        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)       
+        self.checkForGround()
         
+        #Execute horizontal movement        
+        self.rect.x += self.change_x
+        
+        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+        
+        if len(block_hit_list) > 0:
+            # If we are moving right,
+            # set our right side to the left side of the item we hit
+            
+            self.eject(block_hit_list.pop())
+                
         #Execute vertical movement
         self.rect.y += self.change_y
-        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)       
-        for block in block_hit_list:
-            if block.solid:
-                if self.change_y > 0:
-                    self.rect.bottom = block.rect.top
-                    self.change_y = 0
-                elif self.change_y < 0:
-                    self.rect.top = block.rect.bottom
-                    self.change_y = 0
-            else:
-                if not block in block_hit_before: # If we collide with a passthrough that we weren't already colliding with
-                    if self.change_y > 0:
-                        self.rect.bottom = block.rect.top
-                        self.change_y = 0
-                        self.grounded = True
-                        
+        #block_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
+        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+        
+        
+        if len(block_hit_list) > 0:
+            # Reset our position based on the top/bottom of the object.
+            self.eject(block_hit_list.pop())
+ 
+            # Stop our vertical movement
+            self.change_y = 0
+        
         #Check for deaths  
         #TODO: Do this better  
         if self.rect.right < self.gameState.blast_line.left: self.die()
@@ -167,17 +162,11 @@ class AbstractFighter():
     def checkForGround(self):
         #Check if there's a platform below us to update the grounded flag 
         self.rect.y += 2
+        
         #platform_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
         platform_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         self.rect.y -= 2      
-        
-        for block in platform_hit_list:
-            if not block.solid:
-                platform_hit_list.remove(block)
-                
-        if (len(platform_hit_list) > 0):
-            self.grounded = True
-            return
+        if (len(platform_hit_list) > 0): self.grounded = True
         else: self.grounded = False
     
     """
@@ -533,55 +522,56 @@ class AbstractFighter():
         
         
     def eject(self,other):
-        dxLeft = -1
-        dxRight = -1
-        dyDown = -1
-        dyUp = -1
+        # Get the number of pixels we need to exit from the left
+        if self.sprite.boundingRect.right > other.rect.left:
+            dxLeft = self.sprite.boundingRect.right - other.rect.left
+        else: dxLeft = -1
         
-        # You can only eject from a solid platform.
-        if other.solid:
-            # Get the number of pixels we need to exit from the left
-            if self.sprite.boundingRect.right > other.rect.left:
-                dxLeft = self.sprite.boundingRect.right - other.rect.left
+        if self.sprite.boundingRect.left < other.rect.right:
+            dxRight = other.rect.right - self.sprite.boundingRect.left
+        else: dxRight = -1
+        
+        if dxLeft == -1 and dxRight == -1: # If neither of our sides are inside the block
+            dx = 0 # Don't move sideways
+        elif dxLeft == -1: # If one of our sides is in, and it's not left,
+            dx = dxRight
+        elif dxRight == -1: # If one of our sides is in, and it's not right,
+            dx = -dxLeft
+        elif dxLeft < dxRight: # our distance out to the left is smaller than right
+            dx = -dxLeft
+        else: # our distance out to the right is smaller than the left
+            dx = dxRight
+        
+        if self.sprite.boundingRect.bottom > other.rect.top:
+            dyUp = self.sprite.boundingRect.bottom - other.rect.top
+        else: dyUp = -1
+        
+        if self.sprite.boundingRect.top < other.rect.bottom:
+            dyDown = other.rect.bottom - self.sprite.boundingRect.top
+        else: dyDown = -1
+        
+        if dyUp == -1 and dyDown == -1: # If neither of our sides are inside the block
+            dy = 0 # Don't move sideways
+        elif dyUp == -1: # If one of our sides is in, and it's not left,
+            dy = dyDown
+        elif dyDown == -1: # If one of our sides is in, and it's not right,
+            dy = -dyUp
+        elif dyUp < dyDown: # our distance out to the left is smaller than right
+            dy = -dyUp
+        else: # our distance out to the right is smaller than the left
+            dy = dyDown
             
-            if self.sprite.boundingRect.left < other.rect.right:
-                dxRight = other.rect.right - self.sprite.boundingRect.left
-            
-            if dxLeft == -1 and dxRight == -1: # If neither of our sides are inside the block
-                dx = 0 # Don't move sideways
-            elif dxLeft == -1: # If one of our sides is in, and it's not left,
-                dx = dxRight
-            elif dxRight == -1: # If one of our sides is in, and it's not right,
-                dx = -dxLeft
-            elif dxLeft < dxRight: # our distance out to the left is smaller than right
-                dx = -dxLeft
-            else: # our distance out to the right is smaller than the left
-                dx = dxRight
-        
-            if self.sprite.boundingRect.top < other.rect.bottom:
-                dyDown = other.rect.bottom - self.sprite.boundingRect.top
-        
-            if self.sprite.boundingRect.bottom > other.rect.top:
-                dyUp = self.sprite.boundingRect.bottom - other.rect.top
-                
-            if dyUp == -1 and dyDown == -1: # If neither of our sides are inside the block
-                dy = 0 # Don't move sideways
-            elif dyUp == -1: # If one of our sides is in, and it's not left,
-                dy = dyDown
-            elif dyDown == -1: # If one of our sides is in, and it's not right,
-                dy = -dyUp
-            elif dyUp < dyDown: # our distance out to the left is smaller than right
-                dy = -dyUp
-            else: # our distance out to the right is smaller than the left
-                dy = dyDown
-                
-            if abs(dx) < abs(dy):
-                self.rect.x += dx
-            elif abs(dy) < abs(dx):
-                self.rect.y += dy
-            else:
-                self.rect.x += dx
-                self.rect.y += dy
+        if abs(dx) < abs(dy):
+            self.rect.x += dx
+            self.sprite.boundingRect.x += dx
+        elif abs(dy) < abs(dx):
+            self.rect.y += dy
+            self.sprite.boundingRect.y += dy
+        else:
+            self.rect.x += dx
+            self.rect.y += dy
+            self.sprite.boundingRect.x += dx
+            self.sprite.boundingRect.y += dy
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
