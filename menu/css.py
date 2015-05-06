@@ -5,7 +5,7 @@ import imp
 import pygame
 import menu
 import battle
-import stages.stage as stage
+import stages.true_arena as stage
 
 class CSSScreen():
     def __init__(self):
@@ -46,7 +46,7 @@ class CSSScreen():
                         elif event.key == bindings['attack']:
                             self.playerPanels[i].keyPressed('confirm')
                             if self.checkForSelections():
-                                currentBattle = battle.Battle(battle.Rules(),self.getFightersFromPanels(),stage.Stage())
+                                currentBattle = battle.Battle(battle.Rules(),self.getFightersFromPanels(),stage.getStage())
                                 currentBattle.startBattle(screen)
                         #TODO: Fix this when special button is added
                         elif event.key == bindings['shield']:

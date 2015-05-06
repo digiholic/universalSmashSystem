@@ -204,9 +204,9 @@ class Stage():
         for plat in self.platform_list: 
             platSprite = spriteObject.RectSprite(plat.rect.topleft,plat.rect.size)
             platSprite.draw(screen,self.stageToScreen(platSprite.rect),self.getScale())
-        for ledge in self.platform_ledges:
-            ledgeSprite = spriteObject.RectSprite(ledge.rect.topleft,ledge.rect.size,[0,0,255])
-            ledgeSprite.draw(screen,self.stageToScreen(ledge.rect),self.getScale())
+        #for ledge in self.platform_ledges:
+            #ledgeSprite = spriteObject.RectSprite(ledge.rect.topleft,ledge.rect.size,[0,0,255])
+            #ledgeSprite.draw(screen,self.stageToScreen(ledge.rect),self.getScale())
         for sprite in self.foregroundSprites:
             sprite.draw(screen,self.stageToScreen(sprite.rect),self.getScale())
 

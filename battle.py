@@ -2,6 +2,10 @@ import random
 import pygame
 import settingsManager
 
+import fighters.hitboxie.fighter
+import fighters.sandbag.fighter
+import stages.true_arena
+
 """
 The battle object actually creates the fight and plays it out on screen.
 It calls the update function of all of the fighters and the stage, and draws them.
@@ -62,7 +66,7 @@ class Battle():
             
             current_stage.update()
             current_stage.cameraUpdate()
-            current_stage.draw(screen)
+            current_stage.drawBG(screen)
             for obj in gameObjects:
                 obj.update()
                 if hasattr(obj,'active_hitboxes'):
@@ -83,7 +87,8 @@ class Battle():
                 if (self.settings['showHitboxes']):
                     for hbox in active_hitboxes:
                         hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
-                  
+            
+            current_stage.drawFG(screen)      
             clock.tick(60)    
             pygame.display.flip()
             
@@ -131,4 +136,19 @@ class Rules():
 class Replay(Battle):
     def __init__(self):
         pass
+    
+
+if __name__  == '__main__':
+    settings = settingsManager.getSetting().setting
+    
+    height = settings['windowHeight']
+    width = settings['windowWidth']
+        
+    pygame.init()
+    screen = pygame.display.set_mode((width, height))
+    pygame.display.set_caption(settings['windowName'])
+        
+    Battle(None, 
+           [fighters.hitboxie.fighter.getFighter(0, 0),fighters.sandbag.fighter.getFighter(0, 0)],
+           stages.true_arena.getStage()).startBattle(screen)
     
