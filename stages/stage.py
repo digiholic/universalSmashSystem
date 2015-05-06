@@ -49,6 +49,13 @@ class Stage():
         #self.centerSprite = spriteObject.RectSprite([0,0],[32,32])
         self.deadZone = [64,32]
     
+    def getLedges(self):
+        self.platform_ledges = []
+        for plat in self.platform_list:
+            for ledge in plat.ledges:
+                if ledge != None:
+                    self.platform_ledges.append(ledge)
+        return self.platform_ledges
     """
     The frame-by-frame changes to the stage.
     Updates all entities, then moves the camera closer to its preferred size
@@ -226,6 +233,7 @@ class Platform(pygame.sprite.Sprite):
         self.xdist = max(1,rightPoint[0] - leftPoint[0])
         self.ydist = max(1,rightPoint[1] - leftPoint[1])
         self.angle = self.getDirectionBetweenPoints(leftPoint, rightPoint)
+        self.solid = True
         
         self.playersOn = []
         self.rect = pygame.Rect([leftPoint[0],min(leftPoint[1],rightPoint[1])], [self.xdist,self.ydist])
@@ -251,7 +259,11 @@ class Platform(pygame.sprite.Sprite):
         dx = x2 - x1
         dy = y1 - y2
         return (180 * math.atan2(dy, dx)) / math.pi
-        
+    
+class PassthroughPlatform(Platform):
+    def __init__(self,leftPoint,rightPoint,grabbable = (False,False)):
+        Platform.__init__(self,leftPoint,rightPoint,grabbable)
+        self.solid = False      
 """
 Ledge object. This is what the fighter interacts with.
 It has a parent platform, and a side of that platform.
