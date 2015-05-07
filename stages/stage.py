@@ -23,6 +23,7 @@ class Stage():
     
         self.active_hitboxes = pygame.sprite.Group()
         self.follows = []
+        self.spawnLocations = []
         
         """
         Background sprites are drawn before the fighters are,
@@ -49,6 +50,9 @@ class Stage():
         #self.centerSprite = spriteObject.RectSprite([0,0],[32,32])
         self.deadZone = [64,32]
     
+        self.cameraUpdate()
+        self.camera_position = self.camera_preferred_position
+        
     def getLedges(self):
         self.platform_ledges = []
         for plat in self.platform_list:

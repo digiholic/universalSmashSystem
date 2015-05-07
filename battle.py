@@ -42,9 +42,11 @@ class Battle():
         gameObjects.extend(currentFighters)
         
         for fighter in currentFighters:
-            fighter.rect.midtop = current_stage.size.midtop
+            fighter.rect.midbottom = current_stage.spawnLocations[fighter.playerNum]
             fighter.gameState = current_stage
             current_stage.follows.append(fighter.rect)
+        
+        current_stage.initializeCamera()
             
         clock = pygame.time.Clock()
         while 1:
@@ -149,6 +151,6 @@ if __name__  == '__main__':
     pygame.display.set_caption(settings['windowName'])
         
     Battle(None, 
-           [fighters.hitboxie.fighter.getFighter(0, 0),fighters.sandbag.fighter.getFighter(0, 0)],
+           [fighters.hitboxie.fighter.getFighter(0, 0),fighters.sandbag.fighter.getFighter(1, 0),fighters.sandbag.fighter.getFighter(2, 0),fighters.sandbag.fighter.getFighter(3, 0)],
            stages.true_arena.getStage()).startBattle(screen)
     

@@ -14,6 +14,7 @@ class AbstractFighter():
                  var):
         
         self.var = var
+        self.playerNum = playerNum
         
         #Initialize engine variables
         self.keyBindings = Keybindings(settingsManager.getSetting('controls_' + str(playerNum)))
@@ -511,7 +512,7 @@ class AbstractFighter():
         return (direction,magnitude)
         
     """
-    Pixel Perfect Collision.
+    Pixel Perfect Collision (almost!).
     This will return a list of all sprites in the given group
     that collide with the fighter, not counting transparency.
     """
@@ -664,7 +665,7 @@ class InputBuffer():
         for i in range(self.lastIndex,(self.lastIndex - distanceBack - 1), -1):
             #first, check if the key exists in the distance.
             buff = self.buffer[i]
-            if buff.count((key,state)):
+            if (key,state) in buff:
                 js.append(i)
                 if not (andReleased or notReleased): return True #If we don't care whether it was released or not, we can return True now.
         
@@ -674,7 +675,7 @@ class InputBuffer():
         for j in js:
             for i in range(j,self.lastIndex+1):
                 buff = self.buffer[i]
-                if buff.count((key,not state)): #If we encounter the inversion of the key we're looking for
+                if (key,not state) in buff: #If we encounter the inversion of the key we're looking for
                     if andReleased: return True #If we're looking for a release, we found it
                     if notReleased: return False #If we're looking for a held, we didn't get it
         #If we go through the buffer up to the key press and we don't find its inversion...
