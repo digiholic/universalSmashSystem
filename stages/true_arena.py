@@ -22,9 +22,9 @@ class TrueArena(stage.Stage):
         
         
         self.spawnLocations = [[680,824],
-                               [1222,824],
+                               [1220,824],
                                [860,824],
-                               [1024,824]]
+                               [1040,824]]
         
         bgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__),"sprites/fd.png"))
         bgSprite.rect.topleft = [494,790]
