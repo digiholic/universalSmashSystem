@@ -5,6 +5,7 @@ import settingsManager
 import fighters.hitboxie.fighter
 import fighters.sandbag.fighter
 import stages.true_arena
+import stages.arena
 
 """
 The battle object actually creates the fight and plays it out on screen.
@@ -157,5 +158,5 @@ if __name__  == '__main__':
     """    
     Battle(None, 
            [fighters.hitboxie.fighter.getFighter(0, 0)],
-           stages.true_arena.getStage()).startBattle(screen)
+           stages.arena.getStage()).startBattle(screen)
     

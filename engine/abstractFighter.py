@@ -111,11 +111,7 @@ class AbstractFighter():
                 
         # Move x and resolve collisions
         self.rect.x += self.change_x
-        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
-        if len(block_hit_list) > 0:
-            block = block_hit_list.pop()
-            self.eject(block)
-            
+
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
