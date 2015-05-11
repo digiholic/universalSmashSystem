@@ -94,34 +94,45 @@ class AbstractFighter():
         
         for art in self.articles:
             art.update()
-            
+        
+        # This will "unstick" us if a sprite change would have gotten us in the wall
+        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+        for block in block_hit_list:
+            if block.solid:
+                print block
+                self.eject(block)
+        
         # Gravity
         self.calc_grav()
         self.checkForGround()
         
-        #Execute horizontal movement        
-        self.rect.x += self.change_x
-        
-        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
-        
-        if len(block_hit_list) > 0:
-            # If we are moving right,
-            # set our right side to the left side of the item we hit
-            
-            self.eject(block_hit_list.pop())
+        #Make a copy of where we were, so we know where we came from
+        originalRect = self.rect.copy()
                 
-        #Execute vertical movement
-        self.rect.y += self.change_y
-        #block_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
+        # Move x and resolve collisions
+        self.rect.x += self.change_x
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
-        
-        
         if len(block_hit_list) > 0:
-            # Reset our position based on the top/bottom of the object.
-            self.eject(block_hit_list.pop())
- 
-            # Stop our vertical movement
-            self.change_y = 0
+            block = block_hit_list.pop()
+            self.eject(block)
+            
+        # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
+        self.rect.y += self.change_y
+        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+        #for block in block_hit_list:
+        if len(block_hit_list) > 0:
+            block = block_hit_list.pop()
+            # If we hit a solid block
+            if block.solid:
+                if originalRect.top >= block.rect.bottom: #if we came in from below
+                    self.rect.top = block.rect.bottom
+                elif originalRect.bottom <= block.rect.top:
+                    self.rect.bottom = block.rect.top
+                self.change_y = 0
+            elif originalRect.bottom <= block.rect.top:
+                self.change_y = 0
+                self.rect.bottom = block.rect.top
+            
         
         #Check for deaths  
         #TODO: Do this better  
@@ -161,14 +172,21 @@ class AbstractFighter():
     Sets the fighter's Grounded flag.
     """
     def checkForGround(self):
+        originalRect = self.rect.copy()
         #Check if there's a platform below us to update the grounded flag 
         self.rect.y += 2
         
         #platform_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
         platform_hit_list = self.getCollisionsWith(self.gameState.platform_list)
-        self.rect.y -= 2      
-        if (len(platform_hit_list) > 0): self.grounded = True
-        else: self.grounded = False
+        self.rect.y -= 2
+        
+        
+        while (len(platform_hit_list) > 0):
+            block = platform_hit_list.pop()
+            if originalRect.bottom <= block.rect.top:
+                self.grounded = True
+                return
+        self.grounded = False
     
     """
     A simple function that converts the facing variable into a direction in degrees.

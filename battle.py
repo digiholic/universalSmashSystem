@@ -149,8 +149,13 @@ if __name__  == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption(settings['windowName'])
-        
+    
+    """
     Battle(None, 
            [fighters.hitboxie.fighter.getFighter(0, 0),fighters.sandbag.fighter.getFighter(1, 0),fighters.sandbag.fighter.getFighter(2, 0),fighters.sandbag.fighter.getFighter(3, 0)],
+           stages.true_arena.getStage()).startBattle(screen)
+    """    
+    Battle(None, 
+           [fighters.hitboxie.fighter.getFighter(0, 0)],
            stages.true_arena.getStage()).startBattle(screen)
     
