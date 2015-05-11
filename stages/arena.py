@@ -23,10 +23,10 @@ class Arena(stage.Stage):
                               stage.PassthroughPlatform([1076,684],[1326,684])]
         
         
-        self.spawnLocations = [[680,824],
-                               [1220,824],
-                               [860,824],
-                               [1040,824]]
+        self.spawnLocations = [[701,684],
+                               [1201,684],
+                               [951,564],
+                               [951,824]]
         
         bgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__),"sprites/fd.png"))
         bgSprite.rect.topleft = [494,790]

@@ -110,6 +110,7 @@ class ForwardAttack(action.Action):
         self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,12,1,1.0,40,60,0)
             
     def update(self,actor):
+        actor.change_y = 0
         if self.frame == 0:
             actor.change_x = 0
             actor.preferred_xspeed = 0

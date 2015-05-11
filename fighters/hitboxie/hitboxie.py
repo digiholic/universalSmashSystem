@@ -38,7 +38,6 @@ class Hitboxie(abstractFighter.AbstractFighter):
         self.changeAction(self.actions.Fall())
                 
     def doLand(self):
-        print "grounded", self.grounded
         self.changeAction(self.actions.Land())
         
     def doStop(self):
@@ -54,7 +53,6 @@ class Hitboxie(abstractFighter.AbstractFighter):
         
     def doPivot(self):
         newAction = self.actions.Pivot()
-        #if self.current_action.canBeInterrupted(newAction):
         self.flip()
         self.changeAction(newAction)
     

@@ -162,7 +162,6 @@ class Land(action.Action):
     def __init__(self):
         action.Action.__init__(self, 6)
 
-        
     def update(self,actor):
         if self.frame == 0:
             self.lastFrame = actor.landingLag
@@ -401,8 +400,7 @@ def airControl(actor):
         actor.preferred_xspeed = 0
     elif (actor.change_x > 0) and not actor.keysHeld.count(actor.keyBindings.k_right):
         actor.preferred_xspeed = 0
-    
-    actor.checkForGround()
+
     if actor.grounded:
         actor.doLand()
 

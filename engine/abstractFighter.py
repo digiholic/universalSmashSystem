@@ -99,7 +99,6 @@ class AbstractFighter():
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
             if block.solid:
-                print block
                 self.eject(block)
         
         # Gravity
@@ -111,14 +110,17 @@ class AbstractFighter():
                 
         # Move x and resolve collisions
         self.rect.x += self.change_x
-
+        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+        for block in block_hit_list:
+            if block.solid:
+                self.eject(block)
+        
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
-        #for block in block_hit_list:
+        
         if len(block_hit_list) > 0:
             block = block_hit_list.pop()
-            # If we hit a solid block
             if block.solid:
                 if originalRect.top >= block.rect.bottom: #if we came in from below
                     self.rect.top = block.rect.bottom
@@ -129,7 +131,6 @@ class AbstractFighter():
                 self.change_y = 0
                 self.rect.bottom = block.rect.top
             
-        
         #Check for deaths  
         #TODO: Do this better  
         if self.rect.right < self.gameState.blast_line.left: self.die()
@@ -177,11 +178,11 @@ class AbstractFighter():
         self.rect.y -= 2
         
         
-        while (len(platform_hit_list) > 0):
-            block = platform_hit_list.pop()
+        for block in platform_hit_list:
             if originalRect.bottom <= block.rect.top:
                 self.grounded = True
                 return
+
         self.grounded = False
     
     """
@@ -222,16 +223,16 @@ class AbstractFighter():
         self.changeAction(baseActions.NeutralAction())
     
     def doLand(self):
-        self.current_action = baseActions.Land()
+        self.changeAction(baseActions.Land())
     
     def doFall(self):
         self.changeAction(baseActions.Fall())
         
     def doGroundJump(self):
-        self.current_action = baseActions.Jump()
+        self.changeAction(baseActions.Jump())
     
     def doAirJump(self):
-        self.current_action = baseActions.AirJump()
+        self.changeAction(baseActions.AirJump())
     
     def doGroundAttack(self):
         return None
@@ -579,6 +580,7 @@ class AbstractFighter():
         if abs(dx) < abs(dy):
             self.rect.x += dx
             self.sprite.boundingRect.x += dx
+        
         elif abs(dy) < abs(dx):
             self.rect.y += dy
             self.sprite.boundingRect.y += dy
