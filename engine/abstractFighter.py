@@ -430,7 +430,7 @@ class AbstractFighter():
     in the stateTransitions function of the current action.
     """
     def keyPressed(self,key):
-        self.inputBuffer.append((key,True))
+        self.inputBuffer.append((key,1.0))
         self.keysHeld.append(key)
         if key == self.keyBindings.k_left:
             if self.keysContain(self.keyBindings.k_right):
@@ -439,12 +439,21 @@ class AbstractFighter():
             if self.keysContain(self.keyBindings.k_left):
                 self.keyReleased(self.keyBindings.k_left)
     
+    def joyAxisMotion(self,pad,axis):
+        #TODO
+        # The keybindings for a joystick have the type (axis), the number of the axis and the value, all mapped to a name
+        # For example, left = (axis,1,-) would mean that the value of axis 1 should be inverted and that value stored as (left,val)
+        # This is then put in the bufer as a button would be.
+        axisToAction = None # This is where we would know that axis 1 is left, axis 2 is up, etc. and get the map for it.
+        self.inputBuffer.append((axisToAction),pad.get_axis(axis)) # This should hopefully append something along the line of ('left',0.8)
+        self.keysHeld.append(axisToAction)
+    
     """
     As above, but opposite.
     """ 
     def keyReleased(self,key):
         if self.keysContain(key):
-            self.inputBuffer.append((key,False))
+            self.inputBuffer.append((key,0))
             self.keysHeld.remove(key)
             return True
         else: return False
@@ -453,7 +462,7 @@ class AbstractFighter():
     A wrapper for the InputBuffer.contains function, since this will be called a lot.
     For a full description of the arguments, see the entry in InputBuffer.
     """
-    def bufferContains(self,key, distanceBack = 0, state=True, andReleased=False, notReleased=False):
+    def bufferContains(self,key, distanceBack = 0, state=1.0, andReleased=False, notReleased=False):
         return self.inputBuffer.contains(key, distanceBack, state, andReleased, notReleased)
     
     """
@@ -465,7 +474,7 @@ class AbstractFighter():
     this is your function.
     """
     def keysContain(self,key):
-        return (self.keysHeld.count(key) != 0)    
+        return key in self.keysHeld    
     
     """
     This returns a tuple of the key for forward, then backward
@@ -653,7 +662,9 @@ class InputBuffer():
                   frame, but I can't think of a situation that would be useful in.
     notReleased - Check if the button was pressed in the given distance, and is still being held.
     """
-    def contains(self,key, distanceBack = 0, state=True, andReleased=False, notReleased=False):
+    def contains(self, key, distanceBack = 0, state=1.0, andReleased=False, notReleased=False):
+        if state == 1.0: notState = 0
+        else: notState = 1.0
         js = [] #If the key shows up multiple times, we might need to check all of them.
         if distanceBack > self.lastIndex: distanceBack = self.lastIndex #So we don't check farther back than we have data for
         for i in range(self.lastIndex,(self.lastIndex - distanceBack - 1), -1):
@@ -669,7 +680,7 @@ class InputBuffer():
         for j in js:
             for i in range(j,self.lastIndex+1):
                 buff = self.buffer[i]
-                if (key,not state) in buff: #If we encounter the inversion of the key we're looking for
+                if (key,notState) in buff: #If we encounter the inversion of the key we're looking for
                     if andReleased: return True #If we're looking for a release, we found it
                     if notReleased: return False #If we're looking for a held, we didn't get it
         #If we go through the buffer up to the key press and we don't find its inversion...
