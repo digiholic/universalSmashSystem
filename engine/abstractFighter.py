@@ -17,7 +17,7 @@ class AbstractFighter():
         self.playerNum = playerNum
         
         #Initialize engine variables
-        self.keyBindings = Keybindings(settingsManager.getSetting('controls_' + str(playerNum)))
+        self.keyBindings = settingsManager.getSetting('controls_' + str(playerNum))
         self.currentKeys = []
         self.inputBuffer = InputBuffer()
         self.keysHeld = []
@@ -615,28 +615,6 @@ def getDirectionBetweenPoints(p1, p2):
     dx = x2 - x1
     dy = y1 - y2
     return (180 * math.atan2(dy, dx)) / math.pi 
-    
-
-########################################################
-#                   KEYBINDINGS                        #
-########################################################
-"""
-The Keybindings object is just a shorthand for looking up
-the keys in the game settings. A dictionary is passed
-that maps the action to the key that does it.
-"""
-class Keybindings():
-    
-    def __init__(self,keyBindings):
-        self.keyBindings = keyBindings
-        self.k_left = self.keyBindings.get('left')
-        self.k_right = self.keyBindings.get('right')
-        self.k_up = self.keyBindings.get('up')
-        self.k_down = self.keyBindings.get('down')
-        self.k_jump = self.keyBindings.get('jump')
-        self.k_attack = self.keyBindings.get('attack')
-        self.k_shield = self.keyBindings.get('shield')
-        
         
 ########################################################
 #                  INPUT BUFFER                        #

@@ -2,6 +2,7 @@ import engine.abstractFighter as abstractFighter
 import spriteManager
 import os
 import main
+import settingsManager
 
 class Fighter(abstractFighter.AbstractFighter):
     def __init__(self,playerNum):
@@ -28,7 +29,7 @@ class Fighter(abstractFighter.AbstractFighter):
         
         self.actions = main.importFromURI(__file__,'sandbag_actions.py')
         
-        self.keyBindings = abstractFighter.Keybindings({})
+        self.keyBindings = settingsManager.Keybindings({})
         self.current_action = self.actions.NeutralAction()
         
     def update(self):

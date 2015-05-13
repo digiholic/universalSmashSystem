@@ -97,6 +97,7 @@ class Settings():
         # The "custom" preset is one that is modified in-game.
         preset = parser.get('game','rulePreset')
         self.loadGameSettings(parser,preset)
+        self.loadGamepads()
         self.loadControls(parser)
         
     def loadGameSettings(self,parser,preset):
@@ -145,6 +146,14 @@ class Settings():
         playerNum = 0
         while parser.has_section('controls_' + str(playerNum)):
             groupName = 'controls_' + str(playerNum)
+            controlType = self.getString(parser, groupName, 'controlType')
+            if controlType == 'gamepad':
+                gamepadName = self.getString(parser, groupName, 'gamepad')
+                if gamepadName in self.setting['controllers']:
+                    print "okay", gamepadName
+                else:
+                    print "error", gamepadName
+        
             bindings = {
                 'left': self.KeyNameMap[parser.get(groupName, 'left')],
                 'right': self.KeyNameMap[parser.get(groupName, 'right')],
@@ -154,9 +163,34 @@ class Settings():
                 'attack': self.KeyNameMap[parser.get(groupName, 'attack')],
                 'shield': self.KeyNameMap[parser.get(groupName, 'shield')]
                 }
-            self.setting[groupName] = bindings
+            self.setting[groupName] = Keybindings(bindings)
             playerNum += 1
             
+    def loadGamepads(self):
+        pygame.joystick.init()
+        self.joysticks = []
+        for i in range(0, pygame.joystick.get_count()):
+            self.joysticks.append(pygame.joystick.Joystick(i).get_name().lower())
+        self.setting['controllers'] = self.joysticks
+
+"""
+The Keybindings object is just a shorthand for looking up
+the keys in the game settings. A dictionary is passed
+that maps the action to the key that does it.
+"""
+class Keybindings():
+    
+    def __init__(self,keyBindings):
+        self.keyBindings = keyBindings
+        self.k_left = self.keyBindings.get('left')
+        self.k_right = self.keyBindings.get('right')
+        self.k_up = self.keyBindings.get('up')
+        self.k_down = self.keyBindings.get('down')
+        self.k_jump = self.keyBindings.get('jump')
+        self.k_attack = self.keyBindings.get('attack')
+        self.k_shield = self.keyBindings.get('shield')
+        
+                    
 class sfxLibrary():
     def __init__(self):
         self.sounds = {}
