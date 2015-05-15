@@ -266,6 +266,7 @@ class AbstractFighter():
         
     def doGetTrumped(self):
         print "trumped"
+        
 ########################################################
 #                  STATE CHANGERS                      #
 ########################################################
@@ -339,9 +340,9 @@ class AbstractFighter():
             
         #Directional Incluence
         if (trajectory < 45 or trajectory > 315) or (trajectory < 225 and trajectory > 135):
-            if self.keysContain(self.keyBindings.k_up):
+            if self.keysContain('up'):
                 trajectory += 15
-            if self.keysContain(self.keyBindings.k_down):
+            if self.keysContain('down'):
                 trajectory -= 15
         print totalKB, trajectory
         self.setSpeed(totalKB, trajectory, False)
@@ -430,15 +431,36 @@ class AbstractFighter():
     in the stateTransitions function of the current action.
     """
     def keyPressed(self,key):
-        self.inputBuffer.append((key,1.0))
-        self.keysHeld.append(key)
-        if key == self.keyBindings.k_left:
-            if self.keysContain(self.keyBindings.k_right):
-                self.keyReleased(self.keyBindings.k_right)
-        elif key == self.keyBindings.k_right:
-            if self.keysContain(self.keyBindings.k_left):
-                self.keyReleased(self.keyBindings.k_left)
+        k = self.keyBindings.get(key)
+        self.inputBuffer.append((k,1.0))
+        self.keysHeld.append(k)
+        
+        if k == 'left':
+            if self.keysContain('right'):
+                self.inputBuffer.append(('right',0))
+                self.keysHeld.remove('right')
+        elif k == 'right':
+            if self.keysContain('left'):
+                self.inputBuffer.append(('left',0))
+                self.keysHeld.remove('left')
+        
+    """
+    As above, but opposite.
+    """ 
+    def keyReleased(self,key):
+        k = self.keyBindings.get(key)
+        if self.keysContain(k):
+            self.inputBuffer.append((k,0))
+            self.keysHeld.remove(k)
+            return True
+        else: return False
     
+    def joyButtonPressed(self):
+        pass
+    
+    def joyButtonReleased(self):
+        pass
+        
     def joyAxisMotion(self,pad,axis):
         #TODO
         # The keybindings for a joystick have the type (axis), the number of the axis and the value, all mapped to a name
@@ -447,16 +469,6 @@ class AbstractFighter():
         axisToAction = None # This is where we would know that axis 1 is left, axis 2 is up, etc. and get the map for it.
         self.inputBuffer.append((axisToAction),pad.get_axis(axis)) # This should hopefully append something along the line of ('left',0.8)
         self.keysHeld.append(axisToAction)
-    
-    """
-    As above, but opposite.
-    """ 
-    def keyReleased(self,key):
-        if self.keysContain(key):
-            self.inputBuffer.append((key,0))
-            self.keysHeld.remove(key)
-            return True
-        else: return False
     
     """
     A wrapper for the InputBuffer.contains function, since this will be called a lot.
@@ -486,8 +498,8 @@ class AbstractFighter():
     which will assign the variable "key" to the forward key, and "invkey" to the backward key.
     """
     def getForwardBackwardKeys(self):
-        if self.facing == 1: return (self.keyBindings.k_right,self.keyBindings.k_left)
-        else: return (self.keyBindings.k_left,self.keyBindings.k_right)
+        if self.facing == 1: return ('right','left')
+        else: return ('left','right')
         
     def draw(self,screen,offset,scale):
         if (settingsManager.getSetting('showSpriteArea')): spriteManager.RectSprite(self.rect).draw(screen, offset, scale)
@@ -705,4 +717,5 @@ class InputBuffer():
     one frame, before the frame is actually executed.
     """
     def append(self,key):
+        if key[1] == 0: print "release"
         self.workingBuff.append(key)

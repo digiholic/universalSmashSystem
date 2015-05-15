@@ -111,7 +111,7 @@ class Jump(action.Action):
     def update(self,actor):
         if self.frame == self.jumpFrame:
             actor.grounded = False
-            if actor.keysContain(actor.keyBindings.k_jump):
+            if actor.keysContain('jump'):
                 actor.change_y = -actor.var['jumpHeight']
             else: actor.change_y = -actor.var['jumpHeight']/1.5
             ##TODO Add in shorthop height as an attribute
@@ -137,11 +137,11 @@ class AirJump(action.Action):
             actor.grounded = False
             actor.change_y = -actor.var['airJumpHeight']
             
-            if actor.keysContain(actor.keyBindings.k_left):
+            if actor.keysContain('left'):
                 if actor.facing == 1:
                     actor.flip()
                     actor.change_x = actor.facing * actor.var['maxAirSpeed']
-            elif actor.keysContain(actor.keyBindings.k_right):
+            elif actor.keysContain('right'):
                 if actor.facing == -1:
                     actor.flip()
                     actor.change_x = actor.facing * actor.var['maxAirSpeed']    
@@ -165,13 +165,13 @@ class Land(action.Action):
     def update(self,actor):
         if self.frame == 0:
             self.lastFrame = actor.landingLag
-            if actor.bufferContains(actor.keyBindings.k_shield,distanceBack=22):
+            if actor.bufferContains('shield',distanceBack=22):
                 print "l-cancel"
                 self.lastFrame = self.lastFrame / 2    
         if self.frame == self.lastFrame:
             actor.landingLag = 6
-            if   actor.keysHeld.count(actor.keyBindings.k_left): actor.doGroundMove(180)
-            elif actor.keysHeld.count(actor.keyBindings.k_right): actor.doGroundMove(0)
+            if   actor.keysHeld.count('left'): actor.doGroundMove(180)
+            elif actor.keysHeld.count('right'): actor.doGroundMove(0)
             else: actor.doIdle()
         actor.preferred_xspeed = 0
         self.frame+= 1
@@ -191,7 +191,7 @@ class Shield(action.Action):
         if self.frame == self.shieldFrame:
             actor.shield = True
             actor.startShield()
-            if actor.keysContain(actor.keyBindings.k_shield):
+            if actor.keysContain('shield'):
                 actor.shieldDamage(1)
             else:
                 self.frame += 1
@@ -232,7 +232,7 @@ class ForwardRoll(action.Action):
             actor.change_x = 0
             #actor.vulnerable
         elif self.frame == self.lastFrame:
-            if actor.keysContain(actor.keyBindings.k_shield):
+            if actor.keysContain('shield'):
                 actor.doShield()
             else:
                 actor.doIdle()
@@ -254,7 +254,7 @@ class BackwardRoll(action.Action):
             actor.change_x = 0
             #actor.vulnerable
         elif self.frame == self.lastFrame:
-            if actor.keysContain(actor.keyBindings.k_shield):
+            if actor.keysContain('shield'):
                 actor.doShield()
             else:
                 actor.doIdle()
@@ -276,7 +276,7 @@ class SpotDodge(action.Action):
             pass
             #actor.vulnerable
         elif self.frame == self.lastFrame:
-            if actor.keysContain(actor.keyBindings.k_shield):
+            if actor.keysContain('shield'):
                 actor.doShield()
             else:
                 actor.doIdle()
@@ -327,53 +327,53 @@ class LedgeGrab(action.Action):
 #               TRANSITION STATES                     #
 ########################################################
 def neutralState(actor):
-    if actor.bufferContains(actor.keyBindings.k_attack):
+    if actor.bufferContains('attack'):
         actor.doGroundAttack()
-    if actor.bufferContains(actor.keyBindings.k_jump,10):
+    if actor.bufferContains('jump',10):
         actor.doJump()
-    if actor.bufferContains(actor.keyBindings.k_left,8):
+    if actor.bufferContains('left',8):
         actor.doGroundMove(180)
-    elif actor.bufferContains(actor.keyBindings.k_right,8):
+    elif actor.bufferContains('right',8):
         actor.doGroundMove(0)
-    elif actor.bufferContains(actor.keyBindings.k_shield,8):
+    elif actor.bufferContains('shield',8):
         actor.doShield()
     
 
 def airState(actor):
     airControl(actor)
-    if actor.bufferContains(actor.keyBindings.k_jump):
+    if actor.bufferContains('jump'):
         actor.doJump()
-    if actor.bufferContains(actor.keyBindings.k_down):
+    if actor.bufferContains('down'):
         if actor.change_y >= 0:
             actor.change_y = actor.var['maxFallSpeed']
             actor.landingLag = 14
-    if actor.bufferContains(actor.keyBindings.k_attack):
+    if actor.bufferContains('attack'):
         actor.doAirAttack()
-    if actor.bufferContains(actor.keyBindings.k_shield):
+    if actor.bufferContains('shield'):
         actor.doAirDodge()
             
 def moveState(actor, direction):
-    if actor.bufferContains(actor.keyBindings.k_jump):
+    if actor.bufferContains('jump'):
         actor.doJump()
     (key,_) = actor.getForwardBackwardKeys()
-    if actor.bufferContains(key, state=False):
+    if actor.bufferContains(key, state=0):
         actor.doStop()
-    if actor.bufferContains(actor.keyBindings.k_attack):
+    if actor.bufferContains('attack'):
         print "attacking"
         actor.doGroundAttack()
             
 def shieldState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
-    if actor.bufferContains(actor.keyBindings.k_jump):
+    if actor.bufferContains('jump'):
         actor.doJump()
-    elif actor.bufferContains(actor.keyBindings.k_attack):
+    elif actor.bufferContains('attack'):
         pass
         #grab
     elif actor.bufferContains(key):
         actor.doForwardRoll()
     elif actor.bufferContains(invkey):
         actor.doBackwardRoll()
-    elif actor.bufferContains(actor.keyBindings.k_down):
+    elif actor.bufferContains('down'):
         actor.doSpotDodge()
 
 def ledgeState(actor):
@@ -391,14 +391,14 @@ def ledgeState(actor):
 ########################################################
 
 def airControl(actor):
-    if actor.keysHeld.count(actor.keyBindings.k_left):
+    if actor.keysHeld.count('left'):
         actor.preferred_xspeed = -actor.var['maxAirSpeed']
-    elif actor.keysHeld.count(actor.keyBindings.k_right):
+    elif actor.keysHeld.count('right'):
         actor.preferred_xspeed = actor.var['maxAirSpeed']
     
-    if (actor.change_x < 0) and not actor.keysHeld.count(actor.keyBindings.k_left):
+    if (actor.change_x < 0) and not actor.keysHeld.count('left'):
         actor.preferred_xspeed = 0
-    elif (actor.change_x > 0) and not actor.keysHeld.count(actor.keyBindings.k_right):
+    elif (actor.change_x > 0) and not actor.keysHeld.count('right'):
         actor.preferred_xspeed = 0
 
     if actor.grounded:
@@ -410,9 +410,9 @@ def grabLedges(actor):
         ledge_hit_list = pygame.sprite.spritecollide(actor, actor.gameState.platform_ledges, False)
         for ledge in ledge_hit_list:
             # Don't grab any ledges if the actor is holding down
-            if actor.keysContain(actor.keyBindings.k_down) == False:
+            if actor.keysContain('down') == False:
                 # If the ledge is on the left side of a platform, and we're holding right
-                if ledge.side == 'left' and actor.keysContain(actor.keyBindings.k_right):
+                if ledge.side == 'left' and actor.keysContain('right'):
                     ledge.fighterGrabs(actor)
-                elif ledge.side == 'right' and actor.keysContain(actor.keyBindings.k_left):
+                elif ledge.side == 'right' and actor.keysContain('left'):
                     ledge.fighterGrabs(actor)

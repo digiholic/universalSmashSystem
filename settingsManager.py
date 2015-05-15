@@ -186,16 +186,16 @@ class Settings():
                         'jump': getGamepadTuple(parser, gamepadName, 'jump'),
                         'shield': getGamepadTuple(parser, gamepadName, 'shield'),
                         }
-                print bindings
+                #print bindings
                     
             bindings = {
-                'left': self.KeyNameMap[parser.get(groupName, 'left')],
-                'right': self.KeyNameMap[parser.get(groupName, 'right')],
-                'up': self.KeyNameMap[parser.get(groupName, 'up')],
-                'down': self.KeyNameMap[parser.get(groupName, 'down')],
-                'jump': self.KeyNameMap[parser.get(groupName, 'jump')],
-                'attack': self.KeyNameMap[parser.get(groupName, 'attack')],
-                'shield': self.KeyNameMap[parser.get(groupName, 'shield')]
+                self.KeyNameMap[parser.get(groupName, 'left')] : 'left',
+                self.KeyNameMap[parser.get(groupName, 'right')] : 'right',
+                self.KeyNameMap[parser.get(groupName, 'up')] : 'up',
+                self.KeyNameMap[parser.get(groupName, 'down')] : 'down',
+                self.KeyNameMap[parser.get(groupName, 'jump')] : 'jump',
+                self.KeyNameMap[parser.get(groupName, 'attack')] : 'attack',
+                self.KeyNameMap[parser.get(groupName, 'shield')] : 'shield'
                 }
             self.setting[groupName] = Keybindings(bindings)
             playerNum += 1
@@ -225,6 +225,11 @@ class Keybindings():
         self.k_jump = self.keyBindings.get('jump')
         self.k_attack = self.keyBindings.get('attack')
         self.k_shield = self.keyBindings.get('shield')
+        print "keybindings: ", self.keyBindings
+        
+    def get(self,key):
+        return self.keyBindings.get(key)
+    
 
 """
 The SFXLibrary object contains a dict of all sound effects that are being used.

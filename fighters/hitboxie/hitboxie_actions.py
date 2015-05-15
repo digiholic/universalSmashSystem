@@ -16,7 +16,7 @@ class NeutralAttack(action.Action):
     
     def stateTransitions(self, actor):
         if self.frame == self.lastFrame:
-            if actor.keysContain(actor.keyBindings.k_attack):
+            if actor.keysContain('attack'):
                 self.frame = 0
                 
     # Here's an example of creating an anonymous hitbox class.
@@ -158,7 +158,7 @@ class NeutralAir(action.Action):
         #self.dsmashSweetspot
     
     def stateTransitions(self, actor):
-        if actor.bufferContains(actor.keyBindings.k_down):
+        if actor.bufferContains('down'):
             if actor.change_y >= 0:
                 actor.change_y = actor.var['maxFallSpeed']
         baseActions.airControl(actor)
@@ -226,13 +226,13 @@ class Run(baseActions.Run):
         if self.accel:
             if (self.frame == 0):
                 actor.changeSprite("run",0)
-            elif (self.frame == 3):
+            elif (self.frame == 2):
                 actor.changeSpriteImage(1)
-            elif (self.frame == 6):
+            elif (self.frame == 4):
                 actor.changeSpriteImage(2)
-            elif (self.frame == 9):
+            elif (self.frame == 6):
                 actor.changeSpriteImage(3)
-            elif (self.frame == 12):
+            elif (self.frame == 8):
                 actor.changeSpriteImage(4)
         else:
             if (self.frame == 0):
@@ -287,7 +287,7 @@ class Stop(baseActions.Stop):
         elif self.frame == 6:
             actor.changeSpriteImage(2)
         elif self.frame == self.lastFrame:
-            if actor.inputBuffer.contains(actor.keyBindings.k_up,5):
+            if actor.inputBuffer.contains('jump',5):
                 actor.current_action = Jump()
             else: actor.current_action = NeutralAction()
         if actor.grounded == False: actor.current_action = Fall()
