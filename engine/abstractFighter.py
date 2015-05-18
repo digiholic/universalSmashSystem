@@ -443,10 +443,10 @@ class AbstractFighter():
             if self.keysContain('left'):
                 self.inputBuffer.append(('left',0))
                 self.keysHeld.remove('left')
-        
+                
     """
     As above, but opposite.
-    """ 
+    """
     def keyReleased(self,key):
         k = self.keyBindings.get(key)
         if self.keysContain(k):
@@ -717,5 +717,4 @@ class InputBuffer():
     one frame, before the frame is actually executed.
     """
     def append(self,key):
-        if key[1] == 0: print "release"
         self.workingBuff.append(key)

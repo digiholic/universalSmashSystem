@@ -13,6 +13,9 @@ class NeutralAttack(action.Action):
         actor.preferred_xsped = 0
         actor.changeSprite("neutral",0)
         self.jabHitbox = self.outwardHitbox(actor)
+        
+    def tearDown(self, actor, new):
+        self.jabHitbox.kill()
     
     def stateTransitions(self, actor):
         if self.frame == self.lastFrame:

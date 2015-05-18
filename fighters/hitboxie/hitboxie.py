@@ -1,7 +1,5 @@
 import engine.abstractFighter as abstractFighter
-import spriteObject
-import spriteManager
-import main
+import settingsManager
 
 class Hitboxie(abstractFighter.AbstractFighter):
     def __init__(self,playerNum,sprites):
@@ -23,7 +21,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
                                  "HBoxie", #Name
                                  var)
         
-        self.actions = main.importFromURI(__file__,'hitboxie_actions.py')
+        self.actions = settingsManager.importFromURI(__file__,'hitboxie_actions.py',suffix=str(playerNum))
         
         self.current_action = self.actions.NeutralAction()
         
@@ -85,15 +83,16 @@ class Hitboxie(abstractFighter.AbstractFighter):
         self.changeAction(self.actions.LedgeGrab(ledge))
         
     def doGroundAttack(self):
+        print 'player ', self.playerNum, ' attacking'
         (key, invkey) = self.getForwardBackwardKeys()
         if self.keysContain(key):
             self.changeAction(self.actions.ForwardAttack())
         elif self.keysContain(invkey):
             self.flip()
             self.changeAction(self.actions.ForwardAttack())
-        elif self.keysContain(self.keyBindings.k_up):
+        elif self.keysContain('up'):
             pass
-        elif self.keysContain(self.keyBindings.k_down):
+        elif self.keysContain('down'):
             self.changeAction(self.actions.DownAttack())
         else:
             self.changeAction(self.actions.NeutralAttack())   

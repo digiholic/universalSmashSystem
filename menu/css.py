@@ -39,24 +39,24 @@ class CSSScreen():
                         return
                     
                     for i,bindings in enumerate(self.playerControls):
-                        if event.key == bindings['left']:
+                        if bindings.get(event.key) == 'left':
                             self.playerPanels[i].keyPressed('left')    
-                        elif event.key == bindings['right']:
+                        elif bindings.get(event.key) == 'right':
                             self.playerPanels[i].keyPressed('right')
-                        elif event.key == bindings['attack']:
+                        elif bindings.get(event.key) == 'attack':
                             self.playerPanels[i].keyPressed('confirm')
                             if self.checkForSelections():
                                 currentBattle = battle.Battle(battle.Rules(),self.getFightersFromPanels(),stage.getStage())
                                 currentBattle.startBattle(screen)
                         #TODO: Fix this when special button is added
-                        elif event.key == bindings['shield']:
+                        elif bindings.get(event.key) == 'shield':
                             self.playerPanels[i].keyPressed('cancel')
                             
                 elif event.type == pygame.KEYUP:
                     for i,bindings in enumerate(self.playerControls):
-                        if event.key == bindings['left']:
+                        if bindings.get(event.key) == 'left':
                             self.playerPanels[i].keyReleased('left')
-                        elif event.key == bindings['right']:
+                        elif bindings.get(event.key) == 'right':
                             self.playerPanels[i].keyReleased('right')             
             #End event loop
             
