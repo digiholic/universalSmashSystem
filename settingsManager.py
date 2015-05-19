@@ -223,14 +223,6 @@ class Keybindings():
     
     def __init__(self,keyBindings):
         self.keyBindings = keyBindings
-        self.k_left = self.keyBindings.get('left')
-        self.k_right = self.keyBindings.get('right')
-        self.k_up = self.keyBindings.get('up')
-        self.k_down = self.keyBindings.get('down')
-        self.k_jump = self.keyBindings.get('jump')
-        self.k_attack = self.keyBindings.get('attack')
-        self.k_shield = self.keyBindings.get('shield')
-        print "keybindings: ", self.keyBindings
         
     def get(self,key):
         return self.keyBindings.get(key)

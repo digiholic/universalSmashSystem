@@ -455,17 +455,16 @@ class AbstractFighter():
             return True
         else: return False
     
-    def joyButtonPressed(self):
-        pass
-    
-    def joyButtonReleased(self):
-        pass
+    def joyButtonPressed(self,pad,button):
+        # TODO: Check gamepad first
+        self.keyPressed(button)
+                
+    def joyButtonReleased(self,pad,button):
+        # TODO: Check gamepad first
+        self.keyReleased(button)
         
     def joyAxisMotion(self,pad,axis):
-        #TODO
-        # The keybindings for a joystick have the type (axis), the number of the axis and the value, all mapped to a name
-        # For example, left = (axis,1,-) would mean that the value of axis 1 should be inverted and that value stored as (left,val)
-        # This is then put in the bufer as a button would be.
+        #TODO - Actually check if this the right gamePad
         value = round(pad.get_axis(axis),3) # We really only need three decimals of precision
         if abs(value) < 0.05: value = 0
         if value < 0: sign = '-'

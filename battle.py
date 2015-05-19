@@ -76,9 +76,11 @@ class Battle():
                     for fight in currentFighters:
                         fight.joyAxisMotion(event.joy, event.axis)
                 if event.type == pygame.JOYBUTTONDOWN:
-                    print "joybuttondown"
+                    for fight in currentFighters:
+                        fight.joyButtonPressed(event.joy, event.button)
                 if event.type == pygame.JOYBUTTONUP:
-                    print "joybuttonup"
+                    for fight in currentFighters:
+                        fight.joyButtonReleased(event.joy, event.button)
             # End pygame event loop
                                    
             screen.fill([100, 100, 100])
