@@ -50,7 +50,17 @@ class Battle():
         current_stage.initializeCamera()
             
         clock = pygame.time.Clock()
-        while 1:
+        
+        """
+        ExitStatus breaks us out of the loop. The battle loop can end in many ways, which is reflected here.
+        In general, ExitStatus positive means that the game was supposed to end, while a negative value indicates an error.
+        
+        ExitStatus == 1: Battle ended early by user. No Contest.
+        ExitStatus == 2: Battle ended by time or stock, decide winner, show victory screen
+        ExitStatus == -1: Battle ended in error.
+        """
+        exitStatus = 0
+        while exitStatus == 0:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return -1
@@ -59,11 +69,17 @@ class Battle():
                         fight.keyPressed(event.key)
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_ESCAPE:
-                        return
-                    elif event.key == pygame.K_k:
-                        currentFighters[1].dealDamage(999)
+                        exitStatus = 1
                     for fight in currentFighters:
                         fight.keyReleased(event.key)
+                if event.type == pygame.JOYAXISMOTION:
+                    for fight in currentFighters:
+                        fight.joyAxisMotion(event.joy, event.axis)
+                if event.type == pygame.JOYBUTTONDOWN:
+                    print "joybuttondown"
+                if event.type == pygame.JOYBUTTONUP:
+                    print "joybuttonup"
+            # End pygame event loop
                                    
             screen.fill([100, 100, 100])
             
@@ -91,10 +107,24 @@ class Battle():
                     for hbox in active_hitboxes:
                         hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
             
+            # End object updates
+            
             current_stage.drawFG(screen)      
             clock.tick(60)    
             pygame.display.flip()
-            
+        # End while loop
+        
+        self.doExitStatus(exitStatus)
+        return # This'll pop us back to the character select screen.
+    
+    def doExitStatus(self,exitStatus):
+        if exitStatus == 1:
+            print "NO CONTEST"
+        elif exitStatus == 2:
+            print "GAME SET"
+        elif exitStatus == -1:
+            print "ERROR!"
+         
     """
     In a normal game, the frame input won't matter.
     It will matter in replays and (eventually) online.

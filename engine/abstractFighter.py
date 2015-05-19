@@ -466,9 +466,14 @@ class AbstractFighter():
         # The keybindings for a joystick have the type (axis), the number of the axis and the value, all mapped to a name
         # For example, left = (axis,1,-) would mean that the value of axis 1 should be inverted and that value stored as (left,val)
         # This is then put in the bufer as a button would be.
-        axisToAction = None # This is where we would know that axis 1 is left, axis 2 is up, etc. and get the map for it.
-        self.inputBuffer.append((axisToAction),pad.get_axis(axis)) # This should hopefully append something along the line of ('left',0.8)
-        self.keysHeld.append(axisToAction)
+        value = round(pad.get_axis(axis),3) # We really only need three decimals of precision
+        if abs(value) < 0.05: value = 0
+        if value < 0: sign = '-'
+        else: sign = '+'
+        
+        k = self.keyBindings.get('axis ' + str(axis) + sign)
+        self.inputBuffer.append((k,value)) # This should hopefully append something along the line of ('left',0.8)
+        self.keysHeld.append(k)
     
     """
     A wrapper for the InputBuffer.contains function, since this will be called a lot.

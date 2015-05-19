@@ -48,6 +48,10 @@ class CSSScreen():
                             if self.checkForSelections():
                                 currentBattle = battle.Battle(battle.Rules(),self.getFightersFromPanels(),stage.getStage())
                                 currentBattle.startBattle(screen)
+                                for panel in self.playerPanels:
+                                    panel.activeObject = panel.wheel
+                                    panel.chosenFighter = None
+                                    panel.bgSurface = None
                         #TODO: Fix this when special button is added
                         elif bindings.get(event.key) == 'shield':
                             self.playerPanels[i].keyPressed('cancel')

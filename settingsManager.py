@@ -167,44 +167,49 @@ class Settings():
     def loadControls(self,parser):
         playerNum = 0
         while parser.has_section('controls_' + str(playerNum)):
+            bindings = {}
             groupName = 'controls_' + str(playerNum)
             controlType = parser.get(groupName, 'controlType')
-            if controlType == 'gamepad':
+            if controlType == 'gamepad': # If the controls are set to Gamepad
                 gamepadName = parser.get(groupName, 'gamepad')
-                if gamepadName in self.setting['controllers']:
+                if gamepadName in self.setting['controllers']: # Check if that Gamepad is connected
                     print "okay", gamepadName
-                else:
-                    print "error", gamepadName
-                
-                bindings = {
-                        'left': getGamepadTuple(parser, gamepadName, 'left'),
-                        'right': getGamepadTuple(parser, gamepadName, 'right'),
-                        'up': getGamepadTuple(parser, gamepadName, 'up'),
-                        'down': getGamepadTuple(parser, gamepadName, 'down'),
-                        'attack': getGamepadTuple(parser, gamepadName, 'attack'),
-                        'special': getGamepadTuple(parser, gamepadName, 'special'),
-                        'jump': getGamepadTuple(parser, gamepadName, 'jump'),
-                        'shield': getGamepadTuple(parser, gamepadName, 'shield'),
+                    bindings = {
+                        getGamepadTuple(parser, gamepadName, 'left') : 'left',
+                        getGamepadTuple(parser, gamepadName, 'right') : 'right',
+                        getGamepadTuple(parser, gamepadName, 'up') : 'up',
+                        getGamepadTuple(parser, gamepadName, 'down') : 'down',
+                        getGamepadTuple(parser, gamepadName, 'attack') : 'attack',
+                        getGamepadTuple(parser, gamepadName, 'special') : 'special',
+                        getGamepadTuple(parser, gamepadName, 'jump') : 'jump',
+                        getGamepadTuple(parser, gamepadName, 'shield') : 'shield',
                         }
-                #print bindings
-                    
-            bindings = {
-                self.KeyNameMap[parser.get(groupName, 'left')] : 'left',
-                self.KeyNameMap[parser.get(groupName, 'right')] : 'right',
-                self.KeyNameMap[parser.get(groupName, 'up')] : 'up',
-                self.KeyNameMap[parser.get(groupName, 'down')] : 'down',
-                self.KeyNameMap[parser.get(groupName, 'jump')] : 'jump',
-                self.KeyNameMap[parser.get(groupName, 'attack')] : 'attack',
-                self.KeyNameMap[parser.get(groupName, 'shield')] : 'shield'
-                }
+                else: # If it is not connected, use the buttons instead.
+                    print "error", gamepadName
+                    bindings = {}
+            
+            # If the bindings are empty (as in, not set by the Gamepad)
+            if bindings == {}:
+                bindings = {
+                        self.KeyNameMap[parser.get(groupName, 'left')] : 'left',
+                        self.KeyNameMap[parser.get(groupName, 'right')] : 'right',
+                        self.KeyNameMap[parser.get(groupName, 'up')] : 'up',
+                        self.KeyNameMap[parser.get(groupName, 'down')] : 'down',
+                        self.KeyNameMap[parser.get(groupName, 'jump')] : 'jump',
+                        self.KeyNameMap[parser.get(groupName, 'attack')] : 'attack',
+                        self.KeyNameMap[parser.get(groupName, 'shield')] : 'shield'
+                        }
             self.setting[groupName] = Keybindings(bindings)
             playerNum += 1
-            
+    
+    """
+    Check all connected gamepads and add them to the settings.
+    """
     def loadGamepads(self):
         pygame.joystick.init()
         self.joysticks = []
         for i in range(0, pygame.joystick.get_count()):
-            self.joysticks.append(pygame.joystick.Joystick(i).get_name().lower())
+            self.joysticks.append(pygame.joystick.Joystick(i).get_name())
         self.setting['controllers'] = self.joysticks
 
 
@@ -271,16 +276,30 @@ class sfxLibrary():
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
 ########################################################
+"""
+When given a string representation of numbers, parse it and return
+the actual numbers. If Many is given, the parser will look
+for all numbers and return them in a list, otherwise, it will get the
+first number.
+"""
 def getNumbersFromString(string, many = False):
     if many:
         return map(int, re.findall(r'\d+', string))
     else:
         return int(re.search(r'\d+', string).group())
 
+"""
+Convert basically whatever stupid thing people could possibly think to mean "yes" into
+a True boolean. If it's not True, it's false, so feel free to set some of those debug
+options to "Eat a dick" if you want to, it'll read as False
+"""
 def boolean(string):
     # Well, I already have the function made, might as well cover all the bases.
     return string in ['true', 'True', 't', 'T', '1', '#T', 'y', 'yes', 'on', 'enabled']
-    
+
+"""
+A wrapper that'll get a lowercase String from the parser, or return gracefully with an error.
+"""    
 def getString(parser,preset,key):
     try:
         return parser.get(preset,key).lower()
@@ -288,13 +307,19 @@ def getString(parser,preset,key):
         print e
         return ""
 
+"""
+A wrapper that'll get a boolean from the parser, or return gracefully with an error.
+"""
 def getBoolean(parser,preset,key):
     try:
         return boolean(parser.get(preset,key))
     except Exception,e:
         print e
         return False
-    
+
+"""
+A wrapper that'll get a number from the parser, or return gracefully with an error.
+"""    
 def getNumber(parser,preset,key,islist = False):
     try:
         return getNumbersFromString(parser.get(preset,key),islist)
@@ -302,6 +327,14 @@ def getNumber(parser,preset,key,islist = False):
         print e
         return 0
 
+"""
+A wrapper that'll get a Gamepad Tuple from the parser, or return gracefully with an error.
+
+A Gamepad Tuple is in the form of (type, id[, value])
+If type is button, id is the number of the button on that pad.
+If type is axis, the id is that axis, and value is + or - depending on which direction
+corresponds to that item.
+"""
 def getGamepadTuple(parser,preset,key):
     try:
         joyInfo = parser.get(preset,key).split(' ')
@@ -314,8 +347,8 @@ def getGamepadTuple(parser,preset,key):
 """
 Main method for debugging purposes
 """
-def main():
+def test():
     print getSetting().setting
     
 
-if __name__  == '__main__': main()
+if __name__  == '__main__': test()
