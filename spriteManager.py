@@ -65,6 +65,7 @@ class SpriteHandler(Sprite):
     
     def rotate(self,angle = 0):
         self.angle = angle
+    
     def get_image(self):
         try:
             self.image = self.imageLibrary[self.flip][self.currentSheet][self.index]
@@ -245,7 +246,7 @@ class ImageLibrary():
                 sprite = pygame.image.load(os.path.join(self.directory,f))
                 sprite = sprite.convert_alpha()
                 self.imageDict[spriteName] = sprite
-                #print sprite.get_alpha(), spriteName, self.imageDict[spriteName]
+                print sprite.get_alpha(), spriteName, self.imageDict[spriteName]
 
 class RectSprite(Sprite):
     def __init__(self,rect,color=[0,0,0]):

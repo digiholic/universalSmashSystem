@@ -404,7 +404,7 @@ class AbstractFighter():
         return True
     
     def startShield(self):
-        self.articles.add(article.ShieldArticle(settingsManager.createPath("fighters/hitboxie/sprites/shield-bubble.png"),self))
+        self.articles.add(article.ShieldArticle(settingsManager.createPath("sprites/melee_shield.png"),self))
         
     def shieldDamage(self,damage):
         if self.shieldIntegrity > 0:

@@ -45,6 +45,7 @@ class ShieldArticle(Article):
         blitRect.center = screenRect.center # Center it on the screen rect
         w = max(w,0) #We can't go negative
         h = max(h,0)
+        self.alpha(25)
         blitSprite = pygame.transform.smoothscale(self.image, (w,h)) # Scale down the image
         
         screen.blit(blitSprite,blitRect)
