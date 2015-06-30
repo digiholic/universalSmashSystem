@@ -126,9 +126,10 @@ class Settings():
         self.setting['windowHeight']  = self.setting['windowSize'][1]
         self.setting['frameCap']      = getNumber(parser, 'window', 'frameCap')
         
-        self.setting['showHitboxes']  = getBoolean(parser, 'graphics', 'displayHitboxes')
-        self.setting['showHurtboxes'] = getBoolean(parser,'graphics','displayHurtboxes')
-        self.setting['showSpriteArea'] = getBoolean(parser,'graphics','displaySpriteArea')
+        self.setting['showHitboxes']      = getBoolean(parser, 'graphics', 'displayHitboxes')
+        self.setting['showHurtboxes']     = getBoolean(parser,'graphics','displayHurtboxes')
+        self.setting['showSpriteArea']    = getBoolean(parser,'graphics','displaySpriteArea')
+        self.setting['showPlatformLines'] = getBoolean(parser, 'graphics', 'displayPlatformLines')
         
         self.setting['playerColor0'] = getString(parser, 'playerColors', 'player0')
         self.setting['playerColor1'] = getString(parser, 'playerColors', 'player1')

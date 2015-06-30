@@ -25,8 +25,10 @@ class Action():
     def tearDown(self,actor,newAction):
         return
     
-# The Dynamic Action is created by the Builder. It contains most things that an action would
-# need, but anything more than that can still be defined as above.
+"""
+The Dynamic Action is created by the Builder. It contains most things that an action would
+need, but anything more than that can still be defined as above.
+"""
 class DynamicAction(Action):
     def __init__(self,length,startingFrame=0):
         Action.__init__(self, length, startingFrame)
@@ -35,8 +37,6 @@ class DynamicAction(Action):
         self.setUpActions = []
         self.tearDownActions = []
         
-    # The update skeleton function. You must implement it for every action or you will get
-    # an error.
     def update(self,actor):
         for act in self.actionsAtFrame[self.frame]:
             act.execute(actor)

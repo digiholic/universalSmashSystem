@@ -212,9 +212,10 @@ class Stage():
             sprite.draw(screen,self.stageToScreen(sprite.rect),self.getScale())
             
     def drawFG(self,screen):
-        for plat in self.platform_list: 
-            platSprite = spriteObject.RectSprite(plat.rect.topleft,plat.rect.size)
-            platSprite.draw(screen,self.stageToScreen(platSprite.rect),self.getScale())
+        if settingsManager.getSetting('showPlatformLines'):
+            for plat in self.platform_list: 
+                platSprite = spriteObject.RectSprite(plat.rect.topleft,plat.rect.size)
+                platSprite.draw(screen,self.stageToScreen(platSprite.rect),self.getScale())
         #for ledge in self.platform_ledges:
             #ledgeSprite = spriteObject.RectSprite(ledge.rect.topleft,ledge.rect.size,[0,0,255])
             #ledgeSprite.draw(screen,self.stageToScreen(ledge.rect),self.getScale())

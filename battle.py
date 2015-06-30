@@ -65,6 +65,10 @@ class Battle():
                 if event.type == pygame.QUIT:
                     return -1
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        print "saving screenshot"
+                        pygame.image.save(screen,settingsManager.createPath('screenshot.jpg'))
+                    
                     for fight in currentFighters:
                         fight.keyPressed(event.key)
                 if event.type == pygame.KEYUP:

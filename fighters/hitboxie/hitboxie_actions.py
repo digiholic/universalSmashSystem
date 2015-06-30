@@ -10,7 +10,7 @@ class NeutralAttack(action.Action):
     
     def setUp(self, actor):
         actor.change_x = 0
-        actor.preferred_xsped = 0
+        actor.preferred_xspeed = 0
         actor.changeSprite("neutral",0)
         self.jabHitbox = self.outwardHitbox(actor)
         
