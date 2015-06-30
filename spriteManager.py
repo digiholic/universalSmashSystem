@@ -1,6 +1,7 @@
 import pygame
 import os
 import sys
+import settingsManager
 
 class Sprite(pygame.sprite.Sprite):
     def __init__(self):
@@ -183,8 +184,7 @@ class SheetSprite(ImageSprite):
         
     def draw(self,screen,offset,scale):
         Sprite.draw(self, screen, offset, scale)
-        
-        
+                
 class MaskSprite(ImageSprite):
     def __init__(self, parentSprite,color,duration,pulse = False,pulseSize = 16):
         Sprite.__init__(self)
@@ -233,6 +233,20 @@ class MaskSprite(ImageSprite):
         else:
             return None
 
+class TextSprite(ImageSprite):
+    def __init__(self,text,font="monospace",size=12,color=[0,0,0]):
+        Sprite.__init__(self)
+        try:
+            font = pygame.font.Font(settingsManager.createPath(font+".ttf"),size)
+            print font
+        except Exception as e:
+            print e
+            font = pygame.font.SysFont(font, size)
+            print font
+        
+        self.image = font.render(text,False,color).convert_alpha()
+        self.rect = self.image.get_rect()
+        
 class ImageLibrary():
     def __init__(self,directory,prefix=""):
         self.directory = os.path.join(os.path.dirname(__file__),directory)
