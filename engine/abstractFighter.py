@@ -482,6 +482,16 @@ class AbstractFighter():
         return self.inputBuffer.contains(key, distanceBack, state, andReleased, notReleased)
     
     """
+    This function checks if the player has Smashed in a direction. It does this by noting if the direction was
+    pressed recently and is now above a threshold
+    """
+    def checkSmash(self,direction):
+        #TODO different for buttons than joysticks
+        if self.inputBuffer.contains(direction, 4, 1.0, notReleased=True, threshold=True):
+            return True
+        return False
+    
+    """
     This checks for keys that are currently being held, whether or not they've actually been pressed recently.
     This is used, for example, to transition from a landing state into a running one. Using the InputBuffer
     would mean that you'd either need to iterate over the WHOLE buffer and look for one less release than press,
@@ -678,7 +688,7 @@ class InputBuffer():
                   frame, but I can't think of a situation that would be useful in.
     notReleased - Check if the button was pressed in the given distance, and is still being held.
     """
-    def contains(self, key, distanceBack = 0, state=1.0, andReleased=False, notReleased=False):
+    def contains(self, key, distanceBack = 0, state=1.0, andReleased=False, notReleased=False, threshold=False):
         if state == 1.0: notState = 0
         else: notState = 1.0
         js = [] #If the key shows up multiple times, we might need to check all of them.
@@ -686,9 +696,11 @@ class InputBuffer():
         for i in range(self.lastIndex,(self.lastIndex - distanceBack - 1), -1):
             #first, check if the key exists in the distance.
             buff = self.buffer[i]
-            if (key,state) in buff:
-                js.append(i)
-                if not (andReleased or notReleased): return True #If we don't care whether it was released or not, we can return True now.
+            for k,s in buff:
+                if k == key:
+                    if (threshold and s >= state) or (not threshold and s == state):
+                        js.append(i)
+                        if not (andReleased or notReleased): return True #If we don't care whether it was released or not, we can return True now.
         
         #If it's not in there, return false.
         if len(js) == 0: return False

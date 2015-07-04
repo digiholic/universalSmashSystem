@@ -132,6 +132,11 @@ class ImageSprite(Sprite):
         arr = pygame.surfarray.pixels_alpha(self.image)
         arr[arr!=0] = newAlpha
         del arr
+    
+    def recolor(self,image,fromColor,toColor):
+        arr = pygame.PixelArray(image)
+        arr.replace(fromColor,toColor)
+        del arr  
         
 class SheetSprite(ImageSprite):
     def __init__(self,sheet,offset=0,colorMap = {}):
@@ -176,7 +181,7 @@ class SheetSprite(ImageSprite):
     def recolor(self,image,fromColor,toColor):
         arr = pygame.PixelArray(image)
         arr.replace(fromColor,toColor)
-        del arr  
+        del arr
         
     def getImageAtIndex(self,index):
         self.index = index % self.maxIndex

@@ -86,7 +86,11 @@ class Hitboxie(abstractFighter.AbstractFighter):
         print 'player ', self.playerNum, ' attacking'
         (key, invkey) = self.getForwardBackwardKeys()
         if self.keysContain(key):
-            self.changeAction(self.actions.ForwardAttack())
+            if self.checkSmash(key):
+                print "SMASH!"
+                self.changeAction(self.actions.ForwardSmash())
+            else:
+                self.changeAction(self.actions.ForwardAttack())
         elif self.keysContain(invkey):
             self.flip()
             self.changeAction(self.actions.ForwardAttack())

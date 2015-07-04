@@ -107,10 +107,14 @@ class DownAttack(action.Action):
                     
 class ForwardAttack(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 42)
+        action.Action.__init__(self, 24)
     
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,12,1,1.0,40,60,0)
+        self.fSmashHitbox = hitbox.DamageHitbox(center=[20,0],size=[60,40],
+                                                owner=actor,damage=8,
+                                                baseKnockback=0.4,knockbackGrowth=0.9,
+                                                trajectory=40,
+                                                hitstun=30,hitbox_id=0)
             
     def update(self,actor):
         actor.change_y = 0
@@ -118,16 +122,74 @@ class ForwardAttack(action.Action):
             actor.change_x = 0
             actor.preferred_xspeed = 0
             actor.changeSprite("fsmash",0)
+        elif self.frame == 2:
+            actor.changeSpriteImage(1)
+        elif self.frame == 4:
+            actor.changeSpriteImage(2)
+        elif self.frame == 6:
+            actor.changeSpriteImage(3)
+        elif self.frame == 8:
+            actor.changeSpriteImage(4)
+        elif self.frame == 10:
+            actor.changeSpriteImage(5)
+        elif self.frame == 12:
+            actor.changeSpriteImage(6)
+        elif self.frame == 14:
+            actor.changeSpriteImage(7)
+            actor.active_hitboxes.add(self.fSmashHitbox)
+        elif self.frame == 16:
+            actor.changeSpriteImage(8)
+            self.fSmashHitbox.kill()
+        elif self.frame == 18:
+            actor.changeSpriteImage(9)
+        elif self.frame == self.lastFrame:
+            actor.doIdle()
+        
+        self.frame += 1
+        
+        def stateTransitions(self,actor):
+            if self.frame > 20:
+                baseActions.neutralState(actor)    
+
+class ForwardSmash(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 42)
+        self.chargeLevel = 0
+        
+    def setUp(self,actor):
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,12,1,1.0,40,60,0)
+            
+    def update(self,actor):
+        actor.change_y = 0
+        
+        if self.frame >= 3 and self.frame <= 8 and not actor.keysContain('attack') and self.chargeLevel > 0:
+            self.frame = 9
+            actor.mask = None
+            
+        if self.frame == 0:
+            actor.change_x = 0
+            actor.preferred_xspeed = 0
+            actor.changeSprite("fsmash",0)
         elif self.frame == 3:
-            actor.createMask([255,255,0],15,True,32)
+            if actor.keysContain('attack') and self.chargeLevel == 0:
+                actor.createMask([255,255,0],72,True,32)
             actor.changeSpriteImage(1)
         elif self.frame == 6:
             actor.changeSpriteImage(2)
+        elif self.frame == 8:
+            if actor.keysContain('attack') and self.chargeLevel <= 5:
+                print "charging..."
+                self.chargeLevel += 1
+                self.fSmashHitbox.damage += 1
+                self.fSmashHitbox.baseKnockback += 0.05
+                self.fSmashHitbox.knockbackGrowth += 0.1
+                self.frame = 3
         elif self.frame == 9:
             actor.changeSpriteImage(3)
         elif self.frame == 12:
             actor.changeSpriteImage(4)
         elif self.frame == 15:
+            actor.mask = None
             actor.changeSpriteImage(5)
         elif self.frame == 18:
             actor.changeSpriteImage(6)
