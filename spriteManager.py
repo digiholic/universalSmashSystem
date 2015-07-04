@@ -242,15 +242,25 @@ class TextSprite(ImageSprite):
     def __init__(self,text,font="monospace",size=12,color=[0,0,0]):
         Sprite.__init__(self)
         try:
-            font = pygame.font.Font(settingsManager.createPath(font+".ttf"),size)
-            print font
+            self.font = pygame.font.Font(settingsManager.createPath(font+".ttf"),size)
         except Exception as e:
-            print e
-            font = pygame.font.SysFont(font, size)
-            print font
-        
-        self.image = font.render(text,False,color).convert_alpha()
+            self.font = pygame.font.SysFont(font, size)
+            
+        self.image = self.font.render(text,False,color).convert_alpha()
         self.rect = self.image.get_rect()
+        
+        self.text = text
+        self.color = color
+        
+    def changeColor(self,color):
+        self.image = self.font.render(self.text,False,color).convert_alpha()
+        self.color = color
+        
+    def changeText(self,text):
+        self.image = self.font.render(text,False,self.color).convert_alpha()
+        self.text = text
+        self.rect = self.image.get_rect(center=self.rect.center)
+        
         
 class ImageLibrary():
     def __init__(self,directory,prefix=""):

@@ -113,77 +113,125 @@ class Settings():
                 self.KeyNameMap[name] = value
         
         
-        parser = SafeConfigParser()
-        parser.read(os.path.join(os.path.dirname(__file__),'settings.ini'))
+        self.parser = SafeConfigParser()
+        self.parser.read(os.path.join(os.path.dirname(__file__),'settings.ini'))
         
         self.setting = {}
         
         # Getting the window information
         
-        self.setting['windowName']    = getString(parser,'window','windowName')
-        self.setting['windowSize']    = getNumber(parser, 'window', 'windowSize',True) 
+        self.setting['windowName']    = getString(self.parser,'window','windowName')
+        self.setting['windowSize']    = getNumber(self.parser, 'window', 'windowSize',True) 
         self.setting['windowWidth']   = self.setting['windowSize'][0]
         self.setting['windowHeight']  = self.setting['windowSize'][1]
-        self.setting['frameCap']      = getNumber(parser, 'window', 'frameCap')
+        self.setting['frameCap']      = getNumber(self.parser, 'window', 'frameCap')
         
-        self.setting['showHitboxes']      = getBoolean(parser, 'graphics', 'displayHitboxes')
-        self.setting['showHurtboxes']     = getBoolean(parser,'graphics','displayHurtboxes')
-        self.setting['showSpriteArea']    = getBoolean(parser,'graphics','displaySpriteArea')
-        self.setting['showPlatformLines'] = getBoolean(parser, 'graphics', 'displayPlatformLines')
+        self.setting['showHitboxes']      = getBoolean(self.parser, 'graphics', 'displayHitboxes')
+        self.setting['showHurtboxes']     = getBoolean(self.parser,'graphics','displayHurtboxes')
+        self.setting['showSpriteArea']    = getBoolean(self.parser,'graphics','displaySpriteArea')
+        self.setting['showPlatformLines'] = getBoolean(self.parser, 'graphics', 'displayPlatformLines')
         
-        self.setting['playerColor0'] = getString(parser, 'playerColors', 'player0')
-        self.setting['playerColor1'] = getString(parser, 'playerColors', 'player1')
-        self.setting['playerColor2'] = getString(parser, 'playerColors', 'player2')
-        self.setting['playerColor3'] = getString(parser, 'playerColors', 'player3')
+        self.setting['playerColor0'] = getString(self.parser, 'playerColors', 'player0')
+        self.setting['playerColor1'] = getString(self.parser, 'playerColors', 'player1')
+        self.setting['playerColor2'] = getString(self.parser, 'playerColors', 'player2')
+        self.setting['playerColor3'] = getString(self.parser, 'playerColors', 'player3')
         # Getting game information
         
         # The "preset" lets users define custom presets to switch between.
         # The "custom" preset is one that is modified in-game.
-        preset = parser.get('game','rulePreset')
-        self.loadGameSettings(parser,preset)
+        
+        sects = self.parser.sections()
+        presets = []
+        for preset in sects:
+            if preset.startswith('preset_'):
+                presets.append(preset[7:])
+                
+        self.setting['presetLists'] = presets
+        
+        preset = self.parser.get('game','rulePreset')
+        
+        self.loadGameSettings(preset)
         self.loadGamepads()
-        self.loadControls(parser)
+        self.loadControls()
         
-    def loadGameSettings(self,parser,preset):
-        self.setting['gravity'] = float(getNumber(parser, preset, 'gravityMultiplier'))
-        self.setting['weight'] = float(getNumber(parser, preset, 'weightMultiplier'))
-        self.setting['friction'] = float(getNumber(parser, preset, 'frictionMultiplier'))
-        self.setting['airControl'] = float(getNumber(parser, preset, 'airControlMultiplier'))
-        self.setting['hitstun'] = float(getNumber(parser, preset, 'hitstunMultiplier'))
-        self.setting['hitlag'] = float(getNumber(parser, preset, 'hitlagMultiplier'))
         
-        self.setting['ledgeConflict'] = getString(parser, preset, 'ledgeConflict')
+    def loadGameSettings(self,preset_suf):
+        preset = 'preset_' + preset_suf
+        self.setting['gravity'] = float(getNumber(self.parser, preset, 'gravityMultiplier')) / 100
+        self.setting['weight'] = float(getNumber(self.parser, preset, 'weightMultiplier')) / 100
+        self.setting['friction'] = float(getNumber(self.parser, preset, 'frictionMultiplier')) / 100
+        self.setting['airControl'] = float(getNumber(self.parser, preset, 'airControlMultiplier')) / 100
+        self.setting['hitstun'] = float(getNumber(self.parser, preset, 'hitstunMultiplier')) / 100
+        self.setting['hitlag'] = float(getNumber(self.parser, preset, 'hitlagMultiplier')) / 100
+        self.setting['shieldStun'] = float(getNumber(self.parser, preset, 'shieldStunMultiplier')) / 100
+        
+        self.setting['ledgeConflict'] = getString(self.parser, preset, 'ledgeConflict')
         sweetSpotDict = {'large': [128,128], 'medium': [64,64], 'small': [32,32]}
-        self.setting['ledgeSweetspotSize'] = sweetSpotDict[getString(parser, preset, 'ledgeSweetspotSize')]
-        self.setting['ledgeSweetspotForwardOnly'] = getBoolean(parser, preset, 'ledgeSweetspotForwardOnly')
-        self.setting['teamLedgeConflict'] = getBoolean(parser, preset, 'teamLedgeConflict')
-        self.setting['ledgeInvincibilityTime'] = getNumber(parser, preset, 'ledgeInvincibilityTime')
-        self.setting['regrabInvincibility'] = getBoolean(parser, preset, 'regrabInvincibility')
-        self.setting['slowLedgeWakeupThreshold'] = getNumber(parser, preset, 'slowLedgeWakeupThreshold')
+        self.setting['ledgeSweetspotSize'] = sweetSpotDict[getString(self.parser, preset, 'ledgeSweetspotSize')]
+        self.setting['ledgeSweetspotForwardOnly'] = getBoolean(self.parser, preset, 'ledgeSweetspotForwardOnly')
+        self.setting['teamLedgeConflict'] = getBoolean(self.parser, preset, 'teamLedgeConflict')
+        self.setting['ledgeInvincibilityTime'] = getNumber(self.parser, preset, 'ledgeInvincibilityTime')
+        self.setting['regrabInvincibility'] = getBoolean(self.parser, preset, 'regrabInvincibility')
+        self.setting['slowLedgeWakeupThreshold'] = getNumber(self.parser, preset, 'slowLedgeWakeupThreshold')
         
-        self.setting['airDodgeType'] = getString(parser, preset, 'airDodgeType')
-        self.setting['freeDodgeSpecialFall'] = getBoolean(parser, preset, 'freeDodgeSpecialFall')
-        self.setting['enableWavedash'] = getBoolean(parser, preset, 'enableWavedash')        
+        self.setting['airDodgeType'] = getString(self.parser, preset, 'airDodgeType')
+        self.setting['freeDodgeSpecialFall'] = getBoolean(self.parser, preset, 'freeDodgeSpecialFall')
+        self.setting['enableWavedash'] = getBoolean(self.parser, preset, 'enableWavedash')        
     
-    def loadControls(self,parser):
+        print self.setting
+    
+    def loadControls(self):
+        # load menu controls first
+        bindings = {}
+        groupName = 'controls_menu'
+        controlType = self.parser.get(groupName,'controlType')
+        if controlType == 'gamepad': # If the controls are set to Gamepad
+            gamepadName = self.parser.get(groupName, 'gamepad')
+            if gamepadName in self.setting['controllers']: # Check if that Gamepad is connected
+                print "okay", gamepadName
+                bindings = {
+                    getGamepadTuple(self.parser, gamepadName, 'left') : 'left',
+                    getGamepadTuple(self.parser, gamepadName, 'right') : 'right',
+                    getGamepadTuple(self.parser, gamepadName, 'up') : 'up',
+                    getGamepadTuple(self.parser, gamepadName, 'down') : 'down',
+                    getGamepadTuple(self.parser, gamepadName, 'confirm') : 'confirm',
+                    getGamepadTuple(self.parser, gamepadName, 'cancel') : 'cancel'
+                }
+            else: # If it is not connected, use the buttons instead.
+                print "error", gamepadName
+                bindings = {}
+            
+        # If the bindings are empty (as in, not set by the Gamepad)
+        if bindings == {}:
+            bindings = {
+                        self.KeyNameMap[self.parser.get(groupName, 'left')] : 'left',
+                        self.KeyNameMap[self.parser.get(groupName, 'right')] : 'right',
+                        self.KeyNameMap[self.parser.get(groupName, 'up')] : 'up',
+                        self.KeyNameMap[self.parser.get(groupName, 'down')] : 'down',
+                        self.KeyNameMap[self.parser.get(groupName, 'confirm')] : 'confirm',
+                        self.KeyNameMap[self.parser.get(groupName, 'cancel')] : 'cancel'
+            }
+            self.setting[groupName] = Keybindings(bindings)
+            
+        
         playerNum = 0
-        while parser.has_section('controls_' + str(playerNum)):
+        while self.parser.has_section('controls_' + str(playerNum)):
             bindings = {}
             groupName = 'controls_' + str(playerNum)
-            controlType = parser.get(groupName, 'controlType')
+            controlType = self.parser.get(groupName, 'controlType')
             if controlType == 'gamepad': # If the controls are set to Gamepad
-                gamepadName = parser.get(groupName, 'gamepad')
+                gamepadName = self.parser.get(groupName, 'gamepad')
                 if gamepadName in self.setting['controllers']: # Check if that Gamepad is connected
                     print "okay", gamepadName
                     bindings = {
-                        getGamepadTuple(parser, gamepadName, 'left') : 'left',
-                        getGamepadTuple(parser, gamepadName, 'right') : 'right',
-                        getGamepadTuple(parser, gamepadName, 'up') : 'up',
-                        getGamepadTuple(parser, gamepadName, 'down') : 'down',
-                        getGamepadTuple(parser, gamepadName, 'attack') : 'attack',
-                        getGamepadTuple(parser, gamepadName, 'special') : 'special',
-                        getGamepadTuple(parser, gamepadName, 'jump') : 'jump',
-                        getGamepadTuple(parser, gamepadName, 'shield') : 'shield',
+                        getGamepadTuple(self.parser, gamepadName, 'left') : 'left',
+                        getGamepadTuple(self.parser, gamepadName, 'right') : 'right',
+                        getGamepadTuple(self.parser, gamepadName, 'up') : 'up',
+                        getGamepadTuple(self.parser, gamepadName, 'down') : 'down',
+                        getGamepadTuple(self.parser, gamepadName, 'attack') : 'attack',
+                        getGamepadTuple(self.parser, gamepadName, 'special') : 'special',
+                        getGamepadTuple(self.parser, gamepadName, 'jump') : 'jump',
+                        getGamepadTuple(self.parser, gamepadName, 'shield') : 'shield',
                         }
                 else: # If it is not connected, use the buttons instead.
                     print "error", gamepadName
@@ -192,13 +240,13 @@ class Settings():
             # If the bindings are empty (as in, not set by the Gamepad)
             if bindings == {}:
                 bindings = {
-                        self.KeyNameMap[parser.get(groupName, 'left')] : 'left',
-                        self.KeyNameMap[parser.get(groupName, 'right')] : 'right',
-                        self.KeyNameMap[parser.get(groupName, 'up')] : 'up',
-                        self.KeyNameMap[parser.get(groupName, 'down')] : 'down',
-                        self.KeyNameMap[parser.get(groupName, 'jump')] : 'jump',
-                        self.KeyNameMap[parser.get(groupName, 'attack')] : 'attack',
-                        self.KeyNameMap[parser.get(groupName, 'shield')] : 'shield'
+                        self.KeyNameMap[self.parser.get(groupName, 'left')] : 'left',
+                        self.KeyNameMap[self.parser.get(groupName, 'right')] : 'right',
+                        self.KeyNameMap[self.parser.get(groupName, 'up')] : 'up',
+                        self.KeyNameMap[self.parser.get(groupName, 'down')] : 'down',
+                        self.KeyNameMap[self.parser.get(groupName, 'jump')] : 'jump',
+                        self.KeyNameMap[self.parser.get(groupName, 'attack')] : 'attack',
+                        self.KeyNameMap[self.parser.get(groupName, 'shield')] : 'shield'
                         }
             self.setting[groupName] = Keybindings(bindings)
             playerNum += 1
