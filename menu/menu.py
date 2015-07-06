@@ -137,7 +137,8 @@ class MainMenu(SubMenu):
                             self.state = OptionsMenu(self.parent).executeMenu(screen)
                             if self.state == -1: return -1
                         if self.selectedOption == 2: #modules
-                            pass
+                            self.state = ModulesMenu(self.parent).executeMenu(screen)
+                            if self.state == -1: return -1
                         if self.selectedOption == 3: #quit
                             return -1
                         
@@ -150,6 +151,7 @@ class MainMenu(SubMenu):
             for m in self.menuText:
                 m.draw(screen,m.rect.topleft,1.0)
                 m.changeColor([255,255,255])
+                
             rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
             self.menuText[self.selectedOption].changeColor(rgb)
                 
@@ -315,35 +317,34 @@ class GameSettingsMenu(SubMenu):
         self.presets = self.settings['presetLists']
         
         self.current_preset = 0
-        self.selectionSlice = (1,10)
+        self.selectionSlice = (0,10)
         
         self.selectedOption = 0
-        self.menuText = [spriteManager.TextSprite(self.presets[self.current_preset], 'full Pack 2025', 24, [255,255,255]),
-                         spriteManager.TextSprite('Gravity Multiplier','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Weight Multiplier','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Friction Multiplier','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Air Mobility Multiplier','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Hit Stun Multiplier','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Hit Lag Multiplier','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Shield Stun Multiplier','rexlia rg',18,[255,255,255]),
-                         
-                         spriteManager.TextSprite('Ledge Conflict Type','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Ledge Sweetspot Size','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Ledge Grab Forward Facing Only','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Team Ledge Conflict','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Ledge Invincibility Time','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Regrab Invincibility','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Slow Ledge Getup Damage Threshold','rexlia rg',18,[255,255,255]),
-                         
-                         ]
+        self.selectedBlock = 0
+        self.menuText = [spriteManager.TextSprite(self.presets[self.current_preset], 'full Pack 2025', 24, [255,255,255])]
+                         #spriteManager.TextSprite('Cancel','full Pack 2025', 22, [255,255,255]),
+                         #spriteManager.TextSprite('Save','full Pack 2025', 22, [255,255,255]),
+                         #]
         
-        self.updateMenuText()
+        numList = [0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]
         
-        vertOff = 80
-        for menu in self.menuText:
-            menu.rect.left = 20
-            menu.rect.top = vertOff
-            vertOff += 25    
+        self.options = [OptionButton('Gravity Multiplier', numList, (self.settings['gravity'])),
+                        OptionButton('Weight Multiplier', numList, (self.settings['weight'])),
+                        OptionButton('Friction Multiplier', numList, (self.settings['friction'])),
+                        OptionButton('Air Mobility Multiplier', numList, (self.settings['airControl'])),
+                        OptionButton('Hit Stun Multiplier', numList, (self.settings['hitstun'])),
+                        OptionButton('Hit Lag Multiplier', numList, (self.settings['hitlag'])),
+                        OptionButton('Shield Stun Multiplier', numList, (self.settings['shieldStun'])),
+                        
+                        OptionButton('Ledge Conflict Type', ['hog','trump','share'], (self.settings['ledgeConflict'])),
+                        OptionButton('Ledge Sweetspot Size', [[128,128],[64,64],[32,32]], (self.settings['ledgeSweetspotSize'])),
+                        OptionButton('Ledge Grab Only When Facing', [True, False], (self.settings['ledgeSweetspotForwardOnly'])),
+                        OptionButton('Team Ledge Conflict', [True, False], (self.settings['teamLedgeConflict'])),
+                        OptionButton('Ledge Invincibility Time', range(0,300,5), (self.settings['ledgeInvincibilityTime'])),
+                        OptionButton('Regrab Invincibility', [True, False], (self.settings['regrabInvincibility'])),
+                        OptionButton('Slow Ledge Getup Damage Threshold', range(0,300,5), (self.settings['slowLedgeWakeupThreshold'])),
+                        
+                        ]
             
         self.menuText[0].rect.centerx = self.settings['windowSize'][0] / 2
         self.menuText[0].rect.top = 50
@@ -352,13 +353,6 @@ class GameSettingsMenu(SubMenu):
         settingsManager.getSetting().loadGameSettings(self.presets[self.current_preset])
         
         self.menuValues = [spriteManager.TextSprite('','rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['gravity']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['weight']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['friction']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['airControl']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['hitstun']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['hitlag']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['shieldStun']),'rexlia rg', 18, [255,255,255]),
                            
                            spriteManager.TextSprite(str(self.settings['ledgeConflict']),'rexlia rg', 18, [255,255,255]),
                            spriteManager.TextSprite(str(self.settings['ledgeSweetspotSize']),'rexlia rg', 18, [255,255,255]),
@@ -386,8 +380,15 @@ class GameSettingsMenu(SubMenu):
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
                     if event.key == K_ESCAPE or controls.get(event.key) == 'cancel':
-                        self.status = 1
-                    
+                        if self.selectedBlock == 0:
+                            self.status = 1
+                        else:
+                            self.selectedBlock = 0
+                            self.selectionSlice = (0,10)
+                            self.selectedOption = 0
+                            for opt in self.options:
+                                opt.changeColor([100,100,100])
+                                
                     if controls.get(event.key) == 'left':
                         if self.selectedOption == 0: #currently selecting preset switcher
                             self.current_preset -= 1
@@ -405,62 +406,55 @@ class GameSettingsMenu(SubMenu):
         
                             
                     if controls.get(event.key) == 'down':
-                        self.selectedOption += 1
-                        self.selectedOption = self.selectedOption % len(self.menuText)
-                        if self.selectedOption < len(self.menuText):
-                            if self.selectedOption > self.selectionSlice[1] - 1:
-                                self.selectionSlice = (self.selectionSlice[0]+1,self.selectionSlice[1]+1)
-                                
-                                for i in range(1,len(self.menuText)):
-                                    self.menuText[i].rect.y -= 25
-                                    self.menuValues[i].rect.y -= 25
-                                    
+                        if self.selectedBlock == 0:
+                            self.selectedOption += 1
+                            self.selectedOption = self.selectedOption % len(self.menuText)
+                        else:
+                            self.selectedOption += 1
+                            self.selectedOption = self.selectedOption % len(self.options)
                     if controls.get(event.key) == 'up':
-                        self.selectedOption -= 1
-                        self.selectedOption = self.selectedOption % len(self.menuText)
-                        if self.selectedOption > 0:
-                            if self.selectedOption < self.selectionSlice[0]:
-                                self.selectionSlice = (self.selectionSlice[0]-1,self.selectionSlice[1]-1)
-                                
-                                for i in range(1,len(self.menuText)):
-                                    self.menuText[i].rect.y += 25
-                                    self.menuValues[i].rect.y += 25
-                                    
+                        if self.selectedBlock == 0:
+                            self.selectedOption -= 1
+                            self.selectedOption = self.selectedOption % len(self.menuText)
+                        else:
+                            self.selectedOption -= 1
+                            self.selectedOption = self.selectedOption % len(self.options)
+                                        
                     if controls.get(event.key) == 'confirm':
-                        if self.selectedOption == 0: #controls
-                            pass
-                        if self.selectedOption == 1: #graphics
-                            pass
-                        if self.selectedOption == 2: #sound
-                            pass
-                        if self.selectedOption == 3: #game
-                            pass
-                        if self.selectedOption == 4: #quit
-                            self.status = 1
-                
+                        if self.selectedBlock == 0: #not editing a preset
+                            if self.selectedOption == 0: #selecting a preset
+                                self.selectedBlock = 1
+                                self.selectedOption = 0
+                                self.selectionSlice = (0,10)
+                                for opt in self.options:
+                                    opt.changeColor([255,255,255])
+                                    
                 if event.type == QUIT:
                     self.status = -1
             
             self.parent.bg.update(screen)
             self.parent.bg.draw(screen,(0,0),1.0)
             
-            
             self.menuText[0].draw(screen,self.menuText[0].rect.topleft,1.0)
             self.menuText[0].changeColor([255,255,255])
             
-            for m in self.menuText[self.selectionSlice[0]:self.selectionSlice[1]]:
-                m.draw(screen,m.rect.topleft,1.0)
-                m.changeColor([255,255,255])
-            for m in self.menuValues[self.selectionSlice[0]:self.selectionSlice[1]]:
+            for m in self.menuText:
                 m.draw(screen,m.rect.topleft,1.0)
                 m.changeColor([255,255,255])
             
-            
+            vertOff = 100
+            for opt in self.options[self.selectionSlice[0]:self.selectionSlice[1]]:
+                opt.setHeight(vertOff)
+                opt.draw(screen,(0,0),1.0)
+                if self.selectedBlock == 1:
+                    opt.changeColor([255,255,255])
+                vertOff += 25
+                
             rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
-            self.menuText[self.selectedOption].changeColor(rgb)
-            self.menuValues[self.selectedOption].changeColor(rgb)
-            
-            
+            if self.selectedBlock == 0:
+                self.menuText[self.selectedOption].changeColor(rgb)
+            else:
+                self.options[self.selectedOption].changeColor(rgb)
                 
             #self.menuText.draw(screen, (128,128), 1.0)
             clock.tick(60)    
@@ -471,8 +465,51 @@ class GameSettingsMenu(SubMenu):
         
 """ Modules and related Submenus """
 class ModulesMenu(SubMenu):
-    pass
-
+    def __init__(self,parent):
+        SubMenu.__init__(self, parent)
+        self.menuText = [spriteManager.TextSprite('Module Manager not yet available','rexlia rg',18,[255,255,255]),
+                         spriteManager.TextSprite('Back','full Pack 2025',24,[255,255,255])
+                         ]
+        
+        self.menuText[0].rect.centerx = settingsManager.getSetting('windowSize')[0] / 2
+        self.menuText[1].rect.centerx = settingsManager.getSetting('windowSize')[0] / 2
+        
+        self.menuText[0].rect.top = 50
+        self.menuText[1].rect.bottom = settingsManager.getSetting('windowSize')[1] - 100
+        
+        self.selectedOption = 1
+        
+    def executeMenu(self,screen):
+        clock = pygame.time.Clock()
+        controls = settingsManager.getControls('menu')
+        
+        while self.status == 0:
+            self.update(screen)
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_ESCAPE or controls.get(event.key) == 'cancel':
+                        self.status = 1
+                    if controls.get(event.key) == 'confirm':
+                        self.status = 1
+                    if event.type == QUIT:
+                        self.status = -1
+            
+            self.parent.bg.update(screen)
+            self.parent.bg.draw(screen,(0,0),1.0)
+            
+            for m in self.menuText:
+                m.draw(screen,m.rect.topleft,1.0)
+                m.changeColor([255,255,255])
+            
+            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
+            self.menuText[self.selectedOption].changeColor(rgb)
+                
+            #self.menuText.draw(screen, (128,128), 1.0)
+            clock.tick(60)    
+            pygame.display.flip()
+            
+        return self.status
+    
 class FighterModules(SubMenu):
     pass
 
@@ -483,22 +520,48 @@ class MusicModules(SubMenu):
     pass
 
 
-class MenuButton():
-    def __init__(self,root,destination,text,prevItem = None, nextItem = None):
-        self.root = root
-        self.destination = destination
-        self.inactiveSprite = None
-        self.activeSprite = None
-        self.nextItem = nextItem
-        self.prevItem = prevItem
+class OptionButton(spriteManager.TextSprite):
+    def __init__(self, name, vals, startingVal):
+        spriteManager.Sprite.__init__(self)
         
-    def onClick(self):
-        self.root.changeSubmenu(self.destination)
+        self.possibleVals = vals
+        if startingVal in vals:
+            self.selectedValue = self.possibleVals.index(startingVal) 
+        else:
+            print "Not in list of options"
+            self.selectedValue = 0
+        
+        self.nameText = spriteManager.TextSprite(name, 'rexlia rg',18,[100,100,100])
+        self.nameText.rect.left = 20
+        
+        self.valText = spriteManager.TextSprite(str(self.possibleVals[self.selectedValue]), 'rexlia rg',18,[100,100,100])
+        self.valText.rect.right = 620
+        
+    def changeColor(self,color):
+        self.nameText.changeColor(color)
+        self.valText.changeColor(color)
+        
+    def getValue(self):
+        return self.possibleVals[self.selectedValue]
     
-class MenuButtonSprite(spriteManager.ImageSprite):
-    def __init__(self, image, topleft, colorKey=[255, 255, 255], generateAlpha=True, filepath=__file__):
-        spriteManager.ImageSprite.__init__(self, filepath)
+    def update(self):
+        pass
+    
+    def incVal(self,inc):
+        self.selectedValue += inc
+        self.selectedValue = self.selectedValue % len(self.possibleVals)
         
+    def changeVal(self,val):
+        if val in self.possibleVals:
+            self.selectedValue = self.possibleVals.index(val)
+    
+    def setHeight(self,top):
+        self.nameText.rect.top = top
+        self.valText.rect.top = top
+        
+    def draw(self,screen,offset,scale):
+        self.nameText.draw(screen, self.nameText.rect.topleft, scale)
+        self.valText.draw(screen, self.valText.rect.topleft, scale)  
 
 class bgSpace(spriteManager.ImageSprite):
     def __init__(self):
