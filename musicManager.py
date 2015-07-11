@@ -1,5 +1,6 @@
 import pygame
 import random
+import settingsManager
 
 """
 The Music Manager is an object that is meant to store the list of music
@@ -25,6 +26,7 @@ class musicManager():
         for path, chance, name in self.musicList:
             roll -= chance
             if roll <= 0:
+                pygame.mixer.music.set_volume(settingsManager.getSetting('musicVolume'))
                 self.currentMusic = (path,chance,name)
                 pygame.mixer.music.load(path)
                 pygame.mixer.music.play(-1)

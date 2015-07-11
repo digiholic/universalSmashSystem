@@ -126,6 +126,9 @@ class Settings():
         self.setting['windowHeight']  = self.setting['windowSize'][1]
         self.setting['frameCap']      = getNumber(self.parser, 'window', 'frameCap')
         
+        self.setting['musicVolume']       = float(getNumber(self.parser, 'sound', 'musicVolume')) / 100
+        self.setting['sfxVolume']         = float(getNumber(self.parser, 'sound', 'sfxVolume')) / 100
+        
         self.setting['showHitboxes']      = getBoolean(self.parser, 'graphics', 'displayHitboxes')
         self.setting['showHurtboxes']     = getBoolean(self.parser,'graphics','displayHurtboxes')
         self.setting['showSpriteArea']    = getBoolean(self.parser,'graphics','displaySpriteArea')
@@ -261,8 +264,62 @@ class Settings():
             self.joysticks.append(pygame.joystick.Joystick(i).get_name())
         self.setting['controllers'] = self.joysticks
 
-
-
+"""
+Save a modified settings object to the settings.ini file.
+"""
+def saveSettings(settings):
+    parser = SafeConfigParser()
+    
+    parser.add_section('window')
+    parser.set('window','windowName',str(settings['windowName']))
+    parser.set('window','windowSize',str(settings['windowSize']))
+    parser.set('window','frameCap',str(settings['frameCap']))
+    
+    parser.add_section('sound')
+    parser.set('sound','musicVolume',str(settings['sfxVolume'] * 100))
+    parser.set('sound','sfxVolume',str(settings['musicVolume'] * 100))
+    
+    parser.add_section('graphics')
+    parser.set('graphics','displayHitboxes',str(settings['showHitboxes']))
+    parser.set('graphics','displayHurtboxes',str(settings['showHurtboxes']))
+    parser.set('graphics','displaySpriteArea',str(settings['showSpriteArea']))
+    parser.set('graphics','displayPlatformLines',str(settings['showPlatformLines']))
+    
+    parser.add_section('playerColors')
+    parser.set('playerColors','Player0',str(settings['playerColor0']))
+    parser.set('playerColors','Player1',str(settings['playerColor1']))
+    parser.set('playerColors','Player2',str(settings['playerColor2']))
+    parser.set('playerColors','Player3',str(settings['playerColor3']))
+    
+    with open(os.path.join(os.path.dirname(__file__),'settings.ini'), 'w') as configfile:
+        parser.write(configfile)
+        
+def savePreset(settings, preset):
+    parser = SafeConfigParser()
+    
+    parser.set(preset,'gravityMultiplier',settings['gravity'] * 100)
+    parser.set(preset,'weightMultiplier',settings['weight'] * 100)
+    parser.set(preset,'frictionMultiplier',settings['friction'] * 100)
+    parser.set(preset,'airControlMultiplier',settings['airControl'] * 100)
+    parser.set(preset,'hitstunMultiplier',settings['hitstun'] * 100)
+    parser.set(preset,'hitlagMultiplier',settings['hitlag'] * 100)
+    parser.set(preset,'shieldStunMultiplier',settings['shieldStun'] * 100)
+    
+    parser.set(preset,'ledgeConflict',settings['ledgeConflict'])
+    sweetSpotDict = {[128,128]: 'large', [64,64]: 'medium', [32,32]: 'small'}
+    parser.set(preset,'ledgeSweetspotSize',sweetSpotDict[settings['ledgeSweetspotSize']])
+    parser.set(preset,'ledgeSweetspotForwardOnly',settings['ledgeSweetspotForwardOnly'])
+    parser.set(preset,'teamLedgeConflict',settings['teamLedgeConflict'])
+    parser.set(preset,'ledgeInvincibilityTime',settings['ledgeInvincibilityTime'])
+    parser.set(preset,'regrabInvincibility',settings['regrabInvincibility'])
+    parser.set(preset,'slowLedgeWakeupThreshold',settings['slowLedgeWakeupThreshold'])
+    
+    parser.set(preset,'airDodgeType',settings['airDodgeType'])
+    parser.set(preset,'freeDodgeSpecialFall',settings['freeDodgeSpecialFall'])
+    parser.set(preset,'enableWavedash',settings['enableWavedash'])
+    
+    parser.write(os.path.join(os.path.dirname(__file__),'settings.ini'))
+    
 """
 The Keybindings object is just a shorthand for looking up
 the keys in the game settings. A dictionary is passed

@@ -204,7 +204,8 @@ class OptionsMenu(SubMenu):
                         if self.selectedOption == 1: #graphics
                             pass
                         if self.selectedOption == 2: #sound
-                            pass
+                            self.state = SoundMenu(self.parent).executeMenu(screen)
+                            if self.state == -1: return -1
                         if self.selectedOption == 3: #game
                             self.state = GameSettingsMenu(self.parent).executeMenu(screen)
                             if self.state == -1: return -1
@@ -307,7 +308,106 @@ class GraphicsMenu(SubMenu):
         return self.status
 
 class SoundMenu(SubMenu):
-    pass
+    def __init__(self,parent):
+        SubMenu.__init__(self, parent)
+        
+        self.settings = settingsManager.getSetting().setting
+                
+        self.selectedOption = 0
+        volList = range(0,100)
+        self.menuText = [OptionButton('Music Volume', volList, (self.settings['musicVolume'] * 100)),
+                         OptionButton('SFX Volume', volList, (self.settings['sfxVolume'] * 100)),
+                         spriteManager.TextSprite('Save', 'full Pack 2025', 24, [255,255,255]),
+                         spriteManager.TextSprite('Cancel', 'full Pack 2025', 24, [255,255,255]),
+                         ]
+        
+        self.menuText[0].setHeight(80)
+        self.menuText[1].setHeight(180)
+        self.menuText[2].rect.centery = self.settings['windowHeight'] - 64
+        self.menuText[3].rect.centery = self.settings['windowHeight'] - 64
+        
+        self.menuText[2].rect.centerx = (self.settings['windowWidth'] / 3)
+        self.menuText[3].rect.centerx = (self.settings['windowWidth'] / 3) * 2
+        
+    def executeMenu(self,screen):
+        clock = pygame.time.Clock()
+        controls = settingsManager.getControls('menu')
+        
+        while self.status == 0:
+            self.update(screen)
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_ESCAPE or controls.get(event.key) == 'cancel':
+                        if self.selectedBlock == 0:
+                            self.status = 1
+                                
+                    if controls.get(event.key) == 'left':
+                        if self.selectedOption == 2: #if you're not highlighting back
+                            self.selectedOption = 3
+                        elif self.selectedOption == 3:
+                            self.selectedOption = 2
+                        else:
+                            self.menuText[self.selectedOption].incVal(-1)
+                            
+                    if controls.get(event.key) == 'right':
+                        if self.selectedOption == 2: #if you're not highlighting back
+                            self.selectedOption = 3
+                        elif self.selectedOption == 3:
+                            self.selectedOption = 2
+                        else:
+                            self.menuText[self.selectedOption].incVal(1)
+                                
+                    if controls.get(event.key) == 'down':
+                        if self.selectedOption == 2 or self.selectedOption == 3:
+                            self.selectedOption = 0
+                        else:
+                            self.selectedOption += 1
+                            self.selectedOption = self.selectedOption % len(self.menuText)
+                            
+                    if controls.get(event.key) == 'up':
+                        if self.selectedOption == 0:
+                            self.selectedOption = 3
+                        elif self.selectedOption == 3:
+                            self.selectedOption = 2
+                        else:
+                            self.selectedOption -= 1
+                            self.selectedOption = self.selectedOption % len(self.menuText)
+                            
+                    if controls.get(event.key) == 'confirm':
+                        if self.selectedOption == 2: #save
+                            self.settings['musicVolume'] = float(self.menuText[0].getValue()) / 100
+                            self.settings['sfxVolume'] = float(self.menuText[1].getValue()) / 100
+                            
+                            pygame.mixer.music.set_volume(float(self.menuText[0].getValue()) / 100)
+                            settingsManager.saveSettings(self.settings)
+                            self.status = 1
+                        if self.selectedOption > 2: #save or cancel
+                            self.status = 1
+                            
+                if event.type == QUIT:
+                    self.status = -1
+            
+            self.parent.bg.update(screen)
+            self.parent.bg.draw(screen,(0,0),1.0)
+            
+            self.menuText[0].draw(screen,(0,0),1.0)
+            self.menuText[1].draw(screen,(0,0),1.0)
+            self.menuText[2].draw(screen,self.menuText[2].rect.topleft,1.0)
+            self.menuText[3].draw(screen,self.menuText[3].rect.topleft,1.0)
+            
+            self.menuText[0].changeColor([255,255,255])
+            self.menuText[1].changeColor([255,255,255])
+            self.menuText[2].changeColor([255,255,255])
+            self.menuText[3].changeColor([255,255,255])
+                
+            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
+            self.menuText[self.selectedOption].changeColor(rgb)
+            
+            #self.menuText.draw(screen, (128,128), 1.0)
+            clock.tick(60)    
+            pygame.display.flip()
+            
+        return self.status
 
 class GameSettingsMenu(SubMenu):
     def __init__(self,parent):
@@ -351,25 +451,35 @@ class GameSettingsMenu(SubMenu):
     
     def updateMenuText(self):
         settingsManager.getSetting().loadGameSettings(self.presets[self.current_preset])
+        self.selectionSlice = (0,10)
         
-        self.menuValues = [spriteManager.TextSprite('','rexlia rg', 18, [255,255,255]),
-                           
-                           spriteManager.TextSprite(str(self.settings['ledgeConflict']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['ledgeSweetspotSize']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['ledgeSweetspotForwardOnly']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['teamLedgeConflict']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['ledgeInvincibilityTime']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['regrabInvincibility']),'rexlia rg', 18, [255,255,255]),
-                           spriteManager.TextSprite(str(self.settings['slowLedgeWakeupThreshold']),'rexlia rg', 18, [255,255,255]),
-                           
-                           ]
+        numList = [0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]
         
-        vertOff = 80
-        for val in self.menuValues:
-            val.rect.right = self.settings['windowSize'][0] - 20
-            val.rect.top = vertOff
-            vertOff += 25
+        self.options = [OptionButton('Gravity Multiplier', numList, (self.settings['gravity'])),
+                        OptionButton('Weight Multiplier', numList, (self.settings['weight'])),
+                        OptionButton('Friction Multiplier', numList, (self.settings['friction'])),
+                        OptionButton('Air Mobility Multiplier', numList, (self.settings['airControl'])),
+                        OptionButton('Hit Stun Multiplier', numList, (self.settings['hitstun'])),
+                        OptionButton('Hit Lag Multiplier', numList, (self.settings['hitlag'])),
+                        OptionButton('Shield Stun Multiplier', numList, (self.settings['shieldStun'])),
+                        
+                        OptionButton('Ledge Conflict Type', ['hog','trump','share'], (self.settings['ledgeConflict'])),
+                        OptionButton('Ledge Sweetspot Size', [[128,128],[64,64],[32,32]], (self.settings['ledgeSweetspotSize'])),
+                        OptionButton('Ledge Grab Only When Facing', [True, False], (self.settings['ledgeSweetspotForwardOnly'])),
+                        OptionButton('Team Ledge Conflict', [True, False], (self.settings['teamLedgeConflict'])),
+                        OptionButton('Ledge Invincibility Time', range(0,300,5), (self.settings['ledgeInvincibilityTime'])),
+                        OptionButton('Regrab Invincibility', [True, False], (self.settings['regrabInvincibility'])),
+                        OptionButton('Slow Ledge Getup Damage Threshold', range(0,300,5), (self.settings['slowLedgeWakeupThreshold'])),
+                        
+                        ]
         
+    def updateSlice(self):
+        if self.selectedOption <= self.selectionSlice[0] and self.selectionSlice[0] > 0:
+            diff = self.selectionSlice[0] - self.selectedOption
+            self.selectionSlice = (self.selectionSlice[0]-diff, self.selectionSlice[1]-diff)
+        if self.selectedOption >= (self.selectionSlice[1]-1) and self.selectionSlice[1] <= len(self.options):
+            diff = self.selectedOption - (self.selectionSlice[1] -1)
+            self.selectionSlice = (self.selectionSlice[0]+diff, self.selectionSlice[1]+diff)
         
     def executeMenu(self,screen):
         clock = pygame.time.Clock()
@@ -390,20 +500,23 @@ class GameSettingsMenu(SubMenu):
                                 opt.changeColor([100,100,100])
                                 
                     if controls.get(event.key) == 'left':
-                        if self.selectedOption == 0: #currently selecting preset switcher
+                        if self.selectedBlock == 0 and self.selectedOption == 0: #currently selecting preset switcher
                             self.current_preset -= 1
                             self.current_preset = self.current_preset % len(self.presets)
                             self.menuText[0].changeText(self.presets[self.current_preset])
                             self.updateMenuText()
+                        if self.selectedBlock == 1:
+                            self.options[self.selectedOption].incVal(-1)
                             
                             
                     if controls.get(event.key) == 'right':
-                        if self.selectedOption == 0: #currently selecting preset switcher
+                        if self.selectedBlock == 0 and self.selectedOption == 0: #currently selecting preset switcher
                             self.current_preset += 1
                             self.current_preset = self.current_preset % len(self.presets)
                             self.menuText[0].changeText(self.presets[self.current_preset])
                             self.updateMenuText()
-        
+                        if self.selectedBlock == 1:
+                            self.options[self.selectedOption].incVal(1)
                             
                     if controls.get(event.key) == 'down':
                         if self.selectedBlock == 0:
@@ -412,6 +525,8 @@ class GameSettingsMenu(SubMenu):
                         else:
                             self.selectedOption += 1
                             self.selectedOption = self.selectedOption % len(self.options)
+                            self.updateSlice()
+                            
                     if controls.get(event.key) == 'up':
                         if self.selectedBlock == 0:
                             self.selectedOption -= 1
@@ -419,6 +534,7 @@ class GameSettingsMenu(SubMenu):
                         else:
                             self.selectedOption -= 1
                             self.selectedOption = self.selectedOption % len(self.options)
+                            self.updateSlice()
                                         
                     if controls.get(event.key) == 'confirm':
                         if self.selectedBlock == 0: #not editing a preset
@@ -436,7 +552,6 @@ class GameSettingsMenu(SubMenu):
             self.parent.bg.draw(screen,(0,0),1.0)
             
             self.menuText[0].draw(screen,self.menuText[0].rect.topleft,1.0)
-            self.menuText[0].changeColor([255,255,255])
             
             for m in self.menuText:
                 m.draw(screen,m.rect.topleft,1.0)
@@ -560,6 +675,7 @@ class OptionButton(spriteManager.TextSprite):
         self.valText.rect.top = top
         
     def draw(self,screen,offset,scale):
+        self.valText.text = str(self.getValue())
         self.nameText.draw(screen, self.nameText.rect.topleft, scale)
         self.valText.draw(screen, self.valText.rect.topleft, scale)  
 
