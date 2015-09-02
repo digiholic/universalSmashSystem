@@ -110,7 +110,7 @@ class ForwardAttack(action.Action):
         action.Action.__init__(self, 24)
     
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox(center=[20,0],size=[60,40],
+        self.fSmashHitbox = hitbox.DamageHitbox(center=[20,0],size=[120,40],
                                                 owner=actor,damage=8,
                                                 baseKnockback=0.4,knockbackGrowth=0.09,
                                                 trajectory=40,
@@ -157,7 +157,7 @@ class ForwardSmash(action.Action):
         self.chargeLevel = 0
         
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[60,40],actor,12,1,.1,40,60,0)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,12,1,.1,40,60,0)
             
     def update(self,actor):
         actor.change_y = 0

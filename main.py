@@ -42,6 +42,8 @@ def main(debug = False):
     
     current_stage.follows.append(testBoxie.rect)
     current_stage.follows.append(sandbag.rect)
+    
+    current_stage.initializeCamera()
         
     clock = pygame.time.Clock()
     

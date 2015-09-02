@@ -329,16 +329,15 @@ class LedgeGrab(action.Action):
 def neutralState(actor):
     if actor.bufferContains('attack'):
         actor.doGroundAttack()
-    if actor.bufferContains('jump',10):
+    elif actor.bufferContains('jump',10):
         actor.doJump()
-    if actor.bufferContains('left',8):
+    elif actor.bufferContains('left',8):
         actor.doGroundMove(180)
     elif actor.bufferContains('right',8):
         actor.doGroundMove(0)
     elif actor.bufferContains('shield',8):
         actor.doShield()
     
-
 def airState(actor):
     airControl(actor)
     if actor.bufferContains('jump'):
