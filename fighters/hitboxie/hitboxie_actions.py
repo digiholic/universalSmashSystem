@@ -112,7 +112,7 @@ class ForwardAttack(action.Action):
     def setUp(self,actor):
         self.fSmashHitbox = hitbox.DamageHitbox(center=[20,0],size=[120,40],
                                                 owner=actor,damage=8,
-                                                baseKnockback=0.4,knockbackGrowth=0.09,
+                                                baseKnockback=2.0,knockbackGrowth=0.3,
                                                 trajectory=40,
                                                 hitstun=30,hitbox_id=0)
             
@@ -157,7 +157,10 @@ class ForwardSmash(action.Action):
         self.chargeLevel = 0
         
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,12,1,.1,40,60,0)
+        self.fSmashHitbox = hitbox.DamageHitbox(center=[20,0],size=[120,40],
+                                                owner=actor,damage=12,
+                                                baseKnockback=0.8,knockbackGrowth=.35,
+                                                trajectory=40, hitstun=60,hitbox_id=0)
             
     def update(self,actor):
         actor.change_y = 0
@@ -182,7 +185,6 @@ class ForwardSmash(action.Action):
                 self.chargeLevel += 1
                 self.fSmashHitbox.damage += 1
                 self.fSmashHitbox.baseKnockback += 0.05
-                self.fSmashHitbox.knockbackGrowth += 0.1
                 self.frame = 3
         elif self.frame == 9:
             actor.changeSpriteImage(3)
