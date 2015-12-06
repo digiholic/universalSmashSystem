@@ -1,7 +1,7 @@
 import random
 import pygame
 import settingsManager
-
+import sys
 import fighters.hitboxie.fighter
 import fighters.sandbag.fighter
 import stages.true_arena
@@ -63,6 +63,7 @@ class Battle():
         while exitStatus == 0:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    sys.exit()
                     return -1
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
@@ -121,7 +122,7 @@ class Battle():
         # End while loop
         
         self.doExitStatus(exitStatus)
-        return # This'll pop us back to the character select screen.
+        return exitStatus # This'll pop us back to the character select screen.
     
     def doExitStatus(self,exitStatus):
         if exitStatus == 1:

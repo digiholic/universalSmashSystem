@@ -9,7 +9,7 @@ import musicManager
 import colorsys
 import engine.article
 import css
-
+import sys
 import spriteManager
 
 def main():
@@ -84,6 +84,7 @@ class StartScreen(SubMenu):
                     
                 if event.type == QUIT:
                     self.status = -1
+                    sys.exit()
             
             
             rgb = tuple(i * 255 for i in colorsys.hsv_to_rgb(self.hsv[0],self.hsv[1],self.hsv[2]))
@@ -133,6 +134,7 @@ class MainMenu(SubMenu):
                     if controls.get(event.key) == 'confirm':
                         if self.selectedOption == 0: #play game
                             css.CSSScreen()
+                            if self.state == -1: return -1
                         if self.selectedOption == 1: #options
                             self.state = OptionsMenu(self.parent).executeMenu(screen)
                             if self.state == -1: return -1

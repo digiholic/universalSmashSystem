@@ -5,6 +5,7 @@ import imp
 import pygame
 import menu
 import battle
+import sys
 import stages.true_arena as stage
 
 class CSSScreen():
@@ -33,7 +34,7 @@ class CSSScreen():
             #Start event loop
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    return
+                    sys.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         return
