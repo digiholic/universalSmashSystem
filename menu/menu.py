@@ -416,7 +416,8 @@ class GameSettingsMenu(SubMenu):
         self.settings = settingsManager.getSetting().setting
         self.presets = self.settings['presetLists']
         
-        self.current_preset = 0
+        self.current_preset = self.presets.index(self.settings['current_preset'])
+        print self.current_preset
         self.selectionSlice = (0,10)
         
         self.selectedOption = 0

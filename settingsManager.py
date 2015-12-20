@@ -114,7 +114,7 @@ class Settings():
         
         
         self.parser = SafeConfigParser()
-        self.parser.read(os.path.join(os.path.dirname(__file__),'settings.ini'))
+        self.parser.read(os.path.join(os.path.join(os.path.dirname(__file__),'settings'),'settings.ini'))
         
         self.setting = {}
         
@@ -143,14 +143,14 @@ class Settings():
         # The "preset" lets users define custom presets to switch between.
         # The "custom" preset is one that is modified in-game.
         
-        sects = self.parser.sections()
+        
         presets = []
-        for preset in sects:
-            if preset.startswith('preset_'):
-                presets.append(preset[7:])
+        for f in os.listdir(os.path.join(os.path.dirname(__file__),'settings/rules')):
+            fname, ext = os.path.splitext(f)
+            if ext == '.ini':
+                presets.append(fname)
                 
         self.setting['presetLists'] = presets
-        
         preset = self.parser.get('game','rulePreset')
         
         self.loadGameSettings(preset)
@@ -159,27 +159,32 @@ class Settings():
         
         
     def loadGameSettings(self,preset_suf):
+        preset_parser = SafeConfigParser()
+        preset_parser.read(os.path.join(os.path.join(os.path.dirname(__file__),'settings/rules',),preset_suf+'.ini'))
+        
         preset = 'preset_' + preset_suf
-        self.setting['gravity'] = float(getNumber(self.parser, preset, 'gravityMultiplier')) / 100
-        self.setting['weight'] = float(getNumber(self.parser, preset, 'weightMultiplier')) / 100
-        self.setting['friction'] = float(getNumber(self.parser, preset, 'frictionMultiplier')) / 100
-        self.setting['airControl'] = float(getNumber(self.parser, preset, 'airControlMultiplier')) / 100
-        self.setting['hitstun'] = float(getNumber(self.parser, preset, 'hitstunMultiplier')) / 100
-        self.setting['hitlag'] = float(getNumber(self.parser, preset, 'hitlagMultiplier')) / 100
-        self.setting['shieldStun'] = float(getNumber(self.parser, preset, 'shieldStunMultiplier')) / 100
+        self.setting['current_preset'] = preset_suf
         
-        self.setting['ledgeConflict'] = getString(self.parser, preset, 'ledgeConflict')
+        self.setting['gravity'] = float(getNumber(preset_parser, preset, 'gravityMultiplier')) / 100
+        self.setting['weight'] = float(getNumber(preset_parser, preset, 'weightMultiplier')) / 100
+        self.setting['friction'] = float(getNumber(preset_parser, preset, 'frictionMultiplier')) / 100
+        self.setting['airControl'] = float(getNumber(preset_parser, preset, 'airControlMultiplier')) / 100
+        self.setting['hitstun'] = float(getNumber(preset_parser, preset, 'hitstunMultiplier')) / 100
+        self.setting['hitlag'] = float(getNumber(preset_parser, preset, 'hitlagMultiplier')) / 100
+        self.setting['shieldStun'] = float(getNumber(preset_parser, preset, 'shieldStunMultiplier')) / 100
+        
+        self.setting['ledgeConflict'] = getString(preset_parser, preset, 'ledgeConflict')
         sweetSpotDict = {'large': [128,128], 'medium': [64,64], 'small': [32,32]}
-        self.setting['ledgeSweetspotSize'] = sweetSpotDict[getString(self.parser, preset, 'ledgeSweetspotSize')]
-        self.setting['ledgeSweetspotForwardOnly'] = getBoolean(self.parser, preset, 'ledgeSweetspotForwardOnly')
-        self.setting['teamLedgeConflict'] = getBoolean(self.parser, preset, 'teamLedgeConflict')
-        self.setting['ledgeInvincibilityTime'] = getNumber(self.parser, preset, 'ledgeInvincibilityTime')
-        self.setting['regrabInvincibility'] = getBoolean(self.parser, preset, 'regrabInvincibility')
-        self.setting['slowLedgeWakeupThreshold'] = getNumber(self.parser, preset, 'slowLedgeWakeupThreshold')
+        self.setting['ledgeSweetspotSize'] = sweetSpotDict[getString(preset_parser, preset, 'ledgeSweetspotSize')]
+        self.setting['ledgeSweetspotForwardOnly'] = getBoolean(preset_parser, preset, 'ledgeSweetspotForwardOnly')
+        self.setting['teamLedgeConflict'] = getBoolean(preset_parser, preset, 'teamLedgeConflict')
+        self.setting['ledgeInvincibilityTime'] = getNumber(preset_parser, preset, 'ledgeInvincibilityTime')
+        self.setting['regrabInvincibility'] = getBoolean(preset_parser, preset, 'regrabInvincibility')
+        self.setting['slowLedgeWakeupThreshold'] = getNumber(preset_parser, preset, 'slowLedgeWakeupThreshold')
         
-        self.setting['airDodgeType'] = getString(self.parser, preset, 'airDodgeType')
-        self.setting['freeDodgeSpecialFall'] = getBoolean(self.parser, preset, 'freeDodgeSpecialFall')
-        self.setting['enableWavedash'] = getBoolean(self.parser, preset, 'enableWavedash')        
+        self.setting['airDodgeType'] = getString(preset_parser, preset, 'airDodgeType')
+        self.setting['freeDodgeSpecialFall'] = getBoolean(preset_parser, preset, 'freeDodgeSpecialFall')
+        self.setting['enableWavedash'] = getBoolean(preset_parser, preset, 'enableWavedash')        
     
         print self.setting
     
