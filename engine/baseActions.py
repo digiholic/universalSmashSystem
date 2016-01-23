@@ -64,7 +64,7 @@ class Stop(action.Action):
     def stateTransitions(self, actor):
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.bufferContains(key,12,andReleased=True) and actor.keysContain(key):
-            print "run"
+            print("run")
             actor.doGroundMove(actor.getFacingDirection(),True)
         if actor.bufferContains(invkey,5,notReleased = True):
             actor.doPivot()
@@ -91,7 +91,7 @@ class HitStun(action.Action):
     def update(self,actor):
         if self.frame == 0:
             (direct,mag) = actor.getDirectionMagnitude()
-            print "direction:", direct
+            print("direction:", direct)
             if direct != 0 and direct != 180:
                 actor.grounded = False
                 if mag > 10:
@@ -166,7 +166,7 @@ class Land(action.Action):
         if self.frame == 0:
             self.lastFrame = actor.landingLag
             if actor.bufferContains('shield',distanceBack=22):
-                print "l-cancel"
+                print("l-cancel")
                 self.lastFrame = self.lastFrame / 2    
         if self.frame == self.lastFrame:
             actor.landingLag = 6
@@ -358,7 +358,7 @@ def moveState(actor, direction):
     if actor.bufferContains(key, state=0):
         actor.doStop()
     if actor.bufferContains('attack'):
-        print "attacking"
+        print("attacking")
         actor.doGroundAttack()
             
 def shieldState(actor):
@@ -378,7 +378,7 @@ def shieldState(actor):
 def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.bufferContains(key):
-        print "up"
+        print("up")
         actor.doLedgeGetup
     elif actor.bufferContains(invkey):
         actor.ledgeLock = True

@@ -22,7 +22,7 @@ class musicManager():
     
     def rollMusic(self):
         roll = random.randint(0,self.getTotalChance())
-        print roll, self.getTotalChance()
+        print(roll, self.getTotalChance())
         for path, chance, name in self.musicList:
             roll -= chance
             if roll <= 0:

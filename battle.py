@@ -67,7 +67,7 @@ class Battle():
                     return -1
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
-                        print "saving screenshot"
+                        print("saving screenshot")
                         pygame.image.save(screen,settingsManager.createPath('screenshot.jpg'))
                     
                     for fight in currentFighters:
@@ -126,11 +126,11 @@ class Battle():
     
     def doExitStatus(self,exitStatus):
         if exitStatus == 1:
-            print "NO CONTEST"
+            print("NO CONTEST")
         elif exitStatus == 2:
-            print "GAME SET"
+            print("GAME SET")
         elif exitStatus == -1:
-            print "ERROR!"
+            print("ERROR!")
          
     """
     In a normal game, the frame input won't matter.

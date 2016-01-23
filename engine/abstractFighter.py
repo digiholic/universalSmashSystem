@@ -262,10 +262,10 @@ class AbstractFighter():
         self.changeAction(baseActions.LedgeGrab(ledge))
         
     def doLedgeGetup(self):
-        print "getup"
+        print("getup")
         
     def doGetTrumped(self):
-        print "trumped"
+        print("trumped")
         
 ########################################################
 #                  STATE CHANGERS                      #
@@ -336,7 +336,7 @@ class AbstractFighter():
                 if totalKB < 30: trajectory = 0
                 else: trajectory = 43
             else: trajectory = 43
-            print trajectory
+            print(trajectory)
             
         #Directional Incluence
         if (trajectory < 45 or trajectory > 315) or (trajectory < 225 and trajectory > 135):
@@ -344,7 +344,7 @@ class AbstractFighter():
                 trajectory += 15
             if self.keysContain('down'):
                 trajectory -= 15
-        print totalKB, trajectory
+        print(totalKB, trajectory)
         self.setSpeed(totalKB, trajectory, False)
         self.preferred_xspeed = 0
         self.preferred_yspeed = 0

@@ -115,7 +115,7 @@ class MainMenu(SubMenu):
         clock = pygame.time.Clock()
         
         controls = settingsManager.getControls('menu')
-        print controls.keyBindings
+        print(controls.keyBindings)
         
         while self.status == 0:
             self.update(screen)
@@ -419,7 +419,7 @@ class GameSettingsMenu(SubMenu):
         self.presets = self.settings['presetLists']
         
         self.current_preset = self.presets.index(self.settings['current_preset'])
-        print self.current_preset
+        print(self.current_preset)
         self.selectionSlice = (0,10)
         
         self.selectedOption = 0
@@ -646,7 +646,7 @@ class OptionButton(spriteManager.TextSprite):
         if startingVal in vals:
             self.selectedValue = self.possibleVals.index(startingVal) 
         else:
-            print "Not in list of options"
+            print("Not in list of options")
             self.selectedValue = 0
         
         self.nameText = spriteManager.TextSprite(name, 'rexlia rg',18,[100,100,100])
