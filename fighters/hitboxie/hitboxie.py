@@ -1,5 +1,6 @@
 import engine.abstractFighter as abstractFighter
 import settingsManager
+import os
 
 class Hitboxie(abstractFighter.AbstractFighter):
     def __init__(self,playerNum,sprites):
@@ -20,10 +21,12 @@ class Hitboxie(abstractFighter.AbstractFighter):
                                  sprites, #Start Sprite
                                  "HBoxie", #Name
                                  var)
-        
+        print settingsManager.importFromURI(__file__,'hitboxie_actions.py',suffix=str(playerNum))
         self.actions = settingsManager.importFromURI(__file__,'hitboxie_actions.py',suffix=str(playerNum))
-        
-        self.current_action = self.actions.NeutralAction()
+        try:
+            self.current_action = self.actions.NeutralAction()
+        except:
+            raise ValueError(os.path.normpath(os.path.join(os.path.dirname(__file__).replace('main.exe',''), 'hitboxie_actions.py')))
         
 ########################################################
 #                  ACTION SETTERS                      #

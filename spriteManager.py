@@ -264,7 +264,7 @@ class TextSprite(ImageSprite):
         
 class ImageLibrary():
     def __init__(self,directory,prefix=""):
-        self.directory = os.path.join(os.path.dirname(__file__),directory)
+        self.directory = os.path.join(os.path.dirname(__file__).replace('main.exe',''),directory)
         self.imageDict = {}
         supportedFileTypes = [".jpg",".png",".gif",".bmp",".pcx",".tga",".tif",".lbm",".pbm",".xpm"]
              

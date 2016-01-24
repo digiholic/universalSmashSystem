@@ -1,5 +1,4 @@
 import spriteObject
-from engine.abstractFighter import AbstractFighter
 
 class Hitbox(spriteObject.RectSprite):
     def __init__(self,center,size,owner,hitbox_id=0):

@@ -134,13 +134,13 @@ class MainMenu(SubMenu):
                     if controls.get(event.key) == 'confirm':
                         if self.selectedOption == 0: #play game
                             css.CSSScreen()
-                            if self.state == -1: return -1
+                            if self.status == -1: return -1
                         if self.selectedOption == 1: #options
-                            self.state = OptionsMenu(self.parent).executeMenu(screen)
-                            if self.state == -1: return -1
+                            self.status = OptionsMenu(self.parent).executeMenu(screen)
+                            if self.status == -1: return -1
                         if self.selectedOption == 2: #modules
-                            self.state = ModulesMenu(self.parent).executeMenu(screen)
-                            if self.state == -1: return -1
+                            self.status = ModulesMenu(self.parent).executeMenu(screen)
+                            if self.status == -1: return -1
                         if self.selectedOption == 3: #quit
                             return -1
                         
@@ -206,11 +206,11 @@ class OptionsMenu(SubMenu):
                         if self.selectedOption == 1: #graphics
                             pass
                         if self.selectedOption == 2: #sound
-                            self.state = SoundMenu(self.parent).executeMenu(screen)
-                            if self.state == -1: return -1
+                            self.status = SoundMenu(self.parent).executeMenu(screen)
+                            if self.status == -1: return -1
                         if self.selectedOption == 3: #game
-                            self.state = GameSettingsMenu(self.parent).executeMenu(screen)
-                            if self.state == -1: return -1
+                            self.status = GameSettingsMenu(self.parent).executeMenu(screen)
+                            if self.status == -1: return -1
                         if self.selectedOption == 4: #quit
                             self.status = 1
                 if event.type == QUIT:

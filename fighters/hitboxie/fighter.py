@@ -63,7 +63,7 @@ def getFighter(playerNum,colorNum):
     #The file that contains your implementation of abstractFighter
     fight = main.importFromURI(__file__,'hitboxie.py')
     #The sprites directory
-    directory = os.path.join(os.path.dirname(__file__),"sprites")
+    directory = os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites")
     #The prefix that indicates the sprites to be used for this character/costume
     prefix = "hitboxie_"
     #The width of each image in the sheets. This should always be consistent between sprites
@@ -74,7 +74,7 @@ def getFighter(playerNum,colorNum):
     
     return fight.Hitboxie(playerNum,sprites)
 
-def cssIcon(): return spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__),"sprites","icon_hitboxie.png"))
+def cssIcon(): return spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","icon_hitboxie.png"))
 
 def cssName(): return "Hitboxie"
 

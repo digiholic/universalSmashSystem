@@ -106,7 +106,7 @@ class FighterWheel():
         self.fighters = []
         
         # Load all files.
-        directory = os.path.join(os.path.dirname(settingsManager.__file__),"fighters")
+        directory = settingsManager.createPath("fighters")
         fightercount = 0
         for subdir in next(os.walk(directory))[1]:
             fighter = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"fighter.py"),suffix=str(fightercount))
@@ -118,7 +118,7 @@ class FighterWheel():
         self.wheelSize = 9
         self.visibleSprites = [None for _ in range(self.wheelSize)]
         self.animateWheel()
-        self.wheelShadow = spriteManager.ImageSprite(os.path.join(os.path.dirname(settingsManager.__file__),"sprites/cssbar_shadow.png"))
+        self.wheelShadow = spriteManager.ImageSprite(settingsManager.createPath(os.path.join("sprites","cssbar_shadow.png")))
         
     def changeSelected(self,increment):
         self.currentIndex = self.currentIndex + increment
@@ -151,7 +151,7 @@ class FighterWheel():
     def getFighterPortrait(self,fighter):
         portrait = fighter.cssIcon()
         if portrait == None:
-            portrait = spriteManager.ImageSprite(os.path.join(os.path.dirname(settingsManager.__file__),"sprites","icon_unknown.png"))
+            portrait = spriteManager.ImageSprite(settingsManager.createPath(os.path.join("sprites","icon_unknown.png")))
         return portrait
 
 class PlayerPanel(pygame.Surface):

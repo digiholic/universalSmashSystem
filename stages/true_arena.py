@@ -25,7 +25,7 @@ class TrueArena(stage.Stage):
                                [860,680],
                                [1040,680]]
         
-        bgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__),"sprites/fd_new.png"))
+        bgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites/fd_new.png"))
         bgSprite.rect.topleft = [700,620]
         self.backgroundSprites.append(bgSprite)
         

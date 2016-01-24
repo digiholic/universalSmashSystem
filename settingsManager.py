@@ -25,7 +25,7 @@ It will use the proper os.join calls to build a platform-apropriate path
 from the main game to whatever you pass in the path argument.
 """
 def createPath(path):
-    return os.path.join(os.path.dirname(__file__),path)
+    return os.path.join(os.path.dirname(__file__).replace('main.exe',''),path)
 
 """
 This function imports a module from it's file path.
@@ -36,7 +36,7 @@ It returns the imported module.
 #TODO refactor the variables to make this less confusing
 def importFromURI(filePath, uri, absl=False, suffix=""):
     if not absl:
-        uri = os.path.normpath(os.path.join(os.path.dirname(filePath), uri))
+        uri = os.path.normpath(os.path.join(os.path.dirname(filePath).replace('main.exe',''), uri))
     path, fname = os.path.split(uri)
     mname, ext = os.path.splitext(fname)
     
@@ -47,6 +47,7 @@ def importFromURI(filePath, uri, absl=False, suffix=""):
             return imp.load_source((mname + suffix), no_ext + '.py')
         except Exception as e:
             print mname, e
+            raise ValueError(e)
 
 """
 Build the settings if they do not exist yet, otherwise, get a setting.
@@ -114,7 +115,7 @@ class Settings():
         
         
         self.parser = SafeConfigParser()
-        self.parser.read(os.path.join(os.path.join(os.path.dirname(__file__),'settings'),'settings.ini'))
+        self.parser.read(os.path.join(os.path.join(os.path.dirname(__file__).replace('main.exe','').replace('main.exe',''),'settings'),'settings.ini'))
         
         self.setting = {}
         
@@ -145,7 +146,7 @@ class Settings():
         
         
         presets = []
-        for f in os.listdir(os.path.join(os.path.dirname(__file__),'settings/rules')):
+        for f in os.listdir(os.path.join(os.path.dirname(__file__).replace('main.exe','').replace('main.exe',''),'settings/rules')):
             fname, ext = os.path.splitext(f)
             if ext == '.ini':
                 presets.append(fname)
@@ -160,7 +161,7 @@ class Settings():
         
     def loadGameSettings(self,preset_suf):
         preset_parser = SafeConfigParser()
-        preset_parser.read(os.path.join(os.path.join(os.path.dirname(__file__),'settings/rules',),preset_suf+'.ini'))
+        preset_parser.read(os.path.join(os.path.join(os.path.dirname(__file__).replace('main.exe','').replace('main.exe',''),'settings/rules',),preset_suf+'.ini'))
         
         preset = 'preset_' + preset_suf
         self.setting['current_preset'] = preset_suf
@@ -296,7 +297,7 @@ def saveSettings(settings):
     parser.set('playerColors','Player2',str(settings['playerColor2']))
     parser.set('playerColors','Player3',str(settings['playerColor3']))
     
-    with open(os.path.join(os.path.dirname(__file__),'settings.ini'), 'w') as configfile:
+    with open(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings.ini'), 'w') as configfile:
         parser.write(configfile)
         
 def savePreset(settings, preset):
@@ -323,7 +324,7 @@ def savePreset(settings, preset):
     parser.set(preset,'freeDodgeSpecialFall',settings['freeDodgeSpecialFall'])
     parser.set(preset,'enableWavedash',settings['enableWavedash'])
     
-    parser.write(os.path.join(os.path.dirname(__file__),'settings.ini'))
+    parser.write(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings.ini'))
     
 """
 The Keybindings object is just a shorthand for looking up
