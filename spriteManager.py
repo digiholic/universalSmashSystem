@@ -16,8 +16,8 @@ class Sprite(pygame.sprite.Sprite):
         try:
             blitSprite = pygame.transform.smoothscale(self.image, (w,h))
         except Exception as e:
-            print e
-            print "Please use 32-bit PNG files"
+            print(e)
+            print("Please use 32-bit PNG files")
             sys.exit()
         if self.angle != 0:
             blitSprite = pygame.transform.rotate(blitSprite,self.angle)
@@ -69,9 +69,9 @@ class SpriteHandler(Sprite):
     
     def get_image(self):
         try:
-            self.image = self.imageLibrary[self.flip][self.currentSheet][self.index]
+            self.image = self.imageLibrary[self.flip][self.currentSheet][int(self.index)]
         except:
-            print "Error loading sprite ", self.currentSheet, " Loading default"
+            print("Error loading sprite ", self.currentSheet, " Loading default")
             self.image = self.imageLibrary[self.flip][self.startingImage][0]
         
         self.rect = self.image.get_rect(center=self.rect.center)
@@ -85,7 +85,7 @@ class SpriteHandler(Sprite):
     def buildImageLibrary(self,lib,offset):
         library = {}
         flippedLibrary = {}
-        for key,value in lib.imageDict.iteritems():
+        for key,value in lib.imageDict.items():
             imageList = self.buildSubimageList(value,offset)
             library[key] = imageList
             flipList = []
@@ -103,8 +103,8 @@ class SpriteHandler(Sprite):
         while index < sheet.get_width() / offset:
             sheet.set_clip(pygame.Rect(index * offset, 0, offset,sheet.get_height()))
             image = sheet.subsurface(sheet.get_clip())
-            for fromColor,toColor in self.colorMap.iteritems():
-                self.recolor(image, list(fromColor), list(toColor))
+            for fromColor,toColor in self.colorMap.items():
+                self.recolor(image, tuple(list(fromColor)), tuple(list(toColor)))
             imageList.append(image)
             index += 1
         return imageList
@@ -168,8 +168,8 @@ class SheetSprite(ImageSprite):
             self.sheet.set_clip(pygame.Rect(index * offset, 0, offset,sheet.get_height()))
             image = sheet.subsurface(sheet.get_clip())
             #image = image.convert_alpha()
-            for fromColor,toColor in self.colorMap.iteritems():
-                self.recolor(image, list(fromColor), list(toColor))
+            for fromColor,toColor in self.colorMap.items():
+                self.recolor(image, tuple(list(fromColor)), tuple(list(toColor)))
             imageList.append(image)
             index += 1
         return imageList
@@ -275,7 +275,7 @@ class ImageLibrary():
                 sprite = pygame.image.load(os.path.join(self.directory,f))
                 sprite = sprite.convert_alpha()
                 self.imageDict[spriteName] = sprite
-                print sprite.get_alpha(), spriteName, self.imageDict[spriteName]
+                print(sprite.get_alpha(), spriteName, self.imageDict[spriteName])
 
 class RectSprite(Sprite):
     def __init__(self,rect,color=[0,0,0]):

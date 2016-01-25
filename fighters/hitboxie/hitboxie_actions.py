@@ -181,7 +181,7 @@ class ForwardSmash(action.Action):
             actor.changeSpriteImage(2)
         elif self.frame == 8:
             if actor.keysContain('attack') and self.chargeLevel <= 5:
-                print "charging..."
+                print("charging...")
                 self.chargeLevel += 1
                 self.fSmashHitbox.damage += 1
                 self.fSmashHitbox.baseKnockback += 0.05

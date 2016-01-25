@@ -86,11 +86,11 @@ class Hitboxie(abstractFighter.AbstractFighter):
         self.changeAction(self.actions.LedgeGrab(ledge))
         
     def doGroundAttack(self):
-        print 'player ', self.playerNum, ' attacking'
+        print('player ', self.playerNum, ' attacking')
         (key, invkey) = self.getForwardBackwardKeys()
         if self.keysContain(key):
             if self.checkSmash(key):
-                print "SMASH!"
+                print("SMASH!")
                 self.changeAction(self.actions.ForwardSmash())
             else:
                 self.changeAction(self.actions.ForwardAttack())
