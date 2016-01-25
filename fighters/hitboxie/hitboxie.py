@@ -21,7 +21,6 @@ class Hitboxie(abstractFighter.AbstractFighter):
                                  sprites, #Start Sprite
                                  "HBoxie", #Name
                                  var)
-        print settingsManager.importFromURI(__file__,'hitboxie_actions.py',suffix=str(playerNum))
         self.actions = settingsManager.importFromURI(__file__,'hitboxie_actions.py',suffix=str(playerNum))
         try:
             self.current_action = self.actions.NeutralAction()
