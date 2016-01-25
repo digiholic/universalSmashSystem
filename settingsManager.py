@@ -1,8 +1,13 @@
+from __future__ import print_function
 import pygame.constants
 import re
 import os
 import imp
-from ConfigParser import SafeConfigParser
+try:
+    from configparser import SafeConfigParser
+except ImportError:
+    from ConfigParser import SafeConfigParser
+
 
 settings = None
 sfxLib = None
@@ -46,9 +51,7 @@ def importFromURI(filePath, uri, absl=False, suffix=""):
         try:
             return imp.load_source((mname + suffix), no_ext + '.py')
         except Exception as e:
-            print mname, e
-            raise ValueError(e)
-
+            print(mname, e)
 """
 Build the settings if they do not exist yet, otherwise, get a setting.
 
@@ -108,7 +111,7 @@ class Settings():
     def __init__(self):
         self.KeyIdMap = {}
         self.KeyNameMap = {}
-        for name, value in vars(pygame.constants).iteritems():
+        for name, value in vars(pygame.constants).items():
             if name.startswith("K_"):
                 self.KeyIdMap[value] = name
                 self.KeyNameMap[name] = value
@@ -122,7 +125,7 @@ class Settings():
         # Getting the window information
         
         self.setting['windowName']    = getString(self.parser,'window','windowName')
-        self.setting['windowSize']    = getNumber(self.parser, 'window', 'windowSize',True) 
+        self.setting['windowSize']    = getNumber(self.parser, 'window', 'windowSize',True)
         self.setting['windowWidth']   = self.setting['windowSize'][0]
         self.setting['windowHeight']  = self.setting['windowSize'][1]
         self.setting['frameCap']      = getNumber(self.parser, 'window', 'frameCap')
@@ -187,7 +190,7 @@ class Settings():
         self.setting['freeDodgeSpecialFall'] = getBoolean(preset_parser, preset, 'freeDodgeSpecialFall')
         self.setting['enableWavedash'] = getBoolean(preset_parser, preset, 'enableWavedash')        
     
-        print self.setting
+        print(self.setting)
     
     def loadControls(self):
         # load menu controls first
@@ -197,7 +200,7 @@ class Settings():
         if controlType == 'gamepad': # If the controls are set to Gamepad
             gamepadName = self.parser.get(groupName, 'gamepad')
             if gamepadName in self.setting['controllers']: # Check if that Gamepad is connected
-                print "okay", gamepadName
+                print("okay", gamepadName)
                 bindings = {
                     getGamepadTuple(self.parser, gamepadName, 'left') : 'left',
                     getGamepadTuple(self.parser, gamepadName, 'right') : 'right',
@@ -207,7 +210,7 @@ class Settings():
                     getGamepadTuple(self.parser, gamepadName, 'cancel') : 'cancel'
                 }
             else: # If it is not connected, use the buttons instead.
-                print "error", gamepadName
+                print("error", gamepadName)
                 bindings = {}
             
         # If the bindings are empty (as in, not set by the Gamepad)
@@ -231,7 +234,7 @@ class Settings():
             if controlType == 'gamepad': # If the controls are set to Gamepad
                 gamepadName = self.parser.get(groupName, 'gamepad')
                 if gamepadName in self.setting['controllers']: # Check if that Gamepad is connected
-                    print "okay", gamepadName
+                    print("okay", gamepadName)
                     bindings = {
                         getGamepadTuple(self.parser, gamepadName, 'left') : 'left',
                         getGamepadTuple(self.parser, gamepadName, 'right') : 'right',
@@ -243,7 +246,7 @@ class Settings():
                         getGamepadTuple(self.parser, gamepadName, 'shield') : 'shield',
                         }
                 else: # If it is not connected, use the buttons instead.
-                    print "error", gamepadName
+                    print("error", gamepadName)
                     bindings = {}
             
             # If the bindings are empty (as in, not set by the Gamepad)
@@ -388,7 +391,7 @@ first number.
 """
 def getNumbersFromString(string, many = False):
     if many:
-        return map(int, re.findall(r'\d+', string))
+        return list(map(int, re.findall(r'\d+', string)))
     else:
         return int(re.search(r'\d+', string).group())
 
@@ -407,8 +410,8 @@ A wrapper that'll get a lowercase String from the parser, or return gracefully w
 def getString(parser,preset,key):
     try:
         return parser.get(preset,key).lower()
-    except Exception,e:
-        print e
+    except (Exception,e):
+        print(e)
         return ""
 
 """
@@ -417,8 +420,8 @@ A wrapper that'll get a boolean from the parser, or return gracefully with an er
 def getBoolean(parser,preset,key):
     try:
         return boolean(parser.get(preset,key))
-    except Exception,e:
-        print e
+    except (Exception,e):
+        print(e)
         return False
 
 """
@@ -427,8 +430,8 @@ A wrapper that'll get a number from the parser, or return gracefully with an err
 def getNumber(parser,preset,key,islist = False):
     try:
         return getNumbersFromString(parser.get(preset,key),islist)
-    except Exception,e:
-        print e
+    except (Exception,e):
+        print(e)
         return 0
 
 """
@@ -444,15 +447,15 @@ def getGamepadTuple(parser,preset,key):
         joyInfo = parser.get(preset,key).split(' ')
         if len(joyInfo) < 3: joyInfo.append('')
         return (joyInfo[0], getNumbersFromString(joyInfo[1],False),joyInfo[2]) 
-    except Exception,e:
-        print e
+    except (Exception,e):
+        print(e)
         return ("",0)
 
 """
 Main method for debugging purposes
 """
 def test():
-    print getSetting().setting
+    print(getSetting().setting)
     
 
 if __name__  == '__main__': test()

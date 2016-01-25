@@ -1,3 +1,4 @@
+from __future__ import print_function
 import pygame
 import spriteObject
 import settingsManager
@@ -201,7 +202,7 @@ class Stage():
             if abs(h - w) <= 0.02:
                 # Fuck it, close enough.
                 return h
-            print "Scaling Error", h, w, abs(h-w)
+            print("Scaling Error", h, w, abs(h-w))
             return w
         
     """
