@@ -1,3 +1,4 @@
+from __future__ import print_function
 import pygame
 import stages.stage
 import stages.true_arena as stage
@@ -33,7 +34,7 @@ def importFromURI(file, uri, absl=False):
         try:
             return imp.load_source(mname, no_ext + '.py')
         except Exception as e:
-            print mname, e
+            print(mname, e)
         
     
 if __name__  == '__main__': main(True)

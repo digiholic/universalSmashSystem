@@ -21,7 +21,6 @@ class Hitboxie(abstractFighter.AbstractFighter):
                                  sprites, #Start Sprite
                                  "HBoxie", #Name
                                  var)
-        print settingsManager.importFromURI(__file__,'hitboxie_actions.py',suffix=str(playerNum))
         self.actions = settingsManager.importFromURI(__file__,'hitboxie_actions.py',suffix=str(playerNum))
         try:
             self.current_action = self.actions.NeutralAction()
@@ -86,11 +85,11 @@ class Hitboxie(abstractFighter.AbstractFighter):
         self.changeAction(self.actions.LedgeGrab(ledge))
         
     def doGroundAttack(self):
-        print 'player ', self.playerNum, ' attacking'
+        print('player ', self.playerNum, ' attacking')
         (key, invkey) = self.getForwardBackwardKeys()
         if self.keysContain(key):
             if self.checkSmash(key):
-                print "SMASH!"
+                print("SMASH!")
                 self.changeAction(self.actions.ForwardSmash())
             else:
                 self.changeAction(self.actions.ForwardAttack())

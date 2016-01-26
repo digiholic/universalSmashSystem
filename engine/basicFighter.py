@@ -98,10 +98,10 @@ class BasicFighter():
         self.changeAction(self.actions.LedgeGrab(ledge))
         
     def doLedgeGetup(self):
-        print "getup"
+        print("getup")
         
     def doGetTrumped(self):
-        print "trumped"
+        print("trumped")
         
 ########################################################
 #                  STATE CHANGERS                      #
