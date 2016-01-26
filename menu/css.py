@@ -110,6 +110,9 @@ class FighterWheel():
         fightercount = 0
         for subdir in next(os.walk(directory))[1]:
             fighter = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"fighter.py"),suffix=str(fightercount))
+            print(fighter)
+            if (fighter == None):
+                raise ValueError("No fighter found at " + os.path.join(directory,subdir,"fighter.py"))
             fightercount += 1
             self.fighters.append(fighter)      
         
