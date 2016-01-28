@@ -11,7 +11,7 @@ import engine.article
 import css
 import sys
 import spriteManager
-​
+
 def main():
     Menu()
     
@@ -81,7 +81,7 @@ class StartScreen(SubMenu):
                         menu.starColor = self.hsv
                         retValue = menu.executeMenu(screen)
                         if retValue == -1: return -1
-​
+
                 if event.type == QUIT:
                     self.status = -1
                     sys.exit()
@@ -146,16 +146,16 @@ class MainMenu(SubMenu):
                             if self.status == -1: return -1
                         if self.selectedOption == 3: #quit
                             return -1
-​
+
                 if event.type == KEYUP:
                     holding[controls.get(event.key)] = False
-​
+
                 if event.type == USEREVENT+1:
                     canPress = True
                         
                 if event.type == QUIT:
                     self.status = -1
-​
+
             for keyName,keyValue in holding.items():
                 if keyValue and canPress: 
                     canPress = False
@@ -185,7 +185,7 @@ class MainMenu(SubMenu):
     
 class PlayGameMenu(SubMenu):
     pass
-​
+
 """ Options Screen and related Submenus """
 class OptionsMenu(SubMenu):
     def __init__(self,parent):
@@ -235,13 +235,13 @@ class OptionsMenu(SubMenu):
                             if self.status == -1: return -1
                         if self.selectedOption == 4: #quit
                             self.status = 1
-​
+
                 if event.type == KEYUP:
                     holding[controls.get(event.key)] = False
                 
                 if event.type == QUIT:
                     self.status = -1
-​
+
                 if event.type == pygame.USEREVENT+1: #USEREVENT+1 goes off whenever you can press a key again
                     canPress = True;
                     
@@ -271,10 +271,10 @@ class OptionsMenu(SubMenu):
             
         return self.status
     
-​
+
 class ControlsMenu(SubMenu):
     pass
-​
+
 class GraphicsMenu(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self,parent)
@@ -348,7 +348,7 @@ class GraphicsMenu(SubMenu):
             pygame.display.flip()
             
         return self.status
-​
+
 class SoundMenu(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self, parent)
@@ -385,7 +385,7 @@ class SoundMenu(SubMenu):
                     if event.key == K_ESCAPE or controls.get(event.key) == 'cancel':
                         if self.selectedBlock == 0:
                             self.status = 1
-​
+
                     # Old Code for inputs
                     '''if controls.get(event.key) == 'left': 
                         if self.selectedOption == 2: #if you're not highlighting back
@@ -435,7 +435,7 @@ class SoundMenu(SubMenu):
                     
                 if event.type == QUIT:
                     self.status = -1
-​
+
                 if event.type == pygame.USEREVENT+1: #USEREVENT+1 goes off whenever you can press a key again
                     canPress = True;
                     
@@ -501,7 +501,7 @@ class SoundMenu(SubMenu):
             pygame.display.flip()
             
         return self.status
-​
+
 class GameSettingsMenu(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self, parent)
@@ -578,11 +578,14 @@ class GameSettingsMenu(SubMenu):
     def executeMenu(self,screen):
         clock = pygame.time.Clock()
         controls = settingsManager.getControls('menu')
+        canPress = True
+        holding = {'up': False,'down': False,'left': False,'right': False}
         
         while self.status == 0:
             self.update(screen)
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
+                    holding[controls.get(event.key)] = True
                     if event.key == K_ESCAPE or controls.get(event.key) == 'cancel':
                         if self.selectedBlock == 0:
                             self.status = 1
@@ -593,7 +596,7 @@ class GameSettingsMenu(SubMenu):
                             for opt in self.options:
                                 opt.changeColor([100,100,100])
                                 
-                    if controls.get(event.key) == 'left':
+                    '''if controls.get(event.key) == 'left':
                         if self.selectedBlock == 0 and self.selectedOption == 0: #currently selecting preset switcher
                             self.current_preset -= 1
                             self.current_preset = self.current_preset % len(self.presets)
@@ -628,7 +631,7 @@ class GameSettingsMenu(SubMenu):
                         else:
                             self.selectedOption -= 1
                             self.selectedOption = self.selectedOption % len(self.options)
-                            self.updateSlice()
+                            self.updateSlice()'''
                                         
                     if controls.get(event.key) == 'confirm':
                         if self.selectedBlock == 0: #not editing a preset
@@ -638,10 +641,53 @@ class GameSettingsMenu(SubMenu):
                                 self.selectionSlice = (0,10)
                                 for opt in self.options:
                                     opt.changeColor([255,255,255])
+
+                if event.type == KEYUP:
+                    holding[controls.get(event.key)] = False;
+
+                if event.type == pygame.USEREVENT+1:
+                    canPress = True;
                                     
                 if event.type == QUIT:
                     self.status = -1
-            
+
+            for keyName,keyValue in holding.items():
+                if keyValue and canPress: 
+                    canPress = False
+                    pygame.time.set_timer(pygame.USEREVENT+1,200)
+                    if keyName == 'left':
+                        if self.selectedBlock == 0 and self.selectedOption == 0: #currently selecting preset switcher
+                            self.current_preset -= 1
+                            self.current_preset = self.current_preset % len(self.presets)
+                            self.menuText[0].changeText(self.presets[self.current_preset])
+                            self.updateMenuText()
+                        if self.selectedBlock == 1:
+                            self.options[self.selectedOption].incVal(-1)
+                    if keyName == 'right':
+                        if self.selectedBlock == 0 and self.selectedOption == 0: #currently selecting preset switcher
+                            self.current_preset += 1
+                            self.current_preset = self.current_preset % len(self.presets)
+                            self.menuText[0].changeText(self.presets[self.current_preset])
+                            self.updateMenuText()
+                        if self.selectedBlock == 1:
+                            self.options[self.selectedOption].incVal(1)
+                    if keyName == 'down':
+                        if self.selectedBlock == 0:
+                            self.selectedOption += 1
+                            self.selectedOption = self.selectedOption % len(self.menuText)
+                        else:
+                            self.selectedOption += 1
+                            self.selectedOption = self.selectedOption % len(self.options)
+                            self.updateSlice()
+                    if keyName == 'up':
+                        if self.selectedBlock == 0:
+                            self.selectedOption -= 1
+                            self.selectedOption = self.selectedOption % len(self.menuText)
+                        else:
+                            self.selectedOption -= 1
+                            self.selectedOption = self.selectedOption % len(self.options)
+                            self.updateSlice()
+
             self.parent.bg.update(screen)
             self.parent.bg.draw(screen,(0,0),1.0)
             
@@ -670,7 +716,7 @@ class GameSettingsMenu(SubMenu):
             pygame.display.flip()
             
         return self.status
-​
+
         
 """ Modules and related Submenus """
 class ModulesMenu(SubMenu):
@@ -721,14 +767,14 @@ class ModulesMenu(SubMenu):
     
 class FighterModules(SubMenu):
     pass
-​
+
 class StageModules(SubMenu):
     pass
-​
+
 class MusicModules(SubMenu):
     pass
-​
-​
+
+
 class OptionButton(spriteManager.TextSprite):
     def __init__(self, name, vals, startingVal):
         spriteManager.Sprite.__init__(self)
@@ -772,7 +818,7 @@ class OptionButton(spriteManager.TextSprite):
         self.valText.text = str(self.getValue())
         self.nameText.draw(screen, self.nameText.rect.topleft, scale)
         self.valText.draw(screen, self.valText.rect.topleft, scale)  
-​
+
 class bgSpace(spriteManager.ImageSprite):
     def __init__(self):
         spriteManager.Sprite.__init__(self)
