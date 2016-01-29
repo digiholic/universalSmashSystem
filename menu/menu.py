@@ -11,6 +11,11 @@ import engine.article
 import css
 import sys
 import spriteManager
+import battle
+import stages.arena as stage0
+import stages.true_arena as stage1
+import fighters.hitboxie.fighter as fighter
+import fighters.sandbag.fighter as sandbag
 
 def main():
     Menu()
@@ -190,15 +195,16 @@ class PlayGameMenu(SubMenu):
 class OptionsMenu(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self,parent)
-        self.menuText = [spriteManager.TextSprite('Controls','full Pack 2025',24,[255,255,255]),
-                         spriteManager.TextSprite('Graphics','full Pack 2025',24,[255,255,255]),
-                         spriteManager.TextSprite('Sound','full Pack 2025',24,[255,255,255]),
-                         spriteManager.TextSprite('Game','full Pack 2025',24,[255,255,255]),
-                         spriteManager.TextSprite('Back','full Pack 2025',24,[255,255,255])]
+        self.menuText = [spriteManager.TextSprite('Controls','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('Graphics','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('Sound','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('Game','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('Training','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('Back','full Pack 2025',20,[255,255,255])]
         
         for i in range(0,len(self.menuText)):
             self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
-            self.menuText[i].rect.centery = 90 + i*80
+            self.menuText[i].rect.centery = 90 + i*60
                 
         self.selectedOption = 0
         
@@ -233,7 +239,10 @@ class OptionsMenu(SubMenu):
                         if self.selectedOption == 3: #game
                             self.status = GameSettingsMenu(self.parent).executeMenu(screen)
                             if self.status == -1: return -1
-                        if self.selectedOption == 4: #quit
+                        if self.selectedOption == 4: #debug
+                            self.status = DebugMenu(self.parent).executeMenu(screen)
+                            if self.status == -1: return -1
+                        if self.selectedOption == 5: #quit
                             self.status = 1
 
                 if event.type == KEYUP:
@@ -270,7 +279,136 @@ class OptionsMenu(SubMenu):
             pygame.display.flip()
             
         return self.status
-    
+#######################################################
+#################TEST STUFF############################
+#######################################################
+
+class DebugMenu(SubMenu):
+    def __init__(self,parent):
+        self.stages = [('Arena',stage0),('True Arena',stage1)] # TODO: Automate this, needs a way to get the stage names though
+        self.stage = 0
+        self.directory = settingsManager.createPath("fighters")
+        self.settings = settingsManager.getSetting().setting
+        for s in self.settings:
+            print(s)
+        
+        SubMenu.__init__(self,parent)
+        self.menuText = [spriteManager.TextSprite('showHitboxes - ','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('showHurtboxes - ','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('showSpriteArea - ','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('showPlatformLines - ','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('Spawn Sandbag - ','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('Stage - ','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('Start','full Pack 2025',24,[255,255,255]),
+                         spriteManager.TextSprite('Exit','full Pack 2025',24,[255,255,255])]
+        
+        for i in range(0,len(self.menuText)):
+            self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
+            self.menuText[i].rect.centery = 40 + i*40
+        self.menuText[len(self.menuText)-2].rect.centery = 420
+        self.menuText[len(self.menuText)-1].rect.centery = 450
+                
+        self.selectedOption = 0
+        
+    def executeMenu(self,screen):
+        clock = pygame.time.Clock()
+        controls = settingsManager.getControls('menu')
+        canPress = True
+        holding = {'up': False,'down': False,'left': False,'right': False}
+        fightercount = 0
+        self.spawnSandbag = False
+        
+        while self.status == 0:
+            self.update(screen)
+            self.stageName, self.currentStage = self.stages[self.stage]
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    holding[controls.get(event.key)] = True
+                    if event.key == K_ESCAPE or controls.get(event.key) == 'cancel': #if the player cancels
+                        self.status = 1
+                    if controls.get(event.key) == 'right' or controls.get(event.key) == 'left':
+                        if self.selectedOption == 5:
+                            if controls.get(event.key) == 'right':
+                                self.stage += 1
+                            else:
+                                self.stage -= 1
+                                if self.stage < 0:
+                                    self.stage = len(self.stages) - 1
+                            self.stage = self.stage % len(self.stages)
+                        if self.selectedOption == 0: 
+                            self.settings['showHitboxes'] = not self.settings['showHitboxes']
+                        if self.selectedOption == 1: 
+                            self.settings['showHurtboxes'] = not self.settings['showHurtboxes']
+                        if self.selectedOption == 2: 
+                            self.settings['showSpriteArea'] = not self.settings['showSpriteArea']
+                        if self.selectedOption == 3:
+                            self.settings['showPlatformLines'] = not self.settings['showPlatformLines']
+                        if self.selectedOption == 4:
+                            self.spawnSandbag = not self.spawnSandbag
+                    if controls.get(event.key) == 'confirm':
+                        if self.selectedOption == 0: 
+                            self.settings['showHitboxes'] = not self.settings['showHitboxes']
+                        if self.selectedOption == 1: 
+                            self.settings['showHurtboxes'] = not self.settings['showHurtboxes']
+                        if self.selectedOption == 2: 
+                            self.settings['showSpriteArea'] = not self.settings['showSpriteArea']
+                        if self.selectedOption == 3:
+                            self.settings['showPlatformLines'] = not self.settings['showPlatformLines']
+                        if self.selectedOption == 4:
+                            self.spawnSandbag = not self.spawnSandbag
+                        if self.selectedOption == len(self.menuText)-2:
+                            self.fighters = [fighter.getFighter(0,0)]
+                            if self.spawnSandbag:
+                                self.fighters.append(sandbag.getFighter(1,0))
+                            currentBattle = battle.Battle(battle.Rules(),self.fighters,self.currentStage.getStage())
+                            currentBattle.startBattle(screen)
+                        if self.selectedOption == len(self.menuText)-1: #quit
+                            self.status = 1
+
+                if event.type == KEYUP:
+                    holding[controls.get(event.key)] = False
+                
+                if event.type == QUIT:
+                    self.status = -1
+
+                if event.type == pygame.USEREVENT+1: #USEREVENT+1 goes off whenever you can press a key again
+                    canPress = True;
+                    
+            for keyName,keyValue in holding.items():
+                if keyValue and canPress: 
+                    canPress = False
+                    pygame.time.set_timer(pygame.USEREVENT+1,150)
+                    if keyName == 'down':
+                        self.selectedOption += 1
+                        self.selectedOption = self.selectedOption % len(self.menuText)
+                    if keyName == 'up':
+                        self.selectedOption -= 1
+                        self.selectedOption = self.selectedOption % len(self.menuText)
+
+            self.menuText[0].changeText('showHitboxes - '+str(self.settings['showHitboxes']))
+            self.menuText[1].changeText('showHurtboxes - '+str(self.settings['showHurtboxes']))
+            self.menuText[2].changeText('showSpriteArea - '+str(self.settings['showSpriteArea']))
+            self.menuText[3].changeText('showPlatformLines - '+str(self.settings['showPlatformLines']))
+            self.menuText[4].changeText('Spawn Sandbag - '+str(self.spawnSandbag))
+            self.menuText[5].changeText('Stage - '+str(self.stageName))
+            
+            self.parent.bg.update(screen)
+            self.parent.bg.draw(screen,(0,0),1.0)
+            
+            for m in self.menuText:
+                m.draw(screen,m.rect.topleft,1.0)
+                m.changeColor([255,255,255])
+            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
+            self.menuText[self.selectedOption].changeColor(rgb)
+                
+            #self.menuText.draw(screen, (128,128), 1.0)
+            clock.tick(60)    
+            pygame.display.flip()
+            
+        return self.status
+
+#######################################################
+
 
 class ControlsMenu(SubMenu):
     pass
