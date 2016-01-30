@@ -311,18 +311,23 @@ def saveSettings(settings):
     parser.set('game','rulePreset',str(settings['current_preset']))
     
     parser.add_section('controls_menu')
-    print(settings['controls_menu'].keyBindings)
     for key in settings['controls_menu'].keyBindings:
         print(keyIdMap[key])
         print(str(settings['controls_menu'].keyBindings[key]))
+        parser.set('controls_menu','controlType','button')
+        parser.set('controls_menu','gamepad','None')
         parser.set('controls_menu',str(settings['controls_menu'].keyBindings[key]),keyIdMap[key])
     
-    for i in range(0,3):
+    
+    for i in range(0,4):
         sect = 'controls_'+str(i)
+        print(str(sect) + ": " + str(settings[sect].keyBindings))
         parser.add_section(sect)
         for key in settings[sect].keyBindings:
             print(keyIdMap[key])
             print(settings[sect].keyBindings[key])
+            parser.set(sect,'controlType','button')
+            parser.set(sect,'gamepad','None')
             parser.set(sect,str(settings[sect].keyBindings[key]),keyIdMap[key])
     
             
