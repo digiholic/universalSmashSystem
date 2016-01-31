@@ -7,6 +7,7 @@ import menu
 import battle
 import sys
 import stages.true_arena as stage
+import sss
 
 class CSSScreen():
     def __init__(self):
@@ -47,8 +48,8 @@ class CSSScreen():
                         elif bindings.get(event.key) == 'attack':
                             self.playerPanels[i].keyPressed('confirm')
                             if self.checkForSelections():
-                                currentBattle = battle.Battle(battle.Rules(),self.getFightersFromPanels(),stage.getStage())
-                                currentBattle.startBattle(screen)
+                                sss.StageScreen(self.getFightersFromPanels())
+                                
                                 for panel in self.playerPanels:
                                     panel.activeObject = panel.wheel
                                     panel.chosenFighter = None

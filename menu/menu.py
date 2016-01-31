@@ -12,8 +12,8 @@ import css
 import sys
 import spriteManager
 import battle
-import stages.arena as stage0
-import stages.true_arena as stage1
+import stages.arena.stage as stage0
+import stages.true_arena.stage as stage1
 import fighters.hitboxie.fighter as fighter
 import fighters.sandbag.fighter as sandbag
 
