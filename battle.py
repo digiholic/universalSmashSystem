@@ -121,10 +121,6 @@ class Battle():
             current_stage.update()
             current_stage.cameraUpdate()
             current_stage.drawBG(screen)
-            if trackTime and clockTime <= 5:
-                countdownSprite.draw(screen, countdownSprite.rect.topleft, 1)
-                countAlpha = max(0,countAlpha - 5)
-                countdownSprite.alpha(countAlpha)
             for obj in gameObjects:
                 obj.update()
                 if hasattr(obj,'active_hitboxes'):
@@ -160,6 +156,11 @@ class Battle():
                             if len(currentFighters) < 2:
                                 exitStatus = 2 #Game set
                         else: fight.die()
+            
+            if trackTime and clockTime <= 5:
+                countdownSprite.draw(screen, countdownSprite.rect.topleft, 1)
+                countAlpha = max(0,countAlpha - 5)
+                countdownSprite.alpha(countAlpha)
                 
             # End object updates
             
