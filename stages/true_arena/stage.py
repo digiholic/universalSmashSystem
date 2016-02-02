@@ -15,6 +15,9 @@ def getStageIcon():
 def getStagePreview():
     return None
 
+def getMusicList():
+    return [(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'music','Laszlo - Fall To Light.ogg'),1,"Laszlo - Fall To Light (NCS Release)")]
+
 class TrueArena(stage.Stage):
     def __init__(self):
         stage.Stage.__init__(self)

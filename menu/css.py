@@ -8,11 +8,12 @@ import battle
 import sys
 import stages.true_arena as stage
 import sss
-
+import musicManager
 class CSSScreen():
-    def __init__(self):
+    def __init__(self,rules=None):
         settings = settingsManager.getSetting().setting
         
+        self.rules = rules
         self.height = settings['windowHeight']
         self.width = settings['windowWidth']
         
@@ -32,6 +33,8 @@ class CSSScreen():
             self.playerPanels.append(PlayerPanel(i))
         
         while 1:
+            if not musicManager.getMusicManager().isPlaying():
+                musicManager.getMusicManager().rollMusic('menu')
             #Start event loop
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -48,8 +51,7 @@ class CSSScreen():
                         elif bindings.get(event.key) == 'attack':
                             self.playerPanels[i].keyPressed('confirm')
                             if self.checkForSelections():
-                                sss.StageScreen(self.getFightersFromPanels())
-                                
+                                sss.StageScreen(self.rules,self.getFightersFromPanels())
                                 for panel in self.playerPanels:
                                     panel.activeObject = panel.wheel
                                     panel.chosenFighter = None

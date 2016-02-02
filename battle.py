@@ -1,7 +1,9 @@
 import random
 import pygame
 import settingsManager
+import spriteManager
 import sys
+import musicManager
 import fighters.hitboxie.fighter
 import fighters.sandbag.fighter
 import stages.true_arena
@@ -45,6 +47,7 @@ class Battle():
         for fighter in currentFighters:
             fighter.rect.midbottom = current_stage.spawnLocations[fighter.playerNum]
             fighter.gameState = current_stage
+            fighter.stocks = self.rules.stocks
             current_stage.follows.append(fighter.rect)
         
         current_stage.initializeCamera()
@@ -113,7 +116,18 @@ class Battle():
                 if (self.settings['showHitboxes']):
                     for hbox in active_hitboxes:
                         hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
-            
+            for fight in currentFighters:
+                if fight.rect.right < current_stage.blast_line.left or fight.rect.left > current_stage.blast_line.right or fight.rect.top > current_stage.blast_line.bottom or fight.rect.bottom < current_stage.blast_line.top:
+                    fight.stocks -= 1
+                    print fight.stocks
+                    if fight.stocks == 0:
+                        fight.die(False)
+                        currentFighters.remove(fight)
+                        #If someon's eliminated and there's 1 or fewer people left
+                        if len(currentFighters) < 2:
+                            exitStatus = 2 #Game set
+                    else: fight.die()
+                
             # End object updates
             
             current_stage.drawFG(screen)      
@@ -121,16 +135,24 @@ class Battle():
             pygame.display.flip()
         # End while loop
         
-        self.doExitStatus(exitStatus)
-        return exitStatus # This'll pop us back to the character select screen.
-    
-    def doExitStatus(self,exitStatus):
         if exitStatus == 1:
             print("NO CONTEST")
         elif exitStatus == 2:
+            musicManager.getMusicManager().stopMusic()
+            frameHold = 0
+            gameSprite = spriteManager.TextSprite('GAME!','full Pack 2025',128,[0,0,0])
+            gameSprite.rect.center = screen.get_rect().center
+            while frameHold < 150:
+                gameSprite.draw(screen, gameSprite.rect.topleft, 1)
+                clock.tick(60)
+                pygame.display.flip()
+                frameHold += 1
             print("GAME SET")
         elif exitStatus == -1:
             print("ERROR!")
+            
+        return exitStatus # This'll pop us back to the character select screen.
+        
          
     """
     In a normal game, the frame input won't matter.
@@ -176,25 +198,3 @@ class Rules():
 class Replay(Battle):
     def __init__(self):
         pass
-    
-
-if __name__  == '__main__':
-    settings = settingsManager.getSetting().setting
-    
-    height = settings['windowHeight']
-    width = settings['windowWidth']
-        
-    pygame.init()
-    screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption(settings['windowName'])
-    
-    """
-    Battle(None, 
-           [fighters.hitboxie.fighter.getFighter(0, 0),fighters.sandbag.fighter.getFighter(1, 0),fighters.sandbag.fighter.getFighter(2, 0),fighters.sandbag.fighter.getFighter(3, 0)],
-           stages.arena.getStage()).startBattle(screen)
-    """    
-    Battle(None, 
-           [fighters.hitboxie.fighter.getFighter(0, 0)],
-           stages.arena.getStage()).startBattle(screen)
-    
-    

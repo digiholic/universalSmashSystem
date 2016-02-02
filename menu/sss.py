@@ -5,10 +5,12 @@ import battle
 import stages.true_arena
 import spriteManager
 import os
+import musicManager
 
 class StageScreen():
-    def __init__(self,characters):
+    def __init__(self,rules,characters):
         settings = settingsManager.getSetting().setting
+        self.rules = rules
         self.fighters = characters
         self.stages = []
         self.getStages()
@@ -58,7 +60,15 @@ class StageScreen():
                         elif bindings.get(event.key) == 'attack':
                             #choose
                             stage = self.grid.getSelectedStage().getStage()
-                            currentBattle = battle.Battle(battle.Rules(),self.fighters,stage)
+                            
+                            musicManager.getMusicManager().stopMusic(500)
+                            #This will wait until the music fades out for cool effect
+                            while musicManager.getMusicManager().isPlaying():
+                                pass
+                            musicList = self.grid.getSelectedStage().getMusicList()
+                            musicManager.getMusicManager().createMusicSet('stage', musicList)
+                            musicManager.getMusicManager().rollMusic('stage')
+                            currentBattle = battle.Battle(self.rules,self.fighters,stage)
                             currentBattle.startBattle(screen)
                             status = 1
                             #do something with battle result
