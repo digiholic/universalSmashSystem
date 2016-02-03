@@ -51,6 +51,22 @@ class Battle():
         if self.rules.time == 0:
             trackTime = False
             
+        clockTime = self.rules.time * 60
+        
+        guiObjects = []
+        if trackTime:
+            pygame.time.set_timer(pygame.USEREVENT+2, 1000)
+            countdownSprite = spriteManager.TextSprite('5','full Pack 2025',128,[0,0,0])
+            countdownSprite.rect.center = screen.get_rect().center
+            countAlpha = 0
+            countdownSprite.alpha(countAlpha)
+            guiObjects.append(countdownSprite)
+            
+            clockSprite = spriteManager.TextSprite('8:00','rexlia rg',32,[0,0,0])
+            clockSprite.rect.topright = screen.get_rect().topright
+            clockSprite.changeText(str(clockTime / 60)+':'+str(clockTime % 60).zfill(2))
+            guiObjects.append(clockSprite)
+        
         for fighter in currentFighters:
             fighter.rect.midbottom = current_stage.spawnLocations[fighter.playerNum]
             fighter.gameState = current_stage
@@ -60,9 +76,6 @@ class Battle():
         current_stage.initializeCamera()
             
         clock = pygame.time.Clock()
-        
-        clockTime = self.rules.time * 60
-            
         """
         ExitStatus breaks us out of the loop. The battle loop can end in many ways, which is reflected here.
         In general, ExitStatus positive means that the game was supposed to end, while a negative value indicates an error.
@@ -72,13 +85,7 @@ class Battle():
         ExitStatus == -1: Battle ended in error.
         """
         exitStatus = 0
-        if trackTime:
-            pygame.time.set_timer(pygame.USEREVENT+2, 1000)
-            countdownSprite = spriteManager.TextSprite('5','full Pack 2025',128,[0,0,0])
-            countdownSprite.rect.center = screen.get_rect().center
-            countAlpha = 0
-            countdownSprite.alpha(countAlpha)
-            
+        
         while exitStatus == 0:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -107,6 +114,7 @@ class Battle():
                         fight.joyButtonReleased(event.joy, event.button)
                 if event.type == pygame.USEREVENT+2:
                     pygame.time.set_timer(pygame.USEREVENT+2, 1000)
+                    clockSprite.changeText(str(clockTime / 60)+':'+str(clockTime % 60).zfill(2))
                     clockTime -= 1
                     print(clockTime)
                     if clockTime <= 5 and clockTime > 0:
@@ -152,13 +160,14 @@ class Battle():
                         if fight.stocks == 0:
                             fight.die(False)
                             currentFighters.remove(fight)
+                            current_stage.follows.remove(fight.rect)
                             #If someon's eliminated and there's 1 or fewer people left
                             if len(currentFighters) < 2:
                                 exitStatus = 2 #Game set
                         else: fight.die()
-            
+            for obj in guiObjects:
+                obj.draw(screen, obj.rect.topleft,1)
             if trackTime and clockTime <= 5:
-                countdownSprite.draw(screen, countdownSprite.rect.topleft, 1)
                 countAlpha = max(0,countAlpha - 5)
                 countdownSprite.alpha(countAlpha)
                 

@@ -32,16 +32,17 @@ class CSSScreen():
             self.playerControls.append(settingsManager.getControls(i))
             self.playerPanels.append(PlayerPanel(i))
         
-        while 1:
+        status = 0
+        while status == 0:
             if not musicManager.getMusicManager().isPlaying():
                 musicManager.getMusicManager().rollMusic('menu')
             #Start event loop
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    sys.exit()
+                    status = -1
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        return
+                        status = 1
                     
                     for i,bindings in enumerate(self.playerControls):
                         if bindings.get(event.key) == 'left':

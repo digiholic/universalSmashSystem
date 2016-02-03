@@ -309,8 +309,8 @@ class RulesMenu (SubMenu):
                     if controls.get(event.key) == 'confirm':
                         if self.selectedOption == 0:
                             gameRules = battle.Rules(rules['Stocks'],rules['Time'],[])
-                            css.CSSScreen(gameRules)
-                            if self.status == -1: return -1
+                            status = css.CSSScreen(gameRules)
+                            if status == -1: return -1
                         if self.selectedOption == 4:
                             rules['Teams'] = not rules['Teams']
                         if self.selectedOption == 5:
