@@ -119,8 +119,8 @@ class Hitboxie(abstractFighter.AbstractFighter):
 #                  STATE CHANGERS                      #
 ########################################################
         
-    def die(self):
-        abstractFighter.AbstractFighter.die(self)
+    def die(self,respawn = True):
+        abstractFighter.AbstractFighter.die(self,respawn)
         self.changeAction(self.actions.Fall())
     
     def applyKnockback(self,damage,kb,kbg,trajectory):

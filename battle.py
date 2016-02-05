@@ -1,7 +1,9 @@
 import random
 import pygame
 import settingsManager
+import spriteManager
 import sys
+import musicManager
 import fighters.hitboxie.fighter
 import fighters.sandbag.fighter
 import stages.true_arena
@@ -42,15 +44,25 @@ class Battle():
         gameObjects = []
         gameObjects.extend(currentFighters)
         
+        trackStocks = True
+        trackTime = True
+        if self.rules.stocks == 0:
+            trackStocks = False
+        if self.rules.time == 0:
+            trackTime = False
+            
         for fighter in currentFighters:
             fighter.rect.midbottom = current_stage.spawnLocations[fighter.playerNum]
             fighter.gameState = current_stage
             current_stage.follows.append(fighter.rect)
+            if trackStocks: fighter.stocks = self.rules.stocks
         
         current_stage.initializeCamera()
             
         clock = pygame.time.Clock()
         
+        clockTime = self.rules.time * 60
+            
         """
         ExitStatus breaks us out of the loop. The battle loop can end in many ways, which is reflected here.
         In general, ExitStatus positive means that the game was supposed to end, while a negative value indicates an error.
@@ -60,6 +72,13 @@ class Battle():
         ExitStatus == -1: Battle ended in error.
         """
         exitStatus = 0
+        if trackTime:
+            pygame.time.set_timer(pygame.USEREVENT+2, 1000)
+            countdownSprite = spriteManager.TextSprite('5','full Pack 2025',128,[0,0,0])
+            countdownSprite.rect.center = screen.get_rect().center
+            countAlpha = 0
+            countdownSprite.alpha(countAlpha)
+            
         while exitStatus == 0:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -86,6 +105,15 @@ class Battle():
                 if event.type == pygame.JOYBUTTONUP:
                     for fight in currentFighters:
                         fight.joyButtonReleased(event.joy, event.button)
+                if event.type == pygame.USEREVENT+2:
+                    pygame.time.set_timer(pygame.USEREVENT+2, 1000)
+                    clockTime -= 1
+                    print(clockTime)
+                    if clockTime <= 5 and clockTime > 0:
+                        countdownSprite.changeText(str(clockTime))
+                        countAlpha = 255
+                    if clockTime == 0:
+                        exitStatus = 2
             # End pygame event loop
                                    
             screen.fill([100, 100, 100])
@@ -113,24 +141,52 @@ class Battle():
                 if (self.settings['showHitboxes']):
                     for hbox in active_hitboxes:
                         hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
+            for fight in currentFighters:
+                if fight.rect.right < current_stage.blast_line.left or fight.rect.left > current_stage.blast_line.right or fight.rect.top > current_stage.blast_line.bottom or fight.rect.bottom < current_stage.blast_line.top:
+                    if not trackStocks:
+                        # Get score
+                        fight.die()
+                    else:
+                        fight.stocks -= 1
+                        print fight.stocks
+                        if fight.stocks == 0:
+                            fight.die(False)
+                            currentFighters.remove(fight)
+                            #If someon's eliminated and there's 1 or fewer people left
+                            if len(currentFighters) < 2:
+                                exitStatus = 2 #Game set
+                        else: fight.die()
             
+            if trackTime and clockTime <= 5:
+                countdownSprite.draw(screen, countdownSprite.rect.topleft, 1)
+                countAlpha = max(0,countAlpha - 5)
+                countdownSprite.alpha(countAlpha)
+                
             # End object updates
             
-            current_stage.drawFG(screen)      
-            clock.tick(60)    
+            current_stage.drawFG(screen)    
+            clock.tick(60)  
             pygame.display.flip()
         # End while loop
         
-        self.doExitStatus(exitStatus)
-        return exitStatus # This'll pop us back to the character select screen.
-    
-    def doExitStatus(self,exitStatus):
         if exitStatus == 1:
             print("NO CONTEST")
         elif exitStatus == 2:
+            musicManager.getMusicManager().stopMusic()
+            frameHold = 0
+            gameSprite = spriteManager.TextSprite('GAME!','full Pack 2025',128,[0,0,0])
+            gameSprite.rect.center = screen.get_rect().center
+            while frameHold < 150:
+                gameSprite.draw(screen, gameSprite.rect.topleft, 1)
+                clock.tick(60)
+                pygame.display.flip()
+                frameHold += 1
             print("GAME SET")
         elif exitStatus == -1:
             print("ERROR!")
+            
+        return exitStatus # This'll pop us back to the character select screen.
+        
          
     """
     In a normal game, the frame input won't matter.
@@ -176,25 +232,3 @@ class Rules():
 class Replay(Battle):
     def __init__(self):
         pass
-    
-
-if __name__  == '__main__':
-    settings = settingsManager.getSetting().setting
-    
-    height = settings['windowHeight']
-    width = settings['windowWidth']
-        
-    pygame.init()
-    screen = pygame.display.set_mode((width, height))
-    pygame.display.set_caption(settings['windowName'])
-    
-    """
-    Battle(None, 
-           [fighters.hitboxie.fighter.getFighter(0, 0),fighters.sandbag.fighter.getFighter(1, 0),fighters.sandbag.fighter.getFighter(2, 0),fighters.sandbag.fighter.getFighter(3, 0)],
-           stages.arena.getStage()).startBattle(screen)
-    """    
-    Battle(None, 
-           [fighters.hitboxie.fighter.getFighter(0, 0)],
-           stages.arena.getStage()).startBattle(screen)
-    
-    

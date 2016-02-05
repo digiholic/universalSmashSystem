@@ -17,8 +17,7 @@ class Sprite(pygame.sprite.Sprite):
             blitSprite = pygame.transform.smoothscale(self.image, (w,h))
         except Exception as e:
             print(e)
-            print("Please use 32-bit PNG files")
-            sys.exit()
+            raise ValueError("Please use 32-bit PNG files")
         if self.angle != 0:
             blitSprite = pygame.transform.rotate(blitSprite,self.angle)
         screen.blit(blitSprite,pygame.Rect(newOff,(w,h)))

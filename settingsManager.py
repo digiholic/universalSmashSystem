@@ -277,6 +277,13 @@ class Settings():
 Save a modified settings object to the settings.ini file.
 """
 def saveSettings(settings):
+    keyIdMap = {}
+    keyNameMap = {}
+    for name, value in vars(pygame.constants).items():
+        if name.startswith("K_"):
+            keyIdMap[value] = name
+            keyNameMap[name] = value
+    
     parser = SafeConfigParser()
     
     parser.add_section('window')
@@ -300,7 +307,31 @@ def saveSettings(settings):
     parser.set('playerColors','Player2',str(settings['playerColor2']))
     parser.set('playerColors','Player3',str(settings['playerColor3']))
     
-    with open(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings.ini'), 'w') as configfile:
+    parser.add_section('game')
+    parser.set('game','rulePreset',str(settings['current_preset']))
+    
+    parser.add_section('controls_menu')
+    for key in settings['controls_menu'].keyBindings:
+        print(keyIdMap[key])
+        print(str(settings['controls_menu'].keyBindings[key]))
+        parser.set('controls_menu','controlType','button')
+        parser.set('controls_menu','gamepad','None')
+        parser.set('controls_menu',str(settings['controls_menu'].keyBindings[key]),keyIdMap[key])
+    
+    
+    for i in range(0,4):
+        sect = 'controls_'+str(i)
+        print(str(sect) + ": " + str(settings[sect].keyBindings))
+        parser.add_section(sect)
+        for key in settings[sect].keyBindings:
+            print(keyIdMap[key])
+            print(settings[sect].keyBindings[key])
+            parser.set(sect,'controlType','button')
+            parser.set(sect,'gamepad','None')
+            parser.set(sect,str(settings[sect].keyBindings[key]),keyIdMap[key])
+    
+            
+    with open(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
         parser.write(configfile)
         
 def savePreset(settings, preset):
@@ -342,7 +373,6 @@ class Keybindings():
     def get(self,key):
         return self.keyBindings.get(key)
     
-
 """
 The SFXLibrary object contains a dict of all sound effects that are being used.
 It handles the playing of the sounds.

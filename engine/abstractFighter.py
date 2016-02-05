@@ -131,13 +131,6 @@ class AbstractFighter():
                 self.change_y = 0
                 self.rect.bottom = block.rect.top
             
-        #Check for deaths  
-        #TODO: Do this better  
-        if self.rect.right < self.gameState.blast_line.left: self.die()
-        if self.rect.left > self.gameState.blast_line.right: self.die()
-        if self.rect.top > self.gameState.blast_line.bottom: self.die()
-        if self.rect.bottom < self.gameState.blast_line.top: self.die()
-        
         #Update Sprite
         self.sprite.updatePosition(self.rect)
         self.hurtbox.rect = self.sprite.boundingRect
@@ -375,12 +368,13 @@ class AbstractFighter():
     def unRotate(self):
         self.sprite.rotate()
         
-    def die(self):
+    def die(self,respawn = True):
         self.damage = 0
         self.change_x = 0
         self.change_y = 0
         self.jumps = self.var['jumps']
-        self.rect.midtop = self.gameState.size.midtop
+        if respawn:
+            self.rect.midtop = self.gameState.size.midtop
         
     def changeSprite(self,newSprite,frame=0):
         self.sprite.changeImage(newSprite)

@@ -1,6 +1,6 @@
 from __future__ import print_function
 import pygame
-import stages.stage
+import engine.stage
 import stages.true_arena as stage
 import settingsManager
 import imp
