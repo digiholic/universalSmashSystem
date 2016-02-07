@@ -732,7 +732,78 @@ class RebindMenu(SubMenu):
             self.menuText[0].changeColor(rgb)
             pygame.display.flip()
             clock.tick(60)
+
+class RebindIndividual(SubMenu):
+    def __init__(self,parent):
+        SubMenu.__init__(self,parent)
+        self.menuText = []
+        self.labels = ('left','right','up','down','attack','special','jump','shield')
+        for label in self.labels:
+            self.menuText.append(spriteManager.TextSprite(label + ' - ','full Pack 2025',20,[255,255,255]))
+        self.menuText.append(spriteManager.TextSprite('Save','full Pack 2025',20,[255,255,255]))
+        self.menuText.append(spriteManager.TextSprite('Cancel','full Pack 2025',20,[255,255,255]))
+        for i in range(0,len(self.menuText)):
+            self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
+            self.menuText[i].rect.centery = 60 + i*50
+        self.menuText[len(self.menuText)-2].rect.centerx = self.parent.settings['windowSize'][0] / 3
+        self.menuText[len(self.menuText)-1].rect.centerx = self.parent.settings['windowSize'][0] * 2 / 3
+        self.menuText[len(self.menuText)-2].rect.centery = self.parent.settings['windowSize'][1] - 25 
+        self.menuText[len(self.menuText)-1].rect.centery = self.parent.settings['windowSize'][1] - 25
+        self.selectedOption = 0
+
+    def executeMenu(self,screen):
+        controls = settingsManager.getControls('menu')
+        clock = pygame.time.Clock()
+        holding = {'up': False,'down': False,'left': False,'right': False}
         
+        while self.status == 0:
+            self.update(screen)
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    holding[controls.get(event.key)] = True
+                    if controls.get(event.key) == 'confirm':
+                        pass
+                        
+                if event.type == KEYUP:
+                    holding[controls.get(event.key)] = False
+                if event.type == QUIT:
+                    self.status = -1
+                if event.type == pygame.USEREVENT+1: 
+                    canPress = True;
+
+            for keyName,keyValue in holding.items():
+                if keyValue and canPress:
+                    canPress = False
+                    pygame.time.set_timer(pygame.USEREVENT+1,150)
+                    if keyName == 'down':
+                        self.selectedOption += 1
+                        self.selectedOption = self.selectedOption % len(self.menuText)
+                    if keyName == 'up':
+                        self.selectedOption -= 1
+                        self.selectedOption = self.selectedOption % len(self.menuText)
+                    if keyName == 'left' or keyName == 'right':
+                        if self.selectedOption == 8:
+                            self.selectedOption = 9
+                        elif self.selectedOption == 9:
+                            self.selectedOption = 8
+                    
+
+            self.parent.bg.update(screen)
+            self.parent.bg.draw(screen,(0,0),1.0)
+            
+            for m in self.menuText:
+                m.draw(screen,m.rect.topleft,1.0)
+                m.changeColor([255,255,255])
+            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
+            self.menuText[self.selectedOption].changeColor(rgb)
+                
+            #self.menuText.draw(screen, (128,128), 1.0)
+            clock.tick(60)    
+            pygame.display.flip()
+                    
+
+        return self.status
+
 class ControlsMenu(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self,parent)
@@ -754,6 +825,7 @@ class ControlsMenu(SubMenu):
         settings = settingsManager.getSetting()
         clock = pygame.time.Clock()
         controls = settingsManager.getControls('menu')
+        inGameControls = settingsManager.getControls(0)
         canPress = True
         holding = {'up': False,'down': False,'left': False,'right': False}
         labels = ('left','right','up','down','attack','special','jump','shield')
@@ -762,12 +834,14 @@ class ControlsMenu(SubMenu):
         
         while self.status == 0:
             self.update(screen)
+            inGameControls = settingsManager.getControls(currentPlayer)
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
                     holding[controls.get(event.key)] = True
                     if event.key == K_ESCAPE or controls.get(event.key) == 'cancel' or controls.get(event.key) == 'special': #if the player cancels
                         self.status = 1
                     if controls.get(event.key) == 'confirm' or controls.get(event.key) == 'attack':
+                        formattedBindings = []
                         if self.selectedOption == 1: #Rebind All
                             for i in range(0,len(labels)):
                                 newBindings = RebindMenu(self.parent).executeMenu(screen,labels[i])
@@ -775,12 +849,41 @@ class ControlsMenu(SubMenu):
                                     formattedBindings.append((x,labels[i]))
                             settings.setting['controls_' + str(currentPlayer)] = settingsManager.Keybindings(dict(formattedBindings))
                             settingsManager.saveSettings(settingsManager.getSetting().setting)
+                            
                         if self.selectedOption == 2: #Rebind Movement
-                            pass
-                        if self.selectedOption == 3: #Rebind Rebing Actions
-                            pass
+                            for i in range(0,4):#This loop handles new bindings (up, down, left and right)
+                                newBindings = RebindMenu(self.parent).executeMenu(screen,labels[i])
+                                for x in newBindings:
+                                        formattedBindings.append((x,labels[i]))
+                            
+                            for i in range(4,8):#This loop handles old bindings (attack, special, jump and shield)
+                                newBindings = []
+                                for item in inGameControls.getAction(labels[i]):
+                                    newBindings.append(item)
+                                for x in newBindings:
+                                    formattedBindings.append((x,labels[i]))
+                            print('formatted bindings - ',formattedBindings)
+                            settings.setting['controls_' + str(currentPlayer)] = settingsManager.Keybindings(dict(formattedBindings))
+                            settingsManager.saveSettings(settingsManager.getSetting().setting)
+                                
+                        if self.selectedOption == 3: #Rebind Actions
+                            for i in range(0,4):#This loop handles old bindings (up, down, left and right)
+                                newBindings = []
+                                for item in inGameControls.getAction(labels[i]):
+                                    newBindings.append(item)
+                                for x in newBindings:
+                                    formattedBindings.append((x,labels[i]))
+
+                            for i in range(4,8): #This loop handles new bindings (attack, special, jump and shield)
+                                newBindings = RebindMenu(self.parent).executeMenu(screen,labels[i])
+                                for x in newBindings:
+                                        formattedBindings.append((x,labels[i]))
+
+                            settings.setting['controls_' + str(currentPlayer)] = settingsManager.Keybindings(dict(formattedBindings))
+                            settingsManager.saveSettings(settingsManager.getSetting().setting)
+                            
                         if self.selectedOption == 4: #Go to rebind individual menu
-                            pass
+                            RebindIndividual(self.parent).executeMenu(screen)
                         if self.selectedOption == 5: #quit
                             self.status = 1
 
