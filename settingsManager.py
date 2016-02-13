@@ -447,7 +447,7 @@ A wrapper that'll get a lowercase String from the parser, or return gracefully w
 """    
 def getString(parser,preset,key):
     try:
-        return parser.get(preset,key).lower()
+        return str(parser.get(preset,key).lower())
     except (Exception,e):
         print(e)
         return ""

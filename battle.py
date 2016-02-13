@@ -231,8 +231,8 @@ class Battle():
             return
         elif exitStatus == 2:
             resultSprites = []
-            width = settingsManager.getSetting('window_width')
-            height = settingsManager.getSetting('window_height')
+            width = settingsManager.getSetting('windowWidth')
+            height = settingsManager.getSetting('windowHeight')
             for i in range(0,len(self.players)):
                 fighter = self.players[i]
                 resultSprite = spriteManager.RectSprite(pygame.Rect((width / 4) * i,0,(width / 4),height), settingsManager.getSetting('playerColor'+str(i)))
