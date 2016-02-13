@@ -8,6 +8,7 @@ import fighters.hitboxie.fighter
 import fighters.sandbag.fighter
 import stages.true_arena
 import stages.arena
+from cgi import log
 
 """
 The battle object actually creates the fight and plays it out on screen.
@@ -26,12 +27,13 @@ class Battle():
         self.players = players
         self.stage = stage
         self.inputBuffer = None
+        self.dataLogs = []
+        
         #TODO bring over InputBuffer from fighter.
         random.seed
         self.randomstate = random.getstate
         
     def startBattle(self,screen):
-        
         # Fill background
         background = pygame.Surface(screen.get_size())
         background = background.convert()
@@ -71,11 +73,15 @@ class Battle():
             fighter.rect.midbottom = current_stage.spawnLocations[fighter.playerNum]
             fighter.gameState = current_stage
             current_stage.follows.append(fighter.rect)
+            log = DataLog()
+            self.dataLogs.append(log)
+            fighter.dataLog = log
             if trackStocks: fighter.stocks = self.rules.stocks
         
         current_stage.initializeCamera()
             
         clock = pygame.time.Clock()
+        
         """
         ExitStatus breaks us out of the loop. The battle loop can end in many ways, which is reflected here.
         In general, ExitStatus positive means that the game was supposed to end, while a negative value indicates an error.
@@ -86,6 +92,9 @@ class Battle():
         """
         exitStatus = 0
         
+        dataLog = DataLog();
+        dataLog.addSection('test', 1)
+        dataLog.setData('test', 3, (lambda x,y: x + y))
         while exitStatus == 0:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -193,7 +202,8 @@ class Battle():
             print("GAME SET")
         elif exitStatus == -1:
             print("ERROR!")
-            
+        
+        self.endBattle(exitStatus)    
         return exitStatus # This'll pop us back to the character select screen.
         
          
@@ -216,9 +226,22 @@ class Battle():
     battle ended.
     """    
     def endBattle(self,exitStatus):
-        if exitStatus == "Error":
-            pass
-        
+        if exitStatus == -1:
+            #Don't show a results screen on error
+            return
+        elif exitStatus == 2:
+            resultSprites = []
+            width = settingsManager.getSetting('window_width')
+            height = settingsManager.getSetting('window_height')
+            for i in range(0,len(self.players)):
+                fighter = self.players[i]
+                resultSprite = spriteManager.RectSprite(pygame.Rect((width / 4) * i,0,(width / 4),height), settingsManager.getSetting('playerColor'+str(i)))
+                
+                
+            return
+        elif exitStatus == 1:
+            #Game ended in no contest
+            return
         
 """
 The rules object determines the battle's rules.
@@ -241,3 +264,32 @@ class Rules():
 class Replay(Battle):
     def __init__(self):
         pass
+    
+"""
+The Data Log object keeps track of information that happens in-game, such as score, deaths, total damage dealt/received, etc.
+
+A log will be made for each character, and it will be given to them on load. They will keep track of updating their logs,
+and characters are free to give it new information as they see fit. For example, you could make a character like Game & Watch log
+how many of each number he scored.
+"""
+class DataLog():
+    def __init__(self):
+        self.data = {
+                     'Score'        : 0,
+                     'KOs'          : 0,
+                     'Falls'        : 0,
+                     'Damage Dealt' : 0,
+                     'Damage Taken' : 0
+                     }
+        
+    def addSection(self,section,initial):
+        self.data[section] = initial
+            
+    def getData(self,section):
+        return self.data[section]
+    
+    # If this last function looks scary to you, don't worry. Leave it out, and it changes the value at section to value.
+    # You can pass a function to it to apply to section and value and it'll do a cool thing!
+    def setData(self,section,value,function = (lambda x,y: y)):
+        self.data[section] = function(self.getData(section),value)
+        print(str(section) + ": " + str(self.data[section]))

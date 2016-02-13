@@ -16,6 +16,12 @@ class AbstractFighter():
         self.var = var
         self.playerNum = playerNum
         
+        # dataLog holds information for the post-game results screen
+        self.dataLog = None
+        
+        # Whenever a fighter is hit, they are 'tagged' by that player, if they die while tagged, that player gets a point
+        self.hitTagged = None
+        
         #Initialize engine variables
         self.keyBindings = settingsManager.getSetting('controls_' + str(playerNum))
         self.currentKeys = []
@@ -373,6 +379,12 @@ class AbstractFighter():
         self.change_x = 0
         self.change_y = 0
         self.jumps = self.var['jumps']
+        self.dataLog.setData('Falls',1,lambda x,y: x+y)
+        
+        if self.hitTagged != None:
+            if hasattr(self.hitTagged, 'dataLog'):
+                self.hitTagged.dataLog.setData('KOs',1,lambda x,y: x+y)
+        
         if respawn:
             self.rect.midtop = self.gameState.size.midtop
         
@@ -391,6 +403,10 @@ class AbstractFighter():
     time - the time to lock the hitbox
     """
     def lockHitbox(self,hbox,time):
+        #If the hitbox belongs to something, get tagged by it
+        if not hbox.owner == None:
+            self.hitTagged = hbox.owner
+            
         for lock in self.hitboxLock:
             if lock[1] == hbox.owner and lock[2] == hbox.hitbox_id:
                 return False
@@ -518,7 +534,6 @@ class AbstractFighter():
             art.draw(screen,offset,scale)
         
         
-    #Gets the proper direction, adjusted for facing
     """
     Use this function to get a direction that is angled from the direction the fighter
     is facing, rather than angled from right. For example, sending the opponent 30 degrees
