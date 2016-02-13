@@ -370,9 +370,17 @@ class Keybindings():
     def __init__(self,keyBindings):
         self.keyBindings = keyBindings
         
-    def get(self,key):
+    def get(self,key): #Used for checking which action a key is bound to
         return self.keyBindings.get(key)
-    
+
+    def getAction(self,action): #Used for getting all the bindings to an action (Example: 'jump' might return ['c','v'] or whatever)
+        listOfBindings = []
+        print(self.keyBindings)
+        for binding,name in self.keyBindings.items():
+            if name == action:
+                listOfBindings.append(binding)
+            
+        return listOfBindings
 """
 The SFXLibrary object contains a dict of all sound effects that are being used.
 It handles the playing of the sounds.
