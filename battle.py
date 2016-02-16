@@ -42,7 +42,7 @@ class Battle():
         active_hitboxes = pygame.sprite.Group()
     
         #gameObjects
-        currentFighters = self.players
+        currentFighters = self.players[:] #We have to slice this list so it passes by value instead of reference
         gameObjects = []
         gameObjects.extend(currentFighters)
         
@@ -203,7 +203,7 @@ class Battle():
         elif exitStatus == -1:
             print("ERROR!")
         
-        self.endBattle(exitStatus)    
+        self.endBattle(exitStatus,screen)    
         return exitStatus # This'll pop us back to the character select screen.
         
          
@@ -225,7 +225,7 @@ class Battle():
     Ends the battle and goes to a relevant menu or error page depending on how the
     battle ended.
     """    
-    def endBattle(self,exitStatus):
+    def endBattle(self,exitStatus,screen):
         if exitStatus == -1:
             #Don't show a results screen on error
             return
@@ -234,10 +234,45 @@ class Battle():
             width = settingsManager.getSetting('windowWidth')
             height = settingsManager.getSetting('windowHeight')
             for i in range(0,len(self.players)):
+                print(self.players)
+                print("player"+str(i))
                 fighter = self.players[i]
-                resultSprite = spriteManager.RectSprite(pygame.Rect((width / 4) * i,0,(width / 4),height), settingsManager.getSetting('playerColor'+str(i)))
+                resultSprite = spriteManager.RectSprite(pygame.Rect((width / 4) * i,0,(width / 4),height), pygame.Color(settingsManager.getSetting('playerColor'+str(i))))
+                nameSprite = spriteManager.TextSprite(fighter.name,size=24)
+                resultSprite.image.blit(nameSprite.image,(0,0))
                 
+                dist = 32
                 
+                print(fighter.dataLog.data)
+                for item,val in fighter.dataLog.data.iteritems():
+                    text = spriteManager.TextSprite(str(item) + ': ' + str(val))
+                    resultSprite.image.blit(text.image,(0,dist))
+                    dist += 16
+                resultSprites.append(resultSprite)
+                confirmedList = [False] * len(resultSprites) #This pythonic hacking will make a list of falses equal to the result panels
+           
+            while 1:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        sys.exit()
+                        return -1
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_RETURN:
+                            print("saving screenshot")
+                            pygame.image.save(screen,settingsManager.createPath('screenshot.jpg'))
+                        if event.key == pygame.K_ESCAPE:
+                            return
+                        for i in range(0,len(self.players)):
+                            if event.key in settingsManager.getControls(i).getAction('attack'):
+                                resultSprites[i].image.set_alpha(0)
+                                confirmedList[i] = True
+                screen.fill((0,0,0))
+                for sprite in resultSprites:
+                    sprite.draw(screen, sprite.rect.topleft, 1.0)
+                
+                if all(confirmedList):
+                    return
+                pygame.display.flip()
             return
         elif exitStatus == 1:
             #Game ended in no contest
