@@ -12,7 +12,7 @@ class AbstractFighter():
                  sprite,
                  name,
                  var):
-        
+        self.name = name
         self.var = var
         self.playerNum = playerNum
         
@@ -380,7 +380,6 @@ class AbstractFighter():
         self.change_y = 0
         self.jumps = self.var['jumps']
         self.dataLog.setData('Falls',1,lambda x,y: x+y)
-        
         if self.hitTagged != None:
             if hasattr(self.hitTagged, 'dataLog'):
                 self.hitTagged.dataLog.setData('KOs',1,lambda x,y: x+y)
