@@ -56,6 +56,7 @@ class Battle():
         clockTime = self.rules.time * 60
         
         guiObjects = []
+        
         if trackTime:
             pygame.time.set_timer(pygame.USEREVENT+2, 1000)
             countdownSprite = spriteManager.TextSprite('5','full Pack 2025',128,[0,0,0])
@@ -69,6 +70,7 @@ class Battle():
             clockSprite.changeText(str(clockTime / 60)+':'+str(clockTime % 60).zfill(2))
             guiObjects.append(clockSprite)
         
+        guiOffset = screen.get_rect().width / (len(self.players) + 1)
         for fighter in currentFighters:
             fighter.rect.midbottom = current_stage.spawnLocations[fighter.playerNum]
             fighter.gameState = current_stage
@@ -77,7 +79,16 @@ class Battle():
             self.dataLogs.append(log)
             fighter.dataLog = log
             if trackStocks: fighter.stocks = self.rules.stocks
-        
+            
+            percentSprite = HealthTracker(fighter)
+            
+            percentSprite.rect.bottom = screen.get_rect().bottom
+            percentSprite.rect.centerx = guiOffset
+
+            guiOffset += screen.get_rect().width / (len(self.players) + 1)
+            
+            guiObjects.append(percentSprite)
+            
         current_stage.initializeCamera()
             
         clock = pygame.time.Clock()
@@ -238,6 +249,7 @@ class Battle():
                 print("player"+str(i))
                 fighter = self.players[i]
                 resultSprite = spriteManager.RectSprite(pygame.Rect((width / 4) * i,0,(width / 4),height), pygame.Color(settingsManager.getSetting('playerColor'+str(i))))
+                resultSprite.image.set_alpha(255)
                 nameSprite = spriteManager.TextSprite(fighter.name,size=24)
                 nameSprite.rect.midtop = (resultSprite.rect.width / 2,0)
                 resultSprite.image.blit(nameSprite.image,nameSprite.rect.topleft)
@@ -308,6 +320,46 @@ class Replay(Battle):
     def __init__(self):
         pass
     
+
+"""
+The HealthTracker object contains the sprites needed to display the percentages and stocks.
+
+It is itself a SpriteObject, with an overloaded draw method.
+"""
+class HealthTracker(spriteManager.Sprite):
+    def __init__(self,fighter):
+        spriteManager.Sprite.__init__(self)
+        self.fighter = fighter
+        self.percent = fighter.damage
+        
+        self.bgSprite = fighter.franchise_icon
+        self.bgSprite.recolor(self.bgSprite.image,pygame.Color('#cccccc'),pygame.Color(settingsManager.getSetting('playerColor'+str(fighter.playerNum))))
+        self.bgSprite.alpha(128)
+        
+        self.image = self.bgSprite.image
+        self.rect = self.bgSprite.image.get_rect()
+        
+        #Until I can figure out the percentage sprites
+        self.percentSprite = spriteManager.TextSprite(str(self.percent)+'%','rexlia rg',20)
+        self.percentSprite.rect.center = self.rect.center 
+        
+        
+    
+    def updateDamage(self,newVal):
+        pass
+    
+    def draw(self,screen,offset,scale):
+        self.percent = self.fighter.damage
+        self.percentSprite.changeText(str(self.percent)+'%')
+        
+        h = int(round(self.rect.height * scale))
+        w = int(round(self.rect.width * scale))
+        newOff = (int(offset[0] * scale), int(offset[1] * scale))
+        
+        blitSprite = self.image.copy()
+        blitSprite.blit(self.percentSprite.image, self.percentSprite.rect.topleft)
+        screen.blit(blitSprite,pygame.Rect(newOff,(w,h)))
+
 """
 The Data Log object keeps track of information that happens in-game, such as score, deaths, total damage dealt/received, etc.
 

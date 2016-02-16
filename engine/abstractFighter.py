@@ -15,7 +15,7 @@ class AbstractFighter():
         self.name = name
         self.var = var
         self.playerNum = playerNum
-        
+        self.franchise_icon = spriteManager.ImageSprite(settingsManager.createPath("sprites/default_franchise_icon.png"))
         # dataLog holds information for the post-game results screen
         self.dataLog = None
         

@@ -72,10 +72,14 @@ def getFighter(playerNum,colorNum):
     color = getColor(colorNum)
     sprites = spriteManager.SpriteHandler(directory,prefix,"idle",imgwidth,color.colorDict)
     
-    return fight.Hitboxie(playerNum,sprites)
+    fighter = fight.Hitboxie(playerNum,sprites)
+    fighter.franchise_icon = franchise_icon()
+    return fighter
 
 def cssIcon(): return spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","icon_hitboxie.png"))
 
 def cssName(): return "Hitboxie"
 
 def cssPortrait(): pass
+
+def franchise_icon(): return spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"franchise_icon.png"))
