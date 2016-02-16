@@ -63,23 +63,24 @@ class StageScreen():
                             self.grid.updateSelection(0, 1)
                             
                         elif bindings.get(event.key) == 'attack':
-                            #choose
-                            if self.grid.getSelectedStage() == 'random':
-                                stage = self.grid.getRandomStage()
-                            else:
-                                stage = self.grid.getSelectedStage()
-                            
-                            musicManager.getMusicManager().stopMusic(500)
-                            #This will wait until the music fades out for cool effect
-                            while musicManager.getMusicManager().isPlaying():
-                                pass
-                            musicList = stage.getMusicList()
-                            musicManager.getMusicManager().createMusicSet('stage', musicList)
-                            musicManager.getMusicManager().rollMusic('stage')
-                            currentBattle = battle.Battle(self.rules,self.fighters,stage.getStage())
-                            currentBattle.startBattle(screen)
-                            status = 1
-                            #do something with battle result
+                            if not self.grid.isStageStruckAt(self.grid.getXY()[0],self.grid.getXY()[1]):
+                                #choose
+                                if self.grid.getSelectedStage() == 'random':
+                                    stage = self.grid.getRandomStage()
+                                else:
+                                    stage = self.grid.getSelectedStage()
+                                
+                                musicManager.getMusicManager().stopMusic(500)
+                                #This will wait until the music fades out for cool effect
+                                while musicManager.getMusicManager().isPlaying():
+                                    pass
+                                musicList = stage.getMusicList()
+                                musicManager.getMusicManager().createMusicSet('stage', musicList)
+                                musicManager.getMusicManager().rollMusic('stage')
+                                currentBattle = battle.Battle(self.rules,self.fighters,stage.getStage())
+                                currentBattle.startBattle(screen)
+                                status = 1
+                                #do something with battle result
                                 
                         #TODO: Fix this when special button is added
                         elif bindings.get(event.key) == 'jump':
@@ -172,7 +173,8 @@ class StageGrid():
         return self.stagesStriked[y][x]
 
     def changeStageStruckAt(self,x,y):
-        self.stagesStriked[y][x] = not self.stagesStriked[y][x]
+        if self.getStageAt(x,y) != 'random':
+            self.stagesStriked[y][x] = not self.stagesStriked[y][x]
     
     def getStagePortrait(self,stage):
         portrait = stage.getStageIcon()
@@ -189,6 +191,14 @@ class StageGrid():
                     randomStages.append(self.getStageAt(stage,row))
                     stageCount += 1
         print randomStages
+        if stageCount == 0:
+            print 'Why did you strike all of the stages'
+            for row in range(0,len(self.stageGrid)):
+                for stage in range(0,row+3):
+                    if self.getStageAt(stage,row) != 'random':
+                        randomStages.append(self.getStageAt(stage,row))
+                        stageCount += 1
+                    
         return randomStages[random.randint(0, stageCount-1)]
     
     def drawScreen(self,screen):
