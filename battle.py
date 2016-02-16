@@ -239,9 +239,14 @@ class Battle():
                 fighter = self.players[i]
                 resultSprite = spriteManager.RectSprite(pygame.Rect((width / 4) * i,0,(width / 4),height), pygame.Color(settingsManager.getSetting('playerColor'+str(i))))
                 nameSprite = spriteManager.TextSprite(fighter.name,size=24)
-                resultSprite.image.blit(nameSprite.image,(0,0))
+                nameSprite.rect.midtop = (resultSprite.rect.width / 2,0)
+                resultSprite.image.blit(nameSprite.image,nameSprite.rect.topleft)
                 
-                dist = 32
+                score = fighter.dataLog.getData('KOs') - fighter.dataLog.getData('Falls')
+                text = spriteManager.TextSprite('Score: ' + str(score))
+                resultSprite.image.blit(text.image,(0,32))
+                    
+                dist = 48
                 
                 print(fighter.dataLog.data)
                 for item,val in fighter.dataLog.data.iteritems():
@@ -266,6 +271,9 @@ class Battle():
                             if event.key in settingsManager.getControls(i).getAction('attack'):
                                 resultSprites[i].image.set_alpha(0)
                                 confirmedList[i] = True
+                            if event.key in settingsManager.getControls(i).getAction('shield'):
+                                resultSprites[i].image.set_alpha(255)
+                                confirmedList[i] = False
                 screen.fill((0,0,0))
                 for sprite in resultSprites:
                     sprite.draw(screen, sprite.rect.topleft, 1.0)
@@ -310,7 +318,6 @@ how many of each number he scored.
 class DataLog():
     def __init__(self):
         self.data = {
-                     'Score'        : 0,
                      'KOs'          : 0,
                      'Falls'        : 0,
                      'Damage Dealt' : 0,
