@@ -402,11 +402,12 @@ class sfxLibrary():
         for f in os.listdir(directory):
             fname, ext = os.path.splitext(f)
             if self.supportedFileTypes.count(ext):
-                self.sounds["base_" + fname] = pygame.mixer.Sound(os.path.join(directory,f))
+                self.sounds["base_" + fname] = pygame.mixer.Sound(os.path.join(directory,f)) 
                 
     def playSound(self,name,category = "base"):
+        self.sounds[category + "_" + name].set_volume(getSetting().setting['sfxVolume'] / 100)
         self.sounds[category + "_" + name].play()
-    
+                
     """
     This is called to add a directory of sound effects to the library.
     It is usually called when loading a fighter or a stage.
@@ -416,7 +417,7 @@ class sfxLibrary():
             fname, ext = os.path.splitext(f)
             if self.supportedFileTypes.count(ext):
                 self.sounds[category + "_" + fname] = pygame.mixer.Sound(os.path.join(path,f))
-        
+                
     
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
