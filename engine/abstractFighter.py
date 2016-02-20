@@ -338,11 +338,16 @@ class AbstractFighter():
             print(trajectory)
             
         #Directional Incluence
-        if (trajectory < 45 or trajectory > 315) or (trajectory < 225 and trajectory > 135):
+        if (trajectory < 45 or trajectory > 315):
             if self.keysContain('up'):
                 trajectory += 15
             if self.keysContain('down'):
                 trajectory -= 15
+        if (trajectory < 225 and trajectory > 135):
+            if self.keysContain('up'):
+                trajectory -= 15
+            if self.keysContain('down'):
+                trajectory += 15
         print(totalKB, trajectory)
         self.setSpeed(totalKB, trajectory, False)
         self.preferred_xspeed = 0
