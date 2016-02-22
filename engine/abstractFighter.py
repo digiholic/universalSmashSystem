@@ -109,7 +109,7 @@ class AbstractFighter():
         
         # Gravity
         self.calc_grav()
-        self.checkForGround()
+        #self.checkForGround()
         
         #Make a copy of where we were, so we know where we came from
         originalRect = self.rect.copy()
@@ -125,17 +125,20 @@ class AbstractFighter():
         self.rect.y += self.change_y
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         
+        # checkForGround not needed anymore; its job is done by this conditional
         if len(block_hit_list) > 0:
             block = block_hit_list.pop()
             if block.solid:
                 if originalRect.top >= block.rect.bottom: #if we came in from below
-                    self.rect.top = block.rect.bottom
+                    self.rect.y = block.rect.bottom
                 elif originalRect.bottom <= block.rect.top:
-                    self.rect.bottom = block.rect.top
+                    self.rect.y = block.rect.top-self.rect.height
+                    self.grounded = True
                 self.change_y = 0
-            elif originalRect.bottom <= block.rect.top:
+            elif originalRect.bottom-self.change_y <= block.rect.top:
                 self.change_y = 0
-                self.rect.bottom = block.rect.top
+                self.rect.y = block.rect.top-self.rect.height
+                self.grounded = True
             
         #Update Sprite
         self.sprite.updatePosition(self.rect)
@@ -163,6 +166,7 @@ class AbstractFighter():
        
         if self.grounded: self.jumps = self.var['jumps']
     
+    # Deprecate this function? It isn't needed anymore. 
     """
     Check if the fighter is on the ground.
     Sets the fighter's Grounded flag.
@@ -170,11 +174,11 @@ class AbstractFighter():
     def checkForGround(self):
         originalRect = self.rect.copy()
         #Check if there's a platform below us to update the grounded flag 
-        self.rect.y += 2
+        self.rect.y += 2+self.change_y
         
         #platform_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
         platform_hit_list = self.getCollisionsWith(self.gameState.platform_list)
-        self.rect.y -= 2
+        self.rect.y -= 2+self.change_y
         
         
         for block in platform_hit_list:
