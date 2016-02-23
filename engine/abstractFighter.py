@@ -126,18 +126,18 @@ class AbstractFighter():
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         
         # checkForGround not needed anymore; its job is done by this conditional
-        if len(block_hit_list) > 0:
+        while len(block_hit_list) > 0:
             block = block_hit_list.pop()
             if block.solid:
-                if originalRect.top >= block.rect.bottom: #if we came in from below
-                    self.rect.y = block.rect.bottom
-                elif originalRect.bottom <= block.rect.top:
-                    self.rect.y = block.rect.top-self.rect.height
+                if originalRect.top >= block.rect.bottom+block.change_y: #if we came in from below
+                    self.rect.y = block.rect.bottom+block.change_y
+                elif originalRect.bottom-self.change_y <= block.rect.top+block.change_y:
+                    self.rect.y = block.rect.top-self.rect.height+block.change_y
                     self.grounded = True
-                self.change_y = 0
-            elif originalRect.bottom-self.change_y <= block.rect.top:
-                self.change_y = 0
-                self.rect.y = block.rect.top-self.rect.height
+                self.change_y = block.change_y
+            elif originalRect.bottom-self.change_y <= block.rect.top+block.change_y:
+                self.change_y = block.change_y
+                self.rect.y = block.rect.top-self.rect.height+block.change_y
                 self.grounded = True
             
         #Update Sprite
