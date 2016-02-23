@@ -85,6 +85,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
      
     def doLedgeGrab(self,ledge):
         self.changeAction(self.actions.LedgeGrab(ledge))
+
+    def doLedgeGetup(self):
+        self.changeAction(self.actions.LedgeGetup())
         
     def doGroundAttack(self):
         print('player ', self.playerNum, ' attacking')

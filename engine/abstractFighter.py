@@ -265,7 +265,7 @@ class AbstractFighter():
         self.changeAction(baseActions.LedgeGrab(ledge))
         
     def doLedgeGetup(self):
-        print("getup")
+        self.changeAction(baseActions.LedgeGetup())
         
     def doGetTrumped(self):
         print("trumped")
