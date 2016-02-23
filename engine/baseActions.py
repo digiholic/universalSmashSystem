@@ -323,6 +323,21 @@ class LedgeGrab(action.Action):
     def update(self,actor):
         actor.jumps = actor.var['jumps']
         actor.change_y = 0
+
+class LedgeGetup(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 27)
+    
+    def update(self,actor):
+        if self.frame == self.lastFrame:
+            (key,invkey) = actor.getForwardBackwardKeys()
+            if actor.keysContain(key):
+                actor.doGroundMove(actor.facing)
+            else:
+                actor.doStop()
+        self.frame += 1
+
+
 ########################################################
 #               TRANSITION STATES                     #
 ########################################################
@@ -378,13 +393,19 @@ def shieldState(actor):
 def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.bufferContains(key):
-        print("up")
-        actor.doLedgeGetup
+        actor.ledgeLock = True
+        actor.doLedgeGetup()
     elif actor.bufferContains(invkey):
         actor.ledgeLock = True
         actor.change_y = 0
         actor.change_x = 0
         actor.doFall()
+    elif actor.bufferContains('jump'):
+        actor.ledgeLock = True
+        actor.change_y = 0
+        actor.change_x = 0
+        actor.jumps += 1
+        actor.doJump()
 ########################################################
 #             BEGIN HELPER METHODS                     #
 ########################################################

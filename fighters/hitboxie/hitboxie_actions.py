@@ -528,6 +528,33 @@ class LedgeGrab(baseActions.LedgeGrab):
             actor.hurtbox.rect.topleft = self.ledge.rect.midtop
             actor.rect.center = actor.hurtbox.rect.center
         baseActions.LedgeGrab.update(self, actor)
+
+class LedgeGetup(baseActions.LedgeGetup):
+    def __init__(self):
+        baseActions.LedgeGetup.__init__(self)
+
+    def tearDown(self,actor,other):
+        actor.change_x = 0
+
+    def update(self,actor):
+        if self.frame == 0:
+            actor.changeSprite("getup",0)
+            actor.rect.y -= 92
+        if (self.frame >= 0) & (self.frame <= 6):
+            actor.changeSpriteImage(self.frame)
+            actor.change_y = -1
+            actor.change_x = 0
+        if (self.frame >= 8) & (self.frame <= 14):
+            actor.change_y = 0
+            actor.change_x = 11.5*actor.facing
+            if (self.frame % 2 == 0):
+                actor.changeSpriteImage(self.frame/2+4)
+        if (self.frame > 15):
+            if (self.frame % 3 == 2):
+                actor.changeSpriteImage(self.frame/3+6)
+            actor.change_x = actor.var['maxGroundSpeed']*actor.facing
+        baseActions.LedgeGetup.update(self, actor)
+
 ########################################################
 #             BEGIN HELPER METHODS                     #
 ########################################################
