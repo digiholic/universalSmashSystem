@@ -240,6 +240,8 @@ class Platform(pygame.sprite.Sprite):
         self.ydist = max(1,rightPoint[1] - leftPoint[1])
         self.angle = self.getDirectionBetweenPoints(leftPoint, rightPoint)
         self.solid = True
+        self.change_x = 0
+        self.change_y = 0
         
         self.playersOn = []
         self.rect = pygame.Rect([leftPoint[0],min(leftPoint[1],rightPoint[1])], [self.xdist,self.ydist])

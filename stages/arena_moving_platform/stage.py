@@ -65,14 +65,18 @@ class MovingPlatform(stage.Platform):
     def update(self):
         if self.rising:
             self.height -= self.speed
+            self.change_y = self.speed
         else:
             self.height += self.speed
+            self.change_y = self.speed
         if self.height < self.minHeight:
             self.rising = False
             self.height = self.minHeight
+            self.change_y = 0
         if self.height > self.maxHeight:
             self.rising = True
             self.height = self.maxHeight
+            self.change_y = 0
             
         self.leftPoint[1] = self.height
         self.rightPoint[1] = self.height
