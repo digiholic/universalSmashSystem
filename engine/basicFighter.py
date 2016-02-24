@@ -75,6 +75,15 @@ class BasicFighter():
     
     def doAirAttack(self):
         return None
+
+    def doGroundGrab(self):
+        return None
+
+    def doAirGrab(self):
+        return None
+
+    def doGrabbed(self, height):
+        return None
    
     def doShield(self):
         self.changeAction(self.actions.Shield())
@@ -98,7 +107,7 @@ class BasicFighter():
         self.changeAction(self.actions.LedgeGrab(ledge))
         
     def doLedgeGetup(self):
-        print("getup")
+        self.changeAction(self.actions.LedgeGetup())
         
     def doGetTrumped(self):
         print("trumped")
