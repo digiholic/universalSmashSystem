@@ -250,9 +250,9 @@ class Release(action.Action):
         action.Action.__init__(self,5)
 
     def update(self, actor):
-        if self.frame == 0
+        if self.frame == 0:
             actor.grabbing.doIdle()
-        if self.frame == 5
+        if self.frame == 5:
             actor.doIdle()
         self.frame += 1
         
@@ -458,7 +458,7 @@ def grabbingState(actor):
     # If they did, release them
     actor.grabbing.change_x = actor.change_x
     actor.grabbing.change_y = actor.change_y
-    if !isInstance(actor.grabbing.current_action, Grabbed):
+    if not isInstance(actor.grabbing.current_action, Grabbed):
         actor.doRelease()
     elif actor.bufferContains('grab'):
         actor.doRelease()

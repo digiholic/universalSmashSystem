@@ -43,7 +43,7 @@ class DamageHitbox(Hitbox):
         self.recenterSelfOnOwner() 
         
 class GrabHitbox(Hitbox):
-    def __init__(self,center,size,owner,owner_action,other_action,hitbox_id)
+    def __init__(self,center,size,owner,owner_action,other_action,hitbox_id):
         Hitbox.__init__(self,center,size,owner,hitbox_id)
         self.owner_action = owner_action
         self.other_action = other_action
