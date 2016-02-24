@@ -82,8 +82,17 @@ class BasicFighter():
     def doAirGrab(self):
         return None
 
-    def doGrabbed(self, height):
-        return None
+    def doGrabbed(self,height):
+        self.changeAction(self.actions.Grabbed(height))
+
+    def doRelease(self):
+        self.changeAction(self.actions.Release())
+
+    def doPummel(self):
+        self.changeAction(self.actions.Pummel())
+
+    def doThrow(self):
+        self.changeAction(self.actions.Throw())
    
     def doShield(self):
         self.changeAction(self.actions.Shield())

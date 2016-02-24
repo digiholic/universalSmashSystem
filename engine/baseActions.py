@@ -214,6 +214,47 @@ class ShieldBreak(action.Action):
             else:
                 self.frame -= 1
         self.frame += 1
+
+class Grabbed(action.Action):
+    def __init__(self,height):
+        action.Action.__init__(self, 180)
+        self.height = height
+        self.upPressed = False
+        self.downPressed = False
+        self.leftPressed = False
+        self.rightPressed = False
+
+    def update(self,actor):
+        if self.frame == 0:
+            self.lastFrame = 20 + actor.damage/2
+        if (actors.keysContain('up') ^ self.upPressed):
+            self.frame += 0.5
+        if (actors.keysContain('down') ^ self.downPressed):
+            self.frame += 0.5
+        if (actors.keysContain('left') ^ self.leftPressed):
+            self.frame += 0.5
+        if (actors.keysContain('right') ^ self.rightPressed):
+            self.frame += 0.5
+        self.upPressed = actors.keysContain('up')
+        self.downPressed = actors.keysContain('down')
+        self.leftPressed = actors.keysContain('left')
+        self.rightPressed = actors.keysContain('right')
+        if self.frame >= self.lastFrame:
+             actor.doIdle()
+        # Throws and other grabber-controlled releases are the grabber's responsibility
+        # Also, the grabber should always check to see if the grabbee is still under grab
+        self.frame += 1
+
+class Release(action.Action):
+    def __init__(self):
+        action.Action.__init__(self,5)
+
+    def update(self, actor):
+        if self.frame == 0
+            actor.grabbing.doIdle()
+        if self.frame == 5
+            actor.doIdle()
+        self.frame += 1
         
 class ForwardRoll(action.Action):
     def __init__(self):
@@ -344,6 +385,8 @@ class LedgeGetup(action.Action):
 def neutralState(actor):
     if actor.bufferContains('attack'):
         actor.doGroundAttack()
+    elif actor.bufferContains('grab'):
+        actor.doGroundGrab()
     elif actor.bufferContains('jump',10):
         actor.doJump()
     elif actor.bufferContains('left',8):
@@ -365,6 +408,8 @@ def airState(actor):
         actor.doAirAttack()
     if actor.bufferContains('shield',8):
         actor.doAirDodge()
+    if actor.bufferContains('grab'):
+        actor.doAirGrab()
             
 def moveState(actor, direction):
     if actor.bufferContains('jump'):
@@ -406,6 +451,28 @@ def ledgeState(actor):
         actor.change_x = 0
         actor.jumps += 1
         actor.doJump()
+
+def grabbingState(actor):
+    (key,invkey) = actor.getForwardBackwardKeys()
+    # Check to see if they broke out
+    # If they did, release them
+    actor.grabbing.change_x = actor.change_x
+    actor.grabbing.change_y = actor.change_y
+    if !isInstance(actor.grabbing.current_action, Grabbed):
+        actor.doRelease()
+    elif actor.bufferContains('grab'):
+        actor.doRelease()
+    elif actor.bufferContains('attack'):
+        actor.doPummel()
+    elif actor.bufferContains(key):
+        actor.doThrow()
+    elif actor.bufferContains(invkey):
+        actor.doThrow()
+    elif actor.bufferContains('up'):
+        actor.doThrow()
+    elif actor.bufferContains('down'):
+        actor.doThrow()
+
 ########################################################
 #             BEGIN HELPER METHODS                     #
 ########################################################
