@@ -30,6 +30,7 @@ class AbstractFighter():
         
         self.sprite = sprite
         self.mask = None
+        self.ecb = ECB(self)
         
         self.active_hitboxes = pygame.sprite.Group()
         self.articles = pygame.sprite.Group()
@@ -142,6 +143,8 @@ class AbstractFighter():
             
         #Update Sprite
         self.sprite.updatePosition(self.rect)
+        self.ecb.store()
+        self.ecb.normalize()
         self.hurtbox.rect = self.sprite.boundingRect
         
     """
@@ -541,6 +544,8 @@ class AbstractFighter():
         for art in self.articles:
             art.draw(screen,offset,scale)
         
+        self.ecb.draw(screen,offset,scale)
+        
         
     """
     Use this function to get a direction that is angled from the direction the fighter
@@ -751,3 +756,90 @@ class InputBuffer():
     """
     def append(self,key):
         self.workingBuff.append(key)
+
+
+########################################################
+#                       ECB                            #
+########################################################        
+"""
+The ECB (environment collision box) is really more like an ECC, it'll be a cross of two rects.
+It'll have a height and width, a centerpoint where they intersect, and x and y offsets. It will
+be used for platform collision, and it'll know its previous location to know which direction
+it's coming from.
+"""
+class ECB():
+    def __init__(self,actor):
+        self.actor = actor
+        
+        self.previousECB = []
+        self.yBar = spriteManager.RectSprite(pygame.Rect(0,0,5,self.actor.sprite.boundingRect.height), pygame.Color('#ECB134'))
+        self.xBar = spriteManager.RectSprite(pygame.Rect(0,0,self.actor.sprite.boundingRect.width,5), pygame.Color('#ECB134'))
+        
+        self.yBar.rect.center = self.actor.sprite.boundingRect.center
+        self.xBar.rect.center = self.actor.sprite.boundingRect.center
+        
+    """
+    Resize the ECB. Give it a height, width, and center point.
+    xoff is the offset from the center of the x-bar, where 0 is dead center, negative is left and positive is right
+    yoff is the offset from the center of the y-bar, where 0 is dead center, negative is up and positive is down
+    """
+    def resize(self,height,width,center,xoff,yoff):
+        pass
+    
+    """
+    Returns the dimensions of the ECB of the previous frame
+    """
+    def getPreviousECB(self):
+        pass
+    
+    """
+    This one moves the ECB without resizing it.
+    """
+    def move(self,newCenter):
+        self.yBar.rect.center = newCenter
+        self.xBar.rect.center = newCenter
+    
+    """
+    This stores the previous location of the ECB
+    """
+    def store(self):
+        self.previousECB = [spriteManager.RectSprite(self.yBar.rect,pygame.Color('#EA6F1C')),
+                            spriteManager.RectSprite(self.xBar.rect,pygame.Color('#EA6F1C'))
+                            ]
+    
+    """
+    Set the ECB's height and width to the sprite's, and centers it
+    """
+    def normalize(self):
+        """
+        self.yBar.rect = pygame.Rect(0,0,5,self.actor.sprite.boundingRect.height)
+        self.xBar.rect = pygame.Rect(0,0,self.actor.sprite.boundingRect.width,5)
+        
+        self.yBar.rect.center = self.actor.sprite.boundingRect.center
+        self.xBar.rect.center = self.actor.sprite.boundingRect.center
+        """
+        
+        center = (self.actor.sprite.boundingRect.centerx + self.actor.current_action.ecbCenter[0],self.actor.sprite.boundingRect.centery + self.actor.current_action.ecbCenter[1])
+        sizes = self.actor.current_action.ecbSize
+        offsets = self.actor.current_action.ecbOffset
+        
+        
+        if sizes[0] == 0: 
+            self.xBar.rect.width = self.actor.sprite.boundingRect.width
+        else:
+            self.xBar.rect.width = sizes[0]
+        if sizes[1] == 0: 
+            self.yBar.rect.height = self.actor.sprite.boundingRect.height
+        else:
+            self.yBar.rect.height = sizes[1]
+        
+        self.yBar.rect.center = center
+        self.xBar.rect.center = center
+        
+    def draw(self,screen,offset,scale):
+        self.yBar.draw(screen,self.actor.gameState.stageToScreen(self.yBar.rect),scale)
+        self.xBar.draw(screen,self.actor.gameState.stageToScreen(self.xBar.rect),scale)
+        
+        self.previousECB[0].draw(screen,self.actor.gameState.stageToScreen(self.previousECB[0].rect),scale)
+        self.previousECB[1].draw(screen,self.actor.gameState.stageToScreen(self.previousECB[1].rect),scale)
+        
