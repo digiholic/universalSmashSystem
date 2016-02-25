@@ -437,18 +437,16 @@ def shieldState(actor):
 
 def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
+    actor.change_x = 0
+    actor.change_y = 0
     if actor.bufferContains(key):
         actor.ledgeLock = True
         actor.doLedgeGetup()
     elif actor.bufferContains(invkey):
         actor.ledgeLock = True
-        actor.change_y = 0
-        actor.change_x = 0
         actor.doFall()
     elif actor.bufferContains('jump'):
         actor.ledgeLock = True
-        actor.change_y = 0
-        actor.change_x = 0
         actor.jumps += 1
         actor.doJump()
 

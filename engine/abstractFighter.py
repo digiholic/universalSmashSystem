@@ -136,10 +136,10 @@ class AbstractFighter():
 
             if block.solid & self.ecb.previousECB[0].rect.top >= block.rect.bottom+block.change_y:
                 self.change_y = block.change_y
-                self.rect.y = block.rect.bottom+block.change_y
+                self.rect.y = block.rect.bottom-block.change_y
 
             elif self.ecb.previousECB[0].rect.bottom-self.change_y <= block.rect.top+block.change_y:
-                self.change_y = block.change_y
+                self.change_y = block.change_y+self.var['gravity']
                 self.rect.y = block.rect.top-self.rect.height+block.change_y
                 self.grounded = True
             
