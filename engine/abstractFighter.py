@@ -245,6 +245,15 @@ class AbstractFighter():
     
     def doAirAttack(self):
         return None
+
+    def doGroundGrab(self):
+        return None
+
+    def doAirGrab(self):
+        return None
+
+    def doGrabbed(self, height):
+        self.changeAction(baseActions.Grabbed(height))
    
     def doShield(self):
         self.changeAction(baseActions.Shield())
