@@ -115,6 +115,10 @@ class AbstractFighter():
         self.calc_grav()
         #self.checkForGround()
         
+        #Update Sprite
+        self.ecb.store()
+        self.ecb.normalize()
+
         # Move x and resolve collisions
         self.rect.x += self.change_x
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
@@ -129,21 +133,16 @@ class AbstractFighter():
         # checkForGround not needed anymore; its job is done by this conditional
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
-            if block.solid:
-                if self.ecb.previousECB[0].rect.top >= block.rect.bottom+block.change_y: #if we came in from below
-                    self.rect.y = block.rect.bottom+block.change_y
-                elif self.ecb.previousECB[0].rect.bottom-self.change_y <= block.rect.top+block.change_y:
-                    self.rect.y = block.rect.top-self.rect.height+block.change_y
-                    self.grounded = True
+
+            if block.solid & self.ecb.previousECB[0].rect.top >= block.rect.bottom+block.change_y:
                 self.change_y = block.change_y
+                self.rect.y = block.rect.bottom+block.change_y
+
             elif self.ecb.previousECB[0].rect.bottom-self.change_y <= block.rect.top+block.change_y:
                 self.change_y = block.change_y
                 self.rect.y = block.rect.top-self.rect.height+block.change_y
                 self.grounded = True
             
-        #Update Sprite
-        self.ecb.store()
-        self.ecb.normalize()
         
         self.sprite.updatePosition(self.rect)
         self.hurtbox.rect = self.sprite.boundingRect
