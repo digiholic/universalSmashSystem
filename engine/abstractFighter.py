@@ -16,6 +16,7 @@ class AbstractFighter():
         self.var = var
         self.playerNum = playerNum
         self.franchise_icon = spriteManager.ImageSprite(settingsManager.createPath("sprites/default_franchise_icon.png"))
+        
         # dataLog holds information for the post-game results screen
         self.dataLog = None
         
@@ -76,11 +77,13 @@ class AbstractFighter():
         if self.grounded: self.accel(self.var['friction'])
         else: self.accel(self.var['airControl'])
         
+        #Process the hitbox locks
         for lock in self.hitboxLock:
             if lock[0] <= 0:
                 self.hitboxLock.remove(lock)
             else:
                 lock[0] -= 1
+        
         
         if self.ledgeLock:
             ledges = pygame.sprite.spritecollide(self, self.gameState.platform_ledges, False)
@@ -93,7 +96,7 @@ class AbstractFighter():
         
         #Step three, change state and update
         self.current_action.stateTransitions(self)
-        self.current_action.update(self) #update our action             
+        self.current_action.update(self) #update our action
         
         if self.mask: self.mask = self.mask.update()
         self.shieldIntegrity += 0.5
@@ -112,9 +115,6 @@ class AbstractFighter():
         self.calc_grav()
         #self.checkForGround()
         
-        #Make a copy of where we were, so we know where we came from
-        originalRect = self.rect.copy()
-                
         # Move x and resolve collisions
         self.rect.x += self.change_x
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
@@ -130,21 +130,22 @@ class AbstractFighter():
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
             if block.solid:
-                if originalRect.top >= block.rect.bottom+block.change_y: #if we came in from below
+                if self.ecb.previousECB[0].rect.top >= block.rect.bottom+block.change_y: #if we came in from below
                     self.rect.y = block.rect.bottom+block.change_y
-                elif originalRect.bottom-self.change_y <= block.rect.top+block.change_y:
+                elif self.ecb.previousECB[0].rect.bottom-self.change_y <= block.rect.top+block.change_y:
                     self.rect.y = block.rect.top-self.rect.height+block.change_y
                     self.grounded = True
                 self.change_y = block.change_y
-            elif originalRect.bottom-self.change_y <= block.rect.top+block.change_y:
+            elif self.ecb.previousECB[0].rect.bottom-self.change_y <= block.rect.top+block.change_y:
                 self.change_y = block.change_y
                 self.rect.y = block.rect.top-self.rect.height+block.change_y
                 self.grounded = True
             
         #Update Sprite
-        self.sprite.updatePosition(self.rect)
         self.ecb.store()
         self.ecb.normalize()
+        
+        self.sprite.updatePosition(self.rect)
         self.hurtbox.rect = self.sprite.boundingRect
         
     """
@@ -605,12 +606,14 @@ class AbstractFighter():
         
     def eject(self,other):
         # Get the number of pixels we need to exit from the left
-        if self.sprite.boundingRect.right > other.rect.left:
-            dxLeft = self.sprite.boundingRect.right - other.rect.left
+        #if self.sprite.boundingRect.right > other.rect.left:
+        if self.ecb.xBar.rect.right > other.rect.left:
+            dxLeft = self.ecb.xBar.rect.right - other.rect.left
         else: dxLeft = -1
         
-        if self.sprite.boundingRect.left < other.rect.right:
-            dxRight = other.rect.right - self.sprite.boundingRect.left
+        #if self.sprite.boundingRect.left < other.rect.right:
+        if self.ecb.xBar.rect.left < other.rect.right:
+            dxRight = other.rect.right - self.ecb.xBar.rect.left
         else: dxRight = -1
         
         if dxLeft == -1 and dxRight == -1: # If neither of our sides are inside the block
@@ -624,12 +627,13 @@ class AbstractFighter():
         else: # our distance out to the right is smaller than the left
             dx = dxRight
         
-        if self.sprite.boundingRect.bottom > other.rect.top:
-            dyUp = self.sprite.boundingRect.bottom - other.rect.top
+        #if self.sprite.boundingRect.bottom > other.rect.top:
+        if self.ecb.yBar.rect.bottom < other.rect.top:
+            dyUp = self.ecb.yBar.rect.bottom - other.rect.top
         else: dyUp = -1
         
-        if self.sprite.boundingRect.top < other.rect.bottom:
-            dyDown = other.rect.bottom - self.sprite.boundingRect.top
+        if self.ecb.yBar.rect.top > other.rect.bottom:
+            dyDown = other.rect.bottom - self.ecb.yBar.rect.top
         else: dyDown = -1
         
         if dyUp == -1 and dyDown == -1: # If neither of our sides are inside the block
@@ -780,12 +784,14 @@ class ECB():
     def __init__(self,actor):
         self.actor = actor
         
-        self.previousECB = []
         self.yBar = spriteManager.RectSprite(pygame.Rect(0,0,5,self.actor.sprite.boundingRect.height), pygame.Color('#ECB134'))
         self.xBar = spriteManager.RectSprite(pygame.Rect(0,0,self.actor.sprite.boundingRect.width,5), pygame.Color('#ECB134'))
         
         self.yBar.rect.center = self.actor.sprite.boundingRect.center
         self.xBar.rect.center = self.actor.sprite.boundingRect.center
+        
+        self.previousECB = [spriteManager.RectSprite(self.yBar.rect,pygame.Color('#EA6F1C')),
+                            spriteManager.RectSprite(self.xBar.rect,pygame.Color('#EA6F1C'))]
         
     """
     Resize the ECB. Give it a height, width, and center point.
