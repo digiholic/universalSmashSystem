@@ -34,6 +34,9 @@ class Fighter(abstractFighter.AbstractFighter):
         
     def update(self):
         abstractFighter.AbstractFighter.update(self)
+
+    def doIdle(self):
+        self.changeAction(self.actions.NeutralAction())
         
 def cssIcon(): return None
 
