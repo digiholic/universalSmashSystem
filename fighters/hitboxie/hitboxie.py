@@ -88,6 +88,21 @@ class Hitboxie(abstractFighter.AbstractFighter):
 
     def doLedgeGetup(self):
         self.changeAction(self.actions.LedgeGetup())
+
+    def doGroundGrab(self):
+        self.changeAction(self.actions.GroundGrab())
+
+    def doGrabbing(self):
+        self.changeAction(self.actions.Grabbing())
+
+    def doGrabbed(self, height):
+        self.changeAction(self.actions.Grabbed(height))
+
+    def doPummel(self):
+        self.changeAction(self.actions.Pummel())
+
+    def doThrow(self):
+        self.changeAction(self.actions.Throw())
         
     def doGroundAttack(self):
         print('player ', self.playerNum, ' attacking')
@@ -123,6 +138,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
 ########################################################
 #                  STATE CHANGERS                      #
 ########################################################
+
+    def setGrabbing(self, other):
+        self.grabbing = other
         
     def die(self,respawn = True):
         abstractFighter.AbstractFighter.die(self,respawn)

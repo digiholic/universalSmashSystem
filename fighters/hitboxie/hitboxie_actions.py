@@ -253,6 +253,111 @@ class NeutralAir(action.Action):
             actor.landingLag = 14
             actor.changeAction(Fall())
         self.frame += 1
+
+class GroundGrab(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 35)
+
+    def setUp(self, actor):
+        self.grabHitbox = hitbox.GrabHitbox([40,0], [40,40], actor, 0, 30)
+
+    def tearDown(self, actor, other):
+        self.grabHitbox.kill()
+
+    def update(self,actor):
+        if self.frame == 0:
+            actor.changeSprite("pivot", 0)
+        elif self.frame == 4:
+            actor.changeSpriteImage(1)
+        elif self.frame == 8:
+            actor.changeSpriteImage(2)
+        elif self.frame == 12:
+            actor.changeSpriteImage(3)
+            actor.active_hitboxes.add(self.grabHitbox)
+        elif self.frame == 16:
+            actor.changeSpriteImage(4)
+        elif self.frame == 20:
+            actor.changeSpriteImage(3)
+            self.grabHitbox.kill()
+        elif self.frame == 24:
+            actor.changeSpriteImage(2)
+        elif self.frame == 28:
+            actor.changeSpriteImage(1)
+        elif self.frame == 32:
+            actor.changeSpriteImage(0)
+        if self.frame == self.lastFrame:
+            actor.doIdle()
+        self.frame += 1
+
+class Pummel(action.Action):
+    def __init__(self):
+        action.Action.__init__(self,22)
+
+    def setUp(self, actor):
+        self.pummelHitbox = hitbox.Damagehitbox(self, [0,0], [80,80], actor, 1.5, 0, 0, 0, 0, 0)
+        #Don't cause hitstun, which will break the grab
+
+    def update(self, actor):
+        if self.frame < 9:
+            actor.changeSpriteImage(self.frame)
+        elif self.frame == 9:
+            actor.active_hitboxes.add(self.jabHitbox)
+        elif self.frame >= 10 and self.frame <= 13:
+            actor.changeSpriteImage(9)
+        elif self.frame > 13:
+            self.jabHitbox.kill()
+            if not (self.frame) > 18:
+                actor.changeSpriteImage(self.frame - 4)
+        if self.frame == self.lastFrame:
+            actor.doGrabbing()
+        self.frame += 1
+        
+class Throw(action.Action):
+    def __init__(self):
+        action.Action.__init__(self,35)
+
+    def setUp(self,actor):
+        self.fSmashHitbox = hitbox.DamageHitbox(center=[20,0],size=[120,40],
+                                                owner=actor,damage=10,
+                                                baseKnockback=1.0,knockbackGrowth=0.35,
+                                                trajectory=40,
+                                                hitstun=30,hitbox_id=0)
+
+    def update(self, actor): 
+        actor.change_y = 0
+        if self.frame == 0:
+            actor.change_x = 0
+            actor.preferred_xspeed = 0
+            actor.changeSprite("fsmash",0)
+        elif self.frame == 2:
+            actor.changeSpriteImage(1)
+        elif self.frame == 4:
+            actor.changeSpriteImage(2)
+        elif self.frame == 6:
+            actor.changeSpriteImage(3)
+        elif self.frame == 8:
+            actor.changeSpriteImage(4)
+        elif self.frame == 10:
+            actor.changeSpriteImage(5)
+        elif self.frame == 12:
+            actor.changeSpriteImage(6)
+        elif self.frame == 14:
+            actor.changeSpriteImage(7)
+            actor.active_hitboxes.add(self.fSmashHitbox)
+        elif self.frame == 16:
+            actor.changeSpriteImage(8)
+            self.fSmashHitbox.kill()
+        elif self.frame == 18:
+            actor.changeSpriteImage(9)
+        elif self.frame == self.lastFrame:
+            actor.doIdle()
+        
+        self.frame += 1
+        
+        def stateTransitions(self,actor):
+            if self.frame > 20:
+                baseActions.neutralState(actor)   
+
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
 ########################################################
@@ -341,6 +446,16 @@ class NeutralAction(baseActions.NeutralAction):
             actor.changeSprite("idle")
             self.frame += 1
         if actor.grounded == False: actor.current_action = Fall()
+
+class Grabbing(baseActions.Grabbing):
+    def __init__(self):
+        baseActions.Grabbing.__init__(self,1)
+
+    def update(self, actor):
+        actor.change_x = 0
+        if self.frame == 0:
+            actor.changeSprite("pivot", 4)
+            self.frame += 1
         
 class Stop(baseActions.Stop):
     def __init__(self):
@@ -509,6 +624,27 @@ class AirDodge(baseActions.AirDodge):
         elif self.frame == self.endInvulnFrame:
             actor.changeSpriteImage(0)
         baseActions.AirDodge.update(self, actor)
+
+class Grabbed(baseActions.Grabbed):
+    def __init__(self,height):
+        baseActions.Grabbed.__init__(self, height)
+
+    def update(self,actor):
+        actor.changeSprite("idle")
+        baseActions.Grabbed.update(self, actor)
+
+class Release(baseActions.Release):
+    def __init__(self,height):
+        baseActions.Release.__init__(self)
+
+    def update(self,actor):
+        if self.frame == 0:
+            actor.changeSprite("pivot",4)
+        elif self.frame == 2:
+            actor.changeSpriteImage(3)
+        elif self.frame == 4:
+            actor.changeSpriteImage(2)
+        baseActions.Release.update(self, actor)
 
 class LedgeGrab(baseActions.LedgeGrab):
     def __init__(self,ledge):

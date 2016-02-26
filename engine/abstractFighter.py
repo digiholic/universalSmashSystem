@@ -113,7 +113,6 @@ class AbstractFighter():
         
         # Gravity
         self.calc_grav()
-        #self.checkForGround()
         
         #Update Sprite
         self.ecb.store()
@@ -168,28 +167,6 @@ class AbstractFighter():
             if self.change_y > self.var['maxFallSpeed']: self.change_y = self.var['maxFallSpeed']
        
         if self.grounded: self.jumps = self.var['jumps']
-    
-    # Deprecate this function? It isn't needed anymore. 
-    """
-    Check if the fighter is on the ground.
-    Sets the fighter's Grounded flag.
-    """
-    def checkForGround(self):
-        originalRect = self.rect.copy()
-        #Check if there's a platform below us to update the grounded flag 
-        self.rect.y += 2+self.change_y
-        
-        #platform_hit_list = pygame.sprite.spritecollide(self, self.gameState.platform_list, False)
-        platform_hit_list = self.getCollisionsWith(self.gameState.platform_list)
-        self.rect.y -= 2+self.change_y
-        
-        
-        for block in platform_hit_list:
-            if originalRect.bottom <= block.rect.top:
-                self.grounded = True
-                return
-
-        self.grounded = False
     
     """
     A simple function that converts the facing variable into a direction in degrees.
@@ -247,13 +224,25 @@ class AbstractFighter():
         return None
 
     def doGroundGrab(self):
-        return None
+        self.changeAction(baseActions.GroundGrab())
+
+    def doGrabbing(self):
+        self.changeAction(baseActions.Grabbing())
 
     def doAirGrab(self):
         return None
 
     def doGrabbed(self, height):
         self.changeAction(baseActions.Grabbed(height))
+
+    def doRelease(self):
+        self.changeAction(baseActions.Release())
+
+    def doPummel(self):
+        self.changeAction(baseActions.Pummel())
+
+    def doThrow(self):
+        self.changeAction(baseActions.Throw())
    
     def doShield(self):
         self.changeAction(baseActions.Shield())

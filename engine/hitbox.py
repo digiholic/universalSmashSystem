@@ -43,27 +43,26 @@ class DamageHitbox(Hitbox):
         self.recenterSelfOnOwner() 
         
 class GrabHitbox(Hitbox):
-    def __init__(self,center,size,owner,owner_action,other_action,hitbox_id):
+    def __init__(self,center,size,owner,hitbox_id, height):
         Hitbox.__init__(self,center,size,owner,hitbox_id)
-        self.owner_action = owner_action
-        self.other_action = other_action
+        self.height = height;
 
     def onCollision(self,other):
-        owner.setGrabbing(owner,other)
+        self.owner.setGrabbing(other)
         
         try: 
-            owner.changeAction(owner_action)
+            self.owner.changeAction(self.owner.actions.Grabbing())
         except NameError:
-            print "Grab hitbox " + hitbox_id + " from " + owner + " couldn't set owner's action to " + owner_action
-            owner.doIdle()
-            other.doIdle()
+            print "Grab hitbox {0.hitbox_id} from {0.owner} couldn't set the owner to a grabbing state".format(self)
+            self.owner.changeAction(self.owner.actions.NeutralAction())
+            other.changeAction(other.actions.NeutralAction())
             return False
         try:
-            other.changeAction(other_action)
+            other.changeAction(other.actions.Grabbed(height))
         except NameError:
-            print "Grab hitbox " + hitbox_id + " from " + owner + " couldn't set victim's action to " + other_action
-            other.doIdle()
-            other.doIdle()
+            print "Grab hitbox {0.hitbox_id} from {0.owner} couldn't set the victim to a grabbed state".format(self)
+            self.owner.changeAction(self.owner.actions.NeutralAction())
+            other.changeAction(other.actions.NeutralAction())
             return False
         return True
             

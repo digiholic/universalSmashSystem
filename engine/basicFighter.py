@@ -88,11 +88,14 @@ class BasicFighter():
     def doRelease(self):
         self.changeAction(self.actions.Release())
 
+    def doGrabbing(self):
+        self.changeAction(self.actions.Grabbing())
+
     def doPummel(self):
-        self.changeAction(self.actions.Pummel())
+        return None
 
     def doThrow(self):
-        self.changeAction(self.actions.Throw())
+        return None
    
     def doShield(self):
         self.changeAction(self.actions.Shield())

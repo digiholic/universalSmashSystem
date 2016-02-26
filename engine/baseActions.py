@@ -79,6 +79,16 @@ class NeutralAction(action.Action):
     
     def stateTransitions(self, actor):
         neutralState(actor)
+
+class Grabbing(action.Action):
+    def __init__(self,length):
+        action.Action.__init__(self, length)
+
+    def update(self, actor):
+        return
+
+    def stateTransitioons(self, actor):
+        grabbingState(actor)
         
 class HitStun(action.Action):
     def __init__(self,hitstun,direction):
@@ -385,8 +395,6 @@ class LedgeGetup(action.Action):
 def neutralState(actor):
     if actor.bufferContains('attack'):
         actor.doGroundAttack()
-    elif actor.bufferContains('grab'):
-        actor.doGroundGrab()
     elif actor.bufferContains('jump',10):
         actor.doJump()
     elif actor.bufferContains('left',8):
@@ -408,8 +416,6 @@ def airState(actor):
         actor.doAirAttack()
     if actor.bufferContains('shield',8):
         actor.doAirDodge()
-    if actor.bufferContains('grab'):
-        actor.doAirGrab()
             
 def moveState(actor, direction):
     if actor.bufferContains('jump'):
@@ -426,8 +432,7 @@ def shieldState(actor):
     if actor.bufferContains('jump'):
         actor.doJump()
     elif actor.bufferContains('attack'):
-        pass
-        #grab
+        actor.doGroundGrab()
     elif actor.bufferContains(key):
         actor.doForwardRoll()
     elif actor.bufferContains(invkey):
@@ -447,7 +452,6 @@ def ledgeState(actor):
         actor.doFall()
     elif actor.bufferContains('jump'):
         actor.ledgeLock = True
-        actor.jumps += 1
         actor.doJump()
 
 def grabbingState(actor):
@@ -458,7 +462,7 @@ def grabbingState(actor):
     actor.grabbing.change_y = actor.change_y
     if not isInstance(actor.grabbing.current_action, Grabbed):
         actor.doRelease()
-    elif actor.bufferContains('grab'):
+    elif actor.bufferContains('shield'):
         actor.doRelease()
     elif actor.bufferContains('attack'):
         actor.doPummel()

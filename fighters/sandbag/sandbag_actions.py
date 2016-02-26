@@ -69,6 +69,13 @@ class Land(baseActions.Land):
     def update(self,actor):
         #Put override code here
         baseActions.Land.update(self, actor)
+
+class Grabbed(baseActions.Grabbed):
+    def __init__(self):
+        baseActions.Grabbed.__init__(self)
+
+    def update(self,actor):
+        baseActions.Grabbed.update(self, actor)
             
 ########################################################
 #             BEGIN HELPER METHODS                     #
