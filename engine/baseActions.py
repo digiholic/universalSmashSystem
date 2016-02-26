@@ -87,7 +87,7 @@ class Grabbing(action.Action):
     def update(self, actor):
         return
 
-    def stateTransitioons(self, actor):
+    def stateTransitions(self, actor):
         grabbingState(actor)
         
 class HitStun(action.Action):
@@ -263,7 +263,7 @@ class Release(action.Action):
         if self.frame == 0:
             actor.grabbing.doIdle()
         if self.frame == 5:
-            actor.doIdle()
+            actor.doStop()
         self.frame += 1
         
 class ForwardRoll(action.Action):
@@ -460,7 +460,7 @@ def grabbingState(actor):
     # If they did, release them
     actor.grabbing.change_x = actor.change_x
     actor.grabbing.change_y = actor.change_y
-    if not isInstance(actor.grabbing.current_action, Grabbed):
+    if not isinstance(actor.grabbing.current_action, Grabbed):
         actor.doRelease()
     elif actor.bufferContains('shield'):
         actor.doRelease()

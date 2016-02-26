@@ -284,19 +284,16 @@ class Pummel(action.Action):
     def __init__(self):
         action.Action.__init__(self,22)
 
-    def setUp(self, actor):
-        self.pummelHitbox = hitbox.Damagehitbox(self, [0,0], [80,80], actor, 1.5, 0, 0, 0, 0, 0)
-        #Don't cause hitstun, which will break the grab
-
     def update(self, actor):
+        if self.frame == 0:
+            actor.changeSprite("neutral", self.frame)
         if self.frame < 9:
             actor.changeSpriteImage(self.frame)
-        elif self.frame == 9:
-            actor.active_hitboxes.add(self.jabHitbox)
         elif self.frame >= 10 and self.frame <= 13:
             actor.changeSpriteImage(9)
+            if isinstance(actor.grabbing.current_action, baseActions.Grabbed) and self.frame == 10:
+                actor.grabbing.dealDamage(2)
         elif self.frame > 13:
-            self.jabHitbox.kill()
             if not (self.frame) > 18:
                 actor.changeSpriteImage(self.frame - 4)
         if self.frame == self.lastFrame:
@@ -309,6 +306,9 @@ class Throw(action.Action):
 
     def setUp(self,actor):
         self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,1.0,0.35,40,30,0)
+
+    def tearDown(self, actor, other):
+        self.fSmashHitbox.kill()
 
     def update(self, actor): 
         actor.change_y = 0
@@ -442,7 +442,7 @@ class Grabbing(baseActions.Grabbing):
         actor.change_x = 0
         if self.frame == 0:
             actor.changeSprite("pivot", 4)
-            self.frame += 1
+        self.frame += 1
         
 class Stop(baseActions.Stop):
     def __init__(self):
