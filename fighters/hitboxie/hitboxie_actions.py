@@ -56,10 +56,8 @@ class DownAttack(action.Action):
         actor.change_x = 0
         actor.preferred_xsped = 0
         actor.changeSprite("dsmash",0)
-        self.dsmashHitbox1 = hitbox.DamageHitbox([34,26],[24,52],actor,
-                 12,8,0.075,20,60,1)
-        self.dsmashHitbox2 = hitbox.DamageHitbox([-34,26],[24,52],actor,
-                 12,8,0.075,160,60,1)
+        self.dsmashHitbox1 = hitbox.DamageHitbox([34,26],[24,52],actor,12,8,0.075,20,60,1)
+        self.dsmashHitbox2 = hitbox.DamageHitbox([-34,26],[24,52],actor,12,8,0.075,160,60,1)
     
     def tearDown(self,actor,other):
         self.dsmashHitbox1.kill()
@@ -110,11 +108,7 @@ class ForwardAttack(action.Action):
         action.Action.__init__(self, 24)
     
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox(center=[20,0],size=[120,40],
-                                                owner=actor,damage=8,
-                                                baseKnockback=2.0,knockbackGrowth=0.3,
-                                                trajectory=40,
-                                                hitstun=30,hitbox_id=0)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,8,2.0,0.3,40,30,0)
             
     def update(self,actor):
         actor.change_y = 0
@@ -157,10 +151,7 @@ class ForwardSmash(action.Action):
         self.chargeLevel = 0
         
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox(center=[20,0],size=[120,40],
-                                                owner=actor,damage=12,
-                                                baseKnockback=0.8,knockbackGrowth=.35,
-                                                trajectory=40, hitstun=60,hitbox_id=0)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,12,0.8,.35,40,60,0)
             
     def update(self,actor):
         actor.change_y = 0
@@ -317,11 +308,7 @@ class Throw(action.Action):
         action.Action.__init__(self,35)
 
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox(center=[20,0],size=[120,40],
-                                                owner=actor,damage=10,
-                                                baseKnockback=1.0,knockbackGrowth=0.35,
-                                                trajectory=40,
-                                                hitstun=30,hitbox_id=0)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,1.0,0.35,40,30,0)
 
     def update(self, actor): 
         actor.change_y = 0

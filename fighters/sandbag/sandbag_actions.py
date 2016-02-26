@@ -71,8 +71,8 @@ class Land(baseActions.Land):
         baseActions.Land.update(self, actor)
 
 class Grabbed(baseActions.Grabbed):
-    def __init__(self):
-        baseActions.Grabbed.__init__(self)
+    def __init__(self, height):
+        baseActions.Grabbed.__init__(self, height)
 
     def update(self,actor):
         baseActions.Grabbed.update(self, actor)

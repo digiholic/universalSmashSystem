@@ -49,21 +49,8 @@ class GrabHitbox(Hitbox):
 
     def onCollision(self,other):
         self.owner.setGrabbing(other)
-        
-        try: 
-            self.owner.changeAction(self.owner.actions.Grabbing())
-        except NameError:
-            print "Grab hitbox {0.hitbox_id} from {0.owner} couldn't set the owner to a grabbing state".format(self)
-            self.owner.changeAction(self.owner.actions.NeutralAction())
-            other.changeAction(other.actions.NeutralAction())
-            return False
-        try:
-            other.changeAction(other.actions.Grabbed(height))
-        except NameError:
-            print "Grab hitbox {0.hitbox_id} from {0.owner} couldn't set the victim to a grabbed state".format(self)
-            self.owner.changeAction(self.owner.actions.NeutralAction())
-            other.changeAction(other.actions.NeutralAction())
-            return False
+        self.owner.changeAction(self.owner.actions.Grabbing())
+        other.changeAction(other.actions.Grabbed(self.height))
         return True
             
 

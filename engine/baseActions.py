@@ -237,18 +237,18 @@ class Grabbed(action.Action):
     def update(self,actor):
         if self.frame == 0:
             self.lastFrame = 20 + actor.damage/2
-        if (actors.keysContain('up') ^ self.upPressed):
+        if (actor.keysContain('up') ^ self.upPressed):
             self.frame += 0.5
-        if (actors.keysContain('down') ^ self.downPressed):
+        if (actor.keysContain('down') ^ self.downPressed):
             self.frame += 0.5
-        if (actors.keysContain('left') ^ self.leftPressed):
+        if (actor.keysContain('left') ^ self.leftPressed):
             self.frame += 0.5
-        if (actors.keysContain('right') ^ self.rightPressed):
+        if (actor.keysContain('right') ^ self.rightPressed):
             self.frame += 0.5
-        self.upPressed = actors.keysContain('up')
-        self.downPressed = actors.keysContain('down')
-        self.leftPressed = actors.keysContain('left')
-        self.rightPressed = actors.keysContain('right')
+        self.upPressed = actor.keysContain('up')
+        self.downPressed = actor.keysContain('down')
+        self.leftPressed = actor.keysContain('left')
+        self.rightPressed = actor.keysContain('right')
         if self.frame >= self.lastFrame:
              actor.doIdle()
         # Throws and other grabber-controlled releases are the grabber's responsibility
