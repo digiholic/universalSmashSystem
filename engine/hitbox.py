@@ -51,7 +51,6 @@ class GrabHitbox(Hitbox):
         self.owner.setGrabbing(other)
         self.owner.changeAction(self.owner.actions.Grabbing())
         other.changeAction(other.actions.Grabbed(self.height))
-        return True
             
 
     def update(self):

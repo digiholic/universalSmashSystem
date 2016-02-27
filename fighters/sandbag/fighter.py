@@ -35,6 +35,13 @@ class Fighter(abstractFighter.AbstractFighter):
     def update(self):
         abstractFighter.AbstractFighter.update(self)
 
+    #These are so grabbing the bag doesn't crash the game
+    def doGroundMove(self):
+        self.changeAction(self.actions.NeutralAction())
+
+    def doStop(self):
+        self.changeAction(self.actions.NeutralAction())
+
     def doIdle(self):
         self.changeAction(self.actions.NeutralAction())
         

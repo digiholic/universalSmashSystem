@@ -250,7 +250,13 @@ class Grabbed(action.Action):
         self.leftPressed = actor.keysContain('left')
         self.rightPressed = actor.keysContain('right')
         if self.frame >= self.lastFrame:
-             actor.doIdle()
+             (key,invkey) = actor.getForwardBackwardKeys()
+             if actor.keysContain(key):
+                 actor.doGroundMove(actor.facing)
+             elif actor.keysContain(key):
+                 actor.doGroundMove(-actor.facing)
+             else:
+                 actor.doStop()
         # Throws and other grabber-controlled releases are the grabber's responsibility
         # Also, the grabber should always check to see if the grabbee is still under grab
         self.frame += 1
@@ -263,7 +269,13 @@ class Release(action.Action):
         if self.frame == 0:
             actor.grabbing.doIdle()
         if self.frame == 5:
-            actor.doStop()
+            (key,invkey) = actor.getForwardBackwardKeys()
+            if actor.keysContain(key):
+                actor.doGroundMove(actor.facing)
+            elif actor.keysContain(key):
+                actor.doGroundMove(-actor.facing)
+            else:
+                actor.doStop()
         self.frame += 1
         
 class ForwardRoll(action.Action):
