@@ -213,7 +213,6 @@ class NeutralAir(action.Action):
         actor.changeSprite("nair",0)
         self.subImage = 0
         self.nairHitbox = hitbox.DamageHitbox([0,0],[72,72],actor,10,4,0.06,361,60,0)
-        #self.dsmashSweetspot
     
     def stateTransitions(self, actor):
         if actor.bufferContains('down'):
@@ -287,12 +286,12 @@ class Pummel(action.Action):
     def update(self, actor):
         if self.frame == 0:
             actor.changeSprite("neutral", self.frame)
-        if self.frame < 9:
+        elif self.frame < 9:
             actor.changeSpriteImage(self.frame)
+        elif isinstance(actor.grabbing.current_action, baseActions.Grabbed) and self.frame == 9 
+            actor.grabbing.dealDamage(2)
         elif self.frame >= 10 and self.frame <= 13:
             actor.changeSpriteImage(9)
-            if isinstance(actor.grabbing.current_action, baseActions.Grabbed) and self.frame == 10:
-                actor.grabbing.dealDamage(2)
         elif self.frame > 13:
             if not (self.frame) > 18:
                 actor.changeSpriteImage(self.frame - 4)
@@ -302,10 +301,10 @@ class Pummel(action.Action):
         
 class Throw(action.Action):
     def __init__(self):
-        action.Action.__init__(self,35)
+        action.Action.__init__(self,28)
 
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,1.0,0.35,40,30,0)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,30.0,0.20,40,30,0)
 
     def tearDown(self, actor, other):
         self.fSmashHitbox.kill()
