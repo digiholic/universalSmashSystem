@@ -165,6 +165,12 @@ class Battle():
                     for hbox in hitbox_collisions:
                         if hbox.owner != obj:
                             hbox.onCollision(obj)
+                if hasattr(obj, 'articles'):
+                    for art in obj.articles:
+                        offset = current_stage.stageToScreen(art.rect)
+                        scale =  current_stage.getScale()
+                        art.draw(screen,offset,scale)
+        
                 if (self.settings['showHitboxes']):
                     for hbox in active_hitboxes:
                         hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)

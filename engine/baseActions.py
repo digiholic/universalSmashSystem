@@ -229,6 +229,7 @@ class Grabbed(action.Action):
     def __init__(self,height):
         action.Action.__init__(self, 180)
         self.height = height
+        self.time = 0
         self.upPressed = False
         self.downPressed = False
         self.leftPressed = False
@@ -250,17 +251,19 @@ class Grabbed(action.Action):
         self.leftPressed = actor.keysContain('left')
         self.rightPressed = actor.keysContain('right')
         if self.frame >= self.lastFrame:
-             (key,invkey) = actor.getForwardBackwardKeys()
-             if actor.keysContain(key):
-                 actor.doGroundMove(actor.facing)
-             elif actor.keysContain(key):
-                 actor.doGroundMove(-actor.facing)
-             else:
-                 actor.doStop()
+            (key,_) = actor.getForwardBackwardKeys()
+            if actor.keysContain(key):
+                actor.doGroundMove(actor.facing)
+            elif actor.keysContain(key):
+                actor.doGroundMove(-actor.facing)
+            else:
+                actor.doStop()
         # Throws and other grabber-controlled releases are the grabber's responsibility
         # Also, the grabber should always check to see if the grabbee is still under grab
         self.frame += 1
-
+        self.time += 1
+        print(self.frame, self.time)
+        
 class Release(action.Action):
     def __init__(self):
         action.Action.__init__(self,5)
@@ -407,6 +410,8 @@ class LedgeGetup(action.Action):
 def neutralState(actor):
     if actor.bufferContains('attack'):
         actor.doGroundAttack()
+    elif actor.bufferContains('special'):
+        actor.doGroundSpecial()
     elif actor.bufferContains('jump',10):
         actor.doJump()
     elif actor.bufferContains('left',8):

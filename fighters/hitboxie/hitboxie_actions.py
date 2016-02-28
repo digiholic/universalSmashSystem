@@ -1,9 +1,67 @@
 import engine.action as action
 import engine.baseActions as baseActions
 import engine.hitbox as hitbox
+import engine.article as article
 import engine.abstractFighter as abstractFighter
 
+import settingsManager #TEMPORARY until I figure out article sprites
 
+
+class NeutralSpecial(action.Action):
+    def __init__(self):
+        action.Action.__init__(self,22)
+    
+    class LaserArticle(article.AnimatedArticle):
+        def __init__(self, owner, origin, direction):
+            article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/laserblast.png'), owner, origin, imageWidth=64,length=120)
+            self.direction = direction
+            self.hitbox = None #TODO
+            
+        def update(self):
+            self.rect.x += 12 * self.direction
+            self.frame += 1
+            if self.frame <= 4:
+                self.getImageAtIndex(self.frame)
+                if self.direction == -1:
+                    self.flipX()
+            
+            if self.frame > 120:
+                self.kill()
+                
+    def setUp(self, actor):
+        self.projectile = self.LaserArticle(actor,(actor.sprite.boundingRect.centerx + (32 * actor.facing),actor.sprite.boundingRect.centery),actor.facing)
+        actor.change_x = 0
+        actor.preferred_xspeed = 0
+        actor.changeSprite("pivot",2)
+        
+    def tearDown(self, actor, new):
+        pass
+    
+    def stateTransitions(self, actor):
+        pass
+               
+    def update(self, actor):
+        if self.frame < 2:
+            actor.changeSpriteImage(2)
+        elif self.frame < 4:
+            actor.changeSpriteImage(3)
+        elif self.frame < 12:
+            actor.changeSpriteImage(4)
+        elif self.frame < 13:
+            actor.changeSpriteImage(3)
+        elif self.frame < 14:
+            actor.changeSpriteImage(2)
+        elif self.frame < 15:
+            actor.changeSpriteImage(1)
+        elif self.frame < 16:
+            actor.changeSpriteImage(0)
+            actor.articles.add(self.projectile)
+        
+            
+        if self.frame == self.lastFrame:
+            actor.doIdle()
+        self.frame += 1
+           
 class NeutralAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,22)
@@ -101,8 +159,7 @@ class DownAttack(action.Action):
         if self.frame == self.lastFrame:
             actor.doIdle()
         self.frame += 1
-        
-                    
+                       
 class ForwardAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)

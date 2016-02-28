@@ -22,6 +22,21 @@ class Article(spriteManager.ImageSprite):
     def update(self):
         pass
     
+class AnimatedArticle(spriteManager.SheetSprite):
+    def __init__(self,sprite, owner, origin, imageWidth, length=1):
+        if type(sprite) == 'str':
+            sprite = pygame.image.load(sprite)
+        spriteManager.SheetSprite.__init__(self, pygame.image.load(sprite), imageWidth)
+        self.rect.center = origin
+        self.owner = owner
+        self.frame = 0
+        self.lastFrame = length
+    
+    def update(self):
+        self.getImageAtIndex(self.frame)
+        self.frame += 1
+        if self.frame == self.length: self.kill()
+        
 class ShieldArticle(Article):
     def __init__(self,image,owner):
         Article.__init__(self,image, owner, owner.rect.center)
