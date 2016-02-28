@@ -89,11 +89,12 @@ def getControls(playerNum):
                                                           'down': None,
                                                           'jump': None,
                                                           'attack': None,
+                                                          'special': None,
                                                           'shield': None
                                                           })
         
         return settings.setting['controls_' + str(playerNum)]
-        
+    
 """
 Creates or returns the SFX Library.
 """
@@ -258,6 +259,7 @@ class Settings():
                         self.KeyNameMap[self.parser.get(groupName, 'down')] : 'down',
                         self.KeyNameMap[self.parser.get(groupName, 'jump')] : 'jump',
                         self.KeyNameMap[self.parser.get(groupName, 'attack')] : 'attack',
+                        self.KeyNameMap[self.parser.get(groupName, 'special')] : 'special',
                         self.KeyNameMap[self.parser.get(groupName, 'shield')] : 'shield'
                         }
             self.setting[groupName] = Keybindings(bindings)
@@ -369,6 +371,7 @@ class Keybindings():
     
     def __init__(self,keyBindings):
         self.keyBindings = keyBindings
+        print(self.keyBindings)
         
     def get(self,key): #Used for checking which action a key is bound to
         return self.keyBindings.get(key)
@@ -381,6 +384,7 @@ class Keybindings():
                 listOfBindings.append(binding)
             
         return listOfBindings
+    
 """
 The SFXLibrary object contains a dict of all sound effects that are being used.
 It handles the playing of the sounds.
