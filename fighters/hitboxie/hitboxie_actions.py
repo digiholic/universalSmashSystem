@@ -9,13 +9,13 @@ import settingsManager #TEMPORARY until I figure out article sprites
 
 class NeutralSpecial(action.Action):
     def __init__(self):
-        action.Action.__init__(self,22)
+        action.Action.__init__(self,40)
     
     class LaserArticle(article.AnimatedArticle):
         def __init__(self, owner, origin, direction):
             article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/laserblast.png'), owner, origin, imageWidth=64,length=120)
             self.direction = direction
-            self.hitbox = hitbox.DamageHitbox(self.rect.center, [64,8], self.owner, 2, 0, 0, 90, 1, 4)
+            self.hitbox = hitbox.DamageHitbox(self.rect.center, [64,8], self.owner, 4, 0, 0, 90, 1, 4)
             
             
             # Override the onCollision of the hitbox
@@ -46,7 +46,7 @@ class NeutralSpecial(action.Action):
         self.projectile = self.LaserArticle(actor,(actor.sprite.boundingRect.centerx + (32 * actor.facing),actor.sprite.boundingRect.centery),actor.facing)
         actor.change_x = 0
         actor.preferred_xspeed = 0
-        actor.changeSprite("pivot",2)
+        actor.changeSprite("nspecial",0)
         
     def tearDown(self, actor, new):
         pass
@@ -55,24 +55,30 @@ class NeutralSpecial(action.Action):
         pass
                
     def update(self, actor):
-        if self.frame < 2:
-            actor.changeSpriteImage(2)
-        elif self.frame < 4:
-            actor.changeSpriteImage(3)
-        elif self.frame < 12:
-            actor.changeSpriteImage(4)
-        elif self.frame < 13:
-            actor.changeSpriteImage(3)
-        elif self.frame < 14:
-            actor.changeSpriteImage(2)
-        elif self.frame < 15:
-            actor.changeSpriteImage(1)
-        elif self.frame < 16:
+        if self.frame < 4:
             actor.changeSpriteImage(0)
-            self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (32 * actor.facing),actor.sprite.boundingRect.centery)
+        elif self.frame < 8:
+            actor.changeSpriteImage(1)
+        elif self.frame < 12:
+            actor.changeSpriteImage(2)
+        elif self.frame < 16:
+            actor.changeSpriteImage(3)
+        elif self.frame < 20:
+            actor.changeSpriteImage(4)
+        elif self.frame < 24:
+            actor.changeSpriteImage(5)
+            self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (32 * actor.facing),actor.sprite.boundingRect.centery-8)
             actor.articles.add(self.projectile)
             actor.active_hitboxes.add(self.projectile.hitbox)
             print actor.active_hitboxes
+        elif self.frame < 28:
+            actor.changeSpriteImage(6)
+        elif self.frame < 32:
+            actor.changeSpriteImage(7)
+        elif self.frame < 36:
+            actor.changeSpriteImage(8)
+        elif self.frame < 40:
+            actor.changeSpriteImage(9)
             
         if self.frame == self.lastFrame:
             actor.doIdle()

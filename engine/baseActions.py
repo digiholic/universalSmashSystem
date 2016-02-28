@@ -431,7 +431,7 @@ def airState(actor):
             actor.landingLag = 14
     if actor.bufferContains('attack',8):
         actor.doAirAttack()
-    if actor.bufferContains('shield',8):
+    elif actor.bufferContains('shield',8):
         actor.doAirDodge()
             
 def moveState(actor, direction):
