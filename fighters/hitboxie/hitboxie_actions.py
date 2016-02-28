@@ -288,7 +288,7 @@ class Pummel(action.Action):
             actor.changeSprite("neutral", self.frame)
         elif self.frame < 9:
             actor.changeSpriteImage(self.frame)
-        elif isinstance(actor.grabbing.current_action, baseActions.Grabbed) and self.frame == 9 
+        elif isinstance(actor.grabbing.current_action, baseActions.Grabbed) and self.frame == 9:
             actor.grabbing.dealDamage(2)
         elif self.frame >= 10 and self.frame <= 13:
             actor.changeSpriteImage(9)

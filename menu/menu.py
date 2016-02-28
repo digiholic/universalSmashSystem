@@ -142,14 +142,20 @@ class MainMenu(SubMenu):
                         self.selectedOption = self.selectedOption % len(self.menuText)'''
                     if controls.get(event.key) == 'confirm':
                         if self.selectedOption == 0: #play game
-                            self.status = RulesMenu(self.parent).executeMenu(screen)
-                            if self.status == -1: return -1
+                            status = RulesMenu(self.parent).executeMenu(screen)
+                            if status == -1: return -1
+                            canPress = True
+                            holding = {'up': False,'down': False,'left': False,'right': False}
                         if self.selectedOption == 1: #options
-                            self.status = OptionsMenu(self.parent).executeMenu(screen)
-                            if self.status == -1: return -1
+                            status = OptionsMenu(self.parent).executeMenu(screen)
+                            if status == -1: return -1
+                            canPress = True
+                            holding = {'up': False,'down': False,'left': False,'right': False}
                         if self.selectedOption == 2: #modules
-                            self.status = ModulesMenu(self.parent).executeMenu(screen)
-                            if self.status == -1: return -1
+                            status = ModulesMenu(self.parent).executeMenu(screen)
+                            if status == -1: return -1
+                            canPress = True
+                            holding = {'up': False,'down': False,'left': False,'right': False}
                         if self.selectedOption == 3: #quit
                             return -1
 
@@ -225,20 +231,30 @@ class OptionsMenu(SubMenu):
                         self.status = 1
                     if controls.get(event.key) == 'confirm': #if enter (?) is pressed
                         if self.selectedOption == 0: #controls
-                            self.status = ControlsMenu(self.parent).executeMenu(screen)
-                            if self.status == -1: return -1
+                            status = ControlsMenu(self.parent).executeMenu(screen)
+                            if status == -1: return -1
+                            canPress = True
+                            holding = {'up': False,'down': False,'left': False,'right': False}
                         if self.selectedOption == 1: #graphics
-                            self.status = RulesMenu(self.parent).executeMenu(screen)
-                            if self.status == -1: return -1
+                            status = GraphicsMenu(self.parent).executeMenu(screen)
+                            if status == -1: return -1
+                            canPress = True
+                            holding = {'up': False,'down': False,'left': False,'right': False}
                         if self.selectedOption == 2: #sound
-                            self.status = SoundMenu(self.parent).executeMenu(screen)
-                            if self.status == -1: return -1
+                            status = SoundMenu(self.parent).executeMenu(screen)
+                            if status == -1: return -1
+                            canPress = True
+                            holding = {'up': False,'down': False,'left': False,'right': False}
                         if self.selectedOption == 3: #game
-                            self.status = GameSettingsMenu(self.parent).executeMenu(screen)
-                            if self.status == -1: return -1
+                            status = GameSettingsMenu(self.parent).executeMenu(screen)
+                            if status == -1: return -1
+                            canPress = True
+                            holding = {'up': False,'down': False,'left': False,'right': False}
                         if self.selectedOption == 4: #debug
-                            self.status = DebugMenu(self.parent).executeMenu(screen)
-                            if self.status == -1: return -1
+                            status = DebugMenu(self.parent).executeMenu(screen)
+                            if status == -1: return -1
+                            canPress = True
+                            holding = {'up': False,'down': False,'left': False,'right': False}
                         if self.selectedOption == 5: #quit
                             self.status = 1
 
@@ -281,7 +297,6 @@ class RulesMenu (SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self,parent)
         self.menuText = [spriteManager.TextSprite('Play','full Pack 2025',20,[255,255,255]),
-                         spriteManager.TextSprite('Stock','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('3 Stocks','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('8 Minutes','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Teams Enabled','full Pack 2025',20,[255,255,255]),
@@ -299,7 +314,7 @@ class RulesMenu (SubMenu):
         canPress = True
         controls = settingsManager.getControls('menu')
         holding = {'up': False,'down': False,'left': False,'right': False}
-        rules = {'Type':0, 'Stocks':3,'Time':8,'Teams':False,'Team Attack':True}
+        rules = {'Stocks':3,'Time':8,'Teams':False,'Team Attack':True}
 
         while self.status == 0:
             self.update(screen)
@@ -311,14 +326,14 @@ class RulesMenu (SubMenu):
                             gameRules = battle.Rules(rules['Stocks'],rules['Time'],[])
                             status = css.CSSScreen(gameRules)
                             if status == -1: return -1
-                        if self.selectedOption == 4:
+                        if self.selectedOption == 3:
                             rules['Teams'] = not rules['Teams']
-                        if self.selectedOption == 5:
+                        if self.selectedOption == 4:
                             rules['Team Attack'] = not rules['Team Attack']
-                        if self.selectedOption == 6:
+                        if self.selectedOption == 5:
                             self.status = 1
                     if event.key == pygame.K_ESCAPE:
-                        self.status = 1       
+                        self.status = 1
                 if event.type == KEYUP:
                     holding[controls.get(event.key)] = False
                 if event.type == USEREVENT+1:
@@ -338,46 +353,42 @@ class RulesMenu (SubMenu):
 
                     if button == 'left':
                         if self.selectedOption == 1:
-                            rules['Type'] -= 1
-                        if self.selectedOption == 2:
                             rules['Stocks'] -= 1
-                        if self.selectedOption == 3:
+                        if self.selectedOption == 2:
                             rules['Time'] -= 1
-                        if self.selectedOption == 4:
+                        if self.selectedOption == 3:
                             rules['Teams'] = not rules['Teams']
-                        if self.selectedOption == 5:
+                        if self.selectedOption == 4:
                             rules['Team Attack'] = not rules['Team Attack']
                     if button == 'right':
                         if self.selectedOption == 1:
-                            rules['Type'] += 1
-                        if self.selectedOption == 2:
                             rules['Stocks'] += 1
-                        if self.selectedOption == 3:
+                        if self.selectedOption == 2:
                             rules['Time'] += 1
-                        if self.selectedOption == 4:
+                        if self.selectedOption == 3:
                             rules['Teams'] = not rules['Teams']
-                        if self.selectedOption == 5:
+                        if self.selectedOption == 4:
                             rules['Team Attack'] = not rules['Team Attack']
-                    rules['Type'] = rules['Type'] % 2
                     rules['Stocks'] = rules['Stocks'] % 100
                     rules['Time'] = rules['Time'] % 100
-
-            if rules['Type'] == 0:
-                self.menuText[1].changeText('Stock')
-            if rules['Type'] == 1:
-                self.menuText[1].changeText('Time')
-
-            self.menuText[2].changeText(str(rules['Stocks'])+' Stock Battle')
-            self.menuText[3].changeText(str(rules['Time'])+' Minute Match')
+            
+            self.menuText[1].changeText(str(rules['Stocks'])+' Stock Battle')
+            self.menuText[2].changeText(str(rules['Time'])+' Minute Match')
+            
+            if (rules['Stocks'] == 0):
+                self.menuText[1].changeText('Unlimited Stock Battle')
+            if (rules['Time'] == 0):
+                self.menuText[2].changeText('Unlimited Time Match')
+                
             if rules['Teams']:
-                self.menuText[4].changeText('Teams Enabled')
+                self.menuText[3].changeText('Teams Enabled')
             else:
-                self.menuText[4].changeText('Teams Disabled')
+                self.menuText[3].changeText('Teams Disabled')
 
             if rules['Team Attack']:
-                self.menuText[5].changeText('Team Attack Enabled')
+                self.menuText[4].changeText('Team Attack Enabled')
             else:
-                self.menuText[5].changeText('Team Attack Disabled')
+                self.menuText[4].changeText('Team Attack Disabled')
 
 
             self.parent.bg.update(screen)
@@ -951,13 +962,10 @@ class GraphicsMenu(SubMenu):
         self.categoryText = spriteManager.TextSprite('Window','full Pack 2025',24,[255,255,255])
         
         
-        for i in range(0,len(self.menuText)):
-            self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
-            self.menuText[i].rect.centery = 90 + i*80
-                
         self.selectedOption = 0
         
     def executeMenu(self,screen):
+        return 1
         clock = pygame.time.Clock()
         controls = settingsManager.getControls('menu')
         
@@ -1010,6 +1018,8 @@ class SoundMenu(SubMenu):
         self.settings = settingsManager.getSetting().setting
                 
         self.selectedOption = 0
+        self.selectedBlock = 0
+        
         volList = range(0,100)
         self.menuText = [OptionButton('Music Volume', volList, (self.settings['musicVolume'] * 100)),
                          OptionButton('SFX Volume', volList, (self.settings['sfxVolume'] * 100)),
