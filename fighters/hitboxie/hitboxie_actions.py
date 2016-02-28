@@ -15,10 +15,23 @@ class NeutralSpecial(action.Action):
         def __init__(self, owner, origin, direction):
             article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/laserblast.png'), owner, origin, imageWidth=64,length=120)
             self.direction = direction
-            self.hitbox = None #TODO
+            self.hitbox = hitbox.DamageHitbox(self.rect.center, [64,8], self.owner, 2, 0, 0, 90, 1, 4)
+            
+            
+            # Override the onCollision of the hitbox
+            def new_collision(other):
+                print('test1','self','other')
+                hitbox.DamageHitbox.onCollision(self.hitbox, other)
+                self.hitbox.kill()
+                self.kill()
+                
+            
+            self.hitbox.onCollision = new_collision
+            
             
         def update(self):
             self.rect.x += 12 * self.direction
+            self.hitbox.rect.center = self.rect.center
             self.frame += 1
             if self.frame <= 4:
                 self.getImageAtIndex(self.frame)
@@ -27,6 +40,7 @@ class NeutralSpecial(action.Action):
             
             if self.frame > 120:
                 self.kill()
+                self.hitbox.kill()
                 
     def setUp(self, actor):
         self.projectile = self.LaserArticle(actor,(actor.sprite.boundingRect.centerx + (32 * actor.facing),actor.sprite.boundingRect.centery),actor.facing)
@@ -55,8 +69,10 @@ class NeutralSpecial(action.Action):
             actor.changeSpriteImage(1)
         elif self.frame < 16:
             actor.changeSpriteImage(0)
+            self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (32 * actor.facing),actor.sprite.boundingRect.centery)
             actor.articles.add(self.projectile)
-        
+            actor.active_hitboxes.add(self.projectile.hitbox)
+            print actor.active_hitboxes
             
         if self.frame == self.lastFrame:
             actor.doIdle()

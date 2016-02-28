@@ -539,7 +539,7 @@ class AbstractFighter():
         self.sprite.draw(screen,offset,scale)
         
         if self.mask: self.mask.draw(screen,offset,scale)
-        self.ecb.draw(screen,offset,scale)
+        #self.ecb.draw(screen,offset,scale)
         
         
     """
