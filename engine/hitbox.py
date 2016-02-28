@@ -34,6 +34,7 @@ class DamageHitbox(Hitbox):
         self.hitstun = hitstun
         
     def onCollision(self,other):
+        print('test2','self','other')
         if other.lockHitbox(self,self.hitstun):
             other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory)
             print(other.damage)
@@ -41,6 +42,7 @@ class DamageHitbox(Hitbox):
     def update(self):
         Hitbox.update(self)
         self.recenterSelfOnOwner() 
+ 
         
 class GrabHitbox(Hitbox):
     def __init__(self,center,size,owner,hitbox_id, height):
