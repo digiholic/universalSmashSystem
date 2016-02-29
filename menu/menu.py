@@ -30,8 +30,9 @@ class Menu():
         self.currentScreen = StartScreen(self)
         
         self.music = musicManager.getMusicManager()
-        self.music.createMusicSet('menu', [(settingsManager.createPath('music/Laszlo - Imaginary Friends.ogg'),9,"Laszlo - Imaginary Friends (NCS Release)"),
-                                                (settingsManager.createPath('music/The Void - Lost Language (Original Edit).ogg'),1,"The Void - Lost Language (Original Edit) (NCS Release)")])
+        self.music.createMusicSet('menu', [(settingsManager.createPath('music/Laszlo - Imaginary Friends.ogg'),4,"Laszlo - Imaginary Friends (NCS Release)"),
+                                           (settingsManager.createPath('music/The Void - Lost Language (Original Edit).ogg'),1,"The Void - Lost Language (Original Edit) (NCS Release)"),
+                                           (settingsManager.createPath('music/Character Lobby.ogg'),5,"Character Lobby"),])
         
         self.bg = bgSpace()
         

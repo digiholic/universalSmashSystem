@@ -357,6 +357,7 @@ class AbstractFighter():
         self.setSpeed(totalKB, trajectory, False)
         self.preferred_xspeed = 0
         self.preferred_yspeed = 0
+        return math.floor(totalKB)
     
     """
     Set the actor's speed. Instead of modifying the change_x and change_y values manually,

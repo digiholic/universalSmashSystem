@@ -5,7 +5,7 @@ class Hitbox(spriteObject.RectSprite):
         #Flip the distance from center if the fighter is facing the other way
         self.center = center
         if owner.facing == -1:
-            self.center[0] = -self.center[0]
+            self.center = (-self.center[0],self.center[1])
         spriteObject.RectSprite.__init__(self,[0,0],size,[255,0,0])
         self.rect.center = [owner.rect.center[0] + self.center[0], owner.rect.center[1] + self.center[1]]
         self.owner = owner

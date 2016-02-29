@@ -15,7 +15,7 @@ class NeutralSpecial(action.Action):
         def __init__(self, owner, origin, direction):
             article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/laserblast.png'), owner, origin, imageWidth=64,length=120)
             self.direction = direction
-            self.hitbox = hitbox.DamageHitbox(self.rect.center, [64,8], self.owner, 2, 0, 0, 90, 1, 4)
+            self.hitbox = hitbox.DamageHitbox(self.rect.center, (64,8), self.owner, 2, 0, 0, 90, 1, 4)
             
             
             # Override the onCollision of the hitbox
