@@ -221,6 +221,9 @@ class AbstractFighter():
     
     def doAirJump(self):
         self.changeAction(baseActions.AirJump())
+
+    def doHitStun(self,hitstun,direction):
+        self.changeAction(baseActions.HitStun(hitstun,direction))
     
     def doGroundAttack(self):
         return None
@@ -329,7 +332,7 @@ class AbstractFighter():
     it is based off of Super Smash Bros. Brawl's knockback calculation, which is the one with the most information available (due to
     all the modding)
     """
-    def applyKnockback(self, damage, kb, kbg, trajectory, weight_influence = 1, hitstun_multiplier = 1):
+    def applyKnockback(self, damage, kb, kbg, trajectory, weight_influence=1, hitstun_multiplier=1):
         self.change_x = 0
         self.change_y = 0
         self.dealDamage(damage)
@@ -374,7 +377,7 @@ class AbstractFighter():
             return 0
 
         if hitstun_frames > 0:
-            self.changeAction(baseActions.HitStun(hitstun_frames, trajectory))
+            self.doHitStun(hitstun_frames,trajectory)
 
         print(totalKB, trajectory)
         self.setSpeed(totalKB, trajectory, False)

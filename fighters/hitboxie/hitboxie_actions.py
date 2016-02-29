@@ -154,7 +154,7 @@ class NeutralAttack(action.Action):
     # Since this hitbox if specifically for this attack, we can hard code in the values.
     class outwardHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
-            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 2, 8, 0.02, 0, 5, 0)
+            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 2, 8, 0.02, 0, 1, 0)
             
         def onCollision(self,other):
             self.trajectory = abstractFighter.getDirectionBetweenPoints(self.owner.rect.midbottom, other.rect.center)
@@ -183,8 +183,8 @@ class DownAttack(action.Action):
         actor.change_x = 0
         actor.preferred_xsped = 0
         actor.changeSprite("dsmash",0)
-        self.dsmashHitbox1 = hitbox.DamageHitbox([34,26],[24,52],actor,12,8,0.075,20,60,1)
-        self.dsmashHitbox2 = hitbox.DamageHitbox([-34,26],[24,52],actor,12,8,0.075,160,60,1)
+        self.dsmashHitbox1 = hitbox.DamageHitbox([34,26],[24,52],actor,12,8,0.075,20,1,2)
+        self.dsmashHitbox2 = hitbox.DamageHitbox([-34,26],[24,52],actor,12,8,0.075,160,1,2)
     
     def tearDown(self,actor,other):
         self.dsmashHitbox1.kill()
@@ -234,7 +234,7 @@ class ForwardAttack(action.Action):
         action.Action.__init__(self, 24)
     
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,8,2.0,0.3,40,30,0)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,8,2.0,0.3,40,1,0)
             
     def update(self,actor):
         actor.change_y = 0
@@ -277,7 +277,7 @@ class ForwardSmash(action.Action):
         self.chargeLevel = 0
         
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,12,0.8,.35,40,60,0)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,12,0.8,.35,40,1,0)
             
     def update(self,actor):
         actor.change_y = 0
@@ -338,7 +338,7 @@ class NeutralAir(action.Action):
         actor.preferred_xsped = 0
         actor.changeSprite("nair",0)
         self.subImage = 0
-        self.nairHitbox = hitbox.DamageHitbox([0,0],[72,72],actor,10,4,0.06,361,60,0)
+        self.nairHitbox = hitbox.DamageHitbox([0,0],[72,72],actor,10,4,0.06,361,1,0)
     
     def stateTransitions(self, actor):
         if actor.bufferContains('down'):
@@ -430,7 +430,7 @@ class Throw(action.Action):
         action.Action.__init__(self,28)
 
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,20.0,0.20,40,30,0)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,20.0,0.20,40,1,0)
 
     def tearDown(self, actor, other):
         self.fSmashHitbox.kill()

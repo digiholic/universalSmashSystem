@@ -1,4 +1,5 @@
 import spriteObject
+import math
 
 class Hitbox(spriteObject.RectSprite):
     def __init__(self,center,size,owner,hitbox_id=0):
@@ -25,18 +26,19 @@ class Hitbox(spriteObject.RectSprite):
 class DamageHitbox(Hitbox):
     def __init__(self,center,size,owner,
                  damage,baseKnockback,knockbackGrowth,trajectory,
-                 hitstun,hitbox_id):
+                 hitstun,hitbox_id,weight_influence=1):
         Hitbox.__init__(self,center,size,owner,hitbox_id)
         self.damage = damage
         self.baseKnockback = baseKnockback
         self.knockbackGrowth = knockbackGrowth
         self.trajectory = self.owner.getForwardWithOffset(trajectory)
         self.hitstun = hitstun
+        self.weight_influence = weight_influence
         
     def onCollision(self,other):
         print('test2','self','other')
-        if other.lockHitbox(self,self.hitstun):
-            other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory)
+        if other.lockHitbox(self,math.floor(40)):
+            other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
             print(other.damage)
         
     def update(self):

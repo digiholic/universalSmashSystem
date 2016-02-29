@@ -140,6 +140,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
 
     def doAirSpecial(self):
         self.changeAction(self.actions.NeutralAirSpecial())
+
+    def doHitStun(self,hitstun,trajectory):
+        self.changeAction(self.actions.HitStun(hitstun,trajectory))
                 
 ########################################################
 #                  STATE CHANGERS                      #
@@ -152,10 +155,8 @@ class Hitboxie(abstractFighter.AbstractFighter):
         abstractFighter.AbstractFighter.die(self,respawn)
         self.changeAction(self.actions.Fall())
     
-    def applyKnockback(self,damage,kb,kbg,trajectory):
-        kb = abstractFighter.AbstractFighter.applyKnockback(self, damage, kb, kbg, trajectory)
-        self.changeAction(self.actions.HitStun(kb,trajectory))
-        
+    def applyKnockback(self,damage,kb,kbg,trajectory,weight_influence=1,hitstun_multiplier=1):
+        abstractFighter.AbstractFighter.applyKnockback(self, damage, kb, kbg, trajectory,weight_influence,hitstun_multiplier)
         
 ########################################################
 #                 ENGINE FUNCTIONS                     #

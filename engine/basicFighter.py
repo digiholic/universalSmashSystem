@@ -51,6 +51,9 @@ class BasicFighter():
     def doGroundMove(self,direction,run=False):
         if run: self.current_action = self.actions.Run()
         else: self.changeAction(self.actions.Move())
+
+    def doHitStun(self,hitstun,trajectory):
+        self.changeAction(self.actions.HitStun(hitstun,trajectory))
     
     def doPivot(self):
         self.changeAction(self.actions.Pivot())
