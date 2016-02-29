@@ -4,6 +4,7 @@ import math
 import settingsManager
 import spriteManager
 import engine.article as article
+import math
 
 class AbstractFighter():
     
@@ -16,6 +17,10 @@ class AbstractFighter():
         self.var = var
         self.playerNum = playerNum
         self.franchise_icon = spriteManager.ImageSprite(settingsManager.createPath("sprites/default_franchise_icon.png"))
+
+        self.no_flinch_hits = 0
+        self.flinch_damage_threshold = 0
+        self.flinch_knockback_threshold = 0
         
         # dataLog holds information for the post-game results screen
         self.dataLog = None
@@ -216,6 +221,9 @@ class AbstractFighter():
     
     def doAirJump(self):
         self.changeAction(baseActions.AirJump())
+
+    def doHitStun(self,hitstun,direction):
+        self.changeAction(baseActions.HitStun(hitstun,direction))
     
     def doGroundAttack(self):
         return None
@@ -315,12 +323,16 @@ class AbstractFighter():
                  This is an absolute direction, irrelevant of either character's facing direction. Those tend to be taken
                  into consideration in the hitbox collision event itself, to allow the hitbox to also take in the attacker's
                  current state as well as the fighter receiving knockback.
+    weight_influence - The degree to which weight influences knockback. Default value is 1, set to 0 to make knockback 
+                 weight-independent, or to whatever other value you want to change the effect of weight on knockback
+    hitstun_multiplier - The ratio of usual (calculated) hitstun to the hitstun that the hit should inflict. Default value is 
+                 1 for normal levels of hitstun. To disable flinching, set to 0. 
     
     The knockback calculation is derived from the SSBWiki, and a bit of information from ColinJF and Amazing Ampharos on Smashboards,
     it is based off of Super Smash Bros. Brawl's knockback calculation, which is the one with the most information available (due to
     all the modding)
     """
-    def applyKnockback(self, damage, kb, kbg, trajectory):
+    def applyKnockback(self, damage, kb, kbg, trajectory, weight_influence=1, hitstun_multiplier=1):
         self.change_x = 0
         self.change_y = 0
         self.dealDamage(damage)
@@ -330,9 +342,12 @@ class AbstractFighter():
         w = float(self.var['weight'])
         s = float(kbg)
         b = float(kb)
-        
+
         # Thank you, ssbwiki!
-        totalKB = (((((p/10) + (p*d)/20) * (200/(w+100))*1.4) + 5) * s) + b
+        totalKB = (((((p/10) + (p*d)/20) * (200/(w*weight_influence+100))*1.4) + 5) * s) + b
+        
+        if damage < self.flinch_damage_threshold or totalKB < self.flinch_knockback_threshold:
+            return 0
         
         #"Sakurai Angle" calculation
         if trajectory == 361:
@@ -353,11 +368,25 @@ class AbstractFighter():
                 trajectory -= 15
             if self.keysContain('down'):
                 trajectory += 15
+
+        hitstun_frames = math.floor(totalKB*1.5*hitstun_multiplier) #Tweak this constant
+
+        if self.no_flinch_hits > 0:
+            if hitstun_frames > 0:
+                self.no_flinch_hits -= 1
+            return 0
+
+        if hitstun_frames > 0:
+            self.doHitStun(hitstun_frames,trajectory)
+
         print(totalKB, trajectory)
         self.setSpeed(totalKB, trajectory, False)
         self.preferred_xspeed = 0
         self.preferred_yspeed = 0
+
         return math.floor(totalKB)
+
+        
     
     """
     Set the actor's speed. Instead of modifying the change_x and change_y values manually,
