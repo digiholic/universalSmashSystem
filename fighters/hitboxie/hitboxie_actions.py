@@ -3,7 +3,6 @@ import engine.baseActions as baseActions
 import engine.hitbox as hitbox
 import engine.article as article
 import engine.abstractFighter as abstractFighter
-import math
 
 import settingsManager #TEMPORARY until I figure out article sprites
 
@@ -12,15 +11,15 @@ class SplatArticle(article.AnimatedArticle):
         article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/hitboxie_projectile.png'), owner, origin, imageWidth=16,length=120)
         self.direction = direction
         self.change_y = 0
-        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 4, 0, 0, 270, 1, 4)   
+        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 4, 0, 0, 90, 1, 4)  
+        self.hitbox.onCollision = self.new_collision 
             
     # Override the onCollision of the hitbox
-    def new_collision(other):
+    def new_collision(self, other):
         print('test1','self','other')
         hitbox.DamageHitbox.onCollision(self.hitbox, other)
         self.hitbox.kill()
         self.kill()
-        self.hitbox.onCollision = new_collision
             
             
     def update(self):
