@@ -3,47 +3,43 @@ import engine.baseActions as baseActions
 import engine.hitbox as hitbox
 import engine.article as article
 import engine.abstractFighter as abstractFighter
+import math
 
 import settingsManager #TEMPORARY until I figure out article sprites
 
+class SplatArticle(article.AnimatedArticle):
+    def __init__(self, owner, origin, direction):
+        article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/hitboxie_projectile.png'), owner, origin, imageWidth=16,length=120)
+        self.direction = direction
+        self.change_y = 0
+        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 4, 0, 0, 270, 1, 4)   
+            
+    # Override the onCollision of the hitbox
+    def new_collision(other):
+        print('test1','self','other')
+        hitbox.DamageHitbox.onCollision(self.hitbox, other)
+        self.hitbox.kill()
+        self.kill()
+        self.hitbox.onCollision = new_collision
+            
+            
+    def update(self):
+        self.rect.x += 12 * self.direction
+        self.rect.y += self.change_y
+        self.change_y += 0.5
+        self.hitbox.rect.center = self.rect.center
+        self.frame += 1
+            
+        if self.frame > 120:
+            self.kill()
+            self.hitbox.kill()
 
-class NeutralSpecial(action.Action):
+class NeutralGroundSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self,40)
-    
-    class LaserArticle(article.AnimatedArticle):
-        def __init__(self, owner, origin, direction):
-            article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/laserblast.png'), owner, origin, imageWidth=64,length=120)
-            self.direction = direction
-            self.hitbox = hitbox.DamageHitbox(self.rect.center, [64,8], self.owner, 4, 0, 0, 90, 1, 4)
-            
-            
-            # Override the onCollision of the hitbox
-            def new_collision(other):
-                print('test1','self','other')
-                hitbox.DamageHitbox.onCollision(self.hitbox, other)
-                self.hitbox.kill()
-                self.kill()
-                
-            
-            self.hitbox.onCollision = new_collision
-            
-            
-        def update(self):
-            self.rect.x += 12 * self.direction
-            self.hitbox.rect.center = self.rect.center
-            self.frame += 1
-            if self.frame <= 4:
-                self.getImageAtIndex(self.frame)
-                if self.direction == -1:
-                    self.flipX()
-            
-            if self.frame > 120:
-                self.kill()
-                self.hitbox.kill()
                 
     def setUp(self, actor):
-        self.projectile = self.LaserArticle(actor,(actor.sprite.boundingRect.centerx + (32 * actor.facing),actor.sprite.boundingRect.centery),actor.facing)
+        self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (32 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
         actor.change_x = 0
         actor.preferred_xspeed = 0
         actor.changeSprite("nspecial",0)
@@ -67,7 +63,7 @@ class NeutralSpecial(action.Action):
             actor.changeSpriteImage(4)
         elif self.frame < 24:
             actor.changeSpriteImage(5)
-            self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (32 * actor.facing),actor.sprite.boundingRect.centery-8)
+            self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
             actor.articles.add(self.projectile)
             actor.active_hitboxes.add(self.projectile.hitbox)
             print actor.active_hitboxes
@@ -82,6 +78,58 @@ class NeutralSpecial(action.Action):
             
         if self.frame == self.lastFrame:
             actor.doIdle()
+        self.frame += 1
+
+class NeutralAirSpecial(action.Action):
+    def __init__(self):
+        action.Action.__init__(self,40)
+                
+    def setUp(self, actor):
+        self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (32 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
+        actor.changeSprite("nspecial",0)
+
+
+    def stateTransitions(self, actor):
+        if actor.bufferContains('down'):
+            if actor.change_y >= 0:
+                actor.change_y = actor.var['maxFallSpeed']
+        baseActions.airControl(actor)
+        
+    def tearDown(self, actor, new):
+        pass
+               
+    def update(self, actor):
+        actor.landingLag = 35
+        if self.frame < 4:
+            actor.changeSpriteImage(0)
+        elif self.frame < 8:
+            actor.changeSpriteImage(1)
+        elif self.frame < 12:
+            actor.changeSpriteImage(2)
+        elif self.frame < 16:
+            actor.changeSpriteImage(3)
+        elif self.frame < 20:
+            actor.changeSpriteImage(4)
+        elif self.frame < 24:
+            actor.changeSpriteImage(5)
+            self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
+            actor.articles.add(self.projectile)
+            actor.active_hitboxes.add(self.projectile.hitbox)
+            print actor.active_hitboxes
+            if actor.inputBuffer.contains('special', 10):
+                actor.changeAction(NeutralAirSpecial())
+        elif self.frame < 28:
+            actor.changeSpriteImage(6)
+        elif self.frame < 32:
+            actor.changeSpriteImage(7)
+        elif self.frame < 36:
+            actor.changeSpriteImage(8)
+        elif self.frame < 40:
+            actor.changeSpriteImage(9)
+            
+        if self.frame == self.lastFrame:
+            actor.landingLag = 20
+            actor.changeAction(Fall())
         self.frame += 1
            
 class NeutralAttack(action.Action):
@@ -383,7 +431,7 @@ class Throw(action.Action):
         action.Action.__init__(self,28)
 
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,30.0,0.20,40,30,0)
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,20.0,0.20,40,30,0)
 
     def tearDown(self, actor, other):
         self.fSmashHitbox.kill()

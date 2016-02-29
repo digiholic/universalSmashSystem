@@ -433,6 +433,8 @@ def airState(actor):
         actor.doAirAttack()
     elif actor.bufferContains('shield',8):
         actor.doAirDodge()
+    elif actor.bufferContains('special',8):
+        actor.doAirSpecial()
             
 def moveState(actor, direction):
     if actor.bufferContains('jump'):
@@ -443,6 +445,8 @@ def moveState(actor, direction):
     if actor.bufferContains('attack'):
         print("attacking")
         actor.doGroundAttack()
+    elif actor.bufferContains('special'):
+        actor.doGroundSpecial()
             
 def shieldState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()

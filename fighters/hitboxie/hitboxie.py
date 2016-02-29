@@ -136,8 +136,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
         else: self.changeAction(self.actions.NeutralAir())
     
     def doGroundSpecial(self):
-        (forward,backward) = self.getForwardBackwardKeys()
-        self.changeAction(self.actions.NeutralSpecial())
+        self.changeAction(self.actions.NeutralGroundSpecial())
+
+    def doAirSpecial(self):
+        self.changeAction(self.actions.NeutralAirSpecial())
                 
 ########################################################
 #                  STATE CHANGERS                      #
