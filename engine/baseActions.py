@@ -242,7 +242,7 @@ class Grabbed(action.Action):
 
     def update(self,actor):
         if self.frame == 0:
-            self.lastFrame = 20 + actor.damage/2
+            self.lastFrame = 40 + actor.damage/2
         if (actor.keysContain('up') ^ self.upPressed):
             self.frame += 0.5
         if (actor.keysContain('down') ^ self.downPressed):

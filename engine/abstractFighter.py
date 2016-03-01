@@ -623,6 +623,7 @@ class AbstractFighter():
         
         
     def eject(self,other):
+        print "trying to escape"
         # Get the number of pixels we need to exit from the left
         #if self.sprite.boundingRect.right > other.rect.left:
         if self.ecb.xBar.rect.right > other.rect.left:
@@ -637,13 +638,13 @@ class AbstractFighter():
         if dxLeft == -1 and dxRight == -1: # If neither of our sides are inside the block
             dx = 0 # Don't move sideways
         elif dxLeft == -1: # If one of our sides is in, and it's not left,
-            dx = dxRight
+            dx = -dxRight
         elif dxRight == -1: # If one of our sides is in, and it's not right,
-            dx = -dxLeft
+            dx = dxLeft
         elif dxLeft < dxRight: # our distance out to the left is smaller than right
-            dx = -dxLeft
+            dx = dxLeft
         else: # our distance out to the right is smaller than the left
-            dx = dxRight
+            dx = -dxRight
         
         #if self.sprite.boundingRect.bottom > other.rect.top:
         if self.ecb.yBar.rect.bottom < other.rect.top:
