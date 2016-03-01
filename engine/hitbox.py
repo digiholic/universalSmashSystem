@@ -10,6 +10,7 @@ class Hitbox(spriteObject.RectSprite):
         spriteObject.RectSprite.__init__(self,[0,0],size,[255,0,0])
         self.rect.center = [owner.rect.center[0] + self.center[0], owner.rect.center[1] + self.center[1]]
         self.owner = owner
+        self.article = None
         self.hitbox_id = hitbox_id
         
     def onCollision(self,other):
@@ -36,15 +37,25 @@ class DamageHitbox(Hitbox):
         self.weight_influence = weight_influence
         
     def onCollision(self,other):
-        print('test2','self','other')
-        if other.lockHitbox(self,math.floor(40)):
-            other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
-            print(other.damage)
+        #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
+        if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
+            if other.lockHitbox(self,math.floor(40)):
+                other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
+        
+        if self.article and hasattr(self.article, 'onCollision'):
+            self.article.onCollision(other)
+            
         
     def update(self):
         Hitbox.update(self)
         self.recenterSelfOnOwner() 
  
+ 
+    def compareTo(self,other):
+        if hasattr(other, 'damage'):
+            return (self.damage > other.damage)
+        else:
+            return True
         
 class GrabHitbox(Hitbox):
     def __init__(self,center,size,owner,hitbox_id, height):

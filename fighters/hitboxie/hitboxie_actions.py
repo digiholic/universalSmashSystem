@@ -12,14 +12,16 @@ class SplatArticle(article.AnimatedArticle):
         self.direction = direction
         self.change_y = 0
         self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 4, 0, 0, 90, 1, 4)  
-        self.hitbox.onCollision = self.new_collision 
+        self.hitbox.article = self
             
     # Override the onCollision of the hitbox
-    def new_collision(self, other):
-        print('test1','self','other')
-        hitbox.DamageHitbox.onCollision(self.hitbox, other)
-        self.hitbox.kill()
-        self.kill()
+    def onCollision(self, other):
+        othersClasses = map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]
+        print othersClasses
+        if 'AbstractFighter' in othersClasses or 'Platform' in othersClasses:
+            self.hitbox.kill()
+            self.kill()
+        #TODO check for verticality of platform landing
             
             
     def update(self):

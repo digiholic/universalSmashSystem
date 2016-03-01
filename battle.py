@@ -174,6 +174,11 @@ class Battle():
                 if (self.settings['showHitboxes']):
                     for hbox in active_hitboxes:
                         hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
+            #hitbox collision with hurtboxes is covered above, this will check for collision with stages
+            for hitbox in active_hitboxes:
+                hitbox_collisions = pygame.sprite.spritecollide(hitbox, self.stage.platform_list, False)
+                for wall in hitbox_collisions:
+                    hitbox.onCollision(wall)
             for fight in currentFighters:
                 if fight.rect.right < current_stage.blast_line.left or fight.rect.left > current_stage.blast_line.right or fight.rect.top > current_stage.blast_line.bottom or fight.rect.bottom < current_stage.blast_line.top:
                     if not trackStocks:
