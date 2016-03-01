@@ -50,7 +50,7 @@ class ShieldArticle(Article):
         # This is all the same as the base Draw method. We're overriding because we need to put some code in the middle of it.
         h = int(round(self.owner.rect.height * zoom))
         w = int(round(self.owner.rect.width * zoom))
-        newOff = (int(offset[0] * zoom + self.owner.rect.width*0), int(offset[1] * zoom + self.owner.rect.height*0))
+        newOff = (int(offset[0] * zoom + self.rect.width/2 - self.owner.rect.width/2), int(offset[1] * zoom + self.rect.height/2 - self.owner.rect.height/2))
         
         # What this does:
         screenRect = pygame.Rect(newOff,(w,h)) # Store the rect that it WOULD have drawn to at full size
