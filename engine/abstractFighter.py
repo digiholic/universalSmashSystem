@@ -203,9 +203,14 @@ class AbstractFighter():
     def doIdle(self):
         self.changeAction(baseActions.NeutralAction())
         
-    def doGroundMove(self,direction,run=False):
-        if run: self.current_action = baseActions.Run()
-        else: self.changeAction(baseActions.Move())
+    def doGroundMove(self,direction):
+        self.changeAction(baseActions.Move())
+
+    def doDash(self,direction):
+        self.changeAction(baseActions.Dash())
+
+    def doRun(self,direction,speed):
+        self.changeAction(baseActions.Run(speed))
     
     def doPivot(self):
         self.changeAction(baseActions.Pivot())
@@ -229,6 +234,9 @@ class AbstractFighter():
         self.changeAction(baseActions.HitStun(hitstun,direction))
     
     def doGroundAttack(self):
+        return None
+
+    def doDashAttack(self):
         return None
     
     def doAirAttack(self):

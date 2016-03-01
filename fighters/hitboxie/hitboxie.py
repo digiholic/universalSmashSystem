@@ -11,6 +11,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'maxGroundSpeed': 6,
                 'maxAirSpeed': 6,
                 'friction': 0.2,
+                'dashGrip': 0.2,
                 'airControl': 0.6,
                 'jumps': 1,
                 'jumpHeight': 12,
@@ -47,11 +48,19 @@ class Hitboxie(abstractFighter.AbstractFighter):
             self.changeAction(self.actions.Stop())
             
     def doGroundMove(self,direction,run=False):
-        if run: newAction = self.actions.Run()
-        else: newAction = self.actions.Move()
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
             self.flip()
-        self.changeAction(newAction)
+        self.changeAction(self.actions.Move())
+
+    def doDash(self,direction):
+        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
+            self.flip()
+        self.changeAction(self.actions.Dash())
+        
+    def doRun(self,direction,speed):
+        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
+            self.flip()
+        self.changeAction(self.actions.Run(speed))
         
     def doPivot(self):
         newAction = self.actions.Pivot()
@@ -104,13 +113,11 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def doThrow(self):
         self.changeAction(self.actions.Throw())
         
-    def doGroundAttack(self, run=False):
+    def doGroundAttack(self):
         print('player ', self.playerNum, ' attacking')
         (key, invkey) = self.getForwardBackwardKeys()
         if self.keysContain(key):
-            if run:
-                self.changeAction(self.actions.DashAttack())
-            elif self.checkSmash(key):
+            if self.checkSmash(key):
                 print("SMASH!")
                 self.changeAction(self.actions.ForwardSmash())
             else:
@@ -124,6 +131,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
             self.changeAction(self.actions.DownAttack())
         else:
             self.changeAction(self.actions.NeutralAttack())
+
+    def doDashAttack(self):
+        self.changeAction(self.actions.DashAttack())
     
     def doAirAttack(self):
         (forward, backward) = self.getForwardBackwardKeys()

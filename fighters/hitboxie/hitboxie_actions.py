@@ -524,13 +524,17 @@ class Move(baseActions.Move):
         baseActions.Move.update(self, actor)
         if (self.frame == self.lastFrame):
             self.frame = 12
-        
-class Run(baseActions.Run):
+
+class Dash(baseActions.Dash):
     def __init__(self,accel = True):
-        baseActions.Run.__init__(self,15)
+        baseActions.Dash.__init__(self,15)
         self.accel = accel
+
+    def tearDown(self,actor,other):
+        actor.mask=None
         
     def update(self, actor):
+        actor.createMask([127,127,127],72)
         if self.accel:
             if (self.frame == 0):
                 actor.changeSprite("run",0)
@@ -548,9 +552,20 @@ class Run(baseActions.Run):
                 
         if actor.grounded == False:
             actor.current_action = Fall()
+        baseActions.Dash.update(self, actor)
+        
+class Run(baseActions.Run):
+    def __init__(self,speed):
+        baseActions.Run.__init__(self,2,speed)
+        
+    def update(self, actor):
+        actor.changeSprite("run",4)
+                
+        if actor.grounded == False:
+            actor.current_action = Fall()
         baseActions.Run.update(self, actor)
         if (self.frame == self.lastFrame):
-            self.frame = 12
+            self.frame = 1
                    
 class Pivot(baseActions.Pivot):
     def __init__(self):

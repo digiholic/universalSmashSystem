@@ -48,9 +48,14 @@ class BasicFighter():
     def doIdle(self):
         self.changeAction(self.actions.NeutralAction())
         
-    def doGroundMove(self,direction,run=False):
-        if run: self.current_action = self.actions.Run()
-        else: self.changeAction(self.actions.Move())
+    def doGroundMove(self,direction):
+        self.changeAction(self.actions.Move())
+
+    def doDash(self,direction):
+        self.changeAction(self.actions.Dash())
+
+    def doRun(self,direction,speed):
+        self.changeAction(self.actions.Run(speed))
 
     def doHitStun(self,hitstun,trajectory):
         self.changeAction(self.actions.HitStun(hitstun,trajectory))
@@ -73,7 +78,10 @@ class BasicFighter():
     def doAirJump(self):
         self.current_action = self.actions.AirJump()
     
-    def doGroundAttack(self, run=False):
+    def doGroundAttack(self):
+        return None
+
+    def doDashAttack(self):
         return None
     
     def doAirAttack(self):

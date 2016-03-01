@@ -13,6 +13,7 @@ class Fighter(abstractFighter.AbstractFighter):
                 'maxGroundSpeed': 5,
                 'maxAirSpeed': 4,
                 'friction': 1.0,
+                'dashGrip': 1.0,
                 'airControl': 0.2,
                 'jumps': 1,
                 'jumpHeight': 8,

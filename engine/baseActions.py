@@ -17,23 +17,41 @@ class Move(action.Action):
         
     def stateTransitions(self,actor):
         moveState(actor,self.direction)
+
+class Dash(action.Action):
+    def __init__(self,length): 
+        action.Action.__init__(self,length)
+
+    def setUp(self,actor):
+        if actor.facing == 1: self.direction = 0
+        else: self.direction = 180
+
+    def update(self, actor):
+        actor.setSpeed(actor.var['maxGroundSpeed']+(actor.var['friction']+actor.var['dashGrip'])*self.lastFrame,self.direction)
+        self.frame += 1
+        if self.frame > self.lastFrame: 
+            actor.doRun(actor.getFacingDirection(),actor.var['maxGroundSpeed']+(actor.var['friction']+actor.var['dashGrip'])*self.lastFrame)
+    
+    def stateTransitions(self,actor):
+        moveState(actor,self.direction)
         
 class Run(action.Action):
-    def __init__(self,length):
+    def __init__(self,length,speed):
         action.Action.__init__(self,length)
+        self.speed = speed
         
     def setUp(self,actor):
         if actor.facing == 1: self.direction = 0
         else: self.direction = 180
             
     def update(self, actor):
-        actor.setSpeed(actor.var['maxGroundSpeed']*1.5,self.direction, False)
+        actor.setSpeed(self.speed,self.direction)
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
     
     def stateTransitions(self,actor):
-        moveState(actor,self.direction,True)
+        runState(actor,self.direction)
         
 class Pivot(action.Action):
     def __init__(self,length):
@@ -65,7 +83,7 @@ class Stop(action.Action):
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.bufferContains(key,12,andReleased=True) and actor.keysContain(key):
             print("run")
-            actor.doGroundMove(actor.getFacingDirection(),True)
+            actor.doDash(actor.getFacingDirection())
         if actor.bufferContains(invkey,5,notReleased = True):
             actor.doPivot()
                 
@@ -441,15 +459,25 @@ def airState(actor):
     elif actor.bufferContains('special',8):
         actor.doAirSpecial()
             
-def moveState(actor, direction, run = False):
+def moveState(actor, direction):
     if actor.bufferContains('jump'):
         actor.doJump()
     (key,_) = actor.getForwardBackwardKeys()
     if actor.bufferContains(key, state=0):
         actor.doStop()
     if actor.bufferContains('attack'):
-        print("attacking")
-        actor.doGroundAttack(run)
+        actor.doGroundAttack()
+    elif actor.bufferContains('special'):
+        actor.doGroundSpecial()
+
+def runState(actor, direction):
+    if actor.bufferContains('jump'):
+        actor.doJump()
+    (key,_) = actor.getForwardBackwardKeys()
+    if actor.bufferContains(key, state=0):
+        actor.doStop()
+    if actor.bufferContains('attack'):
+        actor.doDashAttack()
     elif actor.bufferContains('special'):
         actor.doGroundSpecial()
             
