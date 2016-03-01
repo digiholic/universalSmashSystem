@@ -27,7 +27,7 @@ class Hitbox(spriteObject.RectSprite):
 class DamageHitbox(Hitbox):
     def __init__(self,center,size,owner,
                  damage,baseKnockback,knockbackGrowth,trajectory,
-                 hitstun,hitbox_id,weight_influence=1):
+                 hitstun,hitbox_id,weight_influence=1,shield_multiplier=1):
         Hitbox.__init__(self,center,size,owner,hitbox_id)
         self.damage = damage
         self.baseKnockback = baseKnockback
@@ -35,12 +35,16 @@ class DamageHitbox(Hitbox):
         self.trajectory = self.owner.getForwardWithOffset(trajectory)
         self.hitstun = hitstun
         self.weight_influence = weight_influence
+        self.shield_multiplier = shield_multiplier
         
     def onCollision(self,other):
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
         if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
-            if other.lockHitbox(self,math.floor(40)):
-                other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
+            if other.lockHitbox(self,10):
+                if other.shield:
+                    other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
+                else:
+                    other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
         
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(other)

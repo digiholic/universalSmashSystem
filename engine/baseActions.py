@@ -188,19 +188,24 @@ class Land(action.Action):
 
 class Shield(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 5)
+        action.Action.__init__(self, 6)
         self.shieldFrame = 4
-    
+   
     def stateTransitions(self, actor):
         shieldState(actor)
-    
+   
     def tearDown(self, actor, newAction):
         actor.shield = False
-        
+       
     def update(self, actor):
         if self.frame == self.shieldFrame:
             actor.shield = True
             actor.startShield()
+            if actor.keysContain('shield'):
+                self.frame += 1
+            else:
+                self.frame += 2
+        elif self.frame == self.shieldFrame+1:
             if actor.keysContain('shield'):
                 actor.shieldDamage(1)
             else:
