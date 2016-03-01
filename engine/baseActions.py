@@ -28,6 +28,7 @@ class Dash(action.Action):
 
     def update(self, actor):
         actor.setSpeed(actor.var['maxGroundSpeed']+(actor.var['friction']+actor.var['dashGrip'])*self.lastFrame,self.direction)
+        actor.accel(actor.var['dashGrip'])
         self.frame += 1
         if self.frame > self.lastFrame: 
             actor.doRun(actor.getFacingDirection(),actor.var['maxGroundSpeed']+(actor.var['friction']+actor.var['dashGrip'])*self.lastFrame)
