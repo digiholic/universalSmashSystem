@@ -73,7 +73,7 @@ class BasicFighter():
     def doAirJump(self):
         self.current_action = self.actions.AirJump()
     
-    def doGroundAttack(self):
+    def doGroundAttack(self, run=False):
         return None
     
     def doAirAttack(self):

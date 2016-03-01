@@ -33,7 +33,7 @@ class Run(action.Action):
         if self.frame > self.lastFrame: self.frame = 0
     
     def stateTransitions(self,actor):
-        moveState(actor,self.direction)
+        moveState(actor,self.direction,True)
         
 class Pivot(action.Action):
     def __init__(self,length):
@@ -441,7 +441,7 @@ def airState(actor):
     elif actor.bufferContains('special',8):
         actor.doAirSpecial()
             
-def moveState(actor, direction):
+def moveState(actor, direction, run = False):
     if actor.bufferContains('jump'):
         actor.doJump()
     (key,_) = actor.getForwardBackwardKeys()
@@ -449,7 +449,7 @@ def moveState(actor, direction):
         actor.doStop()
     if actor.bufferContains('attack'):
         print("attacking")
-        actor.doGroundAttack()
+        actor.doGroundAttack(run)
     elif actor.bufferContains('special'):
         actor.doGroundSpecial()
             

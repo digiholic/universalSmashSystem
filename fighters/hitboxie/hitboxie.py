@@ -104,11 +104,11 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def doThrow(self):
         self.changeAction(self.actions.Throw())
         
-    def doGroundAttack(self):
+    def doGroundAttack(self, run=False):
         print('player ', self.playerNum, ' attacking')
         (key, invkey) = self.getForwardBackwardKeys()
         if self.keysContain(key):
-            if abs(self.change_x) > self.var['maxGroundSpeed']:
+            if run:
                 self.changeAction(self.actions.DashAttack())
             elif self.checkSmash(key):
                 print("SMASH!")
