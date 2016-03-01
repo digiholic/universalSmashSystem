@@ -50,7 +50,7 @@ class ShieldArticle(Article):
         # This is all the same as the base Draw method. We're overriding because we need to put some code in the middle of it.
         h = int(round(self.owner.rect.height * zoom))
         w = int(round(self.owner.rect.width * zoom))
-        newOff = (int(offset[0] * zoom), int(offset[1] * zoom))
+        newOff = (int(offset[0] * zoom + self.owner.rect.width*0), int(offset[1] * zoom + self.owner.rect.height*0))
         
         # What this does:
         screenRect = pygame.Rect(newOff,(w,h)) # Store the rect that it WOULD have drawn to at full size
@@ -60,7 +60,6 @@ class ShieldArticle(Article):
         blitRect.center = screenRect.center # Center it on the screen rect
         w = max(w,0) #We can't go negative
         h = max(h,0)
-        self.alpha(25)
         blitSprite = pygame.transform.smoothscale(self.image, (w,h)) # Scale down the image
         
         screen.blit(blitSprite,blitRect)

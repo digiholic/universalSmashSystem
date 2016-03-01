@@ -3,6 +3,7 @@ import engine.baseActions as baseActions
 import engine.hitbox as hitbox
 import engine.article as article
 import engine.abstractFighter as abstractFighter
+import math
 
 import settingsManager #TEMPORARY until I figure out article sprites
 
@@ -52,30 +53,12 @@ class NeutralGroundSpecial(action.Action):
         pass
                
     def update(self, actor):
-        if self.frame < 4:
-            actor.changeSpriteImage(0)
-        elif self.frame < 8:
-            actor.changeSpriteImage(1)
-        elif self.frame < 12:
-            actor.changeSpriteImage(2)
-        elif self.frame < 16:
-            actor.changeSpriteImage(3)
-        elif self.frame < 20:
-            actor.changeSpriteImage(4)
-        elif self.frame < 24:
-            actor.changeSpriteImage(5)
+        actor.changeSpriteImage(math.floor(self.frame/4))
+        if self.frame == 24:
             self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
             actor.articles.add(self.projectile)
             actor.active_hitboxes.add(self.projectile.hitbox)
             print actor.active_hitboxes
-        elif self.frame < 28:
-            actor.changeSpriteImage(6)
-        elif self.frame < 32:
-            actor.changeSpriteImage(7)
-        elif self.frame < 36:
-            actor.changeSpriteImage(8)
-        elif self.frame < 40:
-            actor.changeSpriteImage(9)
             
         if self.frame == self.lastFrame:
             actor.doIdle()
@@ -101,32 +84,14 @@ class NeutralAirSpecial(action.Action):
                
     def update(self, actor):
         actor.landingLag = 35
-        if self.frame < 4:
-            actor.changeSpriteImage(0)
-        elif self.frame < 8:
-            actor.changeSpriteImage(1)
-        elif self.frame < 12:
-            actor.changeSpriteImage(2)
-        elif self.frame < 16:
-            actor.changeSpriteImage(3)
-        elif self.frame < 20:
-            actor.changeSpriteImage(4)
-        elif self.frame < 24:
-            actor.changeSpriteImage(5)
+        actor.changeSpriteImage(math.floor(self.frame/4))
+        if self.frame == 24:
             self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
             actor.articles.add(self.projectile)
             actor.active_hitboxes.add(self.projectile.hitbox)
             print actor.active_hitboxes
             if actor.inputBuffer.contains('special', 10):
                 actor.changeAction(NeutralAirSpecial())
-        elif self.frame < 28:
-            actor.changeSpriteImage(6)
-        elif self.frame < 32:
-            actor.changeSpriteImage(7)
-        elif self.frame < 36:
-            actor.changeSpriteImage(8)
-        elif self.frame < 40:
-            actor.changeSpriteImage(9)
             
         if self.frame == self.lastFrame:
             actor.landingLag = 20

@@ -18,6 +18,9 @@ class AbstractFighter():
         self.playerNum = playerNum
         self.franchise_icon = spriteManager.ImageSprite(settingsManager.createPath("sprites/default_franchise_icon.png"))
 
+        # Super armor variables
+        # Set with attacks to make them super armored
+        # Remember to set them back at some point
         self.no_flinch_hits = 0
         self.flinch_damage_threshold = 0
         self.flinch_knockback_threshold = 0
@@ -457,7 +460,7 @@ class AbstractFighter():
         
     def shieldDamage(self,damage):
         if self.shieldIntegrity > 0:
-            self.shieldIntegrity -= 1
+            self.shieldIntegrity -= damage
         elif self.shieldIntegrity <= 0:
             self.doShieldBreak()
     
