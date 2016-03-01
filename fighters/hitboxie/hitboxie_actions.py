@@ -353,8 +353,7 @@ class NeutralAir(action.Action):
     
     def update(self,actor):
         actor.landingLag = 28
-        if self.frame % 2 == 0:
-            actor.changeSpriteImage(self.subImage % 7)
+        actor.changeSpriteImage(self.subImage % 16)
         self.subImage += 1
         if self.frame == 2:
             actor.active_hitboxes.add(self.nairHitbox)
@@ -734,7 +733,7 @@ class AirDodge(baseActions.AirDodge):
         if self.frame == 0:
             actor.changeSprite("nair",0)
         elif self.frame == self.startInvulnFrame:
-            actor.changeSpriteImage(1)
+            actor.changeSpriteImage(round(abs(actor.change_x)))
         elif self.frame == self.endInvulnFrame:
             actor.changeSpriteImage(0)
         baseActions.AirDodge.update(self, actor)
