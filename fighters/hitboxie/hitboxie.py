@@ -11,7 +11,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'maxGroundSpeed': 6,
                 'maxAirSpeed': 6,
                 'friction': 0.2,
-                'dashGrip': 0.0,
+                'staticGrip': 0.0,
                 'airControl': 0.6,
                 'jumps': 1,
                 'jumpHeight': 12,

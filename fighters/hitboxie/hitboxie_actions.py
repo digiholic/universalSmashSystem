@@ -150,8 +150,8 @@ class DashAttack(action.Action):
         actor.setSpeed(actor.change_x, actor.facing)
         actor.changeSprite("nair")
 
-        self.upperHitbox = hitbox.DamageHitbox([10,-30],[60,30],actor,2,12,0,0,1,101,0)
-        self.lowerHitbox = hitbox.DamageHitbox([10,30],[60,30],actor,2,12,0,0,1,101,0)
+        self.upperHitbox = hitbox.DamageHitbox([10,-30],[60,30],actor,2,2*abs(actor.change_x),0,0,1,101,0)
+        self.lowerHitbox = hitbox.DamageHitbox([10,30],[60,30],actor,2,2*abs(actor.change_x),0,0,1,101,0)
 
     def tearDown(self,actor,other):
         self.upperHitbox.kill()
@@ -192,9 +192,9 @@ class DashAttack(action.Action):
         if self.frame == 24:
             self.upperHitbox.kill()
             self.lowerHitbox.kill()
+            actor.setSpeed(0, actor.facing)
 
         if self.frame == self.lastFrame:
-            actor.setSpeed(0, actor.facing)
             actor.doIdle()
         self.frame += 1
             
@@ -529,12 +529,8 @@ class Dash(baseActions.Dash):
     def __init__(self,accel = True):
         baseActions.Dash.__init__(self,15)
         self.accel = accel
-
-    def tearDown(self,actor,other):
-        actor.mask=None
         
     def update(self, actor):
-        actor.createMask([127,127,127],72)
         if self.accel:
             if (self.frame == 0):
                 actor.changeSprite("run",0)

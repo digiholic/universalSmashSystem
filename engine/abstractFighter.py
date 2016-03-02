@@ -629,9 +629,8 @@ class AbstractFighter():
         collideSprite = spriteManager.RectSprite(self.sprite.boundingRect)
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
         
-        
+    #We know this is screwed up, but what will replace it?
     def eject(self,other):
-        print "trying to escape"
         # Get the number of pixels we need to exit from the left
         #if self.sprite.boundingRect.right > other.rect.left:
         if self.ecb.xBar.rect.right > other.rect.left:
