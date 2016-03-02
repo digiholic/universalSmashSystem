@@ -295,9 +295,10 @@ class Release(action.Action):
     def __init__(self):
         action.Action.__init__(self,5)
 
+    def setUp(self,actor):
+        actor.grabbing.doIdle()
+
     def update(self, actor):
-        if self.frame == 0:
-            actor.grabbing.doIdle()
         if self.frame == 5:
             (key,invkey) = actor.getForwardBackwardKeys()
             if actor.keysContain(key):
