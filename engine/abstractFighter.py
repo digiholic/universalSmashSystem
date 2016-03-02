@@ -203,9 +203,14 @@ class AbstractFighter():
     def doIdle(self):
         self.changeAction(baseActions.NeutralAction())
         
-    def doGroundMove(self,direction,run=False):
-        if run: self.current_action = baseActions.Run()
-        else: self.changeAction(baseActions.Move())
+    def doGroundMove(self,direction):
+        self.changeAction(baseActions.Move())
+
+    def doDash(self,direction):
+        self.changeAction(baseActions.Dash())
+
+    def doRun(self,direction):
+        self.changeAction(baseActions.Run())
     
     def doPivot(self):
         self.changeAction(baseActions.Pivot())
@@ -229,6 +234,9 @@ class AbstractFighter():
         self.changeAction(baseActions.HitStun(hitstun,direction))
     
     def doGroundAttack(self):
+        return None
+
+    def doDashAttack(self):
         return None
     
     def doAirAttack(self):
@@ -621,31 +629,24 @@ class AbstractFighter():
         collideSprite = spriteManager.RectSprite(self.sprite.boundingRect)
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
         
-        
     def eject(self,other):
-        # Get the number of pixels we need to exit from the left
-        #if self.sprite.boundingRect.right > other.rect.left:
         if self.ecb.xBar.rect.right > other.rect.left:
             dxLeft = self.ecb.xBar.rect.right - other.rect.left
         else: dxLeft = -1
         
-        #if self.sprite.boundingRect.left < other.rect.right:
         if self.ecb.xBar.rect.left < other.rect.right:
             dxRight = other.rect.right - self.ecb.xBar.rect.left
         else: dxRight = -1
         
         if dxLeft == -1 and dxRight == -1: # If neither of our sides are inside the block
-            dx = 0 # Don't move sideways
-        elif dxLeft == -1: # If one of our sides is in, and it's not left,
-            dx = dxRight
-        elif dxRight == -1: # If one of our sides is in, and it's not right,
-            dx = -dxLeft
-        elif dxLeft < dxRight: # our distance out to the left is smaller than right
-            dx = -dxLeft
-        else: # our distance out to the right is smaller than the left
-            dx = dxRight
+            pass
+        elif dxLeft == -1 and self.change_x > 0: # If one of our sides is in, and it's not left,
+            self.change_x *= -1
+        elif dxRight == -1 and self.change_x < 0: # If one of our sides is in, and it's not right,
+            self.change_x *= -1
+        else:
+            pass
         
-        #if self.sprite.boundingRect.bottom > other.rect.top:
         if self.ecb.yBar.rect.bottom < other.rect.top:
             dyUp = self.ecb.yBar.rect.bottom - other.rect.top
         else: dyUp = -1
@@ -654,29 +655,14 @@ class AbstractFighter():
             dyDown = other.rect.bottom - self.ecb.yBar.rect.top
         else: dyDown = -1
         
-        if dyUp == -1 and dyDown == -1: # If neither of our sides are inside the block
-            dy = 0 # Don't move sideways
-        elif dyUp == -1: # If one of our sides is in, and it's not left,
-            dy = dyDown
-        elif dyDown == -1: # If one of our sides is in, and it's not right,
-            dy = -dyUp
-        elif dyUp < dyDown: # our distance out to the left is smaller than right
-            dy = -dyUp
-        else: # our distance out to the right is smaller than the left
-            dy = dyDown
-            
-        if abs(dx) < abs(dy):
-            self.rect.x += dx
-            self.sprite.boundingRect.x += dx
-        
-        elif abs(dy) < abs(dx):
-            self.rect.y += dy
-            self.sprite.boundingRect.y += dy
-        else:
-            self.rect.x += dx
-            self.rect.y += dy
-            self.sprite.boundingRect.x += dx
-            self.sprite.boundingRect.y += dy
+        if dyUp == -1 and dyDown == -1: 
+            pass
+        elif dyUp == -1 and self.change_y < 0: 
+            self.change_y *= -1
+        elif dyDown == -1 and self.change_y > 0:
+            self.change_y *= -1
+        else: 
+            pass
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #

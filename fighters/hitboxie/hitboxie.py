@@ -9,8 +9,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'gravity': .5,
                 'maxFallSpeed': 20,
                 'maxGroundSpeed': 6,
+                'runSpeed': 9,
                 'maxAirSpeed': 6,
                 'friction': 0.2,
+                'staticGrip': 0.1,
                 'airControl': 0.6,
                 'jumps': 1,
                 'jumpHeight': 12,
@@ -46,12 +48,20 @@ class Hitboxie(abstractFighter.AbstractFighter):
         if self.grounded:
             self.changeAction(self.actions.Stop())
             
-    def doGroundMove(self,direction,run=False):
-        if run: newAction = self.actions.Run()
-        else: newAction = self.actions.Move()
+    def doGroundMove(self,direction):
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
             self.flip()
-        self.changeAction(newAction)
+        self.changeAction(self.actions.Move())
+
+    def doDash(self,direction):
+        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
+            self.flip()
+        self.changeAction(self.actions.Dash())
+        
+    def doRun(self,direction):
+        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
+            self.flip()
+        self.changeAction(self.actions.Run())
         
     def doPivot(self):
         newAction = self.actions.Pivot()
@@ -121,7 +131,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
         elif self.keysContain('down'):
             self.changeAction(self.actions.DownAttack())
         else:
-            self.changeAction(self.actions.NeutralAttack())   
+            self.changeAction(self.actions.NeutralAttack())
+
+    def doDashAttack(self):
+        self.changeAction(self.actions.DashAttack())
     
     def doAirAttack(self):
         (forward, backward) = self.getForwardBackwardKeys()

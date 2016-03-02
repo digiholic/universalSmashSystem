@@ -141,6 +141,64 @@ class NeutralAttack(action.Action):
         if self.frame == self.lastFrame:
             actor.doIdle()
         self.frame += 1
+
+class DashAttack(action.Action):
+    def __init__(self):
+        action.Action.__init__(self,32)
+
+    def setUp(self, actor):
+        actor.setSpeed(actor.change_x, actor.facing)
+        actor.changeSprite("nair")
+
+        self.upperHitbox = hitbox.DamageHitbox([10,-30],[60,30],actor,2,2*abs(actor.change_x),0,0,1,101,0)
+        self.lowerHitbox = hitbox.DamageHitbox([10,30],[60,30],actor,2,2*abs(actor.change_x),0,0,1,101,0)
+
+    def tearDown(self,actor,other):
+        self.upperHitbox.kill()
+        self.lowerHitbox.kill()
+        actor.setSpeed(0, actor.facing)
+
+    def update(self,actor):
+        if self.frame%2 == 0 and self.frame <= 8:
+            actor.changeSpriteImage(self.frame/2)
+        elif self.frame <= 24:
+            actor.changeSpriteImage((self.frame-4)%16)
+        elif self.frame%2 == 0:
+            actor.changeSpriteImage((self.frame/2-8)%16)
+
+        self.upperHitbox.rect.center = [actor.rect.center[0], actor.rect.center[1]-30]
+        self.lowerHitbox.rect.center = [actor.rect.center[0], actor.rect.center[1]+30]
+
+        if self.frame == 8:
+            actor.active_hitboxes.add(self.upperHitbox)
+            actor.active_hitboxes.add(self.lowerHitbox)
+        if self.frame == 12:
+            self.upperHitbox.hitbox_id = 102
+            self.lowerHitbox.hitbox_id = 102
+        if self.frame == 16:
+            self.upperHitbox.hitbox_id = 103
+            self.lowerHitbox.hitbox_id = 103
+        if self.frame == 20:
+            self.upperHitbox.baseKnockback = 10
+            self.lowerHitbox.baseKnockback = 10
+            self.upperHitbox.knockbackGrowth = 0.09
+            self.lowerHitbox.knockbackGrowth = 0.09
+            self.upperHitbox.trajectory = actor.getForwardWithOffset(20)
+            self.lowerHitbox.trajectory = actor.getForwardWithOffset(20)
+            self.upperHitbox.weight_influence = 1
+            self.lowerHitbox.weight_influence = 1
+            self.upperHitbox.hitbox_id = 104
+            self.lowerHitbox.hitbox_id = 104
+        if self.frame == 24:
+            self.upperHitbox.kill()
+            self.lowerHitbox.kill()
+            actor.setSpeed(0, actor.facing)
+
+        if self.frame == self.lastFrame:
+            actor.doIdle()
+        self.frame += 1
+            
+
         
 class DownAttack(action.Action):
     def __init__(self):
@@ -148,7 +206,7 @@ class DownAttack(action.Action):
     
     def setUp(self, actor):
         actor.change_x = 0
-        actor.preferred_xsped = 0
+        actor.preferred_xspeed = 0
         actor.changeSprite("dsmash",0)
         self.dsmashHitbox1 = hitbox.DamageHitbox([34,26],[24,52],actor,12,8,0.075,20,1,2)
         self.dsmashHitbox2 = hitbox.DamageHitbox([-34,26],[24,52],actor,12,8,0.075,160,1,2)
@@ -466,10 +524,10 @@ class Move(baseActions.Move):
         baseActions.Move.update(self, actor)
         if (self.frame == self.lastFrame):
             self.frame = 12
-        
-class Run(baseActions.Run):
+
+class Dash(baseActions.Dash):
     def __init__(self,accel = True):
-        baseActions.Run.__init__(self,15)
+        baseActions.Dash.__init__(self,15)
         self.accel = accel
         
     def update(self, actor):
@@ -490,9 +548,20 @@ class Run(baseActions.Run):
                 
         if actor.grounded == False:
             actor.current_action = Fall()
+        baseActions.Dash.update(self, actor)
+        
+class Run(baseActions.Run):
+    def __init__(self):
+        baseActions.Run.__init__(self,2)
+        
+    def update(self, actor):
+        actor.changeSprite("run",4)
+                
+        if actor.grounded == False:
+            actor.current_action = Fall()
         baseActions.Run.update(self, actor)
         if (self.frame == self.lastFrame):
-            self.frame = 12
+            self.frame = 1
                    
 class Pivot(baseActions.Pivot):
     def __init__(self):
@@ -698,7 +767,7 @@ class AirDodge(baseActions.AirDodge):
         if self.frame == 0:
             actor.changeSprite("nair",0)
         elif self.frame == self.startInvulnFrame:
-            actor.changeSpriteImage(round(abs(actor.change_x)))
+            actor.changeSpriteImage(-round(abs(actor.change_x)))
         elif self.frame == self.endInvulnFrame:
             actor.changeSpriteImage(0)
         baseActions.AirDodge.update(self, actor)

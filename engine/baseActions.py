@@ -11,12 +11,31 @@ class Move(action.Action):
         
     def update(self, actor):
         actor.setSpeed(actor.var['maxGroundSpeed'],self.direction)
+        actor.accel(actor.var['staticGrip'])
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
         
     def stateTransitions(self,actor):
         moveState(actor,self.direction)
+
+class Dash(action.Action):
+    def __init__(self,length): 
+        action.Action.__init__(self,length)
+
+    def setUp(self,actor):
+        if actor.facing == 1: self.direction = 0
+        else: self.direction = 180
+
+    def update(self, actor):
+        actor.setSpeed(actor.var['runSpeed'],self.direction)
+        actor.accel(actor.var['staticGrip'])
+        self.frame += 1
+        if self.frame > self.lastFrame: 
+            actor.doRun(actor.getFacingDirection())
+    
+    def stateTransitions(self,actor):
+        runState(actor,self.direction)
         
 class Run(action.Action):
     def __init__(self,length):
@@ -27,13 +46,14 @@ class Run(action.Action):
         else: self.direction = 180
             
     def update(self, actor):
-        actor.setSpeed(actor.var['maxGroundSpeed']*1.5,self.direction, False)
+        actor.setSpeed(actor.var['runSpeed'],self.direction)
+        actor.accel(actor.var['staticGrip'])
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
     
     def stateTransitions(self,actor):
-        moveState(actor,self.direction)
+        runState(actor,self.direction)
         
 class Pivot(action.Action):
     def __init__(self,length):
@@ -65,14 +85,13 @@ class Stop(action.Action):
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.bufferContains(key,12,andReleased=True) and actor.keysContain(key):
             print("run")
-            actor.doGroundMove(actor.getFacingDirection(),True)
+            actor.doDash(actor.getFacingDirection())
         if actor.bufferContains(invkey,5,notReleased = True):
             actor.doPivot()
                 
 class NeutralAction(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
-
         
     def update(self, actor):
         return
@@ -242,7 +261,7 @@ class Grabbed(action.Action):
 
     def update(self,actor):
         if self.frame == 0:
-            self.lastFrame = 20 + actor.damage/2
+            self.lastFrame = 40 + actor.damage/2
         if (actor.keysContain('up') ^ self.upPressed):
             self.frame += 0.5
         if (actor.keysContain('down') ^ self.downPressed):
@@ -448,8 +467,18 @@ def moveState(actor, direction):
     if actor.bufferContains(key, state=0):
         actor.doStop()
     if actor.bufferContains('attack'):
-        print("attacking")
         actor.doGroundAttack()
+    elif actor.bufferContains('special'):
+        actor.doGroundSpecial()
+
+def runState(actor, direction):
+    if actor.bufferContains('jump'):
+        actor.doJump()
+    (key,_) = actor.getForwardBackwardKeys()
+    if actor.bufferContains(key, state=0):
+        actor.doStop()
+    if actor.bufferContains('attack'):
+        actor.doDashAttack()
     elif actor.bufferContains('special'):
         actor.doGroundSpecial()
             
