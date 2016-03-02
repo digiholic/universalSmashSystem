@@ -9,9 +9,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'gravity': .5,
                 'maxFallSpeed': 20,
                 'maxGroundSpeed': 6,
+                'runSpeed': 9,
                 'maxAirSpeed': 6,
                 'friction': 0.2,
-                'staticGrip': 0.0,
+                'staticGrip': 0.3,
                 'airControl': 0.6,
                 'jumps': 1,
                 'jumpHeight': 12,
@@ -47,7 +48,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
         if self.grounded:
             self.changeAction(self.actions.Stop())
             
-    def doGroundMove(self,direction,run=False):
+    def doGroundMove(self,direction):
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
             self.flip()
         self.changeAction(self.actions.Move())
@@ -57,10 +58,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
             self.flip()
         self.changeAction(self.actions.Dash())
         
-    def doRun(self,direction,speed):
+    def doRun(self,direction):
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
             self.flip()
-        self.changeAction(self.actions.Run(speed))
+        self.changeAction(self.actions.Run())
         
     def doPivot(self):
         newAction = self.actions.Pivot()

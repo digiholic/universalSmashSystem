@@ -54,8 +54,8 @@ class BasicFighter():
     def doDash(self,direction):
         self.changeAction(self.actions.Dash())
 
-    def doRun(self,direction,speed):
-        self.changeAction(self.actions.Run(speed))
+    def doRun(self,direction):
+        self.changeAction(self.actions.Run())
 
     def doHitStun(self,hitstun,trajectory):
         self.changeAction(self.actions.HitStun(hitstun,trajectory))

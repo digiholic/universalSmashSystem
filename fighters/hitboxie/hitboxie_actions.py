@@ -551,8 +551,8 @@ class Dash(baseActions.Dash):
         baseActions.Dash.update(self, actor)
         
 class Run(baseActions.Run):
-    def __init__(self,speed):
-        baseActions.Run.__init__(self,2,speed)
+    def __init__(self):
+        baseActions.Run.__init__(self,2)
         
     def update(self, actor):
         actor.changeSprite("run",4)

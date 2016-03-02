@@ -11,6 +11,7 @@ class Move(action.Action):
         
     def update(self, actor):
         actor.setSpeed(actor.var['maxGroundSpeed'],self.direction)
+        actor.accel(actor.var['staticGrip'])
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
@@ -27,26 +28,26 @@ class Dash(action.Action):
         else: self.direction = 180
 
     def update(self, actor):
-        actor.setSpeed(actor.var['maxGroundSpeed']+(actor.var['friction']+actor.var['staticGrip'])*self.lastFrame,self.direction)
+        actor.setSpeed(actor.var['runSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
         self.frame += 1
         if self.frame > self.lastFrame: 
-            actor.doRun(actor.getFacingDirection(),actor.var['maxGroundSpeed']+(actor.var['friction']+actor.var['staticGrip'])*self.lastFrame)
+            actor.doRun(actor.getFacingDirection())
     
     def stateTransitions(self,actor):
         runState(actor,self.direction)
         
 class Run(action.Action):
-    def __init__(self,length,speed):
+    def __init__(self,length):
         action.Action.__init__(self,length)
-        self.speed = speed
         
     def setUp(self,actor):
         if actor.facing == 1: self.direction = 0
         else: self.direction = 180
             
     def update(self, actor):
-        actor.setSpeed(self.speed,self.direction)
+        actor.setSpeed(actor.var['runSpeed'],self.direction)
+        actor.accel(actor.var['staticGrip'])
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
@@ -91,7 +92,6 @@ class Stop(action.Action):
 class NeutralAction(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
-
         
     def update(self, actor):
         return

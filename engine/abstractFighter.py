@@ -209,8 +209,8 @@ class AbstractFighter():
     def doDash(self,direction):
         self.changeAction(baseActions.Dash())
 
-    def doRun(self,direction,speed):
-        self.changeAction(baseActions.Run(speed))
+    def doRun(self,direction):
+        self.changeAction(baseActions.Run())
     
     def doPivot(self):
         self.changeAction(baseActions.Pivot())
