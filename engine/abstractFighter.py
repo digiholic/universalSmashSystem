@@ -130,8 +130,13 @@ class AbstractFighter():
         self.rect.x += self.change_x
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
-            if block.solid:
-                self.eject(block)
+            if block.solid and self.ecb.previousECB[1].rect.left-self.change_x >= block.rect.right+block.change_x:
+                self.change_x = block.change_x
+                self.rect.x = block.rect.right+block.change_x
+
+            elif block.solid and self.ecb.previousECB[1].rect.right-self.change_x <= block.rect.left+block.change_x:
+                self.change_x = block.change_x
+                self.rect.x = block.rect.left-self.rect.width+block.change_x
         
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
@@ -141,15 +146,14 @@ class AbstractFighter():
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
 
-            if block.solid & self.ecb.previousECB[0].rect.top >= block.rect.bottom+block.change_y:
+            if block.solid and self.ecb.previousECB[0].rect.top-self.change_y >= block.rect.bottom+block.change_y:
                 self.change_y = block.change_y
-                self.rect.y = block.rect.bottom-block.change_y
+                self.rect.y = block.rect.bottom+block.change_y
 
             elif self.ecb.previousECB[0].rect.bottom-self.change_y <= block.rect.top+block.change_y:
                 self.change_y = block.change_y+self.var['gravity']
                 self.rect.y = block.rect.top-self.rect.height+block.change_y
                 self.grounded = True
-            
         
         self.sprite.updatePosition(self.rect)
         self.hurtbox.rect = self.sprite.boundingRect
