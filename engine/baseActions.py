@@ -421,6 +421,9 @@ class LedgeGrab(action.Action):
 class LedgeGetup(action.Action):
     def __init__(self):
         action.Action.__init__(self, 27)
+
+    def setUp(self,actor):
+        actor.rect.x -= actor.facing * actor.rect.width/4
     
     def update(self,actor):
         if self.frame == self.lastFrame:

@@ -816,6 +816,9 @@ class LedgeGetup(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self)
 
+    def setUp(self,actor):
+        baseActions.LedgeGetup.setUp(self,actor)
+
     def tearDown(self,actor,other):
         actor.change_x = 0
 
@@ -823,8 +826,6 @@ class LedgeGetup(baseActions.LedgeGetup):
         if self.frame == 0:
             actor.changeSprite("getup",0)
             actor.rect.y -= 92
-            if actor.facing == -1:
-                actor.rect.x += 23
         if (self.frame >= 0) & (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
             actor.change_y = -1
