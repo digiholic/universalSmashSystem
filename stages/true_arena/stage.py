@@ -31,8 +31,8 @@ class TrueArena(stage.Stage):
         #                      stage.Platform([1460,680],[1460,750])]
         
         self.platform_list = [stage.Platform([725,668], [1435,668],(True,True)),
-                             stage.Platform([725,668], [725,750]),
-                             stage.Platform([1435,668],[1435,750])]
+                             stage.Platform([725,669], [725,750]),
+                             stage.Platform([1435,669],[1435,750])]
         
         self.spawnLocations = [[780,668],
                                [1320,668],

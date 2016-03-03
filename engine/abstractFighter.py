@@ -119,16 +119,8 @@ class AbstractFighter():
             if block.solid:
                 self.eject(block)
 
-
-        
         # Gravity
         self.calc_grav()
-        
-        #Update Sprite
-        self.ecb.store()
-        self.ecb.normalize()
-
-
 
         # Move x and resolve collisions
         self.rect.x += self.change_x
@@ -145,17 +137,20 @@ class AbstractFighter():
         # checkForGround not needed anymore; its job is done by this conditional
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
-            if self.sprite.boundingRect.bottom-self.change_y <= block.rect.top+block.change_y:
-                self.rect.y = block.rect.top-self.sprite.boundingRect.height+(self.rect.top-self.sprite.boundingRect.top)
+            if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
+                self.rect.bottom = block.rect.top+(self.rect.bottom-self.sprite.boundingRect.bottom)
                 self.change_y = block.change_y-self.var['gravity']
                 self.grounded = True
-            elif block.solid and self.ecb.yBar.rect.top-self.change_y >= block.rect.bottom+block.change_y:
+            elif block.solid and self.sprite.boundingRect.top-(self.sprite.boundingRect.top-self.ecb.yBar.rect.top) > block.rect.bottom+block.change_y:
+                self.rect.top = block.rect.bottom+(self.rect.top-self.sprite.boundingRect.top)
                 self.change_y = block.change_y-self.var['gravity']
-                self.rect.y = block.rect.bottom
-
 
         self.sprite.updatePosition(self.rect)
         self.hurtbox.rect = self.sprite.boundingRect
+
+        #Update Sprite
+        self.ecb.store()
+        self.ecb.normalize()
 
         
         
@@ -635,17 +630,20 @@ class AbstractFighter():
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
         
     def eject(self,other):
-        dxLeft = self.ecb.xBar.rect.left-self.change_x-other.rect.right-other.change_x
-        dxRight = other.rect.left+other.change_x-self.ecb.xBar.rect.right+self.change_x
+        dxLeft = -self.sprite.boundingRect.left+(self.sprite.boundingRect.left-self.ecb.xBar.rect.left)+other.rect.right+other.change_x
+        dxRight = self.sprite.boundingRect.right-(self.sprite.boundingRect.right-self.ecb.xBar.rect.right)-other.rect.left-other.change_x
+        print dxLeft
+        print dxRight
+        print ''
         
         if dxLeft < 0 and dxRight < 0: # If neither of our sides are inside the block
             pass
-        elif dxLeft <= dxRight and self.rect.right >= self.ecb.xBar.rect.right: # If one of our sides is in, and it's not left,
+        elif dxLeft >= dxRight and self.sprite.boundingRect.right > self.ecb.xBar.rect.right: # If one of our sides is in, and it's not left,
             self.change_x = other.change_x
-            self.rect.x = other.rect.left-self.rect.width+other.change_x
-        elif dxRight <= dxLeft and self.rect.left <= self.ecb.xBar.rect.left: # If one of our sides is in, and it's not right,
+            self.rect.right = other.rect.left+self.rect.right-self.sprite.boundingRect.right
+        elif dxRight >= dxLeft and self.sprite.boundingRect.left < self.ecb.xBar.rect.left: # If one of our sides is in, and it's not right,
             self.change_x = other.change_x
-            self.rect.x = other.rect.right+other.change_x
+            self.rect.left = other.rect.right+self.rect.left-self.sprite.boundingRect.left
         else:
             pass
         
