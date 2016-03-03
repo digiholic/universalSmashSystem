@@ -204,7 +204,7 @@ class Battle():
             # End object updates
             
             current_stage.drawFG(screen)    
-            clock.tick(60) #change back
+            clock.tick(15) #change back
             pygame.display.flip()
         # End while loop
         
