@@ -118,6 +118,8 @@ class AbstractFighter():
         for block in block_hit_list:
             if block.solid:
                 self.eject(block)
+
+
         
         # Gravity
         self.calc_grav()
@@ -125,6 +127,8 @@ class AbstractFighter():
         #Update Sprite
         self.ecb.store()
         self.ecb.normalize()
+
+
 
         # Move x and resolve collisions
         self.rect.x += self.change_x
@@ -135,23 +139,25 @@ class AbstractFighter():
         
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
+
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         
         # checkForGround not needed anymore; its job is done by this conditional
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
-
-            if block.solid and self.ecb.previousECB[0].rect.top-self.change_y >= block.rect.bottom+block.change_y:
-                self.change_y = block.change_y
-                self.rect.y = block.rect.bottom+block.change_y
-
-            elif self.ecb.previousECB[0].rect.bottom-self.change_y <= block.rect.top+block.change_y:
-                self.change_y = block.change_y+self.var['gravity']
-                self.rect.y = block.rect.top-self.rect.height+block.change_y
+            if self.sprite.boundingRect.bottom-self.change_y <= block.rect.top+block.change_y:
+                self.rect.y = block.rect.top-self.sprite.boundingRect.height+(self.rect.top-self.sprite.boundingRect.top)
+                self.change_y = block.change_y-self.var['gravity']
                 self.grounded = True
-        
+            elif block.solid and self.ecb.yBar.rect.top-self.change_y >= block.rect.bottom+block.change_y:
+                self.change_y = block.change_y-self.var['gravity']
+                self.rect.y = block.rect.bottom
+
+
         self.sprite.updatePosition(self.rect)
         self.hurtbox.rect = self.sprite.boundingRect
+
+        
         
     """
     Change speed to get closer to the preferred speed without going over.
