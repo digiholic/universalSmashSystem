@@ -262,7 +262,6 @@ class ForwardAttack(action.Action):
         self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,8,2.0,0.3,40,1,0)
             
     def update(self,actor):
-        actor.change_y = 0
         if self.frame == 0:
             actor.change_x = 0
             actor.preferred_xspeed = 0
@@ -305,7 +304,6 @@ class ForwardSmash(action.Action):
         self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,12,0.8,.35,40,1,0)
             
     def update(self,actor):
-        actor.change_y = 0
         
         if self.frame >= 3 and self.frame <= 8 and not actor.keysContain('attack') and self.chargeLevel > 0:
             self.frame = 9
