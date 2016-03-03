@@ -423,7 +423,7 @@ class LedgeGetup(action.Action):
         action.Action.__init__(self, 27)
 
     def setUp(self,actor):
-        actor.rect.x -= actor.facing * actor.rect.width/4
+        actor.rect.x -= actor.facing * actor.rect.width/4 #Will remove as soon as this kludge isn't needed
     
     def update(self,actor):
         if self.frame == self.lastFrame:

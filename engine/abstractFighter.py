@@ -130,13 +130,8 @@ class AbstractFighter():
         self.rect.x += self.change_x
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
-            if block.solid and self.ecb.previousECB[1].rect.left-self.change_x >= block.rect.right+block.change_x:
-                self.change_x = block.change_x
-                self.rect.x = block.rect.right+block.change_x
-
-            elif block.solid and self.ecb.previousECB[1].rect.right-self.change_x <= block.rect.left+block.change_x:
-                self.change_x = block.change_x
-                self.rect.x = block.rect.left-self.rect.width+block.change_x
+            if block.solid:
+                self.eject(block)
         
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
@@ -634,38 +629,18 @@ class AbstractFighter():
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
         
     def eject(self,other):
-        if self.ecb.xBar.rect.right > other.rect.left:
-            dxLeft = self.ecb.xBar.rect.right - other.rect.left
-        else: dxLeft = -1
+        dxLeft = self.ecb.xBar.rect.left-self.change_x-other.rect.right-other.change_x
+        dxRight = other.rect.left+other.change_x-self.ecb.xBar.rect.right+self.change_x
         
-        if self.ecb.xBar.rect.left < other.rect.right:
-            dxRight = other.rect.right - self.ecb.xBar.rect.left
-        else: dxRight = -1
-        
-        if dxLeft == -1 and dxRight == -1: # If neither of our sides are inside the block
+        if dxLeft < 0 and dxRight < 0: # If neither of our sides are inside the block
             pass
-        elif dxLeft == -1 and self.change_x > 0: # If one of our sides is in, and it's not left,
-            self.change_x *= -1
-        elif dxRight == -1 and self.change_x < 0: # If one of our sides is in, and it's not right,
-            self.change_x *= -1
+        elif dxLeft <= dxRight and self.rect.right >= self.ecb.xBar.rect.right: # If one of our sides is in, and it's not left,
+            self.change_x = other.change_x
+            self.rect.x = other.rect.left-self.rect.width+other.change_x
+        elif dxRight <= dxLeft and self.rect.left <= self.ecb.xBar.rect.left: # If one of our sides is in, and it's not right,
+            self.change_x = other.change_x
+            self.rect.x = other.rect.right+other.change_x
         else:
-            pass
-        
-        if self.ecb.yBar.rect.bottom < other.rect.top:
-            dyUp = self.ecb.yBar.rect.bottom - other.rect.top
-        else: dyUp = -1
-        
-        if self.ecb.yBar.rect.top > other.rect.bottom:
-            dyDown = other.rect.bottom - self.ecb.yBar.rect.top
-        else: dyDown = -1
-        
-        if dyUp == -1 and dyDown == -1: 
-            pass
-        elif dyUp == -1 and self.change_y < 0: 
-            self.change_y *= -1
-        elif dyDown == -1 and self.change_y > 0:
-            self.change_y *= -1
-        else: 
             pass
         
 ########################################################
