@@ -823,6 +823,8 @@ class LedgeGetup(baseActions.LedgeGetup):
         if self.frame == 0:
             actor.changeSprite("getup",0)
             actor.rect.y -= 92
+            if actor.facing == -1:
+                actor.rect.x += 23
         if (self.frame >= 0) & (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
             actor.change_y = -1
