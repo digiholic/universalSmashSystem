@@ -107,9 +107,9 @@ class BaseGrabbing(action.Action):
         if not isinstance(newAction, BaseGrabbing) and isinstance(actor.grabbing.current_action, Grabbed):
             actor.grabbing.doIdle()
 
-class Grabbing(action.Action):
+class Grabbing(BaseGrabbing):
     def __init__(self,length):
-        action.Action.__init__(self, length)
+        BaseGrabbing.__init__(self, length)
 
     def update(self, actor):
         return
