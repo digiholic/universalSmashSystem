@@ -103,8 +103,9 @@ class Grabbing(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
 
-    def tearDown(self, actor, other):
-        actor.doRelease()
+    def tearDown(self, actor, newAction):
+        if isinstance(newAction, HitStun):
+            actor.grabbing.doIdle()
 
     def update(self, actor):
         return
