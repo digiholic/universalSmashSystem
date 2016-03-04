@@ -28,6 +28,9 @@ class Battle():
         self.stage = stage
         self.inputBuffer = None
         self.dataLogs = []
+
+        #This holds a bunch of hitbox ID's
+        self.registeredIDs = set()
         
         #TODO bring over InputBuffer from fighter.
         random.seed
