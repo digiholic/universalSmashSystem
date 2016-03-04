@@ -423,9 +423,9 @@ class GroundGrab(action.Action):
             actor.doIdle()
         self.frame += 1
 
-class Pummel(action.Action):
+class Pummel(baseActions.BaseGrabbing):
     def __init__(self):
-        action.Action.__init__(self,22)
+        baseActions.BaseGrabbing.__init__(self,22)
 
     def update(self, actor):
         if self.frame == 0:
@@ -443,15 +443,16 @@ class Pummel(action.Action):
             actor.doGrabbing()
         self.frame += 1
         
-class Throw(action.Action):
+class Throw(baseActions.BaseGrabbing):
     def __init__(self):
-        action.Action.__init__(self,28)
+        baseActions.BaseGrabbing.__init__(self,20)
 
     def setUp(self,actor):
         self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,20.0,0.20,40,1,0)
 
     def tearDown(self, actor, other):
         self.fSmashHitbox.kill()
+        baseActions.BaseGrabbing.tearDown(self, actor, other)
 
     def update(self, actor): 
         actor.change_y = 0

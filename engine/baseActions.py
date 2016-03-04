@@ -99,13 +99,17 @@ class NeutralAction(action.Action):
     def stateTransitions(self, actor):
         neutralState(actor)
 
-class Grabbing(action.Action):
+class BaseGrabbing(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
 
     def tearDown(self, actor, newAction):
-        if isinstance(newAction, HitStun):
+        if not isinstance(newAction, BaseGrabbing) and isinstance(actor.grabbing.current_action, Grabbed):
             actor.grabbing.doIdle()
+
+class Grabbing(action.Action):
+    def __init__(self,length):
+        action.Action.__init__(self, length)
 
     def update(self, actor):
         return
@@ -297,7 +301,8 @@ class Release(action.Action):
         action.Action.__init__(self,5)
 
     def setUp(self,actor):
-        actor.grabbing.doIdle()
+        if isinstance(actor.grabbing.current_action, Grabbed):
+            actor.grabbing.doIdle()
 
     def update(self, actor):
         if self.frame == 5:
