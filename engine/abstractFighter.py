@@ -5,6 +5,7 @@ import settingsManager
 import spriteManager
 import engine.article as article
 import math
+import weakref
 
 class AbstractFighter():
     
@@ -49,7 +50,7 @@ class AbstractFighter():
         
         # HitboxLock is a list of hitboxes that will not hit the fighter again for a given amount of time.
         # Each entry in the list is in the form of (frames remaining, owner, hitbox ID)
-        self.hitboxLock = []
+        self.hitboxLock = weakref.WeakSet()
         
         # When a fighter lets go of a ledge, he can't grab another one until he gets out of the area.
         self.ledgeLock = False
@@ -78,20 +79,14 @@ class AbstractFighter():
         self.gameState = None
         
     def update(self):
+
+        print len(self.hitboxLock)
         #Step one, push the input buffer
         self.inputBuffer.push()
         
         #Step two, accelerate/decelerate
         if self.grounded: self.accel(self.var['friction'])
         else: self.accel(self.var['airControl'])
-        
-        #Process the hitbox locks
-        for lock in self.hitboxLock:
-            if lock[0] <= 0:
-                self.hitboxLock.remove(lock)
-            else:
-                lock[0] -= 1
-        
         
         if self.ledgeLock:
             ledges = pygame.sprite.spritecollide(self, self.gameState.platform_ledges, False)
@@ -363,12 +358,12 @@ class AbstractFighter():
             return 0
         
         #"Sakurai Angle" calculation
-        if trajectory == 361:
-            if self.grounded:
-                if totalKB < 30: trajectory = 0
-                else: trajectory = 43
-            else: trajectory = 43
-            print(trajectory)
+        #if trajectory == 361:
+        #    if self.grounded:
+        #        if totalKB < 30: trajectory = 0
+        #        else: trajectory = 43
+        #    else: trajectory = 43
+        #    print(trajectory)
             
         #Directional Incluence
         if (trajectory < 45 or trajectory > 315):
@@ -454,15 +449,15 @@ class AbstractFighter():
     hbox - the hitbox we are checking for
     time - the time to lock the hitbox
     """
-    def lockHitbox(self,hbox,time):
+    def lockHitbox(self,hbox):
         #If the hitbox belongs to something, get tagged by it
         if not hbox.owner == None:
             self.hitTagged = hbox.owner
-            
-        for lock in self.hitboxLock:
-            if lock[1] == hbox.owner and lock[2] == hbox.hitbox_id:
-                return False
-        self.hitboxLock.append([time,hbox.owner,hbox.hitbox_id])
+
+        if hbox.hitbox_lock in self.hitboxLock:
+            return False
+
+        self.hitboxLock.add(hbox.hitbox_lock)
         return True
     
     def startShield(self):
@@ -634,9 +629,6 @@ class AbstractFighter():
     def eject(self,other):
         dxLeft = -self.sprite.boundingRect.left+(self.sprite.boundingRect.left-self.ecb.xBar.rect.left)+other.rect.right+other.change_x
         dxRight = self.sprite.boundingRect.right-(self.sprite.boundingRect.right-self.ecb.xBar.rect.right)-other.rect.left-other.change_x
-        print dxLeft
-        print dxRight
-        print ''
         
         if dxLeft < 0 and dxRight < 0: # If neither of our sides are inside the block
             pass
