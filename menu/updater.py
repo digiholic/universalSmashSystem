@@ -12,10 +12,11 @@ def files(path):
 
 def getDirectories(path):
     return [os.path.join(path,x) for x in next(os.walk(path))[1] if x.startswith('.') == False]
-    
-def main():
+
+def getChangedList():
     changedList = []
-    excludeFiles = [settingsManager.createPath('main.exe')]
+    excludeFiles = [settingsManager.createPath('main.exe'),settingsManager.createPath('menu/updater.py'),
+                    settingsManager.createPath('w9xopen.exe')]
     excludeDirs = [settingsManager.createPath('tcl')]
     
     base_url = 'https://raw.githubusercontent.com/digiholic/universalSmashSystem/master/'
@@ -33,7 +34,7 @@ def main():
         else:
             for filepath in files(directory): #for each file in the directory
                 filename = os.path.join(directory,filepath)
-                #print filename
+                print filename
                 if filename in excludeFiles:
                     print('----------omitting file '+ filename)
                 else:
@@ -51,7 +52,10 @@ def main():
             upcomingDirs.extend(getDirectories(directory))
         upcomingDirs.remove(directory)
         #print upcomingDirs
-    
+    print changedList
+    return changedList
+
+def downloadUpdates(changedList):
     for changedfile in changedList:
         print changedfile
         r = requests.get(changedfile[0])
@@ -61,5 +65,7 @@ def main():
                 f.write(r.content)
                 f.truncate()
                 
-    
+def main():
+    downloadUpdates(getChangedList())
+        
 if __name__  == '__main__': main()

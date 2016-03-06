@@ -79,8 +79,6 @@ class AbstractFighter():
         self.gameState = None
         
     def update(self):
-
-        print len(self.hitboxLock)
         #Step one, push the input buffer
         self.inputBuffer.push()
         
