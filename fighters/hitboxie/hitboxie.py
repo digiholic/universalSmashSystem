@@ -25,11 +25,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
                                  var)
         self.actions = settingsManager.importFromURI(__file__,'hitboxie_actions.py',suffix=str(playerNum))
         
-        
-        try:
-            self.current_action = self.actions.NeutralAction()
-        except:
-            raise ValueError(os.path.normpath(os.path.join(os.path.dirname(__file__).replace('main.exe',''), 'hitboxie_actions.py')))
+        #try:
+        self.current_action = self.actions.NeutralAction()
+        #except:
+        #    raise ValueError(os.path.normpath(os.path.join(os.path.dirname(__file__).replace('main.exe',''), 'hitboxie_actions.py')))
         
 ########################################################
 #                  ACTION SETTERS                      #
