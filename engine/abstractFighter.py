@@ -120,9 +120,10 @@ class AbstractFighter():
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
 
+        self.checkForGround()
+
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         
-        # checkForGround not needed anymore; its job is done by this conditional
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
             if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
@@ -146,8 +147,6 @@ class AbstractFighter():
         #Update Sprite
         self.ecb.store()
         self.ecb.normalize()
-
-        
         
     """
     Change speed to get closer to the preferred speed without going over.
@@ -170,6 +169,16 @@ class AbstractFighter():
             if self.change_y > self.var['maxFallSpeed']: self.change_y = self.var['maxFallSpeed']
        
         if self.grounded: self.jumps = self.var['jumps']
+
+    def checkForGround(self):
+        self.grounded = False
+        self.rect.y += 2
+        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+        while len(block_hit_list) > 0:
+            block = block_hit_list.pop()
+            if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
+                self.grounded = True
+        self.rect.y -= 2
     
     """
     A simple function that converts the facing variable into a direction in degrees.
@@ -354,26 +363,30 @@ class AbstractFighter():
         
         if damage < self.flinch_damage_threshold or totalKB < self.flinch_knockback_threshold:
             return 0
-        
-        #"Sakurai Angle" calculation
-        #if trajectory == 361:
-        #    if self.grounded:
-        #        if totalKB < 30: trajectory = 0
-        #        else: trajectory = 43
-        #    else: trajectory = 43
-        #    print(trajectory)
-            
-        #Directional Incluence
-        if (trajectory < 45 or trajectory > 315):
-            if self.keysContain('up'):
-                trajectory += 15
-            if self.keysContain('down'):
-                trajectory -= 15
-        if (trajectory < 225 and trajectory > 135):
-            if self.keysContain('up'):
-                trajectory -= 15
-            if self.keysContain('down'):
-                trajectory += 15
+
+        (forward, backward) = self.getForwardBackwardKeys()
+
+        di_vec = [0,0]
+        if self.keysContain(forward):
+            di_vec[0] += float(1)
+        if self.keysContain(backward):
+            di_vec[0] -= float(1)
+        if self.keysContain('up'):
+            di_vec[1] -= float(1)
+        if self.keysContain('down'):
+            di_vec[1] += float(1)
+        if di_vec[0]**2 + di_vec[1]**2 > 0:
+            magnitude = math.sqrt(di_vec[0]**2 + di_vec[1]**2)
+            di_vec[0] /= magnitude
+            di_vec[1] /= magnitude
+
+        trajectory_vec = [math.cos(trajectory/180*math.pi), math.sin(trajectory/180*math.pi)]
+
+        dot = di_vec[0]*trajectory_vec[0]+di_vec[1]*trajectory_vec[1]
+        cross = di_vec[0]*trajectory_vec[1]-di_vec[1]*trajectory_vec[0]
+
+        DI_multiplier = 1+dot*.12
+        trajectory += cross*15
 
         hitstun_frames = math.floor(totalKB*1.5*hitstun_multiplier) #Tweak this constant
 
@@ -385,12 +398,12 @@ class AbstractFighter():
         if hitstun_frames > 0:
             self.doHitStun(hitstun_frames,trajectory)
 
-        print(totalKB, trajectory)
-        self.setSpeed(totalKB, trajectory, False)
+        print(totalKB*DI_multiplier, trajectory)
+        self.setSpeed(totalKB*DI_multiplier, trajectory, False)
         self.preferred_xspeed = 0
         self.preferred_yspeed = 0
 
-        return math.floor(totalKB)
+        return math.floor(totalKB*DI_multiplier)
 
         
     

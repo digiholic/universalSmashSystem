@@ -73,6 +73,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
         else:
             if self.jumps > 0:
                 self.changeAction(self.actions.AirJump())
+
+    def doAirJump(self):
+        self.changeAction(self.actions.AirJump())
                 
     def doShield(self):
         self.changeAction(self.actions.Shield())
@@ -111,7 +114,17 @@ class Hitboxie(abstractFighter.AbstractFighter):
         self.changeAction(self.actions.Pummel())
 
     def doThrow(self):
-        self.changeAction(self.actions.Throw())
+        (key, invkey) = self.getForwardBackwardKeys()
+        if self.keysContain(key):
+            self.changeAction(self.actions.ForwardThrow())
+        elif self.keysContain(invkey):
+            self.changeAction(self.actions.ForwardThrow())
+        elif self.keysContain('up'):
+            self.changeAction(self.actions.ForwardThrow())
+        elif self.keysContain('down'):
+            self.changeAction(self.actions.ForwardThrow())
+        else: # How did we get here? 
+            self.changeAction(self.actions.ForwardThrow())
         
     def doGroundAttack(self):
         print('player ', self.playerNum, ' attacking')

@@ -392,7 +392,8 @@ class NeutralAir(action.Action):
 
 class DownAir(action.Action):
     def __init__(self):
-        action.Action.__init__(self,40)
+        action.Action.__init__(self,30)
+        self.bottom = 0
 
     def setUp(self, actor):
         actor.change_x = 0
@@ -409,7 +410,7 @@ class DownAir(action.Action):
         baseActions.airControl(actor)
 
     def tearDown(self, actor, nextAction):
-        actor.rect.y += 46
+        actor.rect.y += self.bottom
         self.downHitbox.kill()
         self.leftDiagonalHitbox.kill()
         self.rightDiagonalHitbox.kill()
@@ -436,8 +437,10 @@ class DownAir(action.Action):
             actor.change_y = 0
         elif self.frame < 12:
             actor.changeSpriteImage(3)
+            self.bottom = 14
             actor.change_y = 0
         elif self.frame == 12:
+            self.bottom = 34
             actor.changeSpriteImage(4)
             actor.change_y = actor.var['maxFallSpeed']
             actor.active_hitboxes.add(self.downHitbox)
@@ -447,12 +450,21 @@ class DownAir(action.Action):
             actor.active_hitboxes.add(self.rightSourSpot)
         elif self.frame == self.lastFrame and actor.keysContain('attack'):
             self.frame -= 1
-        elif self.frame > self.lastFrame:
+        elif self.frame < self.lastFrame + 3:
+            self.bottom = 14
             self.downHitbox.kill()
             self.leftDiagonalHitbox.kill()
             self.rightDiagonalHitbox.kill()
             self.leftSourSpot.kill()
             self.rightSourSpot.kill()
+            actor.changeSpriteImage(3)
+        elif self.frame < self.lastFrame + 6:
+            self.bottom = 0
+            actor.changeSpriteImage(2)
+        elif self.frame < self.lastFrame + 9:
+            actor.changeSpriteImage(1)
+        else: 
+            actor.changeSpriteImage(0)
             actor.landingLag = 18
             actor.changeAction(Fall())
         self.frame += 1
@@ -512,12 +524,12 @@ class Pummel(baseActions.BaseGrabbing):
             actor.doGrabbing()
         self.frame += 1
         
-class Throw(baseActions.BaseGrabbing):
+class ForwardThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self,20)
 
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,20.0,0.20,40,1,hitbox.HitboxLock())
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,12.0,0.20,40,1,hitbox.HitboxLock())
 
     def tearDown(self, actor, other):
         self.fSmashHitbox.kill()
@@ -839,6 +851,10 @@ class AirDodge(baseActions.AirDodge):
 class Grabbed(baseActions.Grabbed):
     def __init__(self,height):
         baseActions.Grabbed.__init__(self, height)
+
+    def setUp(self, actor):
+        if (height > 65):
+            self.rect.y += height-65
 
     def update(self,actor):
         actor.changeSprite("idle")

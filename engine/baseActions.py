@@ -300,10 +300,6 @@ class Release(action.Action):
     def __init__(self):
         action.Action.__init__(self,5)
 
-    def setUp(self,actor):
-        if isinstance(actor.grabbing.current_action, Grabbed):
-            actor.grabbing.doIdle()
-
     def update(self, actor):
         if self.frame == 5:
             (key,invkey) = actor.getForwardBackwardKeys()
@@ -461,7 +457,7 @@ def neutralState(actor):
 def airState(actor):
     airControl(actor)
     if actor.bufferContains('jump'):
-        actor.doJump()
+        actor.doAirJump()
     if actor.bufferContains('down'):
         if actor.change_y >= 0:
             actor.change_y = actor.var['maxFallSpeed']
