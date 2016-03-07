@@ -126,18 +126,16 @@ class AbstractFighter():
         
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
-            if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
-                self.rect.bottom = block.rect.top+(self.rect.bottom-self.sprite.boundingRect.bottom)
-                self.change_y = block.change_y-self.var['gravity']
-                self.grounded = True
-            elif block.solid and self.sprite.boundingRect.top-(self.sprite.boundingRect.top-self.ecb.yBar.rect.top) > block.rect.bottom+block.change_y:
+            if block.solid and self.sprite.boundingRect.top-(self.sprite.boundingRect.top-self.ecb.yBar.rect.top) > block.rect.bottom+block.change_y:
                 self.rect.top = block.rect.bottom+(self.rect.top-self.sprite.boundingRect.top)
-                if self.keysContain('shield'):
+                if self.bufferContains('shield', 8):
                     print 'Teched!'
                     self.change_y = block.change_y-self.var['gravity']
                 else:
                     self.change_y = -0.8*self.change_y + block.change_y - self.var['gravity']
-
+            elif self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
+                self.rect.bottom = block.rect.top+(self.rect.bottom-self.sprite.boundingRect.bottom)
+                self.change_y = block.change_y-self.var['gravity']
         # Move x and resolve collisions
         self.rect.x += self.change_x
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
@@ -645,7 +643,7 @@ class AbstractFighter():
         dxLeft = -self.sprite.boundingRect.left+(self.sprite.boundingRect.left-self.ecb.xBar.rect.left)+other.rect.right+other.change_x
         dxRight = self.sprite.boundingRect.right-(self.sprite.boundingRect.right-self.ecb.xBar.rect.right)-other.rect.left-other.change_x
 
-        teched = self.keysContain('shield')
+        teched = self.bufferContains('shield', 8)
         
         if dxLeft < 0 and dxRight < 0: # If neither of our sides are inside the block
             pass
