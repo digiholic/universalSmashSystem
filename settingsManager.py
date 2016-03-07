@@ -46,7 +46,7 @@ def importFromURI(filePath, uri, absl=False, suffix=""):
     mname, ext = os.path.splitext(fname)
     
     no_ext = os.path.join(path, mname)
-         
+    
     if os.path.exists(no_ext + '.py'):
         try:
             return imp.load_source((mname + suffix), no_ext + '.py')

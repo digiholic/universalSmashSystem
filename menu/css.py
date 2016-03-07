@@ -33,9 +33,11 @@ class CSSScreen():
             self.playerPanels.append(PlayerPanel(i))
         
         status = 0
+        musicManager.getMusicManager().stopMusic(100)
+        
         while status == 0:
             if not musicManager.getMusicManager().isPlaying():
-                musicManager.getMusicManager().rollMusic('menu')
+                musicManager.getMusicManager().rollMusic('css')
             #Start event loop
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -246,5 +248,3 @@ class PlayerPanel(pygame.Surface):
         if self.playerNum == 1 or self.playerNum == 3: offset[0] = self.get_width()
         if self.playerNum == 2 or self.playerNum == 3: offset[1] = self.get_height()
         screen.blit(self,offset)
-        
-if __name__  == '__main__': CSSScreen()

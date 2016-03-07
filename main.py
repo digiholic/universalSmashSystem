@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import pygame
-import engine.stage
-import stages.true_arena as stage
-import settingsManager
 import imp
 import os
 from pygame.locals import *
-
 from engine import *
 from builder import *
 from fighters import *
 from menu import *
 from stages import *
 
+
 def main(debug = False):
+    
+    settingsManager = importFromURI("__file__",'settingsManager.py')
+    
+    
     menu = importFromURI("__file__",'menu/menu.py')
     menu.Menu()
     
