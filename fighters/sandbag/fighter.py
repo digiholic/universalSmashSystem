@@ -46,6 +46,9 @@ class Fighter(abstractFighter.AbstractFighter):
 
     def doIdle(self):
         self.changeAction(self.actions.NeutralAction())
+
+    def doGetup(self, direction):
+        self.changeAction(self.actions.NeutralAction())
         
 def cssIcon(): return None
 
