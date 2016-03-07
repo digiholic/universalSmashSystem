@@ -490,7 +490,7 @@ def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     actor.change_x = 0
     actor.change_y = 0
-    if actor.keysContain(key):
+    if actor.bufferContains(key):
         actor.ledgeLock = True
         actor.doLedgeGetup()
     elif actor.keysContain(invkey):
