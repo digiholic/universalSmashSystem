@@ -132,7 +132,11 @@ class AbstractFighter():
                 self.grounded = True
             elif block.solid and self.sprite.boundingRect.top-(self.sprite.boundingRect.top-self.ecb.yBar.rect.top) > block.rect.bottom+block.change_y:
                 self.rect.top = block.rect.bottom+(self.rect.top-self.sprite.boundingRect.top)
-                self.change_y = block.change_y-self.var['gravity']
+                if self.keysContain('shield'):
+                    print 'Teched!'
+                    self.change_y = block.change_y-self.var['gravity']
+                else:
+                    self.change_y = -0.8*self.change_y + block.change_y - self.var['gravity']
 
         # Move x and resolve collisions
         self.rect.x += self.change_x
@@ -640,15 +644,26 @@ class AbstractFighter():
     def eject(self,other):
         dxLeft = -self.sprite.boundingRect.left+(self.sprite.boundingRect.left-self.ecb.xBar.rect.left)+other.rect.right+other.change_x
         dxRight = self.sprite.boundingRect.right-(self.sprite.boundingRect.right-self.ecb.xBar.rect.right)-other.rect.left-other.change_x
+
+        teched = self.keysContain('shield')
         
         if dxLeft < 0 and dxRight < 0: # If neither of our sides are inside the block
             pass
         elif dxLeft >= dxRight and self.sprite.boundingRect.right > self.ecb.xBar.rect.right: # If one of our sides is in, and it's not left,
-            self.change_x = other.change_x
             self.rect.right = other.rect.left+self.rect.right-self.sprite.boundingRect.right
+            if teched:
+                print 'Teched!'
+                self.change_x = other.change_x
+            else:
+                self.change_x = -0.8*self.change_x + other.change_x
         elif dxRight >= dxLeft and self.sprite.boundingRect.left < self.ecb.xBar.rect.left: # If one of our sides is in, and it's not right,
             self.change_x = other.change_x
             self.rect.left = other.rect.right+self.rect.left-self.sprite.boundingRect.left
+            if teched:
+                print 'Teched!'
+                self.change_x = other.change_x
+            else:
+                self.change_x = -0.8*self.change_x + other.change_x
         else:
             pass
         

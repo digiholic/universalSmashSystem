@@ -283,7 +283,7 @@ class Ledge(pygame.sprite.Sprite):
         self.rect = pygame.Rect([0,0],settingsManager.getSetting('ledgeSweetspotSize'))
         self.side = side
         if side == 'left': self.rect.midtop = plat.leftPoint
-        else: self.rect.midtop = plat.rightPoint
+        else: self.rect.midtop = [plat.rightPoint[0], plat.leftPoint[1]]
         self.fightersGrabbed = [] # this is a list in case "Ledge Conflict" is set to "share"
         
     """

@@ -27,7 +27,7 @@ class Arena(stage.Stage):
         self.blast_line = pygame.Rect(0,0,2160,1440)
         
         #self.platform_list = [spriteObject.RectSprite([552,824],[798,342])]
-        self.platform_list = [stage.Platform([self.size.centerx - 314,self.size.centery+140], [self.size.centerx + 314,self.size.centery+140],(True,True)),
+        self.platform_list = [stage.Platform([self.size.centerx - 314,self.size.centery+140], [self.size.centerx + 314,self.size.centery+190],(True,True)),
                               #stage.Platform([754,714], [754,1166]),
                               #stage.Platform([1406,714], [1406,1166]),
                               stage.PassthroughPlatform([self.size.centerx - 314 + 56,self.size.centery],[self.size.centerx - 314 + 56 + 172,self.size.centery]),
