@@ -195,15 +195,16 @@ class Battle():
                             if len(currentFighters) < 2:
                                 exitStatus = 2 #Game set
                         else: fight.die()
+            # End object updates
+            current_stage.drawFG(screen)    
+            
             for obj in guiObjects:
                 obj.draw(screen, obj.rect.topleft,1)
             if trackTime and clockTime <= 5:
                 countAlpha = max(0,countAlpha - 5)
                 countdownSprite.alpha(countAlpha)
                 
-            # End object updates
             
-            current_stage.drawFG(screen)    
             clock.tick(60) #change back
             pygame.display.flip()
         # End while loop
