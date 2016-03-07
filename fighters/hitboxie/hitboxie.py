@@ -68,15 +68,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
         self.changeAction(newAction)
     
     def doJump(self):
-        if self.grounded:
-            self.changeAction(self.actions.Jump())
-        else:
-            if self.jumps > 0:
-                self.changeAction(self.actions.AirJump())
+        self.changeAction(self.actions.Jump())
 
     def doAirJump(self):
-        if self.jumps > 0: 
-            self.changeAction(self.actions.AirJump())
+        self.changeAction(self.actions.AirJump())
                 
     def doShield(self):
         self.changeAction(self.actions.Shield())

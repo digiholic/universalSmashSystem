@@ -439,7 +439,7 @@ def neutralState(actor):
     
 def airState(actor):
     airControl(actor)
-    if actor.bufferContains('jump', 8):
+    if actor.bufferContains('jump', 8) and actor.jumps > 0:
         actor.doAirJump()
     if actor.keysContain('down'):
         if actor.change_y >= 0:
