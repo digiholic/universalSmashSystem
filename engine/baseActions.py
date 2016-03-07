@@ -83,10 +83,10 @@ class Stop(action.Action):
         
     def stateTransitions(self, actor):
         (key,invkey) = actor.getForwardBackwardKeys()
-        if actor.bufferContains(key,12,andReleased=True) and actor.keysContain(key):
+        if actor.bufferContains(key,8,andReleased=True) and actor.keysContain(key):
             print("run")
             actor.doDash(actor.getFacingDirection())
-        if actor.bufferContains(invkey,5,notReleased = True):
+        if actor.bufferContains(invkey,8,notReleased = True):
             actor.doPivot()
                 
 class NeutralAction(action.Action):
@@ -207,9 +207,7 @@ class Land(action.Action):
                 self.lastFrame = self.lastFrame / 2    
         if self.frame == self.lastFrame:
             actor.landingLag = 6
-            if   actor.keysHeld.count('left'): actor.doGroundMove(180)
-            elif actor.keysHeld.count('right'): actor.doGroundMove(0)
-            else: actor.doIdle()
+            actor.doIdle()
         actor.preferred_xspeed = 0
         self.frame+= 1
 
@@ -283,13 +281,7 @@ class Grabbed(action.Action):
         self.leftPressed = actor.keysContain('left')
         self.rightPressed = actor.keysContain('right')
         if self.frame >= self.lastFrame:
-            (key,_) = actor.getForwardBackwardKeys()
-            if actor.keysContain(key):
-                actor.doGroundMove(actor.facing)
-            elif actor.keysContain(key):
-                actor.doGroundMove(-actor.facing)
-            else:
-                actor.doStop()
+            actor.doIdle()
         # Throws and other grabber-controlled releases are the grabber's responsibility
         # Also, the grabber should always check to see if the grabbee is still under grab
         self.frame += 1
@@ -301,14 +293,8 @@ class Release(action.Action):
         action.Action.__init__(self,5)
 
     def update(self, actor):
-        if self.frame == 5:
-            (key,invkey) = actor.getForwardBackwardKeys()
-            if actor.keysContain(key):
-                actor.doGroundMove(actor.facing)
-            elif actor.keysContain(key):
-                actor.doGroundMove(-actor.facing)
-            else:
-                actor.doStop()
+        if self.frame == self.lastFrame:
+            actor.doIdle()
         self.frame += 1
         
 class ForwardRoll(action.Action):
@@ -429,11 +415,7 @@ class LedgeGetup(action.Action):
     
     def update(self,actor):
         if self.frame == self.lastFrame:
-            (key,invkey) = actor.getForwardBackwardKeys()
-            if actor.keysContain(key):
-                actor.doGroundMove(actor.facing)
-            else:
-                actor.doStop()
+            actor.doStop()
         self.frame += 1
 
 
@@ -441,24 +423,24 @@ class LedgeGetup(action.Action):
 #               TRANSITION STATES                     #
 ########################################################
 def neutralState(actor):
-    if actor.bufferContains('attack'):
+    if actor.bufferContains('attack', 8):
         actor.doGroundAttack()
-    elif actor.bufferContains('special'):
+    elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
-    elif actor.bufferContains('jump',10):
+    elif actor.bufferContains('jump', 8):
         actor.doJump()
-    elif actor.bufferContains('left',8):
+    elif actor.keysContain('left'):
         actor.doGroundMove(180)
-    elif actor.bufferContains('right',8):
+    elif actor.keysContain('right'):
         actor.doGroundMove(0)
-    elif actor.bufferContains('shield',8):
+    elif actor.bufferContains('shield', 8):
         actor.doShield()
     
 def airState(actor):
     airControl(actor)
-    if actor.bufferContains('jump'):
+    if actor.bufferContains('jump', 8):
         actor.doAirJump()
-    if actor.bufferContains('down'):
+    if actor.keysContain('down'):
         if actor.change_y >= 0:
             actor.change_y = actor.var['maxFallSpeed']
             actor.landingLag = 14
@@ -470,25 +452,25 @@ def airState(actor):
         actor.doAirSpecial()
             
 def moveState(actor, direction):
-    if actor.bufferContains('jump'):
+    if actor.bufferContains('jump', 8):
         actor.doJump()
     (key,_) = actor.getForwardBackwardKeys()
-    if actor.bufferContains(key, state=0):
+    if not actor.keysContain(key):
         actor.doStop()
-    if actor.bufferContains('attack'):
+    if actor.bufferContains('attack', 8):
         actor.doGroundAttack()
-    elif actor.bufferContains('special'):
+    elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
 
 def runState(actor, direction):
-    if actor.bufferContains('jump'):
+    if actor.bufferContains('jump', 8):
         actor.doJump()
     (key,_) = actor.getForwardBackwardKeys()
-    if actor.bufferContains(key, state=0):
+    if not actor.keysContain(key):
         actor.doStop()
-    if actor.bufferContains('attack'):
+    if actor.bufferContains('attack', 8):
         actor.doDashAttack()
-    elif actor.bufferContains('special'):
+    elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
             
 def shieldState(actor):
@@ -508,13 +490,13 @@ def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     actor.change_x = 0
     actor.change_y = 0
-    if actor.bufferContains(key):
+    if actor.keysContain(key):
         actor.ledgeLock = True
         actor.doLedgeGetup()
-    elif actor.bufferContains(invkey):
+    elif actor.keysContain(invkey):
         actor.ledgeLock = True
         actor.doFall()
-    elif actor.bufferContains('jump'):
+    elif actor.bufferContains('jump', 8):
         actor.ledgeLock = True
         actor.doJump()
 
@@ -526,17 +508,17 @@ def grabbingState(actor):
     actor.grabbing.change_y = actor.change_y
     if not isinstance(actor.grabbing.current_action, Grabbed):
         actor.doRelease()
-    elif actor.bufferContains('shield'):
+    elif actor.bufferContains('shield', 8):
         actor.doRelease()
-    elif actor.bufferContains('attack'):
+    elif actor.bufferContains('attack', 8):
         actor.doPummel()
-    elif actor.bufferContains(key):
+    elif actor.bufferContains(key, 8):
         actor.doThrow()
-    elif actor.bufferContains(invkey):
+    elif actor.bufferContains(invkey, 8):
         actor.doThrow()
-    elif actor.bufferContains('up'):
+    elif actor.bufferContains('up', 8):
         actor.doThrow()
-    elif actor.bufferContains('down'):
+    elif actor.bufferContains('down', 8):
         actor.doThrow()
 
 ########################################################

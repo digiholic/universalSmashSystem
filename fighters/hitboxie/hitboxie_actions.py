@@ -74,7 +74,7 @@ class NeutralAirSpecial(action.Action):
 
 
     def stateTransitions(self, actor):
-        if actor.bufferContains('down'):
+        if actor.keysContain('down'):
             if actor.change_y >= 0:
                 actor.change_y = actor.var['maxFallSpeed']
         baseActions.airControl(actor)
@@ -90,7 +90,7 @@ class NeutralAirSpecial(action.Action):
             actor.articles.add(self.projectile)
             actor.active_hitboxes.add(self.projectile.hitbox)
             print actor.active_hitboxes
-            if actor.inputBuffer.contains('special', 10):
+            if actor.bufferContains('special', 8):
                 actor.changeAction(NeutralAirSpecial())
             
         if self.frame == self.lastFrame:
@@ -362,7 +362,7 @@ class NeutralAir(action.Action):
         self.nairHitbox = hitbox.SakuraiAngleHitbox([0,0],[72,72],actor,10,4,0.06,40,1,hitbox.HitboxLock())
     
     def stateTransitions(self, actor):
-        if actor.bufferContains('down'):
+        if actor.keysContain('down'):
             if actor.change_y >= 0:
                 actor.change_y = actor.var['maxFallSpeed']
         baseActions.airControl(actor)
@@ -692,7 +692,7 @@ class Stop(baseActions.Stop):
         elif self.frame == 6:
             actor.changeSpriteImage(2)
         elif self.frame == self.lastFrame:
-            if actor.inputBuffer.contains('jump',5):
+            if actor.bufferContains('jump',8):
                 actor.current_action = Jump()
             else: actor.current_action = NeutralAction()
         if actor.grounded == False: actor.current_action = Fall()
