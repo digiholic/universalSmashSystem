@@ -397,20 +397,19 @@ class DownAir(action.Action):
     def setUp(self, actor):
         actor.change_x = 0
         actor.change_y = 0
-        actor.rect.y -= 46
         actor.changeSprite("dair", 0)
         allLock = hitbox.HitboxLock()
-        self.downHitbox = hitbox.DamageHitbox([0,130], [10,50], actor, 9, 8, 0.08, 270, 1, allLock)
-        self.leftDiagonalHitbox = hitbox.DamageHitbox([-10,120], [10,30], actor, 7, 7, 0.06, 225, 1, allLock)
-        self.rightDiagonalHitbox = hitbox.DamageHitbox([10,120], [10,30], actor, 7, 7, 0.06, 315, 1, allLock)
-        self.leftSourSpot = hitbox.DamageHitbox([-20,110], [10,10], actor, 5, 6, 0.04, 180, 1, allLock)
-        self.rightSourSpot = hitbox.DamageHitbox([20,110], [10,10], actor, 5, 6, 0.04, 0, 1, allLock)
+        self.downHitbox = hitbox.DamageHitbox([0,80], [10,50], actor, 9, 8, 0.08, 270, 1, allLock)
+        self.leftDiagonalHitbox = hitbox.DamageHitbox([-10,70], [10,30], actor, 7, 7, 0.06, 225, 1, allLock)
+        self.rightDiagonalHitbox = hitbox.DamageHitbox([10,70], [10,30], actor, 7, 7, 0.06, 315, 1, allLock)
+        self.leftSourSpot = hitbox.DamageHitbox([-20,60], [10,10], actor, 5, 6, 0.04, 180, 1, allLock)
+        self.rightSourSpot = hitbox.DamageHitbox([20,60], [10,10], actor, 5, 6, 0.04, 0, 1, allLock)
 
     def stateTransitions(self, actor):
         baseActions.airControl(actor)
 
     def tearDown(self, actor, nextAction):
-        actor.rect.y += 92
+        actor.rect.y += 46
         self.downHitbox.kill()
         self.leftDiagonalHitbox.kill()
         self.rightDiagonalHitbox.kill()
@@ -421,11 +420,11 @@ class DownAir(action.Action):
         actor.landingLag = 30
         actor.change_x = 0
         actor.preferred_xspeed = 0
-        self.downHitbox.rect.center = [actor.rect.center[0], actor.rect.center[1]+130]
-        self.leftDiagonalHitbox.rect.center = [actor.rect.center[0]-10, actor.rect.center[1]+120]
-        self.rightDiagonalHitbox.rect.center = [actor.rect.center[0]+10, actor.rect.center[1]+120]
-        self.leftSourSpot.rect.center = [actor.rect.center[0]-20, actor.rect.center[1]+110]
-        self.rightSourSpot.rect.center = [actor.rect.center[0]+20, actor.rect.center[1]+110]
+        self.downHitbox.rect.center = [actor.rect.center[0], actor.rect.center[1]+80]
+        self.leftDiagonalHitbox.rect.center = [actor.rect.center[0]-10, actor.rect.center[1]+70]
+        self.rightDiagonalHitbox.rect.center = [actor.rect.center[0]+10, actor.rect.center[1]+70]
+        self.leftSourSpot.rect.center = [actor.rect.center[0]-20, actor.rect.center[1]+60]
+        self.rightSourSpot.rect.center = [actor.rect.center[0]+20, actor.rect.center[1]+60]
         if self.frame < 3:
             actor.changeSpriteImage(0)
             actor.change_y = 0
