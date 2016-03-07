@@ -114,11 +114,11 @@ class Hitboxie(abstractFighter.AbstractFighter):
         if self.keysContain(key):
             self.changeAction(self.actions.ForwardThrow())
         elif self.keysContain(invkey):
-            self.changeAction(self.actions.ForwardThrow())
+            self.changeAction(self.actions.BackThrow())
         elif self.keysContain('up'):
             self.changeAction(self.actions.ForwardThrow())
         elif self.keysContain('down'):
-            self.changeAction(self.actions.ForwardThrow())
+            self.changeAction(self.actions.BackThrow())
         else: # How did we get here? 
             self.changeAction(self.actions.ForwardThrow())
         

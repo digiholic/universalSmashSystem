@@ -565,10 +565,35 @@ class ForwardThrow(baseActions.BaseGrabbing):
             actor.doIdle()
         
         self.frame += 1
+
+class BackThrow(baseActions.BaseGrabbing):
+    def __init__(self):
+        baseActions.BaseGrabbing.__init__(self, 32)
+
+    def setUp(self, actor):
+        actor.changeSprite("nair")
+        self.bottomHitbox = hitbox.DamageHitbox([10, 40], [70, 30], actor, 1, 3, 0, 260, 1, hitbox.HitboxLock(), 0, 1)
+        actor.active_hitboxes.add(self.bottomHitbox)
+
+    def tearDown(self, actor, nextAction):
+        self.bottomHitbox.kill()
+        baseActions.BaseGrabbing.tearDown(self, actor, nextAction)
+
+    def update(self, actor):
+        actor.changeSpriteImage(self.frame%16)
+        if (self.frame%4 == 0):
+            self.bottomHitbox.hitbox_lock = hitbox.HitboxLock()
+        if (self.frame == self.lastFrame-4):
+            self.bottomHitbox.baseKnockback = 10
+            self.bottomHitbox.trajectory = actor.getForwardWithOffset(180)
+            self.bottomHitbox.knockbackGrowth = 0.12
+            self.weight_influence = 1
+        if self.frame == self.lastFrame:
+            actor.doIdle()
+        self.frame += 1
         
-        def stateTransitions(self,actor):
-            if self.frame > 20:
-                baseActions.neutralState(actor)   
+
+        
 
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
