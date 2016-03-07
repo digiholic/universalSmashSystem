@@ -30,17 +30,23 @@ class TrueArena(stage.Stage):
         #                      stage.Platform([700,680], [700,750]),
         #                      stage.Platform([1460,680],[1460,750])]
         
-        self.platform_list = [stage.Platform([725,668], [1435,668],(True,True)),
-                             stage.Platform([725,669], [725,750]),
-                             stage.Platform([1435,669],[1435,750])]
+        self.platform_list = [stage.Platform([self.size.centerx - 337,self.size.centery], [self.size.centerx + 337,self.size.centery],(True,True)),
+                              stage.Platform([self.size.centerx - 337,self.size.centery+1], [self.size.centerx - 337,self.size.centery+102],(True,True)),
+                              stage.Platform([self.size.centerx + 337,self.size.centery+1], [self.size.centerx + 337,self.size.centery+102],(True,True)),
+                             ]
         
-        self.spawnLocations = [[780,668],
-                               [1320,668],
-                               [860,668],
-                               [1040,668]]
+        self.spawnLocations = [[self.size.centerx - 337 + (134 * 1),self.size.centery],
+                               [self.size.centerx - 337 + (134 * 4),self.size.centery],
+                               [self.size.centerx - 337 + (134 * 2),self.size.centery],
+                               [self.size.centerx - 337 + (134 * 3),self.size.centery],
+                               ]
         
-        bgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","true_arena.png"))
-        bgSprite.rect.topleft = [700,618]
+        fgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TrueArenaFront.png"))
+        fgSprite.rect.topleft = [self.size.centerx - 383,self.size.centery]
+        self.foregroundSprites.append(fgSprite)
+        
+        bgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TrueArenaBack.png"))
+        bgSprite.rect.topleft = [self.size.centerx - 383,self.size.centery-44]
         self.backgroundSprites.append(bgSprite)
         
         self.getLedges()
