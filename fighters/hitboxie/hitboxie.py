@@ -155,6 +155,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
         elif (self.keysContain('down')):
             self.changeAction(self.actions.DownAir())
         else: self.changeAction(self.actions.NeutralAir())
+
+    def doGetupAttack(self, direction):
+        self.changeAction(self.actions.NeutralAttack())
     
     def doGroundSpecial(self):
         self.changeAction(self.actions.NeutralGroundSpecial())
@@ -164,6 +167,12 @@ class Hitboxie(abstractFighter.AbstractFighter):
 
     def doHitStun(self,hitstun,trajectory):
         self.changeAction(self.actions.HitStun(hitstun,trajectory))
+
+    def doTrip(self, length, direction):
+        self.changeAction(self.actions.Trip(length, direction))
+
+    def doGetup(self, direction):
+        self.changeAction(self.actions.Getup(direction))
                 
 ########################################################
 #                  STATE CHANGERS                      #

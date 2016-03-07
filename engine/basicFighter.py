@@ -80,6 +80,12 @@ class BasicFighter():
     
     def doAirJump(self):
         self.current_action = self.actions.AirJump()
+
+    def doTrip(self, length, direction):
+        self.changeAction(self.actions.Trip(length, direction))
+
+    def doGetup(self, direction):
+        self.changeAction(self.actions.Getup(direction))
     
     def doGroundAttack(self):
         return None
@@ -88,6 +94,9 @@ class BasicFighter():
         return None
     
     def doAirAttack(self):
+        return None
+
+    def doGetupAttack(self, direction):
         return None
 
     def doGroundGrab(self):

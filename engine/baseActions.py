@@ -121,6 +121,10 @@ class HitStun(action.Action):
     def __init__(self,hitstun,direction):
         action.Action.__init__(self, hitstun)
         self.direction = direction
+
+    def stateTransitions(self, actor):
+        if self.frame >= self.lastFrame and actor.keysContain('jump') or actor.keysContain('attack') or actor.keysContain('special') or actor.keysContain('shield'):
+            airState(actor)
         
     def tearDown(self, actor, newAction):
         actor.unRotate()
@@ -137,8 +141,41 @@ class HitStun(action.Action):
             
         if self.frame == self.lastFrame:
             actor.unRotate()
+            #Tumbling continues indefinetely, but can be cancelled out of
+
+        if actor.grounded and actor.change_y > 0.5*actor.var['maxFallSpeed']:
+            (direct,_) = actor.getDirectionMagnitude()
+            actor.doTrip(self.lastFrame-self.frame, direct)
+
+        elif actor.grounded and self.frame >= self.lastFrame:
+            actor.doIdle()
             
         self.frame += 1
+
+class Trip(action.Action):
+    def __init__(self,length,direction):
+        action.Action.__init__(self, length)
+        self.direction = direction
+
+    def update(self, actor):
+        if self.frame >= self.lastFrame + 180: #You aren't up yet?
+            actor.doGetup(self.direction)
+        self.frame += 1
+
+    def stateTransitions(self, actor):
+        if self.frame >= self.lastFrame:
+            tripState(actor, self.direction)
+
+class Getup(action.Action):
+    def __init__(self, direction, length):
+        action.Action.__init__(self, length)
+        self.direction = direction
+
+    def update(self, actor):
+        if self.frame == self.lastFrame:
+            actor.doIdle()
+        self.frame += 1
+        
 
 class Jump(action.Action):
     def __init__(self,length,jumpFrame):
@@ -521,6 +558,19 @@ def grabbingState(actor):
         actor.doThrow()
     elif actor.bufferContains('down', 8):
         actor.doThrow()
+
+def tripState(actor, direction):
+    (key, invkey) = actor.getForwardBackwardKeys()
+    if actor.bufferContains('attack', 8):
+        actor.doGetupAttack(direction)
+    elif actor.bufferContains(key, 8):
+        actor.doForwardRoll()
+    elif actor.bufferContains(key, 8):
+        actor.doBackwardRoll()
+    elif actor.bufferContains('down', 8):
+        actor.doSpotDodge()
+    elif actor.bufferContains('shield', 8):
+        actor.doGetup(direction)
 
 ########################################################
 #             BEGIN HELPER METHODS                     #

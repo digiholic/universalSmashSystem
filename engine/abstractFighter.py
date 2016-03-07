@@ -238,6 +238,12 @@ class AbstractFighter():
 
     def doHitStun(self,hitstun,direction):
         self.changeAction(baseActions.HitStun(hitstun,direction))
+
+    def doTrip(self, length, direction):
+        self.changeAction(baseActions.Trip(length, direction))
+
+    def doGetup(self, direction, length):
+        self.changeAction(baseActions.Getup(direction, length))
     
     def doGroundAttack(self):
         return None
@@ -246,6 +252,9 @@ class AbstractFighter():
         return None
     
     def doAirAttack(self):
+        return None
+
+    def doGetupAttack(self):
         return None
 
     def doGroundGrab(self):

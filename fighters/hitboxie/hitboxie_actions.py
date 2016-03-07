@@ -702,9 +702,7 @@ class HitStun(baseActions.HitStun):
     def __init__(self,hitstun,direction):
         baseActions.HitStun.__init__(self, hitstun, direction)
         
-    def update(self,actor):          
-        if self.frame == self.lastFrame:
-            actor.current_action = Fall()
+    def update(self,actor):
         baseActions.HitStun.update(self, actor)
         
         if self.frame == 1:
@@ -773,6 +771,25 @@ class Land(baseActions.Land):
                     actor.changeSpriteImage(self.frame / 3)
         
         baseActions.Land.update(self, actor)
+
+class Trip(baseActions.Trip):
+    def __init__(self, length, direction):
+        baseActions.Trip.__init__(self, length, direction)
+
+    def update(self, actor):
+        if self.frame == 0:
+            actor.changeSprite("land", 3)
+        baseActions.Trip.update(self, actor)
+
+class Getup(baseActions.Getup):
+    def __init__(self, direction):
+        baseActions.Getup.__init__(self, direction, 12)
+
+    def update(self, actor):
+        if self.frame < 12:
+            if self.frame % 3 == 0:
+                actor.changeSprite("land", 3-self.frame/3)
+        baseActions.Getup.update(self, actor)
         
 class Shield(baseActions.Shield):
     def __init__(self):
@@ -853,8 +870,8 @@ class Grabbed(baseActions.Grabbed):
         baseActions.Grabbed.__init__(self, height)
 
     def setUp(self, actor):
-        if (height > 65):
-            self.rect.y += height-65
+        if (self.height > 65):
+            self.rect.y += self.height-65
 
     def update(self,actor):
         actor.changeSprite("idle")
