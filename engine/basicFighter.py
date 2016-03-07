@@ -71,12 +71,16 @@ class BasicFighter():
     
     def doFall(self):
         self.changeAction(self.actions.Fall())
+
+    def doJump(self):
+        self.changeAction(self.actions.Jump())
         
     def doGroundJump(self):
         self.current_action = self.actions.Jump()
     
     def doAirJump(self):
-        self.current_action = self.actions.AirJump()
+        if self.jumps > 0:
+            self.current_action = self.actions.AirJump()
     
     def doGroundAttack(self):
         return None

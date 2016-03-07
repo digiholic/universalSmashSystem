@@ -12,7 +12,7 @@ class SplatArticle(article.AnimatedArticle):
         article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/hitboxie_projectile.png'), owner, origin, imageWidth=16,length=120)
         self.direction = direction
         self.change_y = 0
-        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 270, 1, hitbox.HitboxLock())  
+        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock())  
         self.hitbox.article = self
             
     # Override the onCollision of the hitbox
@@ -439,7 +439,7 @@ class DownAir(action.Action):
             actor.changeSpriteImage(3)
             self.bottom = 14
             actor.change_y = 0
-        elif self.frame == 12:
+        elif self.frame < self.lastFrame:
             self.bottom = 34
             actor.changeSpriteImage(4)
             actor.change_y = actor.var['maxFallSpeed']
@@ -449,7 +449,7 @@ class DownAir(action.Action):
             actor.active_hitboxes.add(self.leftSourSpot)
             actor.active_hitboxes.add(self.rightSourSpot)
         elif self.frame == self.lastFrame and actor.keysContain('attack'):
-            self.frame -= 1
+            self.frame -= 2
         elif self.frame < self.lastFrame + 3:
             self.bottom = 14
             self.downHitbox.kill()

@@ -163,10 +163,11 @@ class AirJump(action.Action):
     def __init__(self,length,jumpFrame):
         action.Action.__init__(self, length)
         self.jumpFrame = jumpFrame
+
+    def setUp(self, actor):
+        actor.jumps -= 1
         
     def update(self,actor):
-        if self.frame == 0:
-            actor.jumps -= 1
         
         if self.frame < self.jumpFrame:
             actor.change_y = 0
