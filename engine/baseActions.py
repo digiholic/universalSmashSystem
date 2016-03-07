@@ -571,6 +571,8 @@ def tripState(actor, direction):
         actor.doSpotDodge()
     elif actor.bufferContains('shield', 8):
         actor.doGetup(direction)
+    elif actor.bufferContains('up', 8):
+        actor.doGetup(direction)
 
 ########################################################
 #             BEGIN HELPER METHODS                     #
