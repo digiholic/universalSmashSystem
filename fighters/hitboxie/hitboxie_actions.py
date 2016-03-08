@@ -100,7 +100,7 @@ class NeutralAirSpecial(action.Action):
 
 class ForwardSpecial(action.Action):
     def __init__(self):
-        action.Action.__init__(self,9)
+        action.Action.__init__(self, 32)
         self.spriteImage = 0
 
     def setUp(self, actor):
@@ -112,7 +112,7 @@ class ForwardSpecial(action.Action):
 
     class sideSpecialHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
-            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 1, 2, 0.02, 0, 1, hitbox.HitboxLock(), 1, 2)
+            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 3, 2, 0.02, 0, 1, hitbox.HitboxLock(), 1, 3)
 
         def onCollision(self, other):
             if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
@@ -136,24 +136,19 @@ class ForwardSpecial(action.Action):
         actor.changeSpriteImage(self.spriteImage%16)
         if self.frame < self.lastFrame:
             self.spriteImage += 1
-            if self.frame < 4:
-                actor.change_y = 2
+            if self.frame <= 1:
                 actor.setSpeed(0, actor.getForwardWithOffset(0))
                 actor.change_x = 0
-            elif self.frame == 4:
-                actor.setSpeed(0, actor.getForwardWithOffset(0))
-                actor.change_x = 0
-                actor.change_y = 2
-                if actor.keysContain('special'):
-                    self.frame -= 4
-                    if self.lastFrame < 720: #Not sure why you want the move to go on for 6 seconds, but shoot yourself. 
-                        self.lastFrame += 3
-                    else:
-                        self.lastFrame = 720
-                elif actor.keysContain('shield'):
+                if actor.change_y > 2:
+                    actor.change_y = 2
+                if actor.keysContain('shield'):
                     actor.doShield()
+                elif actor.keysContain('special'):
+                    if self.lastFrame < 240:
+                        self.lastFrame += 2
+                        self.frame -= 1
             else: #Actually launch forwards
-                if self.frame == 5:
+                if self.frame == 2:
                     actor.setSpeed(actor.var['runSpeed'], actor.getForwardWithOffset(0), False)
                     actor.change_y = -8
                 self.flingHitbox.rect.center = actor.rect.center
