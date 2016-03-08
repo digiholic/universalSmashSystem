@@ -160,10 +160,32 @@ class Hitboxie(abstractFighter.AbstractFighter):
         self.changeAction(self.actions.NeutralAttack())
     
     def doGroundSpecial(self):
-        self.changeAction(self.actions.NeutralGroundSpecial())
+        (forward, backward) = self.getForwardBackwardKeys()
+        if self.keysContain(forward):
+            self.changeAction(self.actions.ForwardSpecial())
+        elif self.keysContain(backward):
+            self.flip()
+            self.changeAction(self.actions.ForwardSpecial())
+        elif (self.keysContain('up')):
+            pass
+        elif (self.keysContain('down')):
+            pass
+        else: 
+            self.changeAction(self.actions.NeutralGroundSpecial())
 
     def doAirSpecial(self):
-        self.changeAction(self.actions.NeutralAirSpecial())
+        (forward, backward) = self.getForwardBackwardKeys()
+        if self.keysContain(forward):
+            self.changeAction(self.actions.ForwardSpecial())
+        elif self.keysContain(backward):
+            self.flip()
+            self.changeAction(self.actions.ForwardSpecial())
+        elif (self.keysContain('up')):
+            pass
+        elif (self.keysContain('down')):
+            pass
+        else: 
+            self.changeAction(self.actions.NeutralAirSpecial())
 
     def doHitStun(self,hitstun,trajectory):
         self.changeAction(self.actions.HitStun(hitstun,trajectory))

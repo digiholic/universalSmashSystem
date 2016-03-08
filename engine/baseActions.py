@@ -123,7 +123,7 @@ class HitStun(action.Action):
         self.direction = direction
 
     def stateTransitions(self, actor):
-        if self.frame >= self.lastFrame and actor.keysContain('jump') or actor.keysContain('attack') or actor.keysContain('special') or actor.keysContain('shield'):
+        if self.frame >= self.lastFrame and actor.bufferContains('jump', 8) or actor.bufferContains('attack', 8) or actor.bufferContains('special', 8) or actor.bufferContains('shield', 8):
             airState(actor)
         
     def tearDown(self, actor, newAction):
