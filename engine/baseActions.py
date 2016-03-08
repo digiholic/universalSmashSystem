@@ -254,9 +254,11 @@ class Shield(action.Action):
     def __init__(self):
         action.Action.__init__(self, 6)
         self.shieldFrame = 4
+        self.shieldStun = 0
    
     def stateTransitions(self, actor):
-        shieldState(actor)
+        if self.shieldStun <= 0:
+            shieldState(actor)
    
     def tearDown(self, actor, newAction):
         actor.shield = False
@@ -271,6 +273,9 @@ class Shield(action.Action):
                 self.frame += 2
         elif self.frame == self.shieldFrame+1:
             if actor.keysContain('shield'):
+                actor.shieldDamage(1)
+            elif self.shieldStun > 0:
+                self.shieldStun -= 1
                 actor.shieldDamage(1)
             else:
                 self.frame += 1

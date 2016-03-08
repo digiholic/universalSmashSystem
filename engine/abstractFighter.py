@@ -488,6 +488,10 @@ class AbstractFighter():
     def shieldDamage(self,damage):
         if self.shieldIntegrity > 0:
             self.shieldIntegrity -= damage
+            if isinstance(self.current_action, baseActions.Shield):
+                if self.current_action.shieldStun < damage-1:
+                    self.current_action.shieldStun = damage-1
+                    print self.current_action.shieldStun
         elif self.shieldIntegrity <= 0:
             self.doShieldBreak()
     
