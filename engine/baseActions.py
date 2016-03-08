@@ -156,6 +156,7 @@ class Trip(action.Action):
     def __init__(self,length,direction):
         action.Action.__init__(self, length)
         self.direction = direction
+        print("direction:", self.direction)
 
     def update(self, actor):
         if self.frame >= self.lastFrame + 180: #You aren't up yet?
@@ -542,8 +543,8 @@ def grabbingState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     # Check to see if they broke out
     # If they did, release them
-    actor.grabbing.change_x = actor.change_x
-    actor.grabbing.change_y = actor.change_y
+    actor.grabbing.rect.centerx = actor.rect.centerx+actor.facing*actor.rect.width/2
+    actor.grabbing.rect.bottom = actor.rect.bottom
     if not isinstance(actor.grabbing.current_action, Grabbed):
         actor.doRelease()
     elif actor.bufferContains('shield', 8):

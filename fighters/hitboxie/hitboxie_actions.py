@@ -122,8 +122,8 @@ class ForwardSpecial(action.Action):
                     else:
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                         if other.grounded:
-                            (direct,_) = other.getDirectionMagnitude()
-                            other.doTrip(40, direct)
+                            (actorDirect,_) = self.owner.getDirectionMagnitude()
+                            other.doTrip(40, other.getForwardWithOffset(actorDirect))
                             
     def stateTransitions(self, actor):
         baseActions.grabLedges(actor)
@@ -661,7 +661,7 @@ class BackThrow(baseActions.BaseGrabbing):
         if (self.frame%4 == 0):
             self.bottomHitbox.hitbox_lock = hitbox.HitboxLock()
         if (self.frame == self.lastFrame-4):
-            self.bottomHitbox.baseKnockback = 10
+            self.bottomHitbox.baseKnockback = 19
             self.bottomHitbox.trajectory = actor.getForwardWithOffset(180)
             self.bottomHitbox.knockbackGrowth = 0.12
             self.weight_influence = 1
