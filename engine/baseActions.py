@@ -144,9 +144,13 @@ class HitStun(action.Action):
             #Tumbling continues indefinetely, but can be cancelled out of
 
         if actor.grounded:
-            if actor.bufferContains('shield', 8): #Floor tech
+            if actor.bufferContains('shield', 20): #Floor tech
                 actor.change_y = 0
                 actor.doTrip(-175, direct)
+            elif self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
+                actor.change_y = -0.4*actor.change_y
+            elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2:
+                actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
             elif abs(actor.change_x)/actor.var['runSpeed'] > actor.change_y/actor.var['maxFallSpeed'] and abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
                 (direct,_) = actor.getDirectionMagnitude()
                 actor.change_y = 0
@@ -154,20 +158,16 @@ class HitStun(action.Action):
             elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
                 actor.change_y = 0
                 actor.doIdle()
-            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']: #Firm landing during tumble
+            elif self.frame >= self.lastFrame: #Firm landing during tumble
                 actor.change_y = 0
                 actor.landingLag = actor.var['heavyLandLag']
                 actor.doLand()
-            elif self.frame >= self.lastFrame: #Hard landing during tumble
-                actor.change_y = -0.4*actor.change_y
             elif actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during hitstun
                 actor.change_y = 0
                 actor.landingLag = actor.var['heavyLandLag']
                 actor.doLand()
-            elif actor.change_y < actor.var['maxFallSpeed']: #Firm landing during hitstun
+            else: #Firm landing during hitstun
                 actor.change_y = -0.4*actor.change_y
-            else:
-                actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
 
         self.frame += 1
 
@@ -262,7 +262,7 @@ class Land(action.Action):
     def update(self,actor):
         if self.frame == 0:
             self.lastFrame = actor.landingLag
-            if actor.bufferContains('shield',distanceBack=22):
+            if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame / 2    
         if self.frame == self.lastFrame:
