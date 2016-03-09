@@ -143,13 +143,32 @@ class HitStun(action.Action):
             actor.unRotate()
             #Tumbling continues indefinetely, but can be cancelled out of
 
-        if actor.grounded and actor.change_y > 0.5*actor.var['maxFallSpeed']:
-            (direct,_) = actor.getDirectionMagnitude()
-            actor.doTrip(self.lastFrame-self.frame, direct)
+        if actor.grounded:
+            if actor.bufferContains('shield', 8): #Floor tech
+                actor.change_y = 0
+                actor.doTrip(0, direct)
+            elif abs(actor.change_x)/actor.var['runSpeed'] > actor.change_y/actor.var['maxFallSpeed'] and abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
+                (direct,_) = actor.getDirectionMagnitude()
+                actor.change_y = 0
+                actor.doTrip(self.lastFrame-self.frame, direct)
+            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
+                actor.change_y = 0
+                actor.doIdle()
+            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']: #Firm landing during tumble
+                actor.change_y = 0
+                actor.landingLag = actor.var['heavyLandLag']
+                actor.doLand()
+            elif self.frame >= self.lastFrame: #Hard landing during tumble
+                actor.change_y = -0.4*actor.change_y
+            elif actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during hitstun
+                actor.change_y = 0
+                actor.landingLag = actor.var['heavyLandLag']
+                actor.doLand()
+            elif actor.change_y < actor.var['maxFallSpeed']: #Firm landing during hitstun
+                actor.change_y = -0.4*actor.change_y
+            else:
+                actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
 
-        elif actor.grounded and self.frame >= self.lastFrame:
-            actor.doIdle()
-            
         self.frame += 1
 
 class Trip(action.Action):
@@ -232,6 +251,8 @@ class Fall(action.Action):
         grabLedges(actor)
         
     def update(self,actor):
+        if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag <= actor.var['heavyLandLag']:
+            actor.landingLag = actor.var['heavyLandLag']
         actor.grounded = False
             
 class Land(action.Action):
