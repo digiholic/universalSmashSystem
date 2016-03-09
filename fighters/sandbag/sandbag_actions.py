@@ -34,7 +34,8 @@ class HitStun(baseActions.HitStun):
         baseActions.HitStun.__init__(self, hitstun, direction)
         
     def update(self,actor):
-        #Put override code here
+        if actor.grounded:
+            actor.doIdle()
         baseActions.HitStun.update(self, actor)
         
 class Jump(baseActions.Jump):
@@ -61,6 +62,20 @@ class Fall(baseActions.Fall):
     def update(self,actor):
         #Put override code here
         baseActions.Fall.update(self, actor)
+
+class Trip(baseActions.Trip):
+    def __init__(self, length, direction):
+        baseActions.Trip.__init__(self, length, direction)
+
+    def update(self, actor):
+        actor.rotateSprite(self.direction)
+        if self.frame == self.lastFrame:
+            actor.unRotate()
+            actor.doIdle()
+        baseActions.Trip.update(self, actor)
+
+    def tearDown(self, actor, newAction):
+        actor.unRotate()
             
 class Land(baseActions.Land):
     def __init__(self):

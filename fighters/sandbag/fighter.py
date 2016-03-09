@@ -49,6 +49,9 @@ class Fighter(abstractFighter.AbstractFighter):
 
     def doGetup(self, direction):
         self.changeAction(self.actions.NeutralAction())
+
+    def doTrip(self, length, direction):
+        self.changeAction(self.actions.Trip(length, direction))
         
 def cssIcon(): return None
 

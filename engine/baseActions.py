@@ -123,7 +123,7 @@ class HitStun(action.Action):
         self.direction = direction
 
     def stateTransitions(self, actor):
-        if self.frame >= self.lastFrame and actor.keysContain('jump') or actor.keysContain('attack') or actor.keysContain('special') or actor.keysContain('shield'):
+        if self.frame >= self.lastFrame and actor.bufferContains('jump', 8) or actor.bufferContains('attack', 8) or actor.bufferContains('special', 8) or actor.bufferContains('shield', 8):
             airState(actor)
         
     def tearDown(self, actor, newAction):
@@ -156,6 +156,7 @@ class Trip(action.Action):
     def __init__(self,length,direction):
         action.Action.__init__(self, length)
         self.direction = direction
+        print("direction:", self.direction)
 
     def update(self, actor):
         if self.frame >= self.lastFrame + 180: #You aren't up yet?
@@ -253,9 +254,11 @@ class Shield(action.Action):
     def __init__(self):
         action.Action.__init__(self, 6)
         self.shieldFrame = 4
+        self.shieldStun = 0
    
     def stateTransitions(self, actor):
-        shieldState(actor)
+        if self.shieldStun <= 0:
+            shieldState(actor)
    
     def tearDown(self, actor, newAction):
         actor.shield = False
@@ -270,6 +273,9 @@ class Shield(action.Action):
                 self.frame += 2
         elif self.frame == self.shieldFrame+1:
             if actor.keysContain('shield'):
+                actor.shieldDamage(1)
+            elif self.shieldStun > 0:
+                self.shieldStun -= 1
                 actor.shieldDamage(1)
             else:
                 self.frame += 1
@@ -542,8 +548,8 @@ def grabbingState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     # Check to see if they broke out
     # If they did, release them
-    actor.grabbing.change_x = actor.change_x
-    actor.grabbing.change_y = actor.change_y
+    actor.grabbing.rect.centerx = actor.rect.centerx+actor.facing*actor.rect.width/2
+    actor.grabbing.rect.bottom = actor.rect.bottom
     if not isinstance(actor.grabbing.current_action, Grabbed):
         actor.doRelease()
     elif actor.bufferContains('shield', 8):
