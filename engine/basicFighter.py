@@ -67,7 +67,7 @@ class BasicFighter():
         self.changeAction(self.actions.NeutralAction())
     
     def doLand(self):
-        self.current_action = self.actions.Land()
+        self.changeAction(self.actions.Land())
     
     def doFall(self):
         self.changeAction(self.actions.Fall())
@@ -76,10 +76,10 @@ class BasicFighter():
         self.changeAction(self.actions.Jump())
         
     def doGroundJump(self):
-        self.current_action = self.actions.Jump()
+        self.changeAction(self.actions.Jump())
     
     def doAirJump(self):
-        self.current_action = self.actions.AirJump()
+        self.changeAction(self.actions.AirJump())
 
     def doTrip(self, length, direction):
         self.changeAction(self.actions.Trip(length, direction))

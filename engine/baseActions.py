@@ -254,6 +254,9 @@ class PreShield(action.Action):
     def __init__(self):
         action.Action.__init__(self, 4)
 
+    def stateTransitions(self, actor):
+        shieldState(actor)
+
     def update(self, actor):
         if self.frame == self.lastFrame:
             actor.doShield()
@@ -283,7 +286,7 @@ class Shield(action.Action):
                 actor.shieldDamage(1)
             else:
                 self.frame += 1
-        elif self.frame == self.lastFrame:
+        elif self.frame >= self.lastFrame:
             actor.shield = False
             actor.doIdle()
         else: self.frame += 1
@@ -297,7 +300,7 @@ class ShieldStun(action.Action):
             actor.shield = False
 
     def update(self, actor):
-        if self.frame == self.lastFrame:
+        if self.frame >= self.lastFrame:
             actor.doShield()
         actor.shieldDamage(1)
         self.frame += 1
@@ -364,17 +367,20 @@ class ForwardRoll(action.Action):
         action.Action.__init__(self, 46)
         self.startInvulnFrame = 6
         self.endInvulnFrame = 34
+
+    def tearDown(self, actor, nextAction):
+        actor.invulnerable = False
         
     def update(self, actor):
         if self.frame == 1:
             actor.change_x = actor.facing * 10
         elif self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255], 22, True, 24)
-            #actor.invulnerable
+            actor.invulnerable = True
         elif self.frame == self.endInvulnFrame:
             actor.flip()
             actor.change_x = 0
-            #actor.vulnerable
+            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             if actor.keysContain('shield'):
                 actor.doShield()
@@ -387,16 +393,19 @@ class BackwardRoll(action.Action):
         action.Action.__init__(self, 50)
         self.startInvulnFrame = 6
         self.endInvulnFrame = 34
+
+    def tearDown(self, actor, nextAction):
+        actor.invulnerable = False
         
     def update(self, actor):
         if self.frame == 1:
             actor.change_x = actor.facing * -10
         elif self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255], 22, True, 24)
-            #actor.invulnerable
+            actor.invulnerable = True
         elif self.frame == self.endInvulnFrame:
             actor.change_x = 0
-            #actor.vulnerable
+            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             if actor.keysContain('shield'):
                 actor.doShield()
@@ -409,16 +418,19 @@ class SpotDodge(action.Action):
         action.Action.__init__(self, 24)
         self.startInvulnFrame = 4
         self.endInvulnFrame = 20
+
+    def tearDown(self, actor, nextAction):
+        actor.invulnerable = False
         
     def update(self,actor):
         if self.frame == 1:
             actor.change_x = 0
         elif self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255],16,True,24)
-            #actor.invulnerable
+            actor.invulnerable = True
         elif self.frame == self.endInvulnFrame:
             pass
-            #actor.vulnerable
+            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             if actor.keysContain('shield'):
                 actor.doShield()
@@ -437,7 +449,7 @@ class AirDodge(action.Action):
         
     def tearDown(self,actor,other):
         if actor.mask: actor.mask = None
-        #remove invuln
+        actor.invulnerable = False
     
     def stateTransitions(self, actor):
         airControl(actor)
@@ -445,10 +457,10 @@ class AirDodge(action.Action):
     def update(self,actor):
         if self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255],16,True,24)
-            #actor.invulnerable
+            actor.invulnerable = True
         elif self.frame == self.endInvulnFrame:
             pass
-            #actor.vulnerable
+            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
