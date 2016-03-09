@@ -100,7 +100,7 @@ class AbstractFighter():
         self.current_action.update(self) #update our action
         
         if self.mask: self.mask = self.mask.update()
-        self.shieldIntegrity += 0.5
+        self.shieldIntegrity += 0.25
         if self.shieldIntegrity > 100: self.shieldIntegrity = 100
         
         for art in self.articles:
