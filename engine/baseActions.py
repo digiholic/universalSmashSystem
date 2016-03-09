@@ -146,7 +146,7 @@ class HitStun(action.Action):
         if actor.grounded:
             if actor.bufferContains('shield', 8): #Floor tech
                 actor.change_y = 0
-                actor.doTrip(0, direct)
+                actor.doTrip(-175, direct)
             elif abs(actor.change_x)/actor.var['runSpeed'] > actor.change_y/actor.var['maxFallSpeed'] and abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
                 (direct,_) = actor.getDirectionMagnitude()
                 actor.change_y = 0
