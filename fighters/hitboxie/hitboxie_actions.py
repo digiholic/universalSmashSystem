@@ -29,7 +29,7 @@ class SplatArticle(article.AnimatedArticle):
         self.rect.x += 24 * self.direction
         self.rect.y += self.change_y
         self.change_y += 0.5
-        self.hitbox.rect.center = self.rect.center
+        self.hitbox.rect.center = self.rect.center #update adjusts to the actor
         self.frame += 1
             
         if self.frame > 120:
@@ -120,13 +120,12 @@ class ForwardSpecial(action.Action):
                 if other.lockHitbox(self):
                     if other.shield:
                         other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
+                    elif other.grounded:
+                        other.dealDamage(self.damage)
+                        (actorDirect,_) = self.owner.getDirectionMagnitude()
+                        other.doTrip(40, other.getForwardWithOffset(actorDirect))
                     else:
-                        if other.grounded:
-                            other.dealDamage(self.damage)
-                            (actorDirect,_) = self.owner.getDirectionMagnitude()
-                            other.doTrip(40, other.getForwardWithOffset(actorDirect))
-                        else:
-                            other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
+                        other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
     def stateTransitions(self, actor):
         if abs(actor.change_x) < actor.var['runSpeed']/2 and self.frame >= 2:
@@ -148,41 +147,40 @@ class ForwardSpecial(action.Action):
                     actor.change_y = 2
                 if actor.keysContain('shield'):
                     actor.doShield()
-                elif actor.keysContain('special'):
-                    if self.lastFrame < 240:
-                        self.lastFrame += 2
-                        self.frame -= 1
+                elif actor.keysContain('special') and self.lastFrame < 240:
+                    self.lastFrame += 2
+                    self.frame -= 1
             else: #Actually launch forwards
-                if self.frame == 2:
-                    actor.setSpeed(actor.var['runSpeed'], actor.getForwardWithOffset(0), False)
-                    actor.change_y = -8
-                self.chainHitbox.rect.center = actor.rect.center
-                if self.spriteImage%6 == 0:
-                    self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
+                self.chainHitbox.update()
                 actor.active_hitboxes.add(self.chainHitbox)
                 (key, invkey) = actor.getForwardBackwardKeys()
+                if self.frame == 2:
+                    actor.setSpeed(actor.var['runSpeed'], actor.getForwardWithOffset(0))
+                    actor.change_y = -8
+                if self.spriteImage%6 == 0:
+                    self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
                 if actor.keysContain(invkey):
-                    actor.setSpeed(actor.var['runSpeed']/2, actor.getForwardWithOffset(0))
+                    actor.setPreferredSpeed(actor.var['runSpeed']/2, actor.getForwardWithOffset(0))
                     self.frame += 2
                     if (self.frame > self.lastFrame):
                         self.frame = self.lastFrame
                 elif actor.keysContain(key):
-                    actor.setSpeed(actor.var['runSpeed'], actor.getForwardWithOffset(0))
+                    actor.setPreferredSpeed(actor.var['runSpeed'], actor.getForwardWithOffset(0))
                 else:
-                    actor.setSpeed(actor.var['runSpeed']*3/4, actor.getForwardWithOffset(0))
+                    actor.setPreferredSpeed(actor.var['runSpeed']*3/4, actor.getForwardWithOffset(0))
                     self.frame += 1
                     if (self.frame > self.lastFrame):
                         self.frame = self.lastFrame
                 
         else:
             if self.frame == self.lastFrame:
-                self.flingHitbox.rect.center = actor.rect.center
+                self.flingHitbox.update()
                 actor.active_hitboxes.add(self.flingHitbox)
             else:
                 self.flingHitbox.kill()
             self.chainHitbox.kill()
             # 32 frames of wind-down. Plenty to punish if it was expected.
-            actor.setSpeed(0, actor.facing) 
+            actor.setPreferredSpeed(0, actor.facing) 
             if self.frame % 2 == 0:
                 self.spriteImage += 1
             if self.frame >= self.lastFrame+32:
@@ -244,7 +242,7 @@ class DashAttack(action.Action):
         action.Action.__init__(self,32)
 
     def setUp(self, actor):
-        actor.setSpeed(actor.change_x, actor.facing)
+        actor.setPreferredSpeed(actor.change_x, actor.facing)
         actor.changeSprite("nair")
 
         self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,10,0.07,20,1,hitbox.HitboxLock())
@@ -253,7 +251,7 @@ class DashAttack(action.Action):
     def tearDown(self,actor,other):
         self.dashHitbox.kill()
         self.chainHitbox.kill()
-        actor.setSpeed(0, actor.facing)
+        actor.setPreferredSpeed(0, actor.facing)
 
     def update(self,actor):
         if self.frame%2 == 0 and self.frame <= 8:
@@ -263,8 +261,8 @@ class DashAttack(action.Action):
         elif self.frame%2 == 0:
             actor.changeSpriteImage((self.frame/2-8)%16)
 
-        self.dashHitbox.rect.center = [actor.rect.center[0], actor.rect.center[1]]
-        self.chainHitbox.rect.center = [actor.rect.center[0], actor.rect.center[1]]
+        self.dashHitbox.update()
+        self.chainHitbox.update()
 
         if self.frame == 8:
             actor.active_hitboxes.add(self.chainHitbox)
@@ -277,7 +275,7 @@ class DashAttack(action.Action):
             actor.active_hitboxes.add(self.dashHitbox)
         if self.frame == 24:
             self.dashHitbox.kill()
-            actor.setSpeed(0, actor.facing)
+            actor.setPreferredSpeed(0, actor.facing)
 
         if self.frame == self.lastFrame:
             actor.doIdle()
@@ -458,7 +456,7 @@ class NeutralAir(action.Action):
         if self.frame == 2:
             actor.active_hitboxes.add(self.nairHitbox)
         if self.frame > 2:
-            self.nairHitbox.rect.center = actor.rect.center
+            self.nairHitbox.update()
         if self.frame == 6:
             self.nairHitbox.damage = 8
             self.nairHitbox.baseKnockback = 5
@@ -477,8 +475,7 @@ class DownAir(action.Action):
         self.bottom = 0
 
     def setUp(self, actor):
-        actor.change_x = 0
-        actor.change_y = 0
+        actor.setSpeed(0, actor.getFacingDirection())
         actor.changeSprite("dair", 0)
         allLock = hitbox.HitboxLock()
         self.downHitbox = hitbox.DamageHitbox([0,80], [10,50], actor, 9, 8, 0.08, 270, 1, allLock)
@@ -502,11 +499,11 @@ class DownAir(action.Action):
         actor.landingLag = 30
         actor.change_x = 0
         actor.preferred_xspeed = 0
-        self.downHitbox.rect.center = [actor.rect.center[0], actor.rect.center[1]+80]
-        self.leftDiagonalHitbox.rect.center = [actor.rect.center[0]-10, actor.rect.center[1]+70]
-        self.rightDiagonalHitbox.rect.center = [actor.rect.center[0]+10, actor.rect.center[1]+70]
-        self.leftSourSpot.rect.center = [actor.rect.center[0]-20, actor.rect.center[1]+60]
-        self.rightSourSpot.rect.center = [actor.rect.center[0]+20, actor.rect.center[1]+60]
+        self.downHitbox.update()
+        self.leftDiagonalHitbox.update()
+        self.rightDiagonalHitbox.update()
+        self.leftSourSpot.update()
+        self.rightSourSpot.update()
         if self.frame < 3:
             actor.changeSpriteImage(0)
             actor.change_y = 0
@@ -619,7 +616,6 @@ class ForwardThrow(baseActions.BaseGrabbing):
         baseActions.BaseGrabbing.tearDown(self, actor, other)
 
     def update(self, actor): 
-        actor.change_y = 0
         if self.frame == 0:
             actor.change_x = 0
             actor.preferred_xspeed = 0
@@ -1050,7 +1046,7 @@ class LedgeGetup(baseActions.LedgeGetup):
             actor.rect.y -= 92
         if (self.frame >= 0) & (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
-            actor.change_y = -1.001 #Just barely
+            actor.change_y = -1
             actor.change_x = 0
         if (self.frame >= 8) & (self.frame <= 14):
             actor.change_y = 0

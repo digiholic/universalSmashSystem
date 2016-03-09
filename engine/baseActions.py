@@ -10,7 +10,7 @@ class Move(action.Action):
         self.direction = actor.getForwardWithOffset(0)
         
     def update(self, actor):
-        actor.setSpeed(actor.var['maxGroundSpeed'],self.direction)
+        actor.setPreferredSpeed(actor.var['maxGroundSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
         
         self.frame += 1
@@ -28,7 +28,7 @@ class Dash(action.Action):
         else: self.direction = 180
 
     def update(self, actor):
-        actor.setSpeed(actor.var['runSpeed'],self.direction)
+        actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
         self.frame += 1
         if self.frame > self.lastFrame: 
@@ -46,7 +46,7 @@ class Run(action.Action):
         else: self.direction = 180
             
     def update(self, actor):
-        actor.setSpeed(actor.var['runSpeed'],self.direction)
+        actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
         
         self.frame += 1
@@ -478,14 +478,11 @@ class LedgeGrab(action.Action):
         
     def update(self,actor):
         actor.jumps = actor.var['jumps']
-        actor.change_y = 0
+        actor.setSpeed(0, actor.getFacingDirection())
 
 class LedgeGetup(action.Action):
     def __init__(self):
         action.Action.__init__(self, 27)
-
-    def setUp(self,actor):
-        actor.rect.x -= actor.facing * actor.rect.width/4 #Will remove as soon as this kludge isn't needed
     
     def update(self,actor):
         if self.frame == self.lastFrame:
@@ -562,8 +559,7 @@ def shieldState(actor):
 
 def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
-    actor.change_x = 0
-    actor.change_y = 0
+    actor.setSpeed(0, actor.getFacingDirection())
     if actor.bufferContains(key):
         actor.ledgeLock = True
         actor.doLedgeGetup()

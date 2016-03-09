@@ -17,6 +17,8 @@ class Hitbox(spriteObject.RectSprite):
         self.owner = owner
         self.article = None
         self.hitbox_lock = hitbox_lock
+        self.x_offset = center[0]
+        self.y_offset = center[1]
         
     def onCollision(self,other):
         return
@@ -25,10 +27,8 @@ class Hitbox(spriteObject.RectSprite):
         return
 
     def recenterSelfOnOwner(self):
-        self.rect.topleft = [self.owner.rect.topleft[0] + self.topleft[0],
-                             self.owner.rect.topleft[1] + self.topleft[1]]
+        self.rect.center = [self.owner.rect.center[0] + self.x_offset, self.owner.rect.center[1] + self.y_offset]
         
-    
 class DamageHitbox(Hitbox):
     def __init__(self,center,size,owner,
                  damage,baseKnockback,knockbackGrowth,trajectory,
@@ -53,12 +53,10 @@ class DamageHitbox(Hitbox):
         
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(other)
-            
         
     def update(self):
         Hitbox.update(self)
         self.recenterSelfOnOwner() 
- 
  
     def compareTo(self,other):
         if hasattr(other, 'damage'):
@@ -79,7 +77,6 @@ class SakuraiAngleHitbox(DamageHitbox):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
                 else:
-                
                     p = float(other.damage)
                     d = float(self.damage)
                     w = float(other.var['weight'])
