@@ -277,9 +277,15 @@ class AbstractFighter():
 
     def doThrow(self):
         self.changeAction(baseActions.Throw())
+
+    def doPreSheild(self):
+        self.changeAction(baseActions.PreShield())
    
     def doShield(self):
         self.changeAction(baseActions.Shield())
+
+    def doShieldStun(self, length):
+        self.changeAction(baseActions.ShieldStun(length))
         
     def doShieldBreak(self):
         self.changeAction(baseActions.ShieldBreak())
@@ -488,10 +494,8 @@ class AbstractFighter():
     def shieldDamage(self,damage):
         if self.shieldIntegrity > 0:
             self.shieldIntegrity -= damage
-            if isinstance(self.current_action, baseActions.Shield):
-                if self.current_action.shieldStun < damage-1:
-                    self.current_action.shieldStun = damage-1
-                    print self.current_action.shieldStun
+            if damage > 1:
+                self.doShieldStun(math.floor(damage/2))
         elif self.shieldIntegrity <= 0:
             self.doShieldBreak()
     

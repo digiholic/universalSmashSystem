@@ -250,32 +250,36 @@ class Land(action.Action):
         actor.preferred_xspeed = 0
         self.frame+= 1
 
+class PreShield(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 4)
+
+    def update(self, actor):
+        if self.frame == self.lastFrame:
+            actor.doShield()
+        self.frame += 1
+
 class Shield(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 6)
-        self.shieldFrame = 4
-        self.shieldStun = 0
+        action.Action.__init__(self, 2)
    
     def stateTransitions(self, actor):
-        if self.shieldStun <= 0:
-            shieldState(actor)
+        shieldState(actor)
    
     def tearDown(self, actor, newAction):
-        actor.shield = False
+        if not isinstance(newAction, ShieldStun):
+            actor.shield = False
        
     def update(self, actor):
-        if self.frame == self.shieldFrame:
+        if self.frame == 0:
             actor.shield = True
             actor.startShield()
             if actor.keysContain('shield'):
                 self.frame += 1
             else:
                 self.frame += 2
-        elif self.frame == self.shieldFrame+1:
+        elif self.frame == 1:
             if actor.keysContain('shield'):
-                actor.shieldDamage(1)
-            elif self.shieldStun > 0:
-                self.shieldStun -= 1
                 actor.shieldDamage(1)
             else:
                 self.frame += 1
@@ -283,6 +287,20 @@ class Shield(action.Action):
             actor.shield = False
             actor.doIdle()
         else: self.frame += 1
+
+class ShieldStun(action.Action):
+    def __init__(self, length):
+        action.Action.__init__(self, length)
+
+    def tearDown(self, actor, newAction):
+        if not isinstance(newAction, Shield) and not isinstance(newAction, ShieldStun):
+            actor.shield = False
+
+    def update(self, actor):
+        if self.frame == self.lastFrame:
+            actor.doShield()
+        actor.shieldDamage(1)
+        self.frame += 1
 
 class ShieldBreak(action.Action):
     def __init__(self):
@@ -478,7 +496,7 @@ def neutralState(actor):
     elif actor.keysContain('right'):
         actor.doGroundMove(0)
     elif actor.bufferContains('shield', 8):
-        actor.doShield()
+        actor.doPreShield()
     
 def airState(actor):
     airControl(actor)

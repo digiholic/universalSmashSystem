@@ -419,11 +419,7 @@ class ForwardSmash(action.Action):
         elif self.frame == self.lastFrame:
             actor.doIdle()
         
-        self.frame += 1
-        
-        def stateTransitions(self,actor):
-            if self.frame > 36:
-                baseActions.neutralState(actor)    
+        self.frame += 1 
 
 class NeutralAir(action.Action):
     def __init__(self):
@@ -892,6 +888,15 @@ class Getup(baseActions.Getup):
             if self.frame % 3 == 0:
                 actor.changeSprite("land", 3-self.frame/3)
         baseActions.Getup.update(self, actor)
+
+class PreShield(baseActions.PreShield):
+    def __init__(self):
+        baseActions.PreShield.__init__(self)
+
+    def update(self, actor):
+        if self.frame == 0:
+            actor.changeSprite("jump")
+        baseActions.PreShield.update(self, actor)
         
 class Shield(baseActions.Shield):
     def __init__(self):
@@ -901,6 +906,14 @@ class Shield(baseActions.Shield):
         if self.frame == 0:
             actor.changeSprite("jump")
         baseActions.Shield.update(self, actor)
+
+class ShieldStun(baseActions.ShieldStun):
+    def __init__(self, length):
+        baseActions.ShieldStun.__init__(self, length)
+
+    def update(self, actor):
+        actor.createMask([191, 63, 191], self.lastFrame, False, 8)
+        baseActions.ShieldStun.update(self, actor)
         
 class ShieldBreak(baseActions.ShieldBreak):
     def __init__(self):
