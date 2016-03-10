@@ -108,7 +108,7 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
         actor.changeSprite("nair",0)
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 3, 1, hitbox.HitboxLock(), 3, 1)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 1, 1, hitbox.HitboxLock(), 5, 1)
         self.flingHitbox = self.sideSpecialHitbox(actor)
 
     class sideSpecialHitbox(hitbox.SakuraiAngleHitbox):
@@ -129,7 +129,7 @@ class ForwardSpecial(action.Action):
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
     def stateTransitions(self, actor):
-        if actor.change_x/actor.facing > 0 and self.frame >= 2:
+        if actor.change_x/actor.facing <= 0 and self.frame >= 2:
             baseActions.grabLedges(actor)
 
     def tearDown(self, actor, newAction):
