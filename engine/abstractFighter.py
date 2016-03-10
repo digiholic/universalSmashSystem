@@ -117,8 +117,7 @@ class AbstractFighter():
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
             if block.solid:
-                #self.eject(block)
-                pass
+                self.eject(block)
 
         # Gravity
         self.calc_grav()
@@ -133,6 +132,10 @@ class AbstractFighter():
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
             self.eject(block)
+            if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
+                self.rect.bottom = block.rect.top+(self.rect.bottom-self.sprite.boundingRect.bottom)
+                self.change_y = block.change_y-self.var['gravity']
+
 
         self.sprite.updatePosition(self.rect)
 
@@ -663,26 +666,26 @@ class AbstractFighter():
         dx = min(dxLeft, dxRight)
         dy = min(dyUp, dyDown)
 
-        if dy >= dx and dx >= 0:
-            if self.ecb.xBar.rect.centerx < other.rect.centerx and dxLeft >= dxRight and other.solid:
+        if dy >= dx:
+            if self.sprite.boundingRect.centerx < other.rect.centerx and dxLeft >= dxRight and other.solid:
                 self.rect.right = other.rect.left+self.rect.right-self.sprite.boundingRect.right
                 if teched:
                     print 'Teched!'
                     self.change_x = other.change_x
                 else:
                     self.change_x = -0.8*self.change_x + other.change_x
-            elif self.ecb.xBar.rect.centerx > other.rect.centerx and dxRight >= dxLeft and other.solid:
+            elif self.sprite.boundingRect.centerx > other.rect.centerx and dxRight >= dxLeft and other.solid:
                 self.rect.left = other.rect.right+self.rect.left-self.sprite.boundingRect.left
                 if teched:
                     print 'Teched!'
                     self.change_x = other.change_x
                 else:
                     self.change_x = -0.8*self.change_x + other.change_x
-        elif dx >= dy and dy >= 0:
-            if self.ecb.yBar.rect.centery < other.rect.centery and dyUp >= dyDown:
+        elif dx >= dy:
+            if self.sprite.boundingRect.centery < other.rect.centery and dyUp >= dyDown and other.solid:
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.sprite.boundingRect.bottom
                 self.change_y = other.change_y
-            elif self.ecb.yBar.rect.centery > other.rect.centery and dyDown >= dyUp and other.solid:
+            elif self.sprite.boundingRect.centery > other.rect.centery and dyDown >= dyUp and other.solid:
                 self.rect.top = other.rect.bottom+self.rect.top-self.sprite.boundingRect.top
                 if teched:
                     print 'Teched!'
