@@ -986,6 +986,19 @@ class AirDodge(baseActions.AirDodge):
             actor.changeSpriteImage(0)
         baseActions.AirDodge.update(self, actor)
 
+class TechDodge(baseActions.TechDodge):
+    def __init__(self):
+        baseActions.TechDodge.__init__(self)
+
+    def update(self, actor):
+        if self.frame == 0:
+            actor.changeSprite("nair",0)
+        elif self.frame == self.startInvulnFrame:
+            actor.changeSpriteImage(-round(abs(actor.change_x)))
+        elif self.frame == self.endInvulnFrame:
+            actor.changeSpriteImage(0)
+        baseActions.TechDodge.update(self, actor)
+
 class Grabbed(baseActions.Grabbed):
     def __init__(self,height):
         baseActions.Grabbed.__init__(self, height)

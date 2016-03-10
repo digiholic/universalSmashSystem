@@ -97,6 +97,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
         
     def doAirDodge(self):
         self.changeAction(self.actions.AirDodge())
+
+    def doTechDodge(self):
+        self.changeAction(self.actions.TechDodge())
      
     def doLedgeGrab(self,ledge):
         self.changeAction(self.actions.LedgeGrab(ledge))

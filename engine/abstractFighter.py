@@ -307,6 +307,9 @@ class AbstractFighter():
         
     def doAirDodge(self):
         self.changeAction(baseActions.AirDodge())
+
+    def doTechDodge(self):
+        self.changeAction(baseActions.TechDodge())
         
     def doLedgeGrab(self,ledge):
         self.changeAction(baseActions.LedgeGrab(ledge))
