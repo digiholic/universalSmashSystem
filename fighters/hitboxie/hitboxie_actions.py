@@ -589,6 +589,7 @@ class Pummel(baseActions.BaseGrabbing):
         baseActions.BaseGrabbing.__init__(self,22)
 
     def update(self, actor):
+        baseActions.BaseGrabbing.update(self, actor)
         if self.frame == 0:
             actor.changeSprite("neutral", self.frame)
         elif self.frame < 9:
@@ -616,6 +617,7 @@ class ForwardThrow(baseActions.BaseGrabbing):
         baseActions.BaseGrabbing.tearDown(self, actor, other)
 
     def update(self, actor): 
+        baseActions.BaseGrabbing.update(self, actor)
         if self.frame == 0:
             actor.change_x = 0
             actor.preferred_xspeed = 0
@@ -659,6 +661,7 @@ class DownThrow(baseActions.BaseGrabbing):
         baseActions.BaseGrabbing.tearDown(self, actor, nextAction)
 
     def update(self, actor):
+        baseActions.BaseGrabbing.update(self, actor)
         actor.changeSpriteImage(self.frame%16)
         if (self.frame%4 == 0):
             self.bottomHitbox.hitbox_lock = hitbox.HitboxLock()
@@ -779,6 +782,7 @@ class Grabbing(baseActions.Grabbing):
         baseActions.Grabbing.__init__(self,1)
 
     def update(self, actor):
+        baseActions.Grabbing.update(self, actor)
         actor.change_x = 0
         if self.frame == 0:
             actor.changeSprite("pivot", 4)
