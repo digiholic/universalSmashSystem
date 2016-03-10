@@ -248,8 +248,6 @@ class Fall(action.Action):
         grabLedges(actor)
         
     def update(self,actor):
-        if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag <= actor.var['heavyLandLag']:
-            actor.landingLag = actor.var['heavyLandLag']
         actor.grounded = False
             
 class Land(action.Action):
@@ -522,7 +520,9 @@ class LedgeGetup(action.Action):
 #               TRANSITION STATES                     #
 ########################################################
 def neutralState(actor):
-    if actor.bufferContains('attack', 8):
+    if actor.bufferContains('shield', 8):
+        actor.doPreShield()
+    elif actor.bufferContains('attack', 8):
         actor.doGroundAttack()
     elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
@@ -532,67 +532,63 @@ def neutralState(actor):
         actor.doGroundMove(180)
     elif actor.keysContain('right'):
         actor.doGroundMove(0)
-    elif actor.bufferContains('shield', 8):
-        actor.doPreShield()
     
 def airState(actor):
     airControl(actor)
-    if actor.bufferContains('jump', 8) and actor.jumps > 0:
+    if actor.bufferContains('shield', 8):
+        actor.doAirDodge()
+    elif actor.bufferContains('attack', 8):
+        actor.doAirAttack()
+    elif actor.bufferContains('special', 8):
+        actor.doAirSpecial()
+    elif actor.bufferContains('jump', 8) and actor.jumps > 0:
         actor.doAirJump()
-    if actor.keysContain('down'):
+    elif actor.keysContain('down'):
         if actor.change_y >= 0:
             actor.change_y = actor.var['maxFallSpeed']
-            actor.landingLag = 14
-    if actor.bufferContains('attack',8):
-        actor.doAirAttack()
-    elif actor.bufferContains('shield',8):
-        actor.doAirDodge()
-    elif actor.bufferContains('special',8):
-        actor.doAirSpecial()
 
 def tumbleState(actor):
     airControl(actor)
-    if actor.bufferContains('jump', 8) and actor.jumps > 0:
+    if actor.bufferContains('shield', 8):
+        actor.doTechDodge()
+    elif actor.bufferContains('attack', 8):
+        actor.doAirAttack()
+    elif actor.bufferContains('special', 8):
+        actor.doAirSpecial()
+    elif actor.bufferContains('jump', 8) and actor.jumps > 0:
         actor.doAirJump()
-    if actor.keysContain('down'):
+    elif actor.keysContain('down'):
         if actor.change_y >= 0:
             actor.change_y = actor.var['maxFallSpeed']
-            actor.landingLag = 14
-    if actor.bufferContains('attack',8):
-        actor.doAirAttack()
-    elif actor.bufferContains('shield',8):
-        actor.doTechDodge()
-    elif actor.bufferContains('special',8):
-        actor.doAirSpecial()
             
 def moveState(actor, direction):
-    if actor.bufferContains('jump', 8):
-        actor.doJump()
     (key,_) = actor.getForwardBackwardKeys()
-    if not actor.keysContain(key):
-        actor.doStop()
     if actor.bufferContains('attack', 8):
         actor.doGroundAttack()
     elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
+    elif actor.bufferContains('jump', 8):
+        actor.doJump()
+    elif not actor.keysContain(key):
+        actor.doStop()
 
 def runState(actor, direction):
-    if actor.bufferContains('jump', 8):
-        actor.doJump()
     (key,_) = actor.getForwardBackwardKeys()
-    if not actor.keysContain(key):
-        actor.doStop()
     if actor.bufferContains('attack', 8):
         actor.doDashAttack()
     elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
+    elif actor.bufferContains('jump', 8):
+        actor.doJump()
+    elif not actor.keysContain(key):
+        actor.doStop()
             
 def shieldState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
-    if actor.bufferContains('jump'):
-        actor.doJump()
-    elif actor.bufferContains('attack'):
+    if actor.bufferContains('attack'):
         actor.doGroundGrab()
+    elif actor.bufferContains('jump'):
+        actor.doJump()
     elif actor.bufferContains(key):
         actor.doForwardRoll()
     elif actor.bufferContains(invkey):
@@ -603,15 +599,15 @@ def shieldState(actor):
 def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     actor.setSpeed(0, actor.getFacingDirection())
-    if actor.bufferContains(key):
+    if actor.bufferContains('jump', 8):
+        actor.ledgeLock = True
+        actor.doJump()
+    elif actor.bufferContains(key):
         actor.ledgeLock = True
         actor.doLedgeGetup()
     elif actor.keysContain(invkey):
         actor.ledgeLock = True
         actor.doFall()
-    elif actor.bufferContains('jump', 8):
-        actor.ledgeLock = True
-        actor.doJump()
 
 def grabbingState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
@@ -636,16 +632,14 @@ def tripState(actor, direction):
     (key, invkey) = actor.getForwardBackwardKeys()
     if actor.bufferContains('attack', 8):
         actor.doGetupAttack(direction)
+    elif actor.bufferContains('up', 8):
+        actor.doGetup(direction)
     elif actor.bufferContains(key, 8):
         actor.doForwardRoll()
     elif actor.bufferContains(key, 8):
         actor.doBackwardRoll()
     elif actor.bufferContains('down', 8):
         actor.doSpotDodge()
-    elif actor.bufferContains('shield', 8):
-        actor.doGetup(direction)
-    elif actor.bufferContains('up', 8):
-        actor.doGetup(direction)
 
 ########################################################
 #             BEGIN HELPER METHODS                     #
@@ -661,6 +655,9 @@ def airControl(actor):
         actor.preferred_xspeed = 0
     elif (actor.change_x > 0) and not actor.keysHeld.count('right'):
         actor.preferred_xspeed = 0
+
+    if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:
+        actor.landingLag = actor.var['heavyLandLag']
 
     if actor.grounded:
         actor.doLand()
