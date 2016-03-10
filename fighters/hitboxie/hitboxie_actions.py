@@ -116,6 +116,7 @@ class ForwardSpecial(action.Action):
             hitbox.SakuraiAngleHitbox.__init__(self, [0,0], [80,80], actor, 8, 2, 0.04, 30, 1, hitbox.HitboxLock(), 1, 6)
 
         def onCollision(self, other):
+            hitbox.Hitbox.onCollision(self, other)
             if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
                 if other.lockHitbox(self):
                     if other.shield:
@@ -128,7 +129,7 @@ class ForwardSpecial(action.Action):
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
     def stateTransitions(self, actor):
-        if abs(actor.change_x) < actor.var['runSpeed']/2 and self.frame >= 2:
+        if actor.change_x/actor.facing > 0 and self.frame >= 2:
             baseActions.grabLedges(actor)
 
     def tearDown(self, actor, newAction):
@@ -219,6 +220,7 @@ class NeutralAttack(action.Action):
             hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 2, 8, 0.02, 0, 1, hitbox.HitboxLock())
             
         def onCollision(self,other):
+            hitbox.Hitbox.onCollision(self, other)
             self.trajectory = abstractFighter.getDirectionBetweenPoints(self.owner.rect.midbottom, other.rect.center)
             hitbox.DamageHitbox.onCollision(self, other)
             

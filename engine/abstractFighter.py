@@ -55,8 +55,9 @@ class AbstractFighter():
         self.shieldIntegrity = 100
         
         # HitboxLock is a list of hitboxes that will not hit the fighter again for a given amount of time.
-        # Each entry in the list is in the form of (frames remaining, owner, hitbox ID)
+        # Each entry in the list is a hitboxLock object
         self.hitboxLock = weakref.WeakSet()
+        self.hitboxContact = set()
         
         # When a fighter lets go of a ledge, he can't grab another one until he gets out of the area.
         self.ledgeLock = False
@@ -121,7 +122,6 @@ class AbstractFighter():
 
         # Gravity
         self.calc_grav()
-
         
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
@@ -151,7 +151,8 @@ class AbstractFighter():
                 self.eject(block)
 
         self.sprite.updatePosition(self.rect)
-        self.hurtbox.rect = self.sprite.boundingRect
+
+        self.hitboxContact.clear()
 
         #Update Sprite
         self.ecb.store()
