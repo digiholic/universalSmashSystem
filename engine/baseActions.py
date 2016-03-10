@@ -10,7 +10,7 @@ class Move(action.Action):
         self.direction = actor.getForwardWithOffset(0)
         
     def update(self, actor):
-        actor.setSpeed(actor.var['maxGroundSpeed'],self.direction)
+        actor.setPreferredSpeed(actor.var['maxGroundSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
         
         self.frame += 1
@@ -28,7 +28,7 @@ class Dash(action.Action):
         else: self.direction = 180
 
     def update(self, actor):
-        actor.setSpeed(actor.var['runSpeed'],self.direction)
+        actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
         self.frame += 1
         if self.frame > self.lastFrame: 
@@ -46,7 +46,7 @@ class Run(action.Action):
         else: self.direction = 180
             
     def update(self, actor):
-        actor.setSpeed(actor.var['runSpeed'],self.direction)
+        actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
         
         self.frame += 1
@@ -143,13 +143,32 @@ class HitStun(action.Action):
             actor.unRotate()
             #Tumbling continues indefinetely, but can be cancelled out of
 
-        if actor.grounded and actor.change_y > 0.5*actor.var['maxFallSpeed']:
-            (direct,_) = actor.getDirectionMagnitude()
-            actor.doTrip(self.lastFrame-self.frame, direct)
+        if actor.grounded:
+            if actor.bufferContains('shield', 20): #Floor tech
+                actor.change_y = 0
+                actor.doTrip(-175, direct)
+            elif self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
+                actor.change_y = -0.4*actor.change_y
+            elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2:
+                actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
+            elif abs(actor.change_x)/actor.var['runSpeed'] > actor.change_y/actor.var['maxFallSpeed'] and abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
+                (direct,_) = actor.getDirectionMagnitude()
+                actor.change_y = 0
+                actor.doTrip(self.lastFrame-self.frame, direct)
+            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
+                actor.change_y = 0
+                actor.doIdle()
+            elif self.frame >= self.lastFrame: #Firm landing during tumble
+                actor.change_y = 0
+                actor.landingLag = actor.var['heavyLandLag']
+                actor.doLand()
+            elif actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during hitstun
+                actor.change_y = 0
+                actor.landingLag = actor.var['heavyLandLag']
+                actor.doLand()
+            else: #Firm landing during hitstun
+                actor.change_y = -0.4*actor.change_y
 
-        elif actor.grounded and self.frame >= self.lastFrame:
-            actor.doIdle()
-            
         self.frame += 1
 
 class Trip(action.Action):
@@ -232,6 +251,8 @@ class Fall(action.Action):
         grabLedges(actor)
         
     def update(self,actor):
+        if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag <= actor.var['heavyLandLag']:
+            actor.landingLag = actor.var['heavyLandLag']
         actor.grounded = False
             
 class Land(action.Action):
@@ -241,7 +262,7 @@ class Land(action.Action):
     def update(self,actor):
         if self.frame == 0:
             self.lastFrame = actor.landingLag
-            if actor.bufferContains('shield',distanceBack=22):
+            if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame / 2    
         if self.frame == self.lastFrame:
@@ -250,39 +271,60 @@ class Land(action.Action):
         actor.preferred_xspeed = 0
         self.frame+= 1
 
+class PreShield(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 4)
+
+    def stateTransitions(self, actor):
+        shieldState(actor)
+
+    def update(self, actor):
+        if self.frame == self.lastFrame:
+            actor.doShield()
+        self.frame += 1
+
 class Shield(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 6)
-        self.shieldFrame = 4
-        self.shieldStun = 0
+        action.Action.__init__(self, 2)
    
     def stateTransitions(self, actor):
-        if self.shieldStun <= 0:
-            shieldState(actor)
+        shieldState(actor)
    
     def tearDown(self, actor, newAction):
-        actor.shield = False
+        if not isinstance(newAction, ShieldStun):
+            actor.shield = False
        
     def update(self, actor):
-        if self.frame == self.shieldFrame:
+        if self.frame == 0:
             actor.shield = True
             actor.startShield()
             if actor.keysContain('shield'):
                 self.frame += 1
             else:
                 self.frame += 2
-        elif self.frame == self.shieldFrame+1:
+        elif self.frame == 1:
             if actor.keysContain('shield'):
-                actor.shieldDamage(1)
-            elif self.shieldStun > 0:
-                self.shieldStun -= 1
                 actor.shieldDamage(1)
             else:
                 self.frame += 1
-        elif self.frame == self.lastFrame:
+        elif self.frame >= self.lastFrame:
             actor.shield = False
             actor.doIdle()
         else: self.frame += 1
+
+class ShieldStun(action.Action):
+    def __init__(self, length):
+        action.Action.__init__(self, length)
+
+    def tearDown(self, actor, newAction):
+        if not isinstance(newAction, Shield) and not isinstance(newAction, ShieldStun):
+            actor.shield = False
+
+    def update(self, actor):
+        if self.frame >= self.lastFrame:
+            actor.doShield()
+        actor.shieldDamage(1)
+        self.frame += 1
 
 class ShieldBreak(action.Action):
     def __init__(self):
@@ -346,17 +388,20 @@ class ForwardRoll(action.Action):
         action.Action.__init__(self, 46)
         self.startInvulnFrame = 6
         self.endInvulnFrame = 34
+
+    def tearDown(self, actor, nextAction):
+        actor.invulnerable = False
         
     def update(self, actor):
         if self.frame == 1:
             actor.change_x = actor.facing * 10
         elif self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255], 22, True, 24)
-            #actor.invulnerable
+            actor.invulnerable = True
         elif self.frame == self.endInvulnFrame:
             actor.flip()
             actor.change_x = 0
-            #actor.vulnerable
+            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             if actor.keysContain('shield'):
                 actor.doShield()
@@ -369,16 +414,19 @@ class BackwardRoll(action.Action):
         action.Action.__init__(self, 50)
         self.startInvulnFrame = 6
         self.endInvulnFrame = 34
+
+    def tearDown(self, actor, nextAction):
+        actor.invulnerable = False
         
     def update(self, actor):
         if self.frame == 1:
             actor.change_x = actor.facing * -10
         elif self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255], 22, True, 24)
-            #actor.invulnerable
+            actor.invulnerable = True
         elif self.frame == self.endInvulnFrame:
             actor.change_x = 0
-            #actor.vulnerable
+            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             if actor.keysContain('shield'):
                 actor.doShield()
@@ -391,16 +439,19 @@ class SpotDodge(action.Action):
         action.Action.__init__(self, 24)
         self.startInvulnFrame = 4
         self.endInvulnFrame = 20
+
+    def tearDown(self, actor, nextAction):
+        actor.invulnerable = False
         
     def update(self,actor):
         if self.frame == 1:
             actor.change_x = 0
         elif self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255],16,True,24)
-            #actor.invulnerable
+            actor.invulnerable = True
         elif self.frame == self.endInvulnFrame:
             pass
-            #actor.vulnerable
+            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             if actor.keysContain('shield'):
                 actor.doShield()
@@ -419,7 +470,7 @@ class AirDodge(action.Action):
         
     def tearDown(self,actor,other):
         if actor.mask: actor.mask = None
-        #remove invuln
+        actor.invulnerable = False
     
     def stateTransitions(self, actor):
         airControl(actor)
@@ -427,10 +478,10 @@ class AirDodge(action.Action):
     def update(self,actor):
         if self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255],16,True,24)
-            #actor.invulnerable
+            actor.invulnerable = True
         elif self.frame == self.endInvulnFrame:
             pass
-            #actor.vulnerable
+            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
@@ -448,14 +499,11 @@ class LedgeGrab(action.Action):
         
     def update(self,actor):
         actor.jumps = actor.var['jumps']
-        actor.change_y = 0
+        actor.setSpeed(0, actor.getFacingDirection())
 
 class LedgeGetup(action.Action):
     def __init__(self):
         action.Action.__init__(self, 27)
-
-    def setUp(self,actor):
-        actor.rect.x -= actor.facing * actor.rect.width/4 #Will remove as soon as this kludge isn't needed
     
     def update(self,actor):
         if self.frame == self.lastFrame:
@@ -478,7 +526,7 @@ def neutralState(actor):
     elif actor.keysContain('right'):
         actor.doGroundMove(0)
     elif actor.bufferContains('shield', 8):
-        actor.doShield()
+        actor.doPreShield()
     
 def airState(actor):
     airControl(actor)
@@ -532,8 +580,7 @@ def shieldState(actor):
 
 def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
-    actor.change_x = 0
-    actor.change_y = 0
+    actor.setSpeed(0, actor.getFacingDirection())
     if actor.bufferContains(key):
         actor.ledgeLock = True
         actor.doLedgeGetup()

@@ -16,7 +16,8 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'airControl': 0.6,
                 'jumps': 1,
                 'jumpHeight': 12,
-                'airJumpHeight':14
+                'airJumpHeight': 14,
+                'heavyLandLag': 4
                 }
         abstractFighter.AbstractFighter.__init__(self,
                                  playerNum,
@@ -72,9 +73,15 @@ class Hitboxie(abstractFighter.AbstractFighter):
 
     def doAirJump(self):
         self.changeAction(self.actions.AirJump())
+
+    def doPreShield(self):
+        self.changeAction(self.actions.PreShield())
                 
     def doShield(self):
         self.changeAction(self.actions.Shield())
+
+    def doShieldStun(self, length):
+        self.changeAction(self.actions.ShieldStun(length))
     
     def doShieldBreak(self):
         self.changeAction(self.actions.ShieldBreak())
@@ -114,11 +121,11 @@ class Hitboxie(abstractFighter.AbstractFighter):
         if self.keysContain(key):
             self.changeAction(self.actions.ForwardThrow())
         elif self.keysContain(invkey):
-            self.changeAction(self.actions.BackThrow())
+            self.changeAction(self.actions.DownThrow())
         elif self.keysContain('up'):
             self.changeAction(self.actions.ForwardThrow())
         elif self.keysContain('down'):
-            self.changeAction(self.actions.BackThrow())
+            self.changeAction(self.actions.DownThrow())
         else: # How did we get here? 
             self.changeAction(self.actions.ForwardThrow())
         

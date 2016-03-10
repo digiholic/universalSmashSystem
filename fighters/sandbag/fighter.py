@@ -18,7 +18,8 @@ class Fighter(abstractFighter.AbstractFighter):
                 'airControl': 0.2,
                 'jumps': 1,
                 'jumpHeight': 8,
-                'airJumpHeight':10
+                'airJumpHeight':10,
+                'heavyLandLag': 4
                 }
         path = os.path.join(os.path.dirname(__file__),"sprites")
         sprite = spriteManager.SpriteHandler(path,"","sandbag",128,{})

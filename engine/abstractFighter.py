@@ -25,6 +25,11 @@ class AbstractFighter():
         self.no_flinch_hits = 0
         self.flinch_damage_threshold = 0
         self.flinch_knockback_threshold = 0
+
+        # Invulnerable flag
+        # While this is active, hitboxes can't connect with the fighter
+        # There are ways of bypassing invulnerability, but please avoid doing so
+        self.invulnerable = False
         
         # dataLog holds information for the post-game results screen
         self.dataLog = None
@@ -100,7 +105,7 @@ class AbstractFighter():
         self.current_action.update(self) #update our action
         
         if self.mask: self.mask = self.mask.update()
-        self.shieldIntegrity += 0.5
+        self.shieldIntegrity += 0.25
         if self.shieldIntegrity > 100: self.shieldIntegrity = 100
         
         for art in self.articles:
@@ -128,7 +133,7 @@ class AbstractFighter():
             block = block_hit_list.pop()
             if block.solid and self.sprite.boundingRect.top-(self.sprite.boundingRect.top-self.ecb.yBar.rect.top) > block.rect.bottom+block.change_y:
                 self.rect.top = block.rect.bottom+(self.rect.top-self.sprite.boundingRect.top)
-                if self.bufferContains('shield', 8):
+                if self.bufferContains('shield', 20):
                     print 'Teched!'
                     self.change_y = block.change_y-self.var['gravity']
                 else:
@@ -136,6 +141,7 @@ class AbstractFighter():
             elif self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
                 self.rect.bottom = block.rect.top+(self.rect.bottom-self.sprite.boundingRect.bottom)
                 self.change_y = block.change_y-self.var['gravity']
+
         # Move x and resolve collisions
         self.rect.x += self.change_x
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
@@ -277,9 +283,15 @@ class AbstractFighter():
 
     def doThrow(self):
         self.changeAction(baseActions.Throw())
+
+    def doPreSheild(self):
+        self.changeAction(baseActions.PreShield())
    
     def doShield(self):
         self.changeAction(baseActions.Shield())
+
+    def doShieldStun(self, length):
+        self.changeAction(baseActions.ShieldStun(length))
         
     def doShieldBreak(self):
         self.changeAction(baseActions.ShieldBreak())
@@ -359,8 +371,6 @@ class AbstractFighter():
     all the modding)
     """
     def applyKnockback(self, damage, kb, kbg, trajectory, weight_influence=1, hitstun_multiplier=1):
-        self.change_x = 0
-        self.change_y = 0
         self.dealDamage(damage)
         
         p = float(self.damage)
@@ -410,9 +420,8 @@ class AbstractFighter():
             self.doHitStun(hitstun_frames,trajectory)
 
         print(totalKB*DI_multiplier, trajectory)
-        self.setSpeed(totalKB*DI_multiplier, trajectory, False)
-        self.preferred_xspeed = 0
-        self.preferred_yspeed = 0
+        self.setSpeed(totalKB*DI_multiplier, trajectory)
+        self.setPreferredSpeed(0, self.getFacingDirection())
 
         return math.floor(totalKB*DI_multiplier)
 
@@ -425,18 +434,16 @@ class AbstractFighter():
     
     speed - the total speed you want the fighter to move
     direction - the angle of the speed vector, 0 being right, 90 being up, 180 being left.
-    preferred - whether or not this should be changing the preferred speed instead of modifying it directly.
-                defaults to True, meaning this will change the preferred speed (meaning the fighter will accelerate/decelerate to that speed)
-                if set to False, the fighter's speed will instantly change to that speed.
     """
-    def setSpeed(self,speed,direction,preferred = True):
+    def setSpeed(self,speed,direction):
         (x,y) = getXYFromDM(direction,speed)
-        if preferred:
-            self.preferred_xspeed = x
-            self.preferred_yspeed = y
-        else:
-            self.change_x = x
-            self.change_y = y
+        self.change_x = x
+        self.change_y = y
+
+    def setPreferredSpeed(self, speed, direction):
+        (x,y) = getXYFromDM(direction,speed)
+        self.preferred_xspeed = x
+        self.preferred_yspeed = y
         
     def rotateSprite(self,direction):
         self.sprite.rotate(-1 * (90 - direction))
@@ -469,9 +476,12 @@ class AbstractFighter():
     Returns true if it was successful, false if it already exists in the lock.
     
     hbox - the hitbox we are checking for
-    time - the time to lock the hitbox
     """
     def lockHitbox(self,hbox):
+        #Check for invulnerability first
+        if self.invulnerable:
+            return False
+
         #If the hitbox belongs to something, get tagged by it
         if not hbox.owner == None:
             self.hitTagged = hbox.owner
@@ -488,10 +498,8 @@ class AbstractFighter():
     def shieldDamage(self,damage):
         if self.shieldIntegrity > 0:
             self.shieldIntegrity -= damage
-            if isinstance(self.current_action, baseActions.Shield):
-                if self.current_action.shieldStun < damage-1:
-                    self.current_action.shieldStun = damage-1
-                    print self.current_action.shieldStun
+            if damage > 1:
+                self.doShieldStun(math.floor(damage/2))
         elif self.shieldIntegrity <= 0:
             self.doShieldBreak()
     
@@ -656,7 +664,7 @@ class AbstractFighter():
         dxLeft = -self.sprite.boundingRect.left+(self.sprite.boundingRect.left-self.ecb.xBar.rect.left)+other.rect.right+other.change_x
         dxRight = self.sprite.boundingRect.right-(self.sprite.boundingRect.right-self.ecb.xBar.rect.right)-other.rect.left-other.change_x
 
-        teched = self.bufferContains('shield', 8)
+        teched = self.bufferContains('shield', 20)
         
         if dxLeft < 0 and dxRight < 0: # If neither of our sides are inside the block
             pass
