@@ -123,7 +123,28 @@ class HitStun(action.Action):
         self.direction = direction
 
     def stateTransitions(self, actor):
-        if self.frame >= self.lastFrame:
+        if actor.grounded:
+            if actor.bufferContains('shield', 20): #Floor tech
+                actor.doTrip(-175, direct)
+            elif self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
+                actor.change_y = -0.4*actor.change_y
+            elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2:
+                actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
+            elif abs(actor.change_x)/actor.var['runSpeed'] > actor.change_y/actor.var['maxFallSpeed'] and abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
+                (direct,_) = actor.getDirectionMagnitude()
+                actor.doTrip(self.lastFrame-self.frame, direct)
+            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
+                actor.doIdle()
+            elif self.frame >= self.lastFrame: #Firm landing during tumble
+                actor.landingLag = actor.var['heavyLandLag']
+                actor.doLand()
+            elif actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during hitstun
+                actor.landingLag = actor.var['heavyLandLag']
+                actor.doLand()
+            else: #Firm landing during hitstun
+                actor.change_y = -0.4*actor.change_y
+
+        elif self.frame >= self.lastFrame:
             tumbleState(actor)
         
     def tearDown(self, actor, newAction):
@@ -527,44 +548,20 @@ def airState(actor):
     elif actor.bufferContains('special',8):
         actor.doAirSpecial()
 
-def resolveTumbleLand(actor):
-    if actor.bufferContains('shield', 20): #Floor tech
-        actor.doTrip(-175, direct)
-    elif self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
-        actor.change_y = -0.4*actor.change_y
-    elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2:
-        actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
-    elif abs(actor.change_x)/actor.var['runSpeed'] > actor.change_y/actor.var['maxFallSpeed'] and abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
-        (direct,_) = actor.getDirectionMagnitude()
-        actor.doTrip(self.lastFrame-self.frame, direct)
-    elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
-        actor.doIdle()
-    elif self.frame >= self.lastFrame: #Firm landing during tumble
-        actor.landingLag = actor.var['heavyLandLag']
-        actor.doLand()
-    elif actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during hitstun
-        actor.landingLag = actor.var['heavyLandLag']
-        actor.doLand()
-    else: #Firm landing during hitstun
-        actor.change_y = -0.4*actor.change_y
-
 def tumbleState(actor):
-    if actor.grounded:
-        resolveTumbleLand(actor)
-    else:
-        airControl(actor)
-        if actor.bufferContains('jump', 8) and actor.jumps > 0:
-            actor.doAirJump()
-        if actor.keysContain('down'):
-            if actor.change_y >= 0:
-                actor.change_y = actor.var['maxFallSpeed']
-                actor.landingLag = 14
-        if actor.bufferContains('attack',8):
-            actor.doAirAttack()
-        elif actor.bufferContains('shield',8):
-            actor.doTechDodge()
-        elif actor.bufferContains('special',8):
-            actor.doAirSpecial()
+    airControl(actor)
+    if actor.bufferContains('jump', 8) and actor.jumps > 0:
+        actor.doAirJump()
+    if actor.keysContain('down'):
+        if actor.change_y >= 0:
+            actor.change_y = actor.var['maxFallSpeed']
+            actor.landingLag = 14
+    if actor.bufferContains('attack',8):
+        actor.doAirAttack()
+    elif actor.bufferContains('shield',8):
+        actor.doTechDodge()
+    elif actor.bufferContains('special',8):
+        actor.doAirSpecial()
             
 def moveState(actor, direction):
     if actor.bufferContains('jump', 8):
