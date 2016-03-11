@@ -125,7 +125,8 @@ class HitStun(action.Action):
         self.direction = direction
 
     def stateTransitions(self, actor):
-        if actor.grounded:
+        (direct,_) = actor.getDirectionMagnitude()
+        if actor.grounded and self.frame > 2:
             if actor.bufferContains('shield', 20): #Floor tech
                 actor.doTrip(-175, direct)
             elif self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
@@ -133,7 +134,6 @@ class HitStun(action.Action):
             elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2:
                 actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
             elif abs(actor.change_x)/actor.var['runSpeed'] > actor.change_y/actor.var['maxFallSpeed'] and abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
-                (direct,_) = actor.getDirectionMagnitude()
                 actor.doTrip(self.lastFrame-self.frame, direct)
             elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
                 actor.doIdle()
@@ -316,7 +316,7 @@ class ShieldStun(action.Action):
             actor.shield = False
 
     def update(self, actor):
-        if self.frame >= self.lastFrame:
+        if self.frame >= self.lastFrame and actor.keysContain('shield'):
             actor.doShield()
         actor.shieldDamage(1)
         self.frame += 1
