@@ -29,7 +29,7 @@ class Hitbox(spriteObject.RectSprite):
         return
 
     def recenterSelfOnOwner(self):
-        self.rect.center = [self.owner.rect.center[0] + self.x_offset, self.owner.rect.center[1] + self.y_offset]
+        self.rect.center = [self.owner.rect.center[0] + self.x_offset*self.owner.facing, self.owner.rect.center[1] + self.y_offset]
         
 class DamageHitbox(Hitbox):
     def __init__(self,center,size,owner,

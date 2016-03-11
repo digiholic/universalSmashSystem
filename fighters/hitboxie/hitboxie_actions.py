@@ -239,6 +239,44 @@ class NeutralAttack(action.Action):
             actor.doIdle()
         self.frame += 1
 
+class UpAttack(action.Action):
+    def __init__(self):
+        action.Action.__init__(self,28)
+
+    def setUp(self, actor):
+        actor.changeSprite("utilt")
+        sharedLock = hitbox.HitboxLock()
+        actor.setPreferredSpeed(0, actor.facing)
+        self.sweetHitbox = hitbox.DamageHitbox([30,-20], [6,10], actor, 7, 8, 0.08, 100, 1, sharedLock)
+        self.tangyHitbox = hitbox.DamageHitbox([27,-29], [12,18], actor, 5, 7, 0.08, 110, 1, sharedLock)
+        self.sourHitbox = hitbox.DamageHitbox([21,-32], [24,26], actor, 3, 6, 0.08, 120, 1, sharedLock)
+
+    def tearDown(self, actor, newAction):
+        self.sweetHitbox.kill()
+        self.tangyHitbox.kill()
+        self.sourHitbox.kill()
+
+    def update(self, actor):
+        actor.changeSpriteImage(self.frame/4)
+        self.sweetHitbox.update()
+        self.tangyHitbox.update()
+        self.sourHitbox.update()
+        if self.frame == 4:
+            actor.active_hitboxes.add(self.sweetHitbox)
+        elif self.frame == 6:
+            actor.active_hitboxes.add(self.tangyHitbox)
+        elif self.frame == 8:
+            self.sweetHitbox.kill()
+            actor.active_hitboxes.add(self.sourHitbox)
+        elif self.frame == 12:
+            self.tangyHitbox.kill()
+        elif self.frame == 16:
+            self.sourHitbox.kill()
+        if self.frame == self.lastFrame:
+            actor.doIdle()
+        self.frame += 1
+        
+
 class DashAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,32)
@@ -704,8 +742,6 @@ class Move(baseActions.Move):
             if (self.frame == 0):
                 actor.changeSprite("run",4)
                 
-        if actor.grounded == False:
-            actor.doFall()
         baseActions.Move.update(self, actor)
         if (self.frame == self.lastFrame):
             self.frame = 12
@@ -742,8 +778,6 @@ class Run(baseActions.Run):
     def update(self, actor):
         actor.changeSprite("run",4)
                 
-        if actor.grounded == False:
-            actor.doFall()
         baseActions.Run.update(self, actor)
         if (self.frame == self.lastFrame):
             self.frame = 1
@@ -777,7 +811,6 @@ class NeutralAction(baseActions.NeutralAction):
         if self.frame == 0:
             actor.changeSprite("idle")
             self.frame += 1
-        if actor.grounded == False: actor.doFall()
 
 class Grabbing(baseActions.Grabbing):
     def __init__(self):
@@ -805,7 +838,6 @@ class Stop(baseActions.Stop):
             if actor.bufferContains('jump',8):
                 actor.doJump()
             else: actor.doIdle()
-        if actor.grounded == False: actor.doFall()
         baseActions.Stop.update(self, actor)
         
 class HitStun(baseActions.HitStun):

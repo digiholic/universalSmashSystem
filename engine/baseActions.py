@@ -10,6 +10,8 @@ class Move(action.Action):
         self.direction = actor.getForwardWithOffset(0)
         
     def update(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         actor.setPreferredSpeed(actor.var['maxGroundSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
         
@@ -28,6 +30,8 @@ class Dash(action.Action):
         else: self.direction = 180
 
     def update(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
         self.frame += 1
@@ -46,6 +50,8 @@ class Run(action.Action):
         else: self.direction = 180
             
     def update(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
         
@@ -60,6 +66,8 @@ class Pivot(action.Action):
         action.Action.__init__(self, length)
         
     def update(self,actor):
+        if actor.grounded == False:
+            actor.doFall()
         if self.frame != self.lastFrame:
             self.frame += 1
             actor.preferred_xspeed = 0
@@ -82,6 +90,8 @@ class Stop(action.Action):
         self.frame += 1
         
     def stateTransitions(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.bufferContains(key,8,andReleased=True) and actor.keysContain(key):
             print("run")
@@ -97,6 +107,8 @@ class NeutralAction(action.Action):
         return
     
     def stateTransitions(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         neutralState(actor)
 
 class BaseGrabbing(action.Action):
@@ -117,6 +129,8 @@ class Grabbing(BaseGrabbing):
         BaseGrabbing.__init__(self, length)
 
     def stateTransitions(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         grabbingState(actor)
         
 class HitStun(action.Action):
@@ -175,6 +189,8 @@ class Trip(action.Action):
         print("direction:", self.direction)
 
     def update(self, actor):
+        if actor.grounded == False:
+            actor.doHitstun(self.lastFrame-self.frame)
         if self.frame >= self.lastFrame + 180: #You aren't up yet?
             actor.doGetup(self.direction)
         self.frame += 1
@@ -290,6 +306,8 @@ class Shield(action.Action):
             actor.shield = False
        
     def update(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         if self.frame == 0:
             actor.shield = True
             actor.startShield()
@@ -316,6 +334,8 @@ class ShieldStun(action.Action):
             actor.shield = False
 
     def update(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         if self.frame >= self.lastFrame and actor.keysContain('shield'):
             actor.doShield()
         actor.shieldDamage(1)
@@ -375,6 +395,8 @@ class Release(action.Action):
         action.Action.__init__(self,5)
 
     def update(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         if self.frame == self.lastFrame:
             actor.doIdle()
         self.frame += 1
@@ -387,8 +409,11 @@ class ForwardRoll(action.Action):
 
     def tearDown(self, actor, nextAction):
         actor.invulnerable = False
+        actor.mask = None
         
     def update(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         if self.frame == 1:
             actor.change_x = actor.facing * 10
         elif self.frame == self.startInvulnFrame:
@@ -413,8 +438,11 @@ class BackwardRoll(action.Action):
 
     def tearDown(self, actor, nextAction):
         actor.invulnerable = False
+        actor.mask = None
         
     def update(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         if self.frame == 1:
             actor.change_x = actor.facing * -10
         elif self.frame == self.startInvulnFrame:
@@ -438,8 +466,11 @@ class SpotDodge(action.Action):
 
     def tearDown(self, actor, nextAction):
         actor.invulnerable = False
+        actor.mask = None
         
     def update(self,actor):
+        if actor.grounded == False:
+            actor.doFall()
         if self.frame == 1:
             actor.change_x = 0
         elif self.frame == self.startInvulnFrame:
@@ -607,6 +638,9 @@ def ledgeState(actor):
         actor.ledgeLock = True
         actor.doLedgeGetup()
     elif actor.keysContain(invkey):
+        actor.ledgeLock = True
+        actor.doFall()
+    elif actor.keysContain('down'):
         actor.ledgeLock = True
         actor.doFall()
 

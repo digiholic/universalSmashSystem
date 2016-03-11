@@ -146,9 +146,13 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 self.changeAction(self.actions.ForwardAttack())
         elif self.keysContain(invkey):
             self.flip()
-            self.changeAction(self.actions.ForwardAttack())
+            if self.checkSmash(key):
+                print("SMASH!")
+                self.changeAction(self.actions.ForwardSmash())
+            else:
+                self.changeAction(self.actions.ForwardAttack())
         elif self.keysContain('up'):
-            pass
+            self.changeAction(self.actions.UpAttack())
         elif self.keysContain('down'):
             self.changeAction(self.actions.DownAttack())
         else:
