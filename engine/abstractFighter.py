@@ -132,9 +132,6 @@ class AbstractFighter():
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
             self.eject(block)
-            if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
-                self.rect.bottom = block.rect.top+(self.rect.bottom-self.sprite.boundingRect.bottom)
-                self.change_y = block.change_y-self.var['gravity']
 
 
         self.sprite.updatePosition(self.rect)
@@ -260,6 +257,12 @@ class AbstractFighter():
 
     def doAirGrab(self):
         return None
+
+    def doTrapped(self, length):
+        self.changeAction(baseActions.Trapped(length))
+
+    def doStunned(self, length):
+        self.changeAction(baseActions.Stunned(length))
 
     def doGrabbed(self, height):
         self.changeAction(baseActions.Grabbed(height))
@@ -669,29 +672,34 @@ class AbstractFighter():
         if dy >= dx:
             if self.sprite.boundingRect.centerx < other.rect.centerx and dxLeft >= dxRight and other.solid:
                 self.rect.right = other.rect.left+self.rect.right-self.sprite.boundingRect.right
-                if teched:
+                if self.change_x > other.change_x and teched:
                     print 'Teched!'
                     self.change_x = other.change_x
-                else:
+                elif self.change_x > other.change_x:
                     self.change_x = -0.8*self.change_x + other.change_x
             elif self.sprite.boundingRect.centerx > other.rect.centerx and dxRight >= dxLeft and other.solid:
                 self.rect.left = other.rect.right+self.rect.left-self.sprite.boundingRect.left
-                if teched:
+                if self.change_x < other.change_x and teched:
                     print 'Teched!'
                     self.change_x = other.change_x
-                else:
+                elif self.change_x < other.change_x:
                     self.change_x = -0.8*self.change_x + other.change_x
         elif dx >= dy:
             if self.sprite.boundingRect.centery < other.rect.centery and dyUp >= dyDown and other.solid:
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.sprite.boundingRect.bottom
-                self.change_y = other.change_y
+                if self.change_y > other.change_y - self.var['gravity']:
+                    self.change_y = other.change_y-self.var['gravity']
+            elif self.sprite.boundingRect.bottom >= other.rect.top+other.change_y and self.ecb.yBar.rect.bottom <= other.rect.top+other.change_y:
+                self.rect.bottom = other.rect.top+(self.rect.bottom-self.sprite.boundingRect.bottom)
+                if self.change_y > other.change_y - self.var['gravity']:
+                    self.change_y = other.change_y-self.var['gravity']
             elif self.sprite.boundingRect.centery > other.rect.centery and dyDown >= dyUp and other.solid:
                 self.rect.top = other.rect.bottom+self.rect.top-self.sprite.boundingRect.top
-                if teched:
+                if self.change_y < other.change_y - self.var['gravity'] and teched:
                     print 'Teched!'
-                    self.change_y = other.change_y
-                else:
-                    self.change_y = -0.8*self.change_y + other.change_y
+                    self.change_y = other.change_y - self.var['gravity']
+                elif self.change_y < other.change_y - self.var['gravity']:
+                    self.change_y = -0.8*self.change_y + other.change_y - self.var['gravity']
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #

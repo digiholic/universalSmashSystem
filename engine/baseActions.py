@@ -321,25 +321,28 @@ class ShieldStun(action.Action):
         actor.shieldDamage(1)
         self.frame += 1
 
-class ShieldBreak(action.Action):
+class Stunned(action.Action):
+    def __init__(self, length):
+        action.Action.__init__(self, length)
+
+    def update(self, actor):
+        if self.frame == self.lastFrame:
+            actor.doIdle()
+        self.frame += 1
+
+class ShieldBreak(Stunned):
     def __init__(self):
-        action.Action.__init__(self, 2)
-        
-    def update(self,actor):
+        action.Action.__init__(self, 400)
+
+    def update(self, actor):
         if self.frame == 0:
             actor.shield = False
             actor.change_y = -15
-        elif self.frame == self.lastFrame:
-            if actor.shieldIntegrity == 100:
-                actor.doIdle()
-            else:
-                self.frame -= 1
-        self.frame += 1
+        Stunned.update(self, actor)
 
-class Grabbed(action.Action):
-    def __init__(self,height):
-        action.Action.__init__(self, 180)
-        self.height = height
+class Trapped(action.Action):
+    def __init__(self, length):
+        action.Action.__init__(self, length)
         self.time = 0
         self.upPressed = False
         self.downPressed = False
@@ -347,8 +350,6 @@ class Grabbed(action.Action):
         self.rightPressed = False
 
     def update(self,actor):
-        if self.frame == 0:
-            self.lastFrame = 40 + actor.damage/2
         if (actor.keysContain('up') ^ self.upPressed):
             self.frame += 0.5
         if (actor.keysContain('down') ^ self.downPressed):
@@ -368,6 +369,16 @@ class Grabbed(action.Action):
         self.frame += 1
         self.time += 1
         print(self.frame, self.time)
+
+class Grabbed(Trapped):
+    def __init__(self,height):
+        Trapped.__init__(self, 40)
+        self.height = height
+
+    def update(self,actor):
+        if self.frame == 0:
+            self.lastFrame = 40 + actor.damage/2
+        Trapped.update(self, actor)
         
 class Release(action.Action):
     def __init__(self):

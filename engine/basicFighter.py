@@ -105,6 +105,12 @@ class BasicFighter():
     def doAirGrab(self):
         return None
 
+    def doTrapped(self, length):
+        self.changeAction(self.actions.Trapped(length))
+
+    def doStunned(self, length):
+        self.changeAction(self.actions.Stunned(length))
+
     def doGrabbed(self,height):
         self.changeAction(self.actions.Grabbed(height))
 

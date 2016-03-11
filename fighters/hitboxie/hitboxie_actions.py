@@ -926,6 +926,18 @@ class ShieldStun(baseActions.ShieldStun):
     def update(self, actor):
         actor.createMask([191, 63, 191], self.lastFrame, False, 8)
         baseActions.ShieldStun.update(self, actor)
+
+class Stunned(baseActions.Stunned):
+    def __init__(self, length):
+        baseActions.Stunned.__init__(self, length)
+
+    def tearDown(self, actor, newAction):
+        actor.mask = None
+
+    def update(self, actor):
+        if self.frame == 0:
+            actor.createMask([255, 0, 255], 999, True, 8)
+        baseActions.Stunned.update(self, actor)
         
 class ShieldBreak(baseActions.ShieldBreak):
     def __init__(self):
@@ -933,7 +945,6 @@ class ShieldBreak(baseActions.ShieldBreak):
     
     def tearDown(self,actor,newAction):
         actor.mask = None
-        
         
     def update(self,actor):
         if self.frame == 0:
@@ -1004,6 +1015,14 @@ class TechDodge(baseActions.TechDodge):
         elif self.frame == self.endInvulnFrame:
             actor.changeSpriteImage(0)
         baseActions.TechDodge.update(self, actor)
+
+class Trapped(baseActions.Trapped):
+    def __init__(self, length):
+        baseActions.Trapped.__init__(self, length)
+
+    def update(self, actor):
+        actor.changeSprite("idle")
+        baseActions.Trapped.update(self, actor)
 
 class Grabbed(baseActions.Grabbed):
     def __init__(self,height):
