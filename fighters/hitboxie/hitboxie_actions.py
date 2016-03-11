@@ -939,18 +939,6 @@ class Stunned(baseActions.Stunned):
             actor.createMask([255, 0, 255], 999, True, 8)
         baseActions.Stunned.update(self, actor)
         
-class ShieldBreak(baseActions.ShieldBreak):
-    def __init__(self):
-        baseActions.ShieldBreak.__init__(self)
-    
-    def tearDown(self,actor,newAction):
-        actor.mask = None
-        
-    def update(self,actor):
-        if self.frame == 0:
-            actor.createMask([255,0,255],999,True,8)
-        baseActions.ShieldBreak.update(self, actor)
-        
 class ForwardRoll(baseActions.ForwardRoll):
     def __init__(self):
         baseActions.ForwardRoll.__init__(self)

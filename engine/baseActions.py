@@ -330,16 +330,6 @@ class Stunned(action.Action):
             actor.doIdle()
         self.frame += 1
 
-class ShieldBreak(Stunned):
-    def __init__(self):
-        action.Action.__init__(self, 400)
-
-    def update(self, actor):
-        if self.frame == 0:
-            actor.shield = False
-            actor.change_y = -15
-        Stunned.update(self, actor)
-
 class Trapped(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)

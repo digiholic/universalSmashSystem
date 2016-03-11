@@ -285,9 +285,6 @@ class AbstractFighter():
     def doShieldStun(self, length):
         self.changeAction(baseActions.ShieldStun(length))
         
-    def doShieldBreak(self):
-        self.changeAction(baseActions.ShieldBreak())
-        
     def doForwardRoll(self):
         self.changeAction(baseActions.ForwardRoll())
     
@@ -498,7 +495,8 @@ class AbstractFighter():
             if damage > 1:
                 self.doShieldStun(math.floor(damage/2))
         elif self.shieldIntegrity <= 0:
-            self.doShieldBreak()
+            self.change_y -= 15
+            self.doStunned(200)
     
 ########################################################
 #                 ENGINE FUNCTIONS                     #

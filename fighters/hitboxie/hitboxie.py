@@ -82,9 +82,6 @@ class Hitboxie(abstractFighter.AbstractFighter):
 
     def doShieldStun(self, length):
         self.changeAction(self.actions.ShieldStun(length))
-    
-    def doShieldBreak(self):
-        self.changeAction(self.actions.ShieldBreak())
         
     def doForwardRoll(self):
         self.changeAction(self.actions.ForwardRoll())
