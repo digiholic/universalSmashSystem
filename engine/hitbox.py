@@ -21,13 +21,15 @@ class Hitbox(spriteObject.RectSprite):
         self.y_offset = center[1]
         
     def onCollision(self,other):
-        return
+        #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
+        if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
+            other.hitboxContact.add(self)
     
     def update(self):
         return
 
     def recenterSelfOnOwner(self):
-        self.rect.center = [self.owner.rect.center[0] + self.x_offset, self.owner.rect.center[1] + self.y_offset]
+        self.rect.center = [self.owner.rect.center[0] + self.x_offset*self.owner.facing, self.owner.rect.center[1] + self.y_offset]
         
 class DamageHitbox(Hitbox):
     def __init__(self,center,size,owner,
@@ -43,6 +45,7 @@ class DamageHitbox(Hitbox):
         self.shield_multiplier = shield_multiplier
         
     def onCollision(self,other):
+        Hitbox.onCollision(self, other)
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
         if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
             if other.lockHitbox(self):
@@ -72,6 +75,7 @@ class SakuraiAngleHitbox(DamageHitbox):
                  trajectory, hitstun, hitbox_lock, weight_influence, shield_multiplier)
 
     def onCollision(self, other):
+        Hitbox.onCollision(self, other)
         if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
             if other.lockHitbox(self):
                 if other.shield:
@@ -102,6 +106,7 @@ class AutolinkHitbox(DamageHitbox):
         self.velocity_multiplier=velocity_multiplier
 
     def onCollision(self, other):
+        Hitbox.onCollision(self, other)
         if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
             if other.lockHitbox(self):
                 if other.shield:
@@ -120,6 +125,7 @@ class GrabHitbox(Hitbox):
         self.height = height;
 
     def onCollision(self,other):
+        Hitbox.onCollision(self, other)
         if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
             if other.lockHitbox(self):
                 self.owner.setGrabbing(other)

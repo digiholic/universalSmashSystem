@@ -85,6 +85,20 @@ class Land(baseActions.Land):
         #Put override code here
         baseActions.Land.update(self, actor)
 
+class Trapped(baseActions.Trapped):
+    def __init__(self, length):
+        baseActions.Trapped.__init__(self, length)
+
+    def update(self, actor):
+        baseActions.Trapped.update(self, actor)
+
+class Stunned(baseActions.Stunned):
+    def __init__(self, length):
+        baseActions.Stunned.__init__(self, length)
+
+    def update(self, actor):
+        baseActions.Stunned.update(self, actor)
+
 class Grabbed(baseActions.Grabbed):
     def __init__(self, height):
         baseActions.Grabbed.__init__(self, height)

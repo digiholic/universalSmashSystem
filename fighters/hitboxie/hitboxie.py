@@ -82,9 +82,6 @@ class Hitboxie(abstractFighter.AbstractFighter):
 
     def doShieldStun(self, length):
         self.changeAction(self.actions.ShieldStun(length))
-    
-    def doShieldBreak(self):
-        self.changeAction(self.actions.ShieldBreak())
         
     def doForwardRoll(self):
         self.changeAction(self.actions.ForwardRoll())
@@ -112,6 +109,12 @@ class Hitboxie(abstractFighter.AbstractFighter):
 
     def doGrabbing(self):
         self.changeAction(self.actions.Grabbing())
+
+    def doTrapped(self, length):
+        self.changeAction(self.actions.Trapped(length))
+
+    def doStunned(self, length):
+        self.changeAction(self.actions.Stunned(length))
 
     def doGrabbed(self, height):
         self.changeAction(self.actions.Grabbed(height))
@@ -143,9 +146,13 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 self.changeAction(self.actions.ForwardAttack())
         elif self.keysContain(invkey):
             self.flip()
-            self.changeAction(self.actions.ForwardAttack())
+            if self.checkSmash(key):
+                print("SMASH!")
+                self.changeAction(self.actions.ForwardSmash())
+            else:
+                self.changeAction(self.actions.ForwardAttack())
         elif self.keysContain('up'):
-            pass
+            self.changeAction(self.actions.UpAttack())
         elif self.keysContain('down'):
             self.changeAction(self.actions.DownAttack())
         else:
