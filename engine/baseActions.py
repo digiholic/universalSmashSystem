@@ -14,6 +14,14 @@ class Move(action.Action):
             actor.doFall()
         actor.setPreferredSpeed(actor.var['maxGroundSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
+
+        (key,invkey) = actor.getForwardBackwardKeys()
+        if self.direction == actor.getForwardWithOffset(0):
+            if actor.keysContain(invkey):
+                actor.flip()
+        else:
+            if not actor.keysContain(key):
+                actor.flip()
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
@@ -24,22 +32,29 @@ class Move(action.Action):
 class Dash(action.Action):
     def __init__(self,length): 
         action.Action.__init__(self,length)
+        self.pivoted = False
 
     def setUp(self,actor):
         if actor.facing == 1: self.direction = 0
         else: self.direction = 180
 
     def update(self, actor):
+        if self.frame == 0:
+            actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
         if actor.grounded == False:
             actor.doFall()
-        actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
+        if not self.pivoted:
+            (key,invkey) = actor.getForwardBackwardKeys()
+            if actor.keysContain(invkey):
+                actor.flip() #Do the moonwalk!
+                self.pivoted = True
         actor.accel(actor.var['staticGrip'])
         self.frame += 1
         if self.frame > self.lastFrame: 
             actor.doRun(actor.getFacingDirection())
     
     def stateTransitions(self,actor):
-        runState(actor,self.direction)
+        dashState(actor,self.direction)
         
 class Run(action.Action):
     def __init__(self,length):
@@ -52,7 +67,6 @@ class Run(action.Action):
     def update(self, actor):
         if actor.grounded == False:
             actor.doFall()
-        actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
         
         self.frame += 1
@@ -594,14 +608,29 @@ def tumbleState(actor):
             actor.change_y = actor.var['maxFallSpeed']
             
 def moveState(actor, direction):
-    (key,_) = actor.getForwardBackwardKeys()
+    (key,invkey) = actor.getForwardBackwardKeys()
     if actor.bufferContains('attack', 8):
         actor.doGroundAttack()
     elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
     elif actor.bufferContains('jump', 8):
         actor.doJump()
-    elif not actor.keysContain(key):
+    elif direction == actor.getForwardWithOffset(0) and not actor.keysContain(key):
+        actor.doStop()
+    elif direction == actor.getForwardWithOffset(180) and not actor.keysContain(invkey):
+        actor.doStop()
+
+def dashState(actor, direction):
+    (key,invkey) = actor.getForwardBackwardKeys()
+    if actor.bufferContains('attack', 8):
+        actor.doDashAttack()
+    elif actor.bufferContains('special', 8):
+        actor.doGroundSpecial()
+    elif actor.bufferContains('jump', 8):
+        actor.doJump()
+    elif direction == actor.getForwardWithOffset(0) and not actor.keysContain(key):
+        actor.doStop()
+    elif direction == actor.getForwardWithOffset(180) and not actor.keysContain(invkey):
         actor.doStop()
 
 def runState(actor, direction):

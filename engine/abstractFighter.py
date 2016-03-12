@@ -521,15 +521,6 @@ class AbstractFighter():
         k = self.keyBindings.get(key)
         self.inputBuffer.append((k,1.0))
         self.keysHeld.append(k)
-        
-        if k == 'left':
-            if self.keysContain('right'):
-                self.inputBuffer.append(('right',0))
-                self.keysHeld.remove('right')
-        elif k == 'right':
-            if self.keysContain('left'):
-                self.inputBuffer.append(('left',0))
-                self.keysHeld.remove('left')
                 
     """
     As above, but opposite.
