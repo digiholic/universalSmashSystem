@@ -40,7 +40,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
     
     def doFall(self):
         self.changeAction(self.actions.Fall())
-                
+    
+    def doPlatformDrop(self):
+        self.changeAction(self.actions.PlatformDrop())
+          
     def doLand(self):
         self.changeAction(self.actions.Land())
         

@@ -293,9 +293,20 @@ class Land(action.Action):
         if self.frame == self.lastFrame:
             actor.landingLag = 6
             actor.doIdle()
+            actor.platformPhase = False
         actor.preferred_xspeed = 0
         self.frame+= 1
 
+class PlatformDrop(action.Action):
+    def __init__(self, length):
+        action.Action.__init__(self, length)
+    
+    def update(self,actor):
+        if self.frame == self.lastFrame:
+            actor.platformPhase = True
+            actor.doFall()
+        self.frame += 1
+        
 class PreShield(action.Action):
     def __init__(self):
         action.Action.__init__(self, 4)
@@ -578,7 +589,16 @@ def neutralState(actor):
         actor.doGroundMove(180)
     elif actor.keysContain('right'):
         actor.doGroundMove(0)
-    
+    elif actor.keysContain('down'):
+        if actor.bufferContains('down',12,andReleased=True):
+            #check if the grounded block is passthrough
+            blocks = actor.checkForGround()
+            #Turn it into a list of true/false if the block is solid
+            blocks = map(lambda(x):x.solid,blocks)
+            #If none of the ground is solid
+            if not any(blocks):
+                actor.doPlatformDrop()
+                
 def airState(actor):
     airControl(actor)
     if actor.bufferContains('shield', 8):
@@ -592,6 +612,7 @@ def airState(actor):
     elif actor.keysContain('down'):
         if actor.change_y >= 0:
             actor.change_y = actor.var['maxFallSpeed']
+            actor.platformPhase = True
 
 def tumbleState(actor):
     airControl(actor)

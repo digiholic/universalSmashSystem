@@ -73,6 +73,7 @@ class AbstractFighter():
         self.jumps = self.var['jumps']
         self.damage = 0
         self.landingLag = 6
+        self.platformPhase = False
         
         self.change_x = 0
         self.change_y = 0
@@ -131,7 +132,9 @@ class AbstractFighter():
         self.rect.x += self.change_x
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
-            self.eject(block)
+            if block.solid or (not self.platformPhase):
+                self.platformPhase = False
+                self.eject(block)
 
 
         self.sprite.updatePosition(self.rect)
@@ -168,11 +171,15 @@ class AbstractFighter():
         self.grounded = False
         self.rect.y += 2
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+        groundBlock = pygame.sprite.Group()
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
-            if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
-                self.grounded = True
+            if block.solid or (not self.platformPhase):
+                if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
+                    self.grounded = True
+                    groundBlock.add(block)
         self.rect.y -= 2
+        return groundBlock
     
     """
     A simple function that converts the facing variable into a direction in degrees.
@@ -221,6 +228,9 @@ class AbstractFighter():
     
     def doFall(self):
         self.changeAction(baseActions.Fall())
+    
+    def doPlatformDrop(self):
+        self.changeAction(baseActions.PlatformDrop())
         
     def doGroundJump(self):
         self.changeAction(baseActions.Jump())
@@ -521,7 +531,7 @@ class AbstractFighter():
         k = self.keyBindings.get(key)
         self.inputBuffer.append((k,1.0))
         self.keysHeld.append(k)
-                
+        
     """
     As above, but opposite.
     """
@@ -888,4 +898,3 @@ class ECB():
         
         self.previousECB[0].draw(screen,self.actor.gameState.stageToScreen(self.previousECB[0].rect),scale)
         self.previousECB[1].draw(screen,self.actor.gameState.stageToScreen(self.previousECB[1].rect),scale)
-        
