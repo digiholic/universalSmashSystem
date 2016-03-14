@@ -144,9 +144,9 @@ class Crouch(action.Action):
         actor.accel(actor.var['staticGrip'])
         (key, invkey) = actor.getForwardBackwardKeys()
         if actor.keysContain(key):
-            actor.setPreferredSpeed(actor.var['crawlSpeed'], self.direction)
+            actor.setPreferredSpeed(actor.var['crawlSpeed'], actor.getFacingDirection())
         elif actor.keysContain(invkey):
-            actor.setPreferredSpeed(-actor.var['crawlSpeed'], self.direction)
+            actor.setPreferredSpeed(-actor.var['crawlSpeed'], actor.getFacingDirection())
         else:
             actor.setPreferredSpeed(0, self.direction)
         
