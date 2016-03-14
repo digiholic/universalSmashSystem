@@ -14,8 +14,6 @@ from stages import *
 def main(debug = False):
     
     settingsManager = importFromURI("__file__",'settingsManager.py')
-    
-    
     menu = importFromURI("__file__",'menu/menu.py')
     menu.Menu()
     
