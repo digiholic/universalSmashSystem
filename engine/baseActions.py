@@ -250,7 +250,7 @@ class Trip(action.Action):
 
     def update(self, actor):
         if actor.grounded == False:
-            actor.doHitstun(self.lastFrame-self.frame)
+            actor.doHitStun(self.lastFrame-self.frame, self.direction)
         if self.frame >= self.lastFrame + 180: #You aren't up yet?
             actor.doGetup(self.direction)
         self.frame += 1
@@ -336,7 +336,7 @@ class Land(action.Action):
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame / 2
-        elif actor.keysContain('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
+        elif actor.bufferContains('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
             blocks = actor.checkForGround()
             #Turn it into a list of true/false if the block is solid
             blocks = map(lambda(x):x.solid,blocks)
