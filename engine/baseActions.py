@@ -160,7 +160,7 @@ class CrouchGetup(action.Action):
     def update(self, actor):
         if actor.grounded == False:
             actor.doFall()
-        elif actor.bufferContains('down', 8, andReleased=True) and actor.keysContain('down'):
+        elif actor.bufferContains('down') and self.frame > 0:
             blocks = actor.checkForGround()
             #Turn it into a list of true/false if the block is solid
             blocks = map(lambda(x):x.solid,blocks)
@@ -336,7 +336,7 @@ class Land(action.Action):
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame / 2
-        elif actor.keysContain('down') and self.lastFrame - self.frame < 20:
+        elif actor.keysContain('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
             blocks = actor.checkForGround()
             #Turn it into a list of true/false if the block is solid
             blocks = map(lambda(x):x.solid,blocks)
@@ -355,6 +355,8 @@ class PlatformDrop(action.Action):
         action.Action.__init__(self, length)
     
     def update(self,actor):
+        if self.frame == 0:
+            actor.platformPhase = actor.var['dropPhase']
         if self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
@@ -548,7 +550,7 @@ class SpotDodge(action.Action):
     def update(self,actor):
         if actor.grounded == False:
             actor.doFall()
-        elif actor.bufferContains('down',8,andReleased=True) and actor.keysContain('down'):
+        elif actor.bufferContains('down') and self.frame > 0:
             blocks = actor.checkForGround()
             #Turn it into a list of true/false if the block is solid
             blocks = map(lambda(x):x.solid,blocks)

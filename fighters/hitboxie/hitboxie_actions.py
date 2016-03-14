@@ -1016,9 +1016,7 @@ class PlatformDrop(baseActions.PlatformDrop):
             baseActions.airControl(actor)
         
     def update(self,actor):
-        if self.frame == 0:
-            actor.platformPhase = 13
-        elif self.frame == 2:
+        if self.frame == 2:
             actor.changeSprite("airjump",4)
         elif self.frame == 5:
             actor.changeSpriteImage(3)

@@ -18,7 +18,8 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'jumps': 1,
                 'jumpHeight': 12,
                 'airJumpHeight': 14,
-                'heavyLandLag': 4
+                'heavyLandLag': 4,
+                'dropPhase': 13
                 }
         abstractFighter.AbstractFighter.__init__(self,
                                  playerNum,
