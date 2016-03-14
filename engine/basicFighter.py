@@ -47,6 +47,12 @@ class BasicFighter():
         
     def doIdle(self):
         self.changeAction(self.actions.NeutralAction())
+
+    def doCrouch(self):
+        self.changeAction(self.actions.Crouch())
+
+    def doCrouchGetup(self):
+        self.changeAction(self.actions.CrouchGetup())
         
     def doGroundMove(self,direction):
         self.changeAction(self.actions.Move())

@@ -82,7 +82,7 @@ class NeutralAirSpecial(action.Action):
         pass
                
     def update(self, actor):
-        actor.landingLag = 25
+        actor.landingLag = 16
         actor.changeSpriteImage(math.floor(self.frame/4))
         if self.frame == 24:
             self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
@@ -93,7 +93,7 @@ class NeutralAirSpecial(action.Action):
                 actor.changeAction(NeutralAirSpecial())
             
         if self.frame == self.lastFrame:
-            actor.landingLag = 12
+            actor.landingLag = 8
             actor.changeAction(Fall())
         self.frame += 1
 
@@ -543,7 +543,7 @@ class NeutralAir(action.Action):
         self.nairHitbox.kill()
     
     def update(self,actor):
-        actor.landingLag = 28
+        actor.landingLag = 20
         actor.changeSpriteImage(self.subImage % 16)
         self.subImage += 1
         if self.frame == 2:
@@ -558,7 +558,7 @@ class NeutralAir(action.Action):
             self.nairHitbox.baseKnockback = 2
         if self.frame == self.lastFrame:
             self.nairHitbox.kill()
-            actor.landingLag = 14
+            actor.landingLag = 12
             actor.changeAction(Fall())
         self.frame += 1
 
@@ -589,7 +589,7 @@ class DownAir(action.Action):
         self.rightSourSpot.kill()
         
     def update(self, actor):
-        actor.landingLag = 30
+        actor.landingLag = 26
         actor.change_x = 0
         actor.preferred_xspeed = 0
         self.downHitbox.update()
@@ -638,7 +638,7 @@ class DownAir(action.Action):
             actor.changeSpriteImage(1)
         else: 
             actor.changeSpriteImage(0)
-            actor.landingLag = 18
+            actor.landingLag = 16
             actor.changeAction(Fall())
         self.frame += 1
 
@@ -766,9 +766,6 @@ class DownThrow(baseActions.BaseGrabbing):
         if self.frame == self.lastFrame:
             actor.doIdle()
         self.frame += 1
-        
-
-        
 
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
@@ -873,7 +870,7 @@ class Grabbing(baseActions.Grabbing):
         baseActions.Grabbing.update(self, actor)
         actor.change_x = 0
         if self.frame == 0:
-            actor.changeSprite("pivot", 4)
+            actor.changeSprite('pivot', 4)
         self.frame += 1
         
 class Stop(baseActions.Stop):
@@ -892,6 +889,30 @@ class Stop(baseActions.Stop):
                 actor.doJump()
             else: actor.doIdle()
         baseActions.Stop.update(self, actor)
+
+class Crouch(baseActions.Crouch):
+    def __init__(self):
+        baseActions.Crouch.__init__(self, 2)
+
+    def setUp(self, actor):
+        actor.changeSprite('land', 0)
+
+    def update(self, actor):
+        actor.changeSpriteImage(self.frame)
+        if self.frame == self.lastFrame:
+            self.frame -= 1
+        baseActions.Crouch.update(self, actor)
+
+class CrouchGetup(baseActions.CrouchGetup):
+    def __init__(self):
+        baseActions.CrouchGetup.__init__(self, 9)
+
+    def setUp(self, actor):
+        actor.changeSprite('land', 2)
+
+    def update(self, actor):
+        actor.changeSpriteImage(3-self.frame/3)
+        baseActions.CrouchGetup.update(self, actor)
         
 class HitStun(baseActions.HitStun):
     def __init__(self,hitstun,direction):
@@ -995,10 +1016,11 @@ class PlatformDrop(baseActions.PlatformDrop):
             baseActions.airControl(actor)
         
     def update(self,actor):
-        if self.frame == 2:
+        if self.frame == 0:
+            actor.platformPhase = 13
+        elif self.frame == 2:
             actor.changeSprite("airjump",4)
         elif self.frame == 5:
-            actor.platformPhase = True
             actor.changeSpriteImage(3)
         elif self.frame == 10:
             actor.changeSpriteImage(2)

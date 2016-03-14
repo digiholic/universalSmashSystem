@@ -11,6 +11,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'maxGroundSpeed': 6,
                 'runSpeed': 9,
                 'maxAirSpeed': 6,
+                'crawlSpeed': 3,
                 'friction': 0.2,
                 'staticGrip': 0.1,
                 'airControl': 0.6,
@@ -37,6 +38,12 @@ class Hitboxie(abstractFighter.AbstractFighter):
     
     def doIdle(self):
         self.changeAction(self.actions.NeutralAction())
+
+    def doCrouch(self):
+        self.changeAction(self.actions.Crouch())
+
+    def doCrouchGetup(self):
+        self.changeAction(self.actions.CrouchGetup())
     
     def doFall(self):
         self.changeAction(self.actions.Fall())
