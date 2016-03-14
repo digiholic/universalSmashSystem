@@ -73,7 +73,7 @@ class AbstractFighter():
         self.jumps = self.var['jumps']
         self.damage = 0
         self.landingLag = 6
-        self.platformPhase = False
+        self.platformPhase = 0
         
         self.change_x = 0
         self.change_y = 0
@@ -132,7 +132,7 @@ class AbstractFighter():
         self.rect.x += self.change_x
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
-            if block.solid or (not self.platformPhase):
+            if block.solid or (self.platformPhase <= 0):
                 self.platformPhase = False
                 self.eject(block)
 
@@ -144,6 +144,9 @@ class AbstractFighter():
         #Update Sprite
         self.ecb.store()
         self.ecb.normalize()
+
+        if self.platformPhase > 0:
+            self.platformPhase -= 1
         
     """
     Change speed to get closer to the preferred speed without going over.
@@ -174,7 +177,7 @@ class AbstractFighter():
         groundBlock = pygame.sprite.Group()
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
-            if block.solid or (not self.platformPhase):
+            if block.solid or (self.platformPhase <= 0):
                 if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
                     self.grounded = True
                     groundBlock.add(block)
@@ -207,6 +210,12 @@ class AbstractFighter():
         
     def doIdle(self):
         self.changeAction(baseActions.NeutralAction())
+
+    def doCrouch(self):
+        self.changeAction(baseActions.Crouch())
+
+    def doCrouchGetup(self):
+        self.changeAction(baseActions.CrouchGetup())
         
     def doGroundMove(self,direction):
         self.changeAction(baseActions.Move())

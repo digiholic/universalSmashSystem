@@ -125,6 +125,52 @@ class NeutralAction(action.Action):
             actor.doFall()
         neutralState(actor)
 
+class Crouch(action.Action):
+    def __init__(self, length):
+        action.Action.__init__(self, length)
+        self.direction = -1
+
+    def setUp(self, actor):
+        self.direction = actor.getForwardWithOffset(0)
+
+    def stateTransitions(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
+        crouchState(actor)
+
+    def update(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
+        actor.accel(actor.var['staticGrip'])
+        (key, invkey) = actor.getForwardBackwardKeys()
+        if actor.keysContain(key):
+            actor.setPreferredSpeed(actor.var['crawlSpeed'], actor.getFacingDirection())
+        elif actor.keysContain(invkey):
+            actor.setPreferredSpeed(-actor.var['crawlSpeed'], actor.getFacingDirection())
+        else:
+            actor.setPreferredSpeed(0, self.direction)
+        
+        self.frame += 1
+        if self.frame > self.lastFrame: self.frame = 0
+
+class CrouchGetup(action.Action):
+    def __init__(self,length):
+        action.Action.__init__(self, length)
+
+    def update(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
+        elif actor.bufferContains('down') and self.frame > 0:
+            blocks = actor.checkForGround()
+            #Turn it into a list of true/false if the block is solid
+            blocks = map(lambda(x):x.solid,blocks)
+            #If none of the ground is solid
+            if not any(blocks):
+                actor.doPlatformDrop()
+        elif self.frame == self.lastFrame:
+            actor.doIdle()
+        self.frame += 1
+
 class BaseGrabbing(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
@@ -161,7 +207,7 @@ class HitStun(action.Action):
                 actor.change_y = -0.4*actor.change_y
             elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2:
                 actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
-            elif abs(actor.change_x)/actor.var['runSpeed'] > actor.change_y/actor.var['maxFallSpeed'] and abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
+            elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
                 actor.doTrip(self.lastFrame-self.frame, direct)
             elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
                 actor.doIdle()
@@ -204,7 +250,7 @@ class Trip(action.Action):
 
     def update(self, actor):
         if actor.grounded == False:
-            actor.doHitstun(self.lastFrame-self.frame)
+            actor.doHitStun(self.lastFrame-self.frame, self.direction)
         if self.frame >= self.lastFrame + 180: #You aren't up yet?
             actor.doGetup(self.direction)
         self.frame += 1
@@ -289,11 +335,18 @@ class Land(action.Action):
             self.lastFrame = actor.landingLag
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
-                self.lastFrame = self.lastFrame / 2    
+                self.lastFrame = self.lastFrame / 2
+        elif actor.bufferContains('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
+            blocks = actor.checkForGround()
+            #Turn it into a list of true/false if the block is solid
+            blocks = map(lambda(x):x.solid,blocks)
+            #If none of the ground is solid
+            if not any(blocks):
+                actor.doPlatformDrop()
         if self.frame == self.lastFrame:
             actor.landingLag = 6
             actor.doIdle()
-            actor.platformPhase = False
+            actor.platformPhase = 0
         actor.preferred_xspeed = 0
         self.frame+= 1
 
@@ -302,8 +355,9 @@ class PlatformDrop(action.Action):
         action.Action.__init__(self, length)
     
     def update(self,actor):
+        if self.frame == 0:
+            actor.platformPhase = actor.var['dropPhase']
         if self.frame == self.lastFrame:
-            actor.platformPhase = True
             actor.doFall()
         self.frame += 1
         
@@ -496,6 +550,13 @@ class SpotDodge(action.Action):
     def update(self,actor):
         if actor.grounded == False:
             actor.doFall()
+        elif actor.bufferContains('down') and self.frame > 0:
+            blocks = actor.checkForGround()
+            #Turn it into a list of true/false if the block is solid
+            blocks = map(lambda(x):x.solid,blocks)
+            #If none of the ground is solid
+            if not any(blocks):
+                actor.doPlatformDrop()
         if self.frame == 1:
             actor.change_x = 0
         elif self.frame == self.startInvulnFrame:
@@ -590,14 +651,17 @@ def neutralState(actor):
     elif actor.keysContain('right'):
         actor.doGroundMove(0)
     elif actor.keysContain('down'):
-        if actor.bufferContains('down',12,andReleased=True):
-            #check if the grounded block is passthrough
-            blocks = actor.checkForGround()
-            #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda(x):x.solid,blocks)
-            #If none of the ground is solid
-            if not any(blocks):
-                actor.doPlatformDrop()
+        actor.doCrouch()
+
+def crouchState(actor):
+    if actor.bufferContains('attack', 8):
+        actor.doGroundAttack()
+    elif actor.bufferContains('special', 8):
+        actor.doGroundSpecial()
+    elif actor.bufferContains('jump', 8):
+        actor.doJump()
+    elif not actor.keysContain('down'):
+        actor.doCrouchGetup()
                 
 def airState(actor):
     airControl(actor)
@@ -612,7 +676,6 @@ def airState(actor):
     elif actor.keysContain('down'):
         if actor.change_y >= 0:
             actor.change_y = actor.var['maxFallSpeed']
-            actor.platformPhase = True
 
 def tumbleState(actor):
     airControl(actor)
@@ -664,6 +727,16 @@ def runState(actor, direction):
         actor.doJump()
     elif not actor.keysContain(key):
         actor.doStop()
+
+def crouchState(actor):
+    if actor.bufferContains('attack', 8):
+        actor.doGroundAttack()
+    elif actor.bufferContains('special', 8):
+        actor.doGroundSpecial()
+    elif actor.bufferContains('jump', 8):
+        actor.doJump()
+    elif not actor.keysContain('down'):
+        actor.doCrouchGetup()
             
 def shieldState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
