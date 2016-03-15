@@ -675,6 +675,7 @@ def airState(actor):
         actor.doAirJump()
     elif actor.keysContain('down'):
         if actor.change_y >= 0:
+            actor.platformPhase = 1
             actor.change_y = actor.var['maxFallSpeed']
 
 def tumbleState(actor):
@@ -689,6 +690,7 @@ def tumbleState(actor):
         actor.doAirJump()
     elif actor.keysContain('down'):
         if actor.change_y >= 0:
+            actor.platformPhase = 1
             actor.change_y = actor.var['maxFallSpeed']
             
 def moveState(actor, direction):
