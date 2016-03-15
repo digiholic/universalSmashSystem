@@ -28,9 +28,9 @@ class AbstractFighter():
         self.armor_damage_multipler = 1
 
         # Invulnerable flag
-        # While this is active, hitboxes can't connect with the fighter
+        # While this is above zero, hitboxes can't connect with the fighter
         # There are ways of bypassing invulnerability, but please avoid doing so
-        self.invulnerable = False
+        self.invulnerable = 0
         
         # dataLog holds information for the post-game results screen
         self.dataLog = None
@@ -140,6 +140,8 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
 
         self.hitboxContact.clear()
+        if self.invulnerable > 1000:
+            self.invulnerable -= 1
 
         #Update Sprite
         self.ecb.store()
@@ -492,7 +494,7 @@ class AbstractFighter():
     """
     def lockHitbox(self,hbox):
         #Check for invulnerability first
-        if self.invulnerable:
+        if self.invulnerable > 0:
             return False
 
         #If the hitbox belongs to something, get tagged by it

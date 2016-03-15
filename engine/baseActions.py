@@ -369,6 +369,8 @@ class PreShield(action.Action):
         shieldState(actor)
 
     def update(self, actor):
+        if actor.grounded == False:
+            actor.doFall()
         if self.frame == self.lastFrame:
             actor.doShield()
         self.frame += 1
@@ -487,7 +489,7 @@ class ForwardRoll(action.Action):
         self.endInvulnFrame = 34
 
     def tearDown(self, actor, nextAction):
-        actor.invulnerable = False
+        actor.invulnerable = 0
         actor.mask = None
         
     def update(self, actor):
@@ -497,11 +499,10 @@ class ForwardRoll(action.Action):
             actor.change_x = actor.facing * 10
         elif self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255], 22, True, 24)
-            actor.invulnerable = True
+            actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
         elif self.frame == self.endInvulnFrame:
             actor.flip()
             actor.change_x = 0
-            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             if actor.keysContain('shield'):
                 actor.doShield()
@@ -516,7 +517,7 @@ class BackwardRoll(action.Action):
         self.endInvulnFrame = 34
 
     def tearDown(self, actor, nextAction):
-        actor.invulnerable = False
+        actor.invulnerable = 0
         actor.mask = None
         
     def update(self, actor):
@@ -526,10 +527,9 @@ class BackwardRoll(action.Action):
             actor.change_x = actor.facing * -10
         elif self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255], 22, True, 24)
-            actor.invulnerable = True
+            actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
         elif self.frame == self.endInvulnFrame:
             actor.change_x = 0
-            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             if actor.keysContain('shield'):
                 actor.doShield()
@@ -544,7 +544,7 @@ class SpotDodge(action.Action):
         self.endInvulnFrame = 20
 
     def tearDown(self, actor, nextAction):
-        actor.invulnerable = False
+        actor.invulnerable = 0
         actor.mask = None
         
     def update(self,actor):
@@ -561,10 +561,9 @@ class SpotDodge(action.Action):
             actor.change_x = 0
         elif self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255],16,True,24)
-            actor.invulnerable = True
+            actor.invulnerable = self.endInvulnFrame - self.startInvulnFrame
         elif self.frame == self.endInvulnFrame:
             pass
-            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             if actor.keysContain('shield'):
                 actor.doShield()
@@ -583,7 +582,7 @@ class AirDodge(action.Action):
         
     def tearDown(self,actor,other):
         if actor.mask: actor.mask = None
-        actor.invulnerable = False
+        actor.invulnerable = 0
     
     def stateTransitions(self, actor):
         airControl(actor)
@@ -591,10 +590,9 @@ class AirDodge(action.Action):
     def update(self,actor):
         if self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255],16,True,24)
-            actor.invulnerable = True
+            actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
         elif self.frame == self.endInvulnFrame:
             pass
-            actor.invulnerable = False
         elif self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
@@ -613,6 +611,11 @@ class LedgeGrab(action.Action):
     def __init__(self,ledge):
         action.Action.__init__(self, 1)
         self.ledge = ledge
+
+    def setUp(self, actor):
+        actor.createMask([255,255,255], 120, True, 12)
+        if actor.invulnerable > -30:
+            actor.invulnerable = 120
         
     def tearDown(self,actor,newAction):
         self.ledge.fighterLeaves(actor)
