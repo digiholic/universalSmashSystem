@@ -210,6 +210,7 @@ class Battle():
         # End while loop
         
         if exitStatus == 1:
+            musicManager.getMusicManager().stopMusic(1000)
             print("NO CONTEST")
         elif exitStatus == 2:
             musicManager.getMusicManager().stopMusic()

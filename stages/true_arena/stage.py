@@ -33,12 +33,12 @@ class TrueArena(stage.Stage):
         
         self.platform_list = [stage.Platform([self.size.centerx - 337,self.size.centery], [self.size.centerx + 337,self.size.centery+102],(True,True))]
         
-        self.spawnLocations = [[self.size.centerx - 337 + (134 * 1),self.size.centery],
-                               [self.size.centerx - 337 + (134 * 4),self.size.centery],
-                               [self.size.centerx - 337 + (134 * 2),self.size.centery],
-                               [self.size.centerx - 337 + (134 * 3),self.size.centery],
+        self.spawnLocations = [[self.size.centerx - 337 + (134 * 1),self.size.centery-1],
+                               [self.size.centerx - 337 + (134 * 4),self.size.centery-1],
+                               [self.size.centerx - 337 + (134 * 2),self.size.centery-1],
+                               [self.size.centerx - 337 + (134 * 3),self.size.centery-1],
                                ]
-        
+        print(self.spawnLocations)
         fgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TrueArenaFront.png"))
         fgSprite.rect.topleft = [self.size.centerx - 383,self.size.centery]
         self.foregroundSprites.append(fgSprite)
