@@ -167,7 +167,7 @@ class CrouchGetup(action.Action):
             #If none of the ground is solid
             if not any(blocks):
                 actor.doPlatformDrop()
-        elif self.frame == self.lastFrame:
+        elif self.frame >= self.lastFrame:
             actor.doIdle()
         self.frame += 1
 
