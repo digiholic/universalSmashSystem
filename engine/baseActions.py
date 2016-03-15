@@ -326,7 +326,7 @@ class Fall(action.Action):
     def update(self,actor):
         actor.grounded = False
 
-class Helpess(action.Action):
+class Helpless(action.Action):
     def __init__(self):
         action.Action.__init__(self, 1)
 
