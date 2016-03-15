@@ -336,7 +336,7 @@ class Land(action.Action):
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame / 2
-        elif actor.bufferContains('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
+        elif actor.keysContain('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
             blocks = actor.checkForGround()
             #Turn it into a list of true/false if the block is solid
             blocks = map(lambda(x):x.solid,blocks)
