@@ -78,6 +78,9 @@ class BasicFighter():
     def doFall(self):
         self.changeAction(self.actions.Fall())
 
+    def doHelpess(self):
+        self.changeAction(baseActions.Helpless())
+
     def doJump(self):
         self.changeAction(self.actions.Jump())
         

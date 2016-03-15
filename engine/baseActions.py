@@ -325,6 +325,17 @@ class Fall(action.Action):
         
     def update(self,actor):
         actor.grounded = False
+
+class Helpess(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 1)
+
+    def stateTransitions(self, actor):
+        airControl(actor)
+        grabLedges(actor)
+
+    def update(self, actor):
+        actor.grounded = False
             
 class Land(action.Action):
     def __init__(self):

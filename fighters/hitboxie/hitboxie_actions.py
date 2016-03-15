@@ -973,6 +973,19 @@ class Fall(baseActions.Fall):
     def update(self,actor):
         actor.changeSprite("jump")
         baseActions.Fall.update(self, actor)
+
+class Helpless(baseActions.Helpless):
+    def __init__(self):
+        baseActions.Helpless.__init__(self)
+
+    def tearDown(self, actor, newAction):
+        actor.mask = None
+
+    def update(self, actor):
+        if self.frame == 0:
+            actor.createMask([191, 63, 191], 99999, True, 8)
+        actor.changeSprite("jump")
+        baseActions.Helpless.update(self, actor)
             
 class Land(baseActions.Land):
     def __init__(self):
@@ -1063,7 +1076,7 @@ class Stunned(baseActions.Stunned):
 
     def update(self, actor):
         if self.frame == 0:
-            actor.createMask([255, 0, 255], 999, True, 8)
+            actor.createMask([255, 0, 255], 99999, True, 8)
         baseActions.Stunned.update(self, actor)
         
 class ForwardRoll(baseActions.ForwardRoll):

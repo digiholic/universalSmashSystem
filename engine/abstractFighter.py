@@ -239,6 +239,9 @@ class AbstractFighter():
     
     def doFall(self):
         self.changeAction(baseActions.Fall())
+
+    def doHelpess(self):
+        self.changeAction(baseActions.Helpless())
     
     def doPlatformDrop(self):
         self.changeAction(baseActions.PlatformDrop())
