@@ -143,7 +143,7 @@ class Battle():
                         exitStatus = 2
             # End pygame event loop
                                    
-            screen.fill([100, 100, 100])
+            screen.fill(self.stage.backgroundColor)
             
             current_stage.update()
             current_stage.cameraUpdate()

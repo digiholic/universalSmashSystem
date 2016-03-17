@@ -275,57 +275,74 @@ class UpAttack(action.Action):
             actor.doIdle()
         self.frame += 1
 
-"""
-NOT DONE. Still half the same stuff as forward smash
-"""
 class UpSmash(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 42)
+        action.Action.__init__(self, 48)
         self.chargeLevel = 0
         
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,12,0.8,.35,40,1,hitbox.HitboxLock())
-            
+        self.popupHBox = hitbox.DamageHitbox([0,0],[100,100],actor,0,20,0,90,0,hitbox.HitboxLock())
+        self.weakHBoxL = hitbox.DamageHitbox([0,-80],[80,80],actor,2,5,0,150,0,hitbox.HitboxLock())
+        self.weakHBoxR = hitbox.DamageHitbox([0,-80],[80,80],actor,2,5,0,30,0,hitbox.HitboxLock())
+        self.uSmashHitbox = hitbox.DamageHitbox([0,-80],[120,120],actor,8,2.0,.25,80,1,hitbox.HitboxLock())
+    
+    def tearDown(self, actor, newAction):
+        self.uSmashHitbox.kill()
+        
     def update(self,actor):
-        if self.frame >= 3 and self.frame <= 8 and not actor.keysContain('attack') and self.chargeLevel > 0:
-            self.frame = 9
+        if self.frame >= 3 and self.frame <= 11 and not actor.keysContain('attack') and self.chargeLevel > 0:
+            self.frame = 12
             actor.mask = None
             
         if self.frame == 0:
-            actor.change_x = 0
             actor.preferred_xspeed = 0
-            actor.changeSprite("fsmash",0)
+            actor.changeSprite("usmash",0)
         elif self.frame == 3:
-            if actor.keysContain('attack') and self.chargeLevel == 0:
-                actor.createMask([255,255,0],72,True,32)
             actor.changeSpriteImage(1)
         elif self.frame == 6:
+            if actor.keysContain('attack') and self.chargeLevel == 0:
+                actor.createMask([255,255,0],72,True,32)
             actor.changeSpriteImage(2)
-        elif self.frame == 8:
-            if actor.keysContain('attack') and self.chargeLevel <= 5:
-                print("charging...")
-                self.chargeLevel += 1
-                self.fSmashHitbox.damage += 1
-                self.fSmashHitbox.baseKnockback += 0.05
-                self.frame = 3
         elif self.frame == 9:
             actor.changeSpriteImage(3)
         elif self.frame == 12:
-            actor.changeSpriteImage(4)
+            if actor.keysContain('attack') and self.chargeLevel <= 5:
+                print("charging...")
+                self.chargeLevel += 1
+                self.uSmashHitbox.damage += 1
+                if self.chargeLevel % 3 == 0:
+                    self.weakHBoxL.damage += 1
+                    self.weakHBoxR.damage += 1
+                self.uSmashHitbox.baseKnockback += 0.2
+                self.frame = 6
         elif self.frame == 15:
+            actor.changeSpriteImage(4)
+        elif self.frame == 18:
             actor.mask = None
             actor.changeSpriteImage(5)
-        elif self.frame == 18:
-            actor.changeSpriteImage(6)
+            actor.active_hitboxes.add(self.popupHBox)
         elif self.frame == 21:
+            actor.changeSpriteImage(6)
+            self.popupHBox.kill()
+            actor.active_hitboxes.add(self.weakHBoxL)
+        elif self.frame == 24:
             actor.changeSpriteImage(7)
-            actor.active_hitboxes.add(self.fSmashHitbox)
-        elif self.frame == 36:
+            self.weakHBoxL.kill()
+            actor.active_hitboxes.add(self.weakHBoxR)
+        elif self.frame == 27:
             actor.changeSpriteImage(8)
-            self.fSmashHitbox.kill()
-        elif self.frame == 39:
+            self.weakHBoxR.kill()
+            actor.active_hitboxes.add(self.weakHBoxL)
+        elif self.frame == 30:
             actor.changeSpriteImage(9)
+            self.weakHBoxL.kill()
+            actor.active_hitboxes.add(self.weakHBoxR)
+        elif self.frame == 33:
+            actor.changeSpriteImage(10)
+            self.weakHBoxR.kill()
+            actor.active_hitboxes.add(self.uSmashHitbox)
         elif self.frame == self.lastFrame:
+            self.uSmashHitbox.kill()
             actor.doIdle()
         
         self.frame += 1 

@@ -52,11 +52,8 @@ class ArenaMovingPlatform(stage.Stage):
         
         bgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaBack.png"))
         bgSprite.rect.topleft = [self.size.centerx - 351,self.size.centery+140-125]
-        self.backgroundSprites.append(bgSprite)
+        self.addToBackground(bgSprite)
         
-        fgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaFront.png"))
-        fgSprite.rect.topleft = [self.size.centerx - 351,self.size.centery+140-6]
-        self.foregroundSprites.append(fgSprite)
         
         plat0front = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatFrontL.png"))
         plat0front.rect.topleft = [self.size.centerx - 314 - 9 + 56,self.size.centery]
@@ -67,6 +64,10 @@ class ArenaMovingPlatform(stage.Stage):
         
         self.foregroundSprites.extend([plat0front, self.plat1front, plat2front])
         
+        fgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaFront.png"))
+        fgSprite.rect.topleft = [self.size.centerx - 351,self.size.centery+140-6]
+        self.foregroundSprites.append(fgSprite)
+        
         plat0back = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatBackL.png"))
         plat0back.rect.topleft = [self.size.centerx - 314 - 9 + 56,self.size.centery-3]
         self.plat1back = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatBackM.png"))
@@ -74,7 +75,9 @@ class ArenaMovingPlatform(stage.Stage):
         plat2back = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatBackR.png"))
         plat2back.rect.topleft = [self.size.centerx - 314 - 9 + 56 + 172 + 172,self.size.centery-3]
         
-        self.backgroundSprites.extend([plat0back, self.plat1back, plat2back])
+        self.addToBackground(plat0back)
+        self.addToBackground(self.plat1back)
+        self.addToBackground(plat2back)
         
         self.getLedges()
         

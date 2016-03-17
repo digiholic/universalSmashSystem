@@ -44,7 +44,7 @@ class Arena(stage.Stage):
         
         bgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaBack.png"))
         bgSprite.rect.topleft = [self.size.centerx - 351,self.size.centery+140-125]
-        self.backgroundSprites.append(bgSprite)
+        self.addToBackground(bgSprite)
         
         fgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaFront.png"))
         fgSprite.rect.topleft = [self.size.centerx - 351,self.size.centery+140-6]
@@ -67,6 +67,7 @@ class Arena(stage.Stage):
         plat2back = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatBackR.png"))
         plat2back.rect.topleft = [self.size.centerx - 314 - 9 + 56 + 172 + 172,self.size.centery-3]
         
-        self.backgroundSprites.extend([plat0back, plat1back, plat2back])
-
+        self.addToBackground(plat0back)
+        self.addToBackground(plat1back)
+        self.addToBackground(plat2back)
         self.getLedges()

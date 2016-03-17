@@ -34,6 +34,7 @@ class Stage():
         """
         self.backgroundSprites = []
         self.foregroundSprites = []
+        self.backgroundColor = [100, 100, 100]
         
     """
     Puts the camera in the proper position.
@@ -209,8 +210,10 @@ class Stage():
     Draws the background elements in order.
     """
     def drawBG(self,screen):
-        for sprite in self.backgroundSprites:        
-            sprite.draw(screen,self.stageToScreen(sprite.rect),self.getScale())
+        for sprite,paralax in self.backgroundSprites:
+            x = sprite.rect.x - (self.camera_position.x * paralax)
+            y = sprite.rect.y - (self.camera_position.y)
+            sprite.draw(screen,(x,y),self.getScale())
             
     def drawFG(self,screen):
         if settingsManager.getSetting('showPlatformLines'):
@@ -222,7 +225,13 @@ class Stage():
             #ledgeSprite.draw(screen,self.stageToScreen(ledge.rect),self.getScale())
         for sprite in self.foregroundSprites:
             sprite.draw(screen,self.stageToScreen(sprite.rect),self.getScale())
-
+    
+    """
+    Adds an object to the background. Optionally pass a paralax factor which determines how much
+    it is affected by paralax. 1.0 is full scrolling with screen, 0.0 is no scrolling.
+    """
+    def addToBackground(self,sprite,paralaxFactor = 1.0):
+        self.backgroundSprites.append((sprite,paralaxFactor))
 """
 Platforms for the stage.
 Given two points (as a tuple of XY coordinates), it will
