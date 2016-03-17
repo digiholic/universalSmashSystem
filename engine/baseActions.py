@@ -619,43 +619,46 @@ class AirDodge(action.Action):
         self.move_vec = [0,0]
     
     def setUp(self,actor):
-        xMove = False
-        yMove = False
         actor.landingLag = 24
         if settingsManager.getSetting('airDodgeType') == 'directional':
             if actor.keysContain('right'):
                 self.move_vec[0] += float(1)
-                xMove = True
             if actor.keysContain('left'):
                 self.move_vec[0] -= float(1)
-                xMove = True
             if actor.keysContain('up'):
                 self.move_vec[1] -= float(1)
-                yMove = True
             if actor.keysContain('down'):
                 self.move_vec[1] += float(1)
-                yMove = True
             if self.move_vec[0]**2 + self.move_vec[1]**2 > 0:
                 magnitude = math.sqrt(self.move_vec[0]**2 + self.move_vec[1]**2)
                 self.move_vec[0] /= magnitude
                 self.move_vec[1] /= magnitude
-            if xMove:
-                actor.change_x = self.move_vec[0]*actor.var['runSpeed']
-            if yMove:
-                actor.change_y = self.move_vec[1]*actor.var['runSpeed']
+            actor.change_x = self.move_vec[0]*10
+            actor.change_y = self.move_vec[1]*10
         
     def tearDown(self,actor,other):
+        if settingsManager.getSetting('airDodgeType') == 'directional':
+            actor.gravityEnabled = True
         if actor.mask: actor.mask = None
         if actor.invulnerable > 0:
             actor.invulnerable = 0
     
     def stateTransitions(self, actor):
-        if self.move_vec[0] != 0 or self.move_vec[1] != 0 and settingsManager.getSetting('freeDodgeSpecialFall'):
-            helplessControl(actor)
-        else:
-            airControl(actor)
-            
+        if actor.grounded:
+            if not settingsManager.getSetting('enableWavedash'):
+                actor.change_x = 0
+            actor.doLand()
+                
     def update(self,actor):
+        if settingsManager.getSetting('airDodgeType') == 'directional':
+            if self.frame == 0:
+                actor.gravityEnabled = False
+            elif self.frame >= 16:
+                actor.change_x = 0
+                actor.change_y = 0
+            elif self.frame == self.lastFrame:
+                actor.gravityEnabled = True
+                
         if self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255],16,True,24)
             actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
@@ -884,6 +887,7 @@ def airControl(actor):
         actor.landingLag = actor.var['heavyLandLag']
 
     if actor.grounded:
+        actor.change_x = 0
         actor.doLand()
 
 def helplessControl(actor):
@@ -901,6 +905,7 @@ def helplessControl(actor):
         actor.landingLag = actor.var['heavyLandLag']
 
     if actor.grounded:
+        actor.change_x = 0
         actor.doHelplessLand()
 
 def grabLedges(actor):

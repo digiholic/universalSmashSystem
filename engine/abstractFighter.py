@@ -74,6 +74,7 @@ class AbstractFighter():
         self.damage = 0
         self.landingLag = 6
         self.platformPhase = 0
+        self.gravityEnabled = True
         
         self.change_x = 0
         self.change_y = 0
@@ -121,7 +122,8 @@ class AbstractFighter():
                 self.eject(block)
 
         # Gravity
-        self.calc_grav()
+        if self.gravityEnabled:
+            self.calc_grav()
         
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
