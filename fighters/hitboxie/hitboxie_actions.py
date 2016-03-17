@@ -194,7 +194,7 @@ class ForwardSpecial(action.Action):
            
 class NeutralAttack(action.Action):
     def __init__(self):
-        action.Action.__init__(self,22)
+        action.Action.__init__(self,17)
     
     def setUp(self, actor):
         actor.change_x = 0
@@ -224,16 +224,16 @@ class NeutralAttack(action.Action):
             hitbox.DamageHitbox.onCollision(self, other)
             
     def update(self, actor):
-        if self.frame < 9:
+        if self.frame < 4:
             actor.changeSpriteImage(self.frame)
-        elif self.frame == 9:
+        elif self.frame == 4:
             actor.active_hitboxes.add(self.jabHitbox)
-        elif self.frame >= 10 and self.frame <= 13:
+        elif self.frame >= 5 and self.frame <= 8:
             actor.changeSpriteImage(9)
-        elif self.frame > 13:
+        elif self.frame > 8:
             self.jabHitbox.kill()
-            if not (self.frame) > 18:
-                actor.changeSpriteImage(self.frame - 4)
+            if not (self.frame) > 13:
+                actor.changeSpriteImage(self.frame + 1)
         if self.frame == self.lastFrame:
             actor.doIdle()
         self.frame += 1
@@ -1017,6 +1017,20 @@ class Land(baseActions.Land):
                     actor.changeSpriteImage(self.frame / 3)
         
         baseActions.Land.update(self, actor)
+
+class HelplessLand(baseActions.HelplessLand):
+    def __init__(self):
+        baseActions.HelplessLand.__init__(self)
+        
+    def update(self,actor):
+        if self.frame == 0:
+            actor.changeSprite("land",0)
+        else:
+            if self.frame < 12:
+                if self.frame % 3 == 0:
+                    actor.changeSpriteImage(self.frame / 3)
+        
+        baseActions.HelplessLand.update(self, actor)
 
 class Trip(baseActions.Trip):
     def __init__(self, length, direction):

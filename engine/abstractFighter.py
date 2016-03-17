@@ -236,11 +236,14 @@ class AbstractFighter():
     
     def doLand(self):
         self.changeAction(baseActions.Land())
+
+    def doHelplessLand(self):
+        self.changeAction(baseActions.HelplessLand())
     
     def doFall(self):
         self.changeAction(baseActions.Fall())
 
-    def doHelpess(self):
+    def doHelpless(self):
         self.changeAction(baseActions.Helpless())
     
     def doPlatformDrop(self):
@@ -401,12 +404,10 @@ class AbstractFighter():
             self.dealDamage(math.floor(damage*armor_multiplier))
             return 0
 
-        (forward, backward) = self.getForwardBackwardKeys()
-
         di_vec = [0,0]
-        if self.keysContain(forward):
+        if self.keysContain('right'):
             di_vec[0] += float(1)
-        if self.keysContain(backward):
+        if self.keysContain('left'):
             di_vec[0] -= float(1)
         if self.keysContain('up'):
             di_vec[1] -= float(1)

@@ -74,6 +74,9 @@ class BasicFighter():
     
     def doLand(self):
         self.changeAction(self.actions.Land())
+
+    def doHelplessLand(self):
+        self.changeAction(self.actions.HelplessLand())
     
     def doFall(self):
         self.changeAction(self.actions.Fall())
