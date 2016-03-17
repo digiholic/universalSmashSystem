@@ -635,7 +635,7 @@ class AirDodge(action.Action):
             
     def update(self,actor):
         #Directional airdodge code begins here
-        if self.frame == 0 and settingsManager.getSetting('airDodgeType') == DIRECTIONAL:
+        if self.frame == 0 and settingsManager.getSetting('airDodgeType') == 'DIRECTIONAL':
             if actor.keysContain('right'):
                 self.move_vec[0] += float(1)
             if actor.keysContain('left'):
@@ -659,7 +659,7 @@ class AirDodge(action.Action):
         elif self.frame == self.endInvulnFrame:
             pass
         elif self.frame == self.lastFrame:
-            if self.move_vec[0] != 0 or self.move_vec[1] != 0:
+            if (self.move_vec[0] != 0 or self.move_vec[1] != 0) and settingsManager.getSetting('freeDodgeSpecialFall'):
                 actor.doHelpless()
             else:
                 actor.doFall()
@@ -683,7 +683,7 @@ class LedgeGrab(action.Action):
     def setUp(self, actor):
         actor.createMask([255,255,255], 120, True, 12)
         if actor.invulnerable > -30:
-            actor.invulnerable = 120
+            actor.invulnerable = settingsManager.getSetting('ledgeInvincibilityTime')
         
     def tearDown(self,actor,newAction):
         self.ledge.fighterLeaves(actor)
@@ -703,7 +703,6 @@ class LedgeGetup(action.Action):
         if self.frame == self.lastFrame:
             actor.doStop()
         self.frame += 1
-
 
 ########################################################
 #               TRANSITION STATES                     #
