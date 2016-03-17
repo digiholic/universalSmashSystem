@@ -1,5 +1,7 @@
 import engine.action as action
 import pygame
+import math
+import settingsManager
            
 class Move(action.Action):
     def __init__(self,length):
@@ -331,7 +333,7 @@ class Helpless(action.Action):
         action.Action.__init__(self, 1)
 
     def stateTransitions(self, actor):
-        airControl(actor)
+        helplessControl(actor)
         grabLedges(actor)
 
     def update(self, actor):
@@ -358,7 +360,32 @@ class Land(action.Action):
             actor.landingLag = 6
             actor.doIdle()
             actor.platformPhase = 0
-        actor.preferred_xspeed = 0
+        actor.setPreferredSpeed(0, actor.getFacingDirection())
+        self.frame+= 1
+
+class HelplessLand(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 6)
+
+    def update(self,actor):
+        if self.frame == 0:
+            self.lastFrame = actor.landingLag
+            if actor.bufferContains('shield', 20):
+                print("l-cancel")
+                self.lastFrame = self.lastFrame / 2
+        elif actor.keysContain('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
+            blocks = actor.checkForGround()
+            #Turn it into a list of true/false if the block is solid
+            blocks = map(lambda(x):x.solid,blocks)
+            #If none of the ground is solid
+            if not any(blocks):
+                actor.doPlatformDrop()
+        if self.frame == self.lastFrame:
+            actor.landingLag = 6
+            actor.doIdle()
+            actor.platformPhase = 0
+        if self.frame == self.lastFrame or settingsManager.getSetting('enableWavedash'):
+            actor.setPreferredSpeed(0, actor.getFacingDirection())
         self.frame+= 1
 
 class PlatformDrop(action.Action):
@@ -500,7 +527,8 @@ class ForwardRoll(action.Action):
         self.endInvulnFrame = 34
 
     def tearDown(self, actor, nextAction):
-        actor.invulnerable = 0
+        if actor.invulnerable > 0:
+            actor.invulnerable = 0
         actor.mask = None
         
     def update(self, actor):
@@ -528,7 +556,8 @@ class BackwardRoll(action.Action):
         self.endInvulnFrame = 34
 
     def tearDown(self, actor, nextAction):
-        actor.invulnerable = 0
+        if actor.invulnerable > 0:
+            actor.invulnerable = 0
         actor.mask = None
         
     def update(self, actor):
@@ -555,7 +584,8 @@ class SpotDodge(action.Action):
         self.endInvulnFrame = 20
 
     def tearDown(self, actor, nextAction):
-        actor.invulnerable = 0
+        if actor.invulnerable > 0:
+            actor.invulnerable = 0
         actor.mask = None
         
     def update(self,actor):
@@ -587,25 +617,52 @@ class AirDodge(action.Action):
         action.Action.__init__(self, 24)
         self.startInvulnFrame = 4
         self.endInvulnFrame = 20
+        self.move_vec = [0,0]
     
     def setUp(self,actor):
         actor.landingLag = 24
         
     def tearDown(self,actor,other):
         if actor.mask: actor.mask = None
-        actor.invulnerable = 0
+        if actor.invulnerable > 0:
+            actor.invulnerable = 0
     
     def stateTransitions(self, actor):
-        airControl(actor)
+        if self.move_vec[0] != 0 or self.move_vec[1] != 0:
+            helplessControl(actor)
+        else:
+            airControl(actor)
             
     def update(self,actor):
+        #Directional airdodge code begins here
+        if self.frame == 0 and settingsManager.getSetting('airDodgeType') == DIRECTIONAL:
+            if actor.keysContain('right'):
+                self.move_vec[0] += float(1)
+            if actor.keysContain('left'):
+                self.move_vec[0] -= float(1)
+            if actor.keysContain('up'):
+                self.move_vec[1] -= float(1)
+            if actor.keysContain('down'):
+                self.move_vec[1] += float(1)
+            if self.move_vec[0]**2 + self.move_vec[1]**2 > 0:
+                magnitude = math.sqrt(self.move_vec[0]**2 + self.move_vec[1]**2)
+                self.move_vec[0] /= magnitude
+                self.move_vec[1] /= magnitude
+            actor.change_x = self.move_vec[0]*actor.var['runSpeed']
+            actor.change_y = self.move_vec[1]*actor.var['runSpeed']
+
+        #Directional airdodge code ends here
+        
         if self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255],16,True,24)
             actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
         elif self.frame == self.endInvulnFrame:
             pass
         elif self.frame == self.lastFrame:
-            actor.doFall()
+            if self.move_vec[0] != 0 or self.move_vec[1] != 0:
+                actor.doHelpless()
+            else:
+                actor.doFall()
         self.frame += 1
 
 class TechDodge(AirDodge):
@@ -688,8 +745,9 @@ def airState(actor):
     elif actor.bufferContains('jump', 8) and actor.jumps > 0:
         actor.doAirJump()
     elif actor.keysContain('down'):
-        if actor.change_y >= 0:
-            actor.platformPhase = 1
+        actor.platformPhase = 1
+        actor.change_y += actor.var['airControl']
+        if actor.change_y > actor.var['maxFallSpeed']:
             actor.change_y = actor.var['maxFallSpeed']
 
 def tumbleState(actor):
@@ -743,16 +801,6 @@ def runState(actor, direction):
         actor.doJump()
     elif not actor.keysContain(key):
         actor.doStop()
-
-def crouchState(actor):
-    if actor.bufferContains('attack', 8):
-        actor.doGroundAttack()
-    elif actor.bufferContains('special', 8):
-        actor.doGroundSpecial()
-    elif actor.bufferContains('jump', 8):
-        actor.doJump()
-    elif not actor.keysContain('down'):
-        actor.doCrouchGetup()
             
 def shieldState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
@@ -835,6 +883,23 @@ def airControl(actor):
 
     if actor.grounded:
         actor.doLand()
+
+def helplessControl(actor):
+    if actor.keysHeld.count('left'):
+        actor.preferred_xspeed = -actor.var['maxAirSpeed']
+    elif actor.keysHeld.count('right'):
+        actor.preferred_xspeed = actor.var['maxAirSpeed']
+    
+    if (actor.change_x < 0) and not actor.keysHeld.count('left'):
+        actor.preferred_xspeed = 0
+    elif (actor.change_x > 0) and not actor.keysHeld.count('right'):
+        actor.preferred_xspeed = 0
+
+    if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:
+        actor.landingLag = actor.var['heavyLandLag']
+
+    if actor.grounded:
+        actor.doHelplessLand()
 
 def grabLedges(actor):
     # Check if we're colliding with any ledges.
