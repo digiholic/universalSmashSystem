@@ -384,7 +384,7 @@ class HelplessLand(action.Action):
             actor.landingLag = 6
             actor.doIdle()
             actor.platformPhase = 0
-        actor.setPreferredSpeed(0, actor.getFacingDirection())
+            actor.setPreferredSpeed(0, actor.getFacingDirection())
         self.frame += 1
 
 class PlatformDrop(action.Action):
@@ -619,22 +619,30 @@ class AirDodge(action.Action):
         self.move_vec = [0,0]
     
     def setUp(self,actor):
+        xMove = False
+        yMove = False
         actor.landingLag = 24
         if settingsManager.getSetting('airDodgeType') == 'directional':
             if actor.keysContain('right'):
                 self.move_vec[0] += float(1)
+                xMove = True
             if actor.keysContain('left'):
                 self.move_vec[0] -= float(1)
+                xMove = True
             if actor.keysContain('up'):
                 self.move_vec[1] -= float(1)
+                yMove = True
             if actor.keysContain('down'):
                 self.move_vec[1] += float(1)
+                yMove = True
             if self.move_vec[0]**2 + self.move_vec[1]**2 > 0:
                 magnitude = math.sqrt(self.move_vec[0]**2 + self.move_vec[1]**2)
                 self.move_vec[0] /= magnitude
                 self.move_vec[1] /= magnitude
-            actor.change_x = self.move_vec[0]*actor.var['maxAirSpeed']
-            actor.change_y = self.move_vec[1]*actor.var['maxAirSpeed']
+            if xMove:
+                actor.change_x = self.move_vec[0]*actor.var['runSpeed']
+            if yMove:
+                actor.change_y = self.move_vec[1]*actor.var['runSpeed']
         
     def tearDown(self,actor,other):
         if actor.mask: actor.mask = None
@@ -642,11 +650,6 @@ class AirDodge(action.Action):
             actor.invulnerable = 0
     
     def stateTransitions(self, actor):
-        if actor.grounded and settingsManager.getSetting('enableWavedash'): 
-            if actor.change_x > 0:
-                actor.change_x += actor.change_y
-            elif actor.change_x < 0:
-                actor.change_x -= actor.change_y
         if self.move_vec[0] != 0 or self.move_vec[1] != 0 and settingsManager.getSetting('freeDodgeSpecialFall'):
             helplessControl(actor)
         else:
