@@ -206,7 +206,7 @@ class StageGrid():
         left_pos = 0
         
         for row in range(0,len(self.stageGrid)):
-            for stage in range(0,row+3):
+            for stage in range(0,len(self.stageGrid[row])):
                 if self.getStageAt(stage,row) == 'random':
                     sprite = spriteManager.ImageSprite(settingsManager.createPath(os.path.join("sprites","icon_unknown.png")))
                 else:
