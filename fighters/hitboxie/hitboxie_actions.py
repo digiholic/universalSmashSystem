@@ -99,7 +99,7 @@ class NeutralAirSpecial(action.Action):
 
 class ForwardSpecial(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 32)
+        action.Action.__init__(self, 64)
         self.spriteImage = 0
 
     def setUp(self, actor):
@@ -107,12 +107,13 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
         actor.changeSprite("nair",0)
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 1, 1, hitbox.HitboxLock(), 5, 1)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 1, 1)
         self.flingHitbox = self.sideSpecialHitbox(actor)
+        self.numFrames = 0
 
     class sideSpecialHitbox(hitbox.SakuraiAngleHitbox):
         def __init__(self,actor):
-            hitbox.SakuraiAngleHitbox.__init__(self, [0,0], [80,80], actor, 8, 2, 0.04, 30, 1, hitbox.HitboxLock(), 1, 6)
+            hitbox.SakuraiAngleHitbox.__init__(self, [0,0], [80,80], actor, 8, 5, .3, 300, 1, hitbox.HitboxLock(), 1, 5)
 
         def onCollision(self, other):
             hitbox.Hitbox.onCollision(self, other)
@@ -128,7 +129,7 @@ class ForwardSpecial(action.Action):
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
     def stateTransitions(self, actor):
-        if actor.change_x/actor.facing <= 0 and self.frame >= 2:
+        if actor.change_x/actor.facing <= 0 and self.frame >= 8:
             baseActions.grabLedges(actor)
 
     def tearDown(self, actor, newAction):
@@ -148,9 +149,10 @@ class ForwardSpecial(action.Action):
                 if actor.keysContain('shield'):
                     actor.doShield()
                 elif actor.keysContain('special') and self.lastFrame < 240:
-                    self.lastFrame += 2
+                    self.lastFrame += 1
                     self.frame -= 1
             else: #Actually launch forwards
+                self.numFrames += 1
                 self.chainHitbox.update()
                 actor.active_hitboxes.add(self.chainHitbox)
                 (key, invkey) = actor.getForwardBackwardKeys()
@@ -174,6 +176,9 @@ class ForwardSpecial(action.Action):
                 
         else:
             if self.frame == self.lastFrame:
+                print self.numFrames
+                self.flingHitbox.damage += int(float(self.numFrames)/float(12))
+                self.flingHitbox.baseKnockback += float(self.numFrames)/float(5)
                 self.flingHitbox.update()
                 actor.active_hitboxes.add(self.flingHitbox)
             else:
