@@ -472,24 +472,16 @@ class Trapped(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
         self.time = 0
-        self.upPressed = False
-        self.downPressed = False
-        self.leftPressed = False
-        self.rightPressed = False
+        self.lastPosition = [0,0]
 
     def update(self,actor):
-        if (actor.keysContain('up') ^ self.upPressed):
-            self.frame += 0.5
-        if (actor.keysContain('down') ^ self.downPressed):
-            self.frame += 0.5
-        if (actor.keysContain('left') ^ self.leftPressed):
-            self.frame += 0.5
-        if (actor.keysContain('right') ^ self.rightPressed):
-            self.frame += 0.5
-        self.upPressed = actor.keysContain('up')
-        self.downPressed = actor.keysContain('down')
-        self.leftPressed = actor.keysContain('left')
-        self.rightPressed = actor.keysContain('right')
+        newPosition = actor.getSmoothedInput()
+        dot = newPosition[0]*self.lastPosition[0]+newPosition[1]*self.lastPosition[1]
+        magnitude_old_sqr = self.lastPosition[0]**2+self.lastPosition[1]**2
+        magnitude_new_sqr = newPosition[0]**2+newPosition[1]**2
+        if magnitude_old_sqr*magnitude_new_sqr > 0:
+            self.frame += dot**2/magnitude_old_sqr/magnitude_new_sqr*4
+        self.lastPosition = newPosition
         if self.frame >= self.lastFrame:
             actor.doIdle()
         # Throws and other grabber-controlled releases are the grabber's responsibility

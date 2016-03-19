@@ -578,11 +578,11 @@ class AbstractFighter():
     def getSmoothedInput(self):
         #TODO If this is a gamepad, simply return its analog input
         holdBuffer = reversed(self.inputBuffer.getLastNFrames(64))
-        smoothedX = 0
-        smoothedY = 0
+        smoothedX = 0.0
+        smoothedY = 0.0
         for frameInput in holdBuffer:
-            workingX = 0
-            workingY = 0
+            workingX = 0.0
+            workingY = 0.0
             xSmooth = 0.95
             ySmooth = 0.95
             for key in frameInput:
