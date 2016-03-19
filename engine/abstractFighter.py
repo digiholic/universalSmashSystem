@@ -128,10 +128,14 @@ class AbstractFighter():
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
 
-        self.checkForGround()
+        groundBlocks = self.checkForGround()
 
         # Move x and resolve collisions
         self.rect.x += self.change_x
+        
+        for block in groundBlocks:
+            self.rect.x += block.change_x
+            
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
@@ -533,7 +537,6 @@ class AbstractFighter():
     in the stateTransitions function of the current action.
     """
     def keyPressed(self,key):
-        print(key)
         self.inputBuffer.append((key,1.0))
         self.keysHeld.append(key)
         

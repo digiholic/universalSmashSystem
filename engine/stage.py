@@ -277,10 +277,103 @@ class Platform(pygame.sprite.Sprite):
         dy = y1 - y2
         return (180 * math.atan2(dy, dx)) / math.pi
     
+    def getXYfromDM(self, direction,magnitude):
+        rad = math.radians(direction)
+        x = round(math.cos(rad) * magnitude,5)
+        y = -round(math.sin(rad) * magnitude,5)
+        return (x,y)
+    
 class PassthroughPlatform(Platform):
     def __init__(self,leftPoint,rightPoint,grabbable = (False,False)):
         Platform.__init__(self,leftPoint,rightPoint,grabbable)
-        self.solid = False      
+        self.solid = False 
+        
+class MovingPlatform(Platform):
+    def __init__(self,leftPoint,rightPoint,endPoint,moveSpeed = 1, grabbable = (False,False), solid = False):
+        Platform.__init__(self, leftPoint, rightPoint, grabbable)
+        self.solid = solid
+        
+        self.startPoint = self.rect.center
+        self.endPoint = endPoint
+        
+        self.direction = self.getDirectionBetweenPoints(self.startPoint, self.endPoint)
+        self.speed = moveSpeed
+        self.delta_x, self.delta_y = self.getXYfromDM(self.direction,self.speed)
+        self.change_x = 0
+        self.change_y = 0
+        
+        self.real_x = 0
+        self.real_y = 0
+        print(self.delta_x, self.delta_y)
+    
+    def update(self):
+        if self.rect.center == self.endPoint:
+            #swap our destination, direction, and change_xy parameters
+            tmp = self.endPoint
+            self.endPoint = self.startPoint
+            self.startPoint = tmp
+            self.direction = self.getDirectionBetweenPoints(self.startPoint, self.endPoint)
+            self.delta_x, self.delta_y = self.getXYfromDM(self.direction,self.speed)
+            self.change_x = 0
+            self.change_y = 0
+        
+        #add another delta change, strip off the whole numbers, and keep the decimal parts
+        #the whole part passes to the rect update later
+        self.real_x += self.delta_x
+        self.change_x = math.floor(self.real_x)
+        partial_x = self.real_x % 1
+        self.real_x = partial_x
+        
+        self.real_y += self.delta_y
+        self.change_y = math.floor(self.real_y)
+        partial_y = self.real_y % 1
+        self.real_y = partial_y
+        
+        self.rect.x += self.change_x
+        self.rect.y += self.change_y
+        
+        self.leftPoint = self.rect.topleft
+        self.rightPoint = self.rect.topright
+        
+        self.xdist = max(1,self.rightPoint[0] - self.leftPoint[0])
+        self.ydist = max(1,self.rightPoint[1] - self.leftPoint[1])
+
+"""         
+class MovingPlatform(Platform):
+    def __init__(self, leftPoint, rightPoint, minHeight, maxHeight, moveSpeed = 1, grabbable = (False,False), solid = False):
+        Platform.__init__(self, leftPoint, rightPoint, grabbable)
+        self.solid = solid
+        self.minHeight = minHeight
+        self.maxHeight = maxHeight
+        self.rising = False
+        self.height = leftPoint[1]
+        self.speed = moveSpeed
+        
+    def update(self):
+        if self.rising:
+            self.height -= self.speed
+            self.change_y = self.speed
+        else:
+            self.height += self.speed
+            self.change_y = self.speed
+        if self.height < self.minHeight:
+            self.rising = False
+            self.height = self.minHeight
+            self.change_y = 0
+        if self.height > self.maxHeight:
+            self.rising = True
+            self.height = self.maxHeight
+            self.change_y = 0
+        
+        self.leftPoint[1] = self.height
+        self.rightPoint[1] = self.height
+        
+        self.xdist = max(1,self.rightPoint[0] - self.leftPoint[0])
+        self.ydist = max(1,self.rightPoint[1] - self.leftPoint[1])
+
+        self.rect = pygame.Rect([self.leftPoint[0],min(self.leftPoint[1],self.rightPoint[1])], [self.xdist,self.ydist])
+"""   
+  
 """
 Ledge object. This is what the fighter interacts with.
 It has a parent platform, and a side of that platform.
