@@ -687,7 +687,7 @@ class LedgeGetup(action.Action):
         action.Action.__init__(self, 27)
     
     def update(self,actor):
-        if self.frame == self.lastFrame:
+        if self.frame >= self.lastFrame:
             actor.doStop()
         self.frame += 1
 
