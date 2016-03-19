@@ -1245,10 +1245,10 @@ class LedgeGetup(baseActions.LedgeGetup):
     def update(self,actor):
         if self.frame == 0:
             actor.changeSprite("getup",0)
-            actor.rect.y -= 92
         if (self.frame >= 0) & (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
-            actor.change_y = -1
+            if self.frame > 2:
+                actor.change_y = -20
             actor.change_x = 0
         if (self.frame >= 8) & (self.frame <= 14):
             actor.change_y = 0
