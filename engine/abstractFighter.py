@@ -533,18 +533,17 @@ class AbstractFighter():
     in the stateTransitions function of the current action.
     """
     def keyPressed(self,key):
-        k = self.keyBindings.get(key)
-        self.inputBuffer.append((k,1.0))
-        self.keysHeld.append(k)
+        print(key)
+        self.inputBuffer.append((key,1.0))
+        self.keysHeld.append(key)
         
     """
     As above, but opposite.
     """
     def keyReleased(self,key):
-        k = self.keyBindings.get(key)
-        if self.keysContain(k):
-            self.inputBuffer.append((k,0))
-            self.keysHeld.remove(k)
+        if self.keysContain(key):
+            self.inputBuffer.append((key,0))
+            self.keysHeld.remove(key)
             return True
         else: return False
     

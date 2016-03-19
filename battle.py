@@ -117,12 +117,16 @@ class Battle():
                         pygame.image.save(screen,settingsManager.createPath('screenshot.jpg'))
                     
                     for fight in currentFighters:
-                        fight.keyPressed(event.key)
+                        k = fight.keyBindings.get(event.key)
+                        if k:
+                            fight.keyPressed(k)
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_ESCAPE:
                         exitStatus = 1
                     for fight in currentFighters:
-                        fight.keyReleased(event.key)
+                        k = fight.keyBindings.get(event.key)
+                        if k:
+                            fight.keyReleased(k)
                 if event.type == pygame.JOYAXISMOTION:
                     for fight in currentFighters:
                         fight.joyAxisMotion(event.joy, event.axis)
