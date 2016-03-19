@@ -135,7 +135,7 @@ class AbstractFighter():
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                self.platformPhase = False
+                self.platformPhase = 0
                 self.eject(block)
 
 
@@ -406,19 +406,7 @@ class AbstractFighter():
             self.dealDamage(math.floor(damage*armor_multiplier))
             return 0
 
-        di_vec = [0,0]
-        if self.keysContain('right'):
-            di_vec[0] += float(1)
-        if self.keysContain('left'):
-            di_vec[0] -= float(1)
-        if self.keysContain('up'):
-            di_vec[1] -= float(1)
-        if self.keysContain('down'):
-            di_vec[1] += float(1)
-        if di_vec[0]**2 + di_vec[1]**2 > 0:
-            magnitude = math.sqrt(di_vec[0]**2 + di_vec[1]**2)
-            di_vec[0] /= magnitude
-            di_vec[1] /= magnitude
+        di_vec = self.getSmoothedInput()
 
         trajectory_vec = [math.cos(trajectory/180*math.pi), math.sin(trajectory/180*math.pi)]
 
@@ -585,6 +573,51 @@ class AbstractFighter():
     """
     def bufferContains(self,key, distanceBack = 0, state=1.0, andReleased=False, notReleased=False):
         return self.inputBuffer.contains(key, distanceBack, state, andReleased, notReleased)
+
+
+    def getSmoothedInput(self):
+        #TODO If this is a gamepad, simply return its analog input
+        holdBuffer = reversed(self.inputBuffer.getLastNFrames(64))
+        smoothedX = 0
+        smoothedY = 0
+        for frameInput in holdBuffer:
+            workingX = 0
+            workingY = 0
+            xSmooth = 0.95
+            ySmooth = 0.95
+            for key in frameInput:
+                if key[0] == 'left':
+                    workingX -= key[1]
+                if key[0] == 'right':
+                    workingX += key[1]
+                if key[0] == 'up':
+                    workingY -= key[1]
+                if key[0] == 'down':
+                    workingY += key[1]
+            if (workingX > 0 and smoothedX > 0) or (workingX < 0 and smoothedX < 0):
+                xSmooth = 0.99
+            elif (workingX < 0 and smoothedX > 0) or (workingX > 0 and smoothedX < 0):
+                xSmooth = 0.8
+            if (workingY < 0 and smoothedY < 0) or (workingY > 0 and smoothedY > 0):
+                ySmooth = 0.99
+            elif (workingY < 0 and smoothedY > 0) or (workingY > 0 and smoothedY < 0):
+                ySmooth = 0.8
+            magnitude = math.sqrt(workingX**2 + workingY**2)
+            if magnitude > 1:
+                workingX /= magnitude
+                workingY /= magnitude
+            smoothedX *= xSmooth
+            smoothedY *= ySmooth
+            smoothedX += workingX*2
+            smoothedY += workingY*2
+        finalMagnitude = math.sqrt(smoothedX**2+smoothedY**2)
+        if finalMagnitude > 1:
+            smoothedX /= finalMagnitude
+            smoothedY /= finalMagnitude
+        print 'Smoothed:'
+        print (smoothedX, smoothedY)
+        return [smoothedX, smoothedY]
+        
     
     """
     This function checks if the player has Smashed in a direction. It does this by noting if the direction was

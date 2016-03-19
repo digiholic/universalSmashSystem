@@ -621,18 +621,7 @@ class AirDodge(action.Action):
     def setUp(self,actor):
         actor.landingLag = 24
         if settingsManager.getSetting('airDodgeType') == 'directional':
-            if actor.keysContain('right'):
-                self.move_vec[0] += float(1)
-            if actor.keysContain('left'):
-                self.move_vec[0] -= float(1)
-            if actor.keysContain('up'):
-                self.move_vec[1] -= float(1)
-            if actor.keysContain('down'):
-                self.move_vec[1] += float(1)
-            if self.move_vec[0]**2 + self.move_vec[1]**2 > 0:
-                magnitude = math.sqrt(self.move_vec[0]**2 + self.move_vec[1]**2)
-                self.move_vec[0] /= magnitude
-                self.move_vec[1] /= magnitude
+            self.move_vec = actor.getSmoothedInput()
             actor.change_x = self.move_vec[0]*10
             actor.change_y = self.move_vec[1]*10
         
@@ -665,7 +654,7 @@ class AirDodge(action.Action):
         elif self.frame == self.endInvulnFrame:
             pass
         elif self.frame == self.lastFrame:
-            if (self.move_vec[0] != 0 or self.move_vec[1] != 0) and settingsManager.getSetting('freeDodgeSpecialFall'):
+            if settingsManager.getSetting('freeDodgeSpecialFall'):
                 actor.doHelpless()
             else:
                 actor.doFall()
