@@ -146,7 +146,7 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
 
         self.hitboxContact.clear()
-        if self.invulnerable > 1000:
+        if self.invulnerable > -1000:
             self.invulnerable -= 1
 
         #Update Sprite
