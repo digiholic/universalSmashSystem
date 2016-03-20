@@ -855,7 +855,7 @@ class UpThrow(baseActions.BaseGrabbing):
             if actor.change_y > actor.var['maxFallSpeed']:
                 actor.change_y = actor.var['maxFallSpeed']
             if actor.grounded:
-                if isinstance(actor.grabbing.current_action, baseActions.Grabbed):
+                if isinstance(actor.grabbing.current_action, baseActions.Grabbed) and actor.grabbing.grabbing == actor:
                     actor.grabbing.applyKnockback(9, 12, 0.15, actor.getForwardWithOffset(70))
                 actor.doLand()
         self.frame += 1
