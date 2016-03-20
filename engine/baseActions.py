@@ -477,10 +477,7 @@ class Trapped(action.Action):
     def update(self,actor):
         newPosition = actor.getSmoothedInput()
         dot = newPosition[0]*self.lastPosition[0]+newPosition[1]*self.lastPosition[1]
-        magnitude_old_sqr = self.lastPosition[0]**2+self.lastPosition[1]**2
-        magnitude_new_sqr = newPosition[0]**2+newPosition[1]**2
-        if magnitude_old_sqr*magnitude_new_sqr > 0:
-            self.frame += dot**2/magnitude_old_sqr/magnitude_new_sqr*0.5
+        self.frame += dot**2
         self.lastPosition = newPosition
         if self.frame >= self.lastFrame:
             actor.doIdle()
