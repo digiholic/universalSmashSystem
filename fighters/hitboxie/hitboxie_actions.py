@@ -664,6 +664,50 @@ class DownAir(action.Action):
             actor.changeAction(Fall())
         self.frame += 1
 
+class UpAir(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 28)
+        
+    def setUp(self, actor):
+        sharedLock = hitbox.HitboxLock()
+        self.sourspot = hitbox.DamageHitbox([0,18],[60,47], actor, 6, 8, 0.05, 60, 1, sharedLock)
+        self.semisweet = hitbox.DamageHitbox([0,-21],[30,32], actor, 8, 6, 0.1, 75, 1, sharedLock)
+        self.sweetspot = hitbox.DamageHitbox([0,-21],[30,32], actor, 12, 6, 0.2, 90, 1, sharedLock)
+    
+    def stateTransitions(self, actor):
+        baseActions.airControl(actor)
+        
+    def tearDown(self, actor, newAction):
+        self.sourspot.kill()
+        self.semisweet.kill()
+        self.sweetspot.kill()
+    
+    def update(self, actor):
+        actor.landingLag = 22
+        self.sourspot.update()
+        self.semisweet.update()
+        self.sweetspot.update()
+        if self.frame == 0:
+            actor.changeSprite('uair',0)
+        elif self.frame == 3:
+            actor.changeSpriteImage(1)
+        elif self.frame == 6:
+            actor.changeSpriteImage(2)
+            actor.active_hitboxes.add(self.sourspot)
+            actor.active_hitboxes.add(self.sweetspot)
+        elif self.frame == 9:
+            self.sweetspot.kill()
+            actor.active_hitboxes.add(self.semisweet)
+        elif self.frame == 18:
+            actor.changeSpriteImage(3)
+            self.semisweet.kill()
+        elif self.frame == 21:
+            actor.changeSpriteImage(4)
+            self.sourspot.kill()
+        elif self.frame == self.lastFrame:
+            actor.doFall()
+        self.frame += 1
+        
 class GroundGrab(action.Action):
     def __init__(self):
         action.Action.__init__(self, 35)
