@@ -789,6 +789,33 @@ class DownThrow(baseActions.BaseGrabbing):
             actor.doIdle()
         self.frame += 1
 
+class UpThrow(baseActions.BaseGrabbing):
+    def __init__(self):
+        baseActions.BaseGrabbing.__init__(self, 100)
+
+    def setUp(self, actor):
+        actor.changeSprite("land")
+
+    def tearDown(self, actor, nextAction):
+        baseActions.BaseGrabbing.tearDown(self, actor, nextAction)
+
+    def update(self, actor):
+        baseActions.BaseGrabbing.update(self, actor)
+        if self.frame < 8:
+            actor.changeSpriteImage(self.frame/2+1)
+        elif self.frame == 8:
+            actor.change_y -= 45
+            actor.landingLag = 12
+        else:
+            actor.change_y += 2
+            if actor.change_y > actor.var['maxFallSpeed']:
+                actor.change_y = actor.var['maxFallSpeed']
+            if actor.grounded:
+                if isinstance(actor.grabbing.current_action, baseActions.Grabbed):
+                    actor.grabbing.applyKnockback(9, 12, 0.15, actor.getForwardWithOffset(70))
+                actor.doLand()
+        self.frame += 1
+
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
 ########################################################

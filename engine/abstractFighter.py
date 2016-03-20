@@ -181,12 +181,12 @@ class AbstractFighter():
     def checkForGround(self):
         self.grounded = False
         self.rect.y += 2
-        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         groundBlock = pygame.sprite.Group()
+        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
             if block.solid or (self.platformPhase <= 0):
-                if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top+block.change_y:
+                if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top-block.change_y:
                     self.grounded = True
                     groundBlock.add(block)
         self.rect.y -= 2
@@ -741,7 +741,7 @@ class AbstractFighter():
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.sprite.boundingRect.bottom
                 if self.change_y > other.change_y - self.var['gravity']:
                     self.change_y = other.change_y-self.var['gravity']
-            elif self.sprite.boundingRect.bottom >= other.rect.top+other.change_y and self.ecb.yBar.rect.bottom <= other.rect.top+other.change_y:
+            elif self.sprite.boundingRect.bottom >= other.rect.top+other.change_y and self.ecb.yBar.rect.bottom <= other.rect.top-other.change_y:
                 self.rect.bottom = other.rect.top+(self.rect.bottom-self.sprite.boundingRect.bottom)
                 if self.change_y > other.change_y - self.var['gravity']:
                     self.change_y = other.change_y-self.var['gravity']
