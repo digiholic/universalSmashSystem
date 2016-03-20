@@ -237,9 +237,6 @@ class Hitboxie(abstractFighter.AbstractFighter):
 ########################################################
 #                  STATE CHANGERS                      #
 ########################################################
-
-    def setGrabbing(self, other):
-        self.grabbing = other
         
     def die(self,respawn = True):
         abstractFighter.AbstractFighter.die(self,respawn)

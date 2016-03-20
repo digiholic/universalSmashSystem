@@ -182,7 +182,7 @@ class BaseGrabbing(action.Action):
             actor.grabbing.doIdle()
 
     def update(self, actor):
-        if isinstance(actor.grabbing.current_action, Grabbed) and (actor.grabbing.grabbing == actor):
+        if isinstance(actor.grabbing.current_action, Grabbed) and (actor.grabbing.grabbedBy == actor):
             actor.grabbing.rect.centerx = actor.rect.centerx+actor.facing*actor.rect.width/2
             actor.grabbing.rect.bottom = actor.rect.bottom
 
@@ -818,7 +818,7 @@ def grabbingState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     # Check to see if they broke out
     # If they did, release them
-    if not isinstance(actor.grabbing.current_action, Grabbed):
+    if not isinstance(actor.grabbing.current_action, Grabbed) or (actor.grabbing.grabbedBy != actor):
         actor.doRelease()
     elif actor.bufferContains('shield', 8):
         actor.doRelease()

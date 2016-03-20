@@ -753,7 +753,7 @@ class Pummel(baseActions.BaseGrabbing):
             actor.changeSprite("neutral", self.frame)
         elif self.frame < 9:
             actor.changeSpriteImage(self.frame)
-        elif isinstance(actor.grabbing.current_action, baseActions.Grabbed) and self.frame == 9:
+        elif isinstance(actor.grabbing.current_action, baseActions.Grabbed) and actor.grabbing.grabbedBy == actor and self.frame == 9:
             actor.grabbing.dealDamage(2)
         elif self.frame >= 10 and self.frame <= 13:
             actor.changeSpriteImage(9)
@@ -822,6 +822,7 @@ class DownThrow(baseActions.BaseGrabbing):
     def update(self, actor):
         baseActions.BaseGrabbing.update(self, actor)
         actor.changeSpriteImage(self.frame%16)
+        self.bottomHitbox.update()
         if (self.frame%4 == 0):
             self.bottomHitbox.hitbox_lock = hitbox.HitboxLock()
         if (self.frame == self.lastFrame-4):
@@ -855,7 +856,7 @@ class UpThrow(baseActions.BaseGrabbing):
             if actor.change_y > actor.var['maxFallSpeed']:
                 actor.change_y = actor.var['maxFallSpeed']
             if actor.grounded:
-                if isinstance(actor.grabbing.current_action, baseActions.Grabbed) and actor.grabbing.grabbing == actor:
+                if isinstance(actor.grabbing.current_action, baseActions.Grabbed) and actor.grabbing.grabbedBy == actor:
                     actor.grabbing.applyKnockback(9, 12, 0.15, actor.getForwardWithOffset(70))
                 actor.doLand()
         self.frame += 1

@@ -198,6 +198,10 @@ class AbstractFighter():
     def getFacingDirection(self):
         if self.facing == 1: return 0
         else: return 180
+
+    def setGrabbing(self, other):
+        self.grabbing = other
+        other.grabbedBy = self
         
 ########################################################
 #                  ACTION SETTERS                      #
