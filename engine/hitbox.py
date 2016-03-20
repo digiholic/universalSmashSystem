@@ -129,6 +129,7 @@ class GrabHitbox(Hitbox):
         if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
             if other.lockHitbox(self):
                 self.owner.setGrabbing(other)
+                other.setGrabbing(self.owner)
                 self.owner.changeAction(self.owner.actions.Grabbing())
                 other.changeAction(other.actions.Grabbed(self.height))
 

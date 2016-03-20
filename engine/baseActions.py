@@ -182,7 +182,7 @@ class BaseGrabbing(action.Action):
             actor.grabbing.doIdle()
 
     def update(self, actor):
-        if isinstance(actor.grabbing.current_action, Grabbed):
+        if isinstance(actor.grabbing.current_action, Grabbed) and (actor.grabbing.grabbing == actor):
             actor.grabbing.rect.centerx = actor.rect.centerx+actor.facing*actor.rect.width/2
             actor.grabbing.rect.bottom = actor.rect.bottom
 
@@ -480,7 +480,7 @@ class Trapped(action.Action):
         magnitude_old_sqr = self.lastPosition[0]**2+self.lastPosition[1]**2
         magnitude_new_sqr = newPosition[0]**2+newPosition[1]**2
         if magnitude_old_sqr*magnitude_new_sqr > 0:
-            self.frame += dot**2/magnitude_old_sqr/magnitude_new_sqr*4
+            self.frame += dot**2/magnitude_old_sqr/magnitude_new_sqr*0.5
         self.lastPosition = newPosition
         if self.frame >= self.lastFrame:
             actor.doIdle()
