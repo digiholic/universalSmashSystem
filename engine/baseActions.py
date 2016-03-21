@@ -178,11 +178,11 @@ class BaseGrabbing(action.Action):
         action.Action.__init__(self, length)
 
     def tearDown(self, actor, newAction):
-        if not isinstance(newAction, BaseGrabbing) and isinstance(actor.grabbing.current_action, Grabbed):
+        if not isinstance(newAction, BaseGrabbing) and actor.isGrabbing():
             actor.grabbing.doIdle()
 
     def update(self, actor):
-        if isinstance(actor.grabbing.current_action, Grabbed) and (actor.grabbing.grabbedBy == actor):
+        if actor.isGrabbing():
             actor.grabbing.rect.centerx = actor.rect.centerx+actor.facing*actor.rect.width/2
             actor.grabbing.rect.bottom = actor.rect.bottom
 
@@ -840,7 +840,7 @@ def grabbingState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     # Check to see if they broke out
     # If they did, release them
-    if not isinstance(actor.grabbing.current_action, Grabbed) or (actor.grabbing.grabbedBy != actor):
+    if not actor.isGrabbing():
         actor.doRelease()
     elif actor.bufferContains('shield', 8):
         actor.doRelease()

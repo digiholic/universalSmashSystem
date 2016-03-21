@@ -195,7 +195,6 @@ class ForwardSpecial(action.Action):
                     actor.landingLag = 5
                     actor.doFall()
         self.frame += 1
-                    
            
 class NeutralAttack(action.Action):
     def __init__(self):
@@ -753,7 +752,7 @@ class Pummel(baseActions.BaseGrabbing):
             actor.changeSprite("neutral", self.frame)
         elif self.frame < 9:
             actor.changeSpriteImage(self.frame)
-        elif isinstance(actor.grabbing.current_action, baseActions.Grabbed) and actor.grabbing.grabbedBy == actor and self.frame == 9:
+        elif actor.isGrabbing() and self.frame == 9:
             actor.grabbing.dealDamage(2)
         elif self.frame >= 10 and self.frame <= 13:
             actor.changeSpriteImage(9)
@@ -856,7 +855,7 @@ class UpThrow(baseActions.BaseGrabbing):
             if actor.change_y > actor.var['maxFallSpeed']:
                 actor.change_y = actor.var['maxFallSpeed']
             if actor.grounded:
-                if isinstance(actor.grabbing.current_action, baseActions.Grabbed) and actor.grabbing.grabbedBy == actor:
+                if actor.isGrabbing():
                     actor.grabbing.applyKnockback(9, 12, 0.15, actor.getForwardWithOffset(70))
                 actor.doLand()
         self.frame += 1

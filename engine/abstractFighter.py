@@ -202,6 +202,9 @@ class AbstractFighter():
     def setGrabbing(self, other):
         self.grabbing = other
         other.grabbedBy = self
+
+    def isGrabbing(self):
+        return isinstance(self.grabbing.current_action, baseActions.Grabbed) and self.grabbing.grabbedBy == self
         
 ########################################################
 #                  ACTION SETTERS                      #
