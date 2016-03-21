@@ -86,13 +86,13 @@ class SakuraiAngleHitbox(DamageHitbox):
                     w = float(other.var['weight'])
                     s = float(self.knockbackGrowth)
                     b = float(self.baseKnockback)
-                    totalKB = (((((p//10) + (p*d)//20) * (200//(w*self.weight_influence+100))*1.4) + 5) * s) + b
+                    totalKB = (((((p/10) + (p*d)/20) * (200/(w*self.weight_influence+100))*1.4) + 5) * s) + b
 
                     # Calculate the resulting angle
                     knockbackRatio = totalKB/self.baseKnockback
-                    xVal = math.sqrt(knockbackRatio**2+1)//math.sqrt(2)
-                    yVal = math.sqrt(knockbackRatio**2-1)//math.sqrt(2)
-                    angle = math.atan2(yVal*math.sin(float(self.trajectory)//180*math.pi),xVal*math.cos(float(self.trajectory)//180*math.pi))//math.pi*180
+                    xVal = math.sqrt(knockbackRatio**2+1)/math.sqrt(2)
+                    yVal = math.sqrt(knockbackRatio**2-1)/math.sqrt(2)
+                    angle = math.atan2(yVal*math.sin(float(self.trajectory)/180*math.pi),xVal*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
 
                     other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, angle, self.weight_influence, self.hitstun)
 
