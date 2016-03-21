@@ -129,7 +129,8 @@ class ForwardSpecial(action.Action):
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
     def stateTransitions(self, actor):
-        if actor.change_x//actor.facing <= 0 and self.frame >= 8:            baseActions.grabLedges(actor)
+        if actor.change_x//actor.facing <= 0 and self.frame >= 8:
+            baseActions.grabLedges(actor)
 
     def tearDown(self, actor, newAction):
         self.chainHitbox.kill()
