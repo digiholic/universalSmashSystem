@@ -178,7 +178,7 @@ class ForwardSpecial(action.Action):
             if self.frame == self.lastFrame:
                 print self.numFrames
                 self.flingHitbox.damage += int(float(self.numFrames)/float(12))
-                self.flingHitbox.baseKnockback += float(self.numFrames)/float(5)
+                self.flingHitbox.baseKnockback += float(self.numFrames)/float(12)
                 self.flingHitbox.update()
                 actor.active_hitboxes.add(self.flingHitbox)
             else:
