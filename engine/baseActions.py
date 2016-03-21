@@ -731,14 +731,7 @@ def neutralState(actor):
     elif actor.keysContain('right'):
         actor.doGroundMove(0)
     elif actor.keysContain('down'):
-        if actor.bufferContains('down',12,andReleased=True):
-            #check if the grounded block is passthrough
-            blocks = actor.checkForGround()
-            #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda x :x.solid,blocks)
-            #If none of the ground is solid
-            if not any(blocks):
-                actor.doPlatformDrop()
+        actor.doCrouchGetup()
                 
 def airState(actor):
     airControl(actor)
