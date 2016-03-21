@@ -202,10 +202,12 @@ class HitStun(action.Action):
 
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
-        if actor.grounded and self.frame > 2:
-            if actor.bufferContains('shield', 20): #Floor tech
-                actor.doTrip(-175, direct)
-            elif self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
+        if actor.bufferContains('shield', 20):
+            actor.doTryTech(self.lastFrame, self.direction)
+        elif self.frame >= self.lastFrame:
+            tumbleState(actor)
+        elif actor.grounded and self.frame > 2:
+            if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
                 actor.change_y = -0.4*actor.change_y
             elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2:
                 actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
@@ -221,9 +223,6 @@ class HitStun(action.Action):
                 actor.doLand()
             else: #Firm landing during hitstun
                 actor.change_y = -0.4*actor.change_y
-
-        elif self.frame >= self.lastFrame:
-            tumbleState(actor)
         
     def tearDown(self, actor, newAction):
         actor.unRotate()
@@ -243,6 +242,29 @@ class HitStun(action.Action):
             #Tumbling continues indefinetely, but can be cancelled out of
 
         self.frame += 1
+
+class TryTech(HitStun):
+    def __init__(self, hitstun, direction):
+        HitStun.__init__(self, hitstun, direction)
+
+    def stateTransitions(self, actor):
+        (direct,mag) = actor.getDirectionMagnitude()
+        if self.frame < 20 and actor.grounded:
+            print 'Ground tech!'
+            actor.unRotate()
+            actor.doTrip(-175, direct)
+        elif self.frame < 20:
+            block_hit_list = actor.getCollisionsWith(actor.gameState.platform_list)
+            for block in block_hit_list:
+                if block.solid:
+                    print 'Wall tech!'
+                    actor.change_x = 0
+                    actor.change_y = 0
+
+    def update(self, actor):
+        if self.frame >= 40:
+            actor.doHitStun(self.lastFrame-self.frame, self.direction)
+        HitStun.update(self, actor)
 
 class Trip(action.Action):
     def __init__(self,length,direction):
