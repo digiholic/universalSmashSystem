@@ -65,6 +65,9 @@ class BasicFighter():
 
     def doHitStun(self,hitstun,trajectory):
         self.changeAction(self.actions.HitStun(hitstun,trajectory))
+
+    def doTryTech(self, hitstun, trajectory):
+        self.changeAction(self.actions.TryTech(hitstun, trajectory))
     
     def doPivot(self):
         self.changeAction(self.actions.Pivot())

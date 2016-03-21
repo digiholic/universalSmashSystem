@@ -202,6 +202,9 @@ class AbstractFighter():
     def setGrabbing(self, other):
         self.grabbing = other
         other.grabbedBy = self
+
+    def isGrabbing(self):
+        return isinstance(self.grabbing.current_action, baseActions.Grabbed) and self.grabbing.grabbedBy == self
         
 ########################################################
 #                  ACTION SETTERS                      #
@@ -267,6 +270,9 @@ class AbstractFighter():
 
     def doHitStun(self,hitstun,direction):
         self.changeAction(baseActions.HitStun(hitstun,direction))
+
+    def doTryTech(self, hitstun, direction):
+        self.changeAction(baseActions.TryTech(hitstun, direction))
 
     def doTrip(self, length, direction):
         self.changeAction(baseActions.Trip(length, direction))
@@ -714,8 +720,6 @@ class AbstractFighter():
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
         
     def eject(self,other):
-        teched = self.bufferContains('shield', 20)
-
         dxLeft = -self.sprite.boundingRect.left+(self.sprite.boundingRect.left-self.ecb.xBar.rect.left)+other.rect.right+other.change_x
         dxRight = self.sprite.boundingRect.right-(self.sprite.boundingRect.right-self.ecb.xBar.rect.right)-other.rect.left-other.change_x
 
@@ -728,17 +732,11 @@ class AbstractFighter():
         if dy >= dx:
             if self.sprite.boundingRect.centerx < other.rect.centerx and dxLeft >= dxRight and other.solid:
                 self.rect.right = other.rect.left+self.rect.right-self.sprite.boundingRect.right
-                if self.change_x > other.change_x and teched:
-                    print 'Teched!'
-                    self.change_x = other.change_x
-                elif self.change_x > other.change_x:
+                if self.change_x > other.change_x:
                     self.change_x = -0.8*self.change_x + other.change_x
             elif self.sprite.boundingRect.centerx > other.rect.centerx and dxRight >= dxLeft and other.solid:
                 self.rect.left = other.rect.right+self.rect.left-self.sprite.boundingRect.left
-                if self.change_x < other.change_x and teched:
-                    print 'Teched!'
-                    self.change_x = other.change_x
-                elif self.change_x < other.change_x:
+                if self.change_x < other.change_x:
                     self.change_x = -0.8*self.change_x + other.change_x
         elif dx >= dy:
             if self.sprite.boundingRect.centery < other.rect.centery and dyUp >= dyDown and other.solid:
@@ -751,10 +749,7 @@ class AbstractFighter():
                     self.change_y = other.change_y-self.var['gravity']
             elif self.sprite.boundingRect.centery > other.rect.centery and dyDown >= dyUp and other.solid:
                 self.rect.top = other.rect.bottom+self.rect.top-self.sprite.boundingRect.top
-                if self.change_y < other.change_y - self.var['gravity'] and teched:
-                    print 'Teched!'
-                    self.change_y = other.change_y - self.var['gravity']
-                elif self.change_y < other.change_y - self.var['gravity']:
+                if self.change_y < other.change_y - self.var['gravity']:
                     self.change_y = -0.8*self.change_y + other.change_y - self.var['gravity']
         
 ########################################################
