@@ -7,7 +7,7 @@ class Sprite(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.angle = 0
-    
+        
     def draw(self,screen,offset,scale):
         #TODO: Check for bit depth first, inform user about alpha
         h = int(round(self.rect.height * scale))
@@ -141,17 +141,20 @@ class SheetSprite(ImageSprite):
     def __init__(self,sheet,offset=0,colorMap = {}):
         Sprite.__init__(self)
         
+        self.sheet = sheet
+        if isinstance(sheet,str):
+            self.sheet = pygame.image.load(sheet)
+        
         self.colorMap = colorMap
         self.index = 0
-        self.maxIndex = sheet.get_width() / offset
+        self.maxIndex = self.sheet.get_width() / offset
         self.offset = offset
         
-        self.sheet = sheet
         
         if self.offset > 0:
-            self.imageList = self.buildSubimageList(sheet,offset)
+            self.imageList = self.buildSubimageList(self.sheet,offset)
         else:
-            self.imageList = [sheet]
+            self.imageList = [self.sheet]
             
         self.flip = False
         self.angle = 0
@@ -185,6 +188,7 @@ class SheetSprite(ImageSprite):
     def getImageAtIndex(self,index):
         self.index = index % self.maxIndex
         self.image = self.imageList[self.index]
+        return self.image
         
     def draw(self,screen,offset,scale):
         Sprite.draw(self, screen, offset, scale)

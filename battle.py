@@ -8,6 +8,7 @@ import fighters.hitboxie.fighter
 import fighters.sandbag.fighter
 import stages.true_arena
 import stages.arena
+import colorsys
 from cgi import log
 
 """
@@ -356,25 +357,61 @@ class HealthTracker(spriteManager.Sprite):
         self.rect = self.bgSprite.image.get_rect()
         
         #Until I can figure out the percentage sprites
-        self.percentSprite = spriteManager.TextSprite(str(self.percent)+'%','rexlia rg',20)
-        self.percentSprite.rect.center = self.rect.center 
+        self.percentSprites = spriteManager.SheetSprite(settingsManager.createPath('sprites/guisheet.png'), 64)
+        self.kerningValues = [49,33,44,47,48,43,43,44,49,43,48] #This is the width of each sprite, for kerning purposes
+        
+        self.percentSprite = spriteManager.Sprite()
+        self.percentSprite.image = pygame.Surface((196,64), pygame.SRCALPHA, 32).convert_alpha()
+        self.redness = 0
+        
+        self.updateDamage()
+        self.percentSprite.rect = self.percentSprite.image.get_rect()
+        self.percentSprite.rect.center = self.rect.center
         
         
     
-    def updateDamage(self,newVal):
-        pass
-    
+    def updateDamage(self):
+        #recolor the percentage
+        oldredness = self.redness
+        self.redness = min(1.0,float(self.percent) / 300)
+        #the lighter color first
+        rgbFrom = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,oldredness,1.0))
+        rgbTo = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,self.redness,1.0))
+        self.percentSprites.recolor(self.percentSprites.sheet, rgbFrom, rgbTo)
+        #the darker color next
+        rgbFrom = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,oldredness,0.785))
+        rgbTo = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,self.redness,0.785))
+        self.percentSprites.recolor(self.percentSprites.sheet, rgbFrom, rgbTo)
+        
+        
+        self.percentSprite.image = pygame.Surface((196,64), pygame.SRCALPHA, 32).convert_alpha()
+        
+        percentString = str(self.percent) #converting it to a string so we can iterate over it.
+        length = 0
+        for ch in percentString:
+            i = int(ch)
+            self.percentSprite.image.blit(self.percentSprites.getImageAtIndex(i), (length,0))
+            length += self.kerningValues[i]
+        
+        #add the % sign at the end
+        self.percentSprite.image.blit(self.percentSprites.getImageAtIndex(10), (length,0))
+        
+        self.percentSprite.image = pygame.transform.smoothscale(self.percentSprite.image, (96,32))
+        length += self.kerningValues[10]
+        
     def draw(self,screen,offset,scale):
-        self.percent = self.fighter.damage
-        self.percentSprite.changeText(str(self.percent)+'%')
+        if not self.percent == self.fighter.damage:
+            self.percent = self.fighter.damage
+            self.updateDamage()
         
         h = int(round(self.rect.height * scale))
         w = int(round(self.rect.width * scale))
         newOff = (int(offset[0] * scale), int(offset[1] * scale))
         
-        blitSprite = self.image.copy()
-        blitSprite.blit(self.percentSprite.image, self.percentSprite.rect.topleft)
-        screen.blit(blitSprite,pygame.Rect(newOff,(w,h)))
+        screen.blit(self.image,pygame.Rect(newOff,(w,h)))
+        
+        rect = self.percentSprite.rect
+        self.percentSprite.draw(screen, (newOff[0] + rect.left,newOff[1] + rect.top), scale)
 
 """
 The Data Log object keeps track of information that happens in-game, such as score, deaths, total damage dealt/received, etc.
