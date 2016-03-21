@@ -732,7 +732,18 @@ def neutralState(actor):
         actor.doGroundMove(0)
     elif actor.keysContain('down'):
         actor.doCrouchGetup()
-                
+
+def crouchState(actor):
+    if actor.bufferContains('attack', 8):
+        actor.doGroundAttack()
+    elif actor.bufferContains('special', 8):
+        actor.doGroundSpecial()
+    elif actor.bufferContains('jump', 8):
+        actor.doJump()
+    elif not actor.keysContain('down'):
+        actor.doCrouchGetup()
+
+
 def airState(actor):
     airControl(actor)
     if actor.bufferContains('shield', 8):
