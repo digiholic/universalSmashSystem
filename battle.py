@@ -191,7 +191,7 @@ class Battle():
                         fight.die()
                     else:
                         fight.stocks -= 1
-                        print fight.stocks
+                        print(fight.stocks)
                         if fight.stocks == 0:
                             fight.die(False)
                             currentFighters.remove(fight)
@@ -278,7 +278,7 @@ class Battle():
                 dist = 48
                 
                 print(fighter.dataLog.data)
-                for item,val in fighter.dataLog.data.iteritems():
+                for item,val in fighter.dataLog.data.items():
                     text = spriteManager.TextSprite(str(item) + ': ' + str(val))
                     resultSprite.image.blit(text.image,(0,dist))
                     dist += 16

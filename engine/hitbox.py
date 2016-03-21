@@ -22,7 +22,7 @@ class Hitbox(spriteObject.RectSprite):
         
     def onCollision(self,other):
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
-        if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
+        if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
             other.hitboxContact.add(self)
     
     def update(self):
@@ -47,7 +47,7 @@ class DamageHitbox(Hitbox):
     def onCollision(self,other):
         Hitbox.onCollision(self, other)
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
-        if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
+        if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
             if other.lockHitbox(self):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
@@ -76,7 +76,7 @@ class SakuraiAngleHitbox(DamageHitbox):
 
     def onCollision(self, other):
         Hitbox.onCollision(self, other)
-        if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
+        if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
             if other.lockHitbox(self):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
@@ -86,13 +86,13 @@ class SakuraiAngleHitbox(DamageHitbox):
                     w = float(other.var['weight'])
                     s = float(self.knockbackGrowth)
                     b = float(self.baseKnockback)
-                    totalKB = (((((p/10) + (p*d)/20) * (200/(w*self.weight_influence+100))*1.4) + 5) * s) + b
+                    totalKB = (((((p//10) + (p*d)//20) * (200//(w*self.weight_influence+100))*1.4) + 5) * s) + b
 
                     # Calculate the resulting angle
                     knockbackRatio = totalKB/self.baseKnockback
-                    xVal = math.sqrt(knockbackRatio**2+1)/math.sqrt(2)
-                    yVal = math.sqrt(knockbackRatio**2-1)/math.sqrt(2)
-                    angle = math.atan2(yVal*math.sin(float(self.trajectory)/180*math.pi),xVal*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
+                    xVal = math.sqrt(knockbackRatio**2+1)//math.sqrt(2)
+                    yVal = math.sqrt(knockbackRatio**2-1)//math.sqrt(2)
+                    angle = math.atan2(yVal*math.sin(float(self.trajectory)//180*math.pi),xVal*math.cos(float(self.trajectory)//180*math.pi))//math.pi*180
 
                     other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, angle, self.weight_influence, self.hitstun)
 
@@ -107,7 +107,7 @@ class AutolinkHitbox(DamageHitbox):
 
     def onCollision(self, other):
         Hitbox.onCollision(self, other)
-        if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
+        if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
             if other.lockHitbox(self):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
@@ -126,7 +126,7 @@ class GrabHitbox(Hitbox):
 
     def onCollision(self,other):
         Hitbox.onCollision(self, other)
-        if 'AbstractFighter' in map(lambda(x):x.__name__,other.__class__.__bases__) + [other.__class__.__name__]:
+        if 'AbstractFighter' in list(map(lambda x:x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
             if other.lockHitbox(self):
                 self.owner.setGrabbing(other)
                 self.owner.changeAction(self.owner.actions.Grabbing())

@@ -8,8 +8,11 @@ import math
 import musicManager
 import colorsys
 import engine.article
-import css
 import sys
+try:
+    import css
+except ImportError:
+    from menu import css
 import spriteManager
 import battle
 import stages.arena.stage as stage0
@@ -1532,7 +1535,7 @@ class bgStar(engine.article.Article):
         self.dist = dist
         self.color = [0,0,1]
         
-        self.image = pygame.transform.scale(self.image, (9*(11-dist)/10,9*(11-dist)/10))
+        self.image = pygame.transform.scale(self.image, (9*(11-dist)//10,9*(11-dist)//10))
         
     def update(self):
         self.rect.x -= 11 - self.dist

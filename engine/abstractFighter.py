@@ -626,7 +626,7 @@ class AbstractFighter():
         if finalMagnitude > 1:
             smoothedX /= finalMagnitude
             smoothedY /= finalMagnitude
-        print 'Smoothed:'
+        print('Smoothed:')
         print (smoothedX, smoothedY)
         return [smoothedX, smoothedY]
         
