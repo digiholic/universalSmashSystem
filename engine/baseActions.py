@@ -254,7 +254,11 @@ class TryTech(HitStun):
             actor.unRotate()
             actor.doTrip(-175, direct)
         elif self.frame < 20:
+            actor.rect.x += actor.change_x
+            actor.rect.y += actor.change_y
             block_hit_list = actor.getCollisionsWith(actor.gameState.platform_list)
+            actor.rect.x -= actor.change_x
+            actor.rect.y -= actor.change_y
             for block in block_hit_list:
                 if block.solid:
                     print 'Wall tech!'
