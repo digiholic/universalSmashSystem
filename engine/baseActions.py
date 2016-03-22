@@ -204,8 +204,6 @@ class HitStun(action.Action):
         (direct,_) = actor.getDirectionMagnitude()
         if actor.bufferContains('shield', 20):
             actor.doTryTech(self.lastFrame, self.direction)
-        elif self.frame >= self.lastFrame:
-            tumbleState(actor)
         elif actor.grounded and self.frame > 2:
             if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
                 actor.change_y = -0.4*actor.change_y
@@ -223,6 +221,8 @@ class HitStun(action.Action):
                 actor.doLand()
             else: #Firm landing during hitstun
                 actor.change_y = -0.4*actor.change_y
+        elif self.frame >= self.lastFrame:
+            tumbleState(actor)
         
     def tearDown(self, actor, newAction):
         actor.unRotate()
