@@ -7,7 +7,10 @@ import menu
 import battle
 import sys
 import stages.true_arena as stage
-import sss
+try:
+    import sss
+except ImportError:
+    from menu import sss
 import musicManager
 class CSSScreen():
     def __init__(self,rules=None):
@@ -115,6 +118,8 @@ class FighterWheel():
         directory = settingsManager.createPath("fighters")
         fightercount = 0
         for subdir in next(os.walk(directory))[1]:
+            if(subdir == '__pycache__'):
+                continue
             fighter = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"fighter.py"),suffix=str(fightercount))
             print(fighter)
             if (fighter == None):
@@ -139,7 +144,7 @@ class FighterWheel():
     
     def animateWheel(self):
         self.visibleSprites[0] = self.getFighterPortrait(self.fighterAt(0))
-        for i in range(1,(self.wheelSize/2)+1):
+        for i in range(1,(self.wheelSize//2)+1):
             self.visibleSprites[2*i-1] = self.getFighterPortrait(self.fighterAt(i))
             self.visibleSprites[2*i] = self.getFighterPortrait(self.fighterAt(-1 * i))
                         
@@ -150,7 +155,7 @@ class FighterWheel():
         center = 112
         blankImage = pygame.Surface([256,32], pygame.SRCALPHA, 32).convert_alpha()
         blankImage.blit(self.visibleSprites[0].image, [center,0])
-        for i in range(1,(self.wheelSize/2)+1):
+        for i in range(1,(self.wheelSize//2)+1):
             blankImage.blit(self.visibleSprites[2*i-1].image, [center + (32*i),0])
             blankImage.blit(self.visibleSprites[2*i].image, [center - (32*i),0])
         
@@ -165,8 +170,8 @@ class FighterWheel():
 
 class PlayerPanel(pygame.Surface):
     def __init__(self,playerNum):
-        pygame.Surface.__init__(self,(settingsManager.getSetting('windowWidth')/2,
-                                settingsManager.getSetting('windowHeight')/2))
+        pygame.Surface.__init__(self,(settingsManager.getSetting('windowWidth')//2,
+                                settingsManager.getSetting('windowHeight')//2))
         
         self.keys = settingsManager.getControls(playerNum)
         self.playerNum = playerNum
@@ -178,7 +183,7 @@ class PlayerPanel(pygame.Surface):
         self.wheelIncrement = 0
         self.holdtime = 0
         self.holdDistance = 0
-        self.wheelOffset = [(self.get_width() - 256) / 2,
+        self.wheelOffset = [(self.get_width() - 256) // 2,
                             (self.get_height() - 32)]
         self.bgSurface = None
     

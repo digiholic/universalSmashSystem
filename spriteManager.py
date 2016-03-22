@@ -99,7 +99,7 @@ class SpriteHandler(Sprite):
     def buildSubimageList(self,sheet,offset):
         index = 0
         imageList = []
-        while index < sheet.get_width() / offset:
+        while index < sheet.get_width() // offset:
             sheet.set_clip(pygame.Rect(index * offset, 0, offset,sheet.get_height()))
             image = sheet.subsurface(sheet.get_clip())
             for fromColor,toColor in self.colorMap.items():
@@ -147,7 +147,7 @@ class SheetSprite(ImageSprite):
         
         self.colorMap = colorMap
         self.index = 0
-        self.maxIndex = self.sheet.get_width() / offset
+        self.maxIndex = self.sheet.get_width() // offset
         self.offset = offset
         
         

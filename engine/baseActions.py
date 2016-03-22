@@ -165,7 +165,7 @@ class CrouchGetup(action.Action):
         elif actor.bufferContains('down') and self.frame > 0:
             blocks = actor.checkForGround()
             #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda(x):x.solid,blocks)
+            blocks = map(lambda x:x.solid,blocks)
             #If none of the ground is solid
             if not any(blocks):
                 actor.doPlatformDrop()
@@ -250,7 +250,7 @@ class TryTech(HitStun):
     def stateTransitions(self, actor):
         (direct,mag) = actor.getDirectionMagnitude()
         if self.frame < 20 and actor.grounded:
-            print 'Ground tech!'
+            print('Ground tech!')
             actor.unRotate()
             actor.doTrip(-175, direct)
         elif self.frame < 20:
@@ -261,7 +261,7 @@ class TryTech(HitStun):
             actor.rect.y -= actor.change_y
             for block in block_hit_list:
                 if block.solid:
-                    print 'Wall tech!'
+                    print('Wall tech!')
                     actor.change_x = 0
                     actor.change_y = 0
 
@@ -378,7 +378,7 @@ class Land(action.Action):
         elif actor.keysContain('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
             blocks = actor.checkForGround()
             #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda(x):x.solid,blocks)
+            blocks = map(lambda x :x.solid,blocks)
             #If none of the ground is solid
             if not any(blocks):
                 actor.doPlatformDrop()
@@ -402,7 +402,7 @@ class HelplessLand(action.Action):
         elif actor.keysContain('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
             blocks = actor.checkForGround()
             #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda(x):x.solid,blocks)
+            blocks = map(lambda x:x.solid,blocks)
             #If none of the ground is solid
             if not any(blocks):
                 actor.doPlatformDrop()
@@ -608,7 +608,7 @@ class SpotDodge(action.Action):
         elif actor.bufferContains('down') and self.frame > 0:
             blocks = actor.checkForGround()
             #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda(x):x.solid,blocks)
+            blocks = map(lambda x:x.solid,blocks)
             #If none of the ground is solid
             if not any(blocks):
                 actor.doPlatformDrop()
@@ -742,7 +742,7 @@ def crouchState(actor):
         actor.doJump()
     elif not actor.keysContain('down'):
         actor.doCrouchGetup()
-                
+
 def airState(actor):
     airControl(actor)
     if actor.bufferContains('shield', 8):

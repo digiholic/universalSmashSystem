@@ -103,6 +103,8 @@ class StageScreen():
         directory = settingsManager.createPath("stages")
         stagecount = 0
         for subdir in next(os.walk(directory))[1]:
+            if(subdir == '__pycache__'):
+                continue
             stage = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"stage.py"),suffix=str(stagecount))
             print(stage)
             if (stage == None):
@@ -190,9 +192,9 @@ class StageGrid():
                 if (not self.isStageStruckAt(stage,row)) and self.getStageAt(stage,row) != 'random':
                     randomStages.append(self.getStageAt(stage,row))
                     stageCount += 1
-        print randomStages
+        print(randomStages)
         if stageCount == 0:
-            print 'Why did you strike all of the stages'
+            print('Why did you strike all of the stages')
             for row in range(0,len(self.stageGrid)):
                 for stage in range(0,row+3):
                     if self.getStageAt(stage,row) != 'random':
