@@ -99,7 +99,7 @@ class NeutralAirSpecial(action.Action):
 
 class ForwardSpecial(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 64)
+        action.Action.__init__(self, 96)
         self.spriteImage = 0
 
     def setUp(self, actor):
@@ -139,7 +139,7 @@ class ForwardSpecial(action.Action):
 
     def update(self, actor):
         actor.changeSpriteImage(self.spriteImage%16)
-        if self.frame < self.lastFrame:
+        if self.frame < self.lastFrame-32:
             self.spriteImage += 1
             if self.frame <= 1:
                 actor.setSpeed(0, actor.getForwardWithOffset(0))
@@ -148,7 +148,7 @@ class ForwardSpecial(action.Action):
                     actor.change_y = 2
                 if actor.keysContain('shield'):
                     actor.doShield()
-                elif actor.keysContain('special') and self.lastFrame < 240:
+                elif actor.keysContain('special') and self.lastFrame < 272:
                     self.lastFrame += 1
                     self.frame -= 1
             else: #Actually launch forwards
@@ -175,7 +175,7 @@ class ForwardSpecial(action.Action):
                         self.frame = self.lastFrame
                 
         else:
-            if self.frame == self.lastFrame:
+            if self.frame == self.lastFrame-32:
                 print self.numFrames
                 self.flingHitbox.damage += int(float(self.numFrames)/float(12))
                 self.flingHitbox.baseKnockback += float(self.numFrames)/float(12)
@@ -188,7 +188,7 @@ class ForwardSpecial(action.Action):
             actor.setPreferredSpeed(0, actor.facing) 
             if self.frame % 2 == 0:
                 self.spriteImage += 1
-            if self.frame >= self.lastFrame+32:
+            if self.frame >= self.lastFrame:
                 if actor.grounded:
                     actor.doIdle()
                 else:
