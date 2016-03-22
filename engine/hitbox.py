@@ -7,7 +7,7 @@ class HitboxLock(object):
     # All the HitboxLock class does is serve as a dummy for refcounting
 
 class Hitbox(spriteObject.RectSprite):
-    def __init__(self,center,size,owner,hitbox_lock):
+    def __init__(self,center,size,owner,hitbox_lock, transcendence=0, priority=0):
         #Flip the distance from center if the fighter is facing the other way
         self.center = center
         if owner.facing == -1:
@@ -19,6 +19,8 @@ class Hitbox(spriteObject.RectSprite):
         self.hitbox_lock = hitbox_lock
         self.x_offset = center[0]
         self.y_offset = center[1]
+        self.transcendence = transcendence
+        self.priority = priority
         
     def onCollision(self,other):
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
@@ -28,14 +30,21 @@ class Hitbox(spriteObject.RectSprite):
     def update(self):
         return
 
+    def compareTo(self, other):
+        if hasattr(other, 'transcendence') and hasattr(other, 'priority'):
+            if self.transcendence+other.transcendence <= 0:
+                return self.priority - other.priority
+        return True
+
     def recenterSelfOnOwner(self):
         self.rect.center = [self.owner.rect.center[0] + self.x_offset*self.owner.facing, self.owner.rect.center[1] + self.y_offset]
         
 class DamageHitbox(Hitbox):
     def __init__(self,center,size,owner,
                  damage,baseKnockback,knockbackGrowth,trajectory,
-                 hitstun,hitbox_lock,weight_influence=1,shield_multiplier=1):
-        Hitbox.__init__(self,center,size,owner,hitbox_lock)
+                 hitstun,hitbox_lock,weight_influence=1,shield_multiplier=1, 
+                 transcendence=0, priority_diff=0):
+        Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,damage+priority_diff)
         self.damage = damage
         self.baseKnockback = baseKnockback
         self.knockbackGrowth = knockbackGrowth
@@ -60,19 +69,15 @@ class DamageHitbox(Hitbox):
     def update(self):
         Hitbox.update(self)
         self.recenterSelfOnOwner() 
- 
-    def compareTo(self,other):
-        if hasattr(other, 'damage'):
-            return (self.damage > other.damage)
-        else:
-            return True
 
 class SakuraiAngleHitbox(DamageHitbox):
     def __init__(self,center,size,owner,
                  damage,baseKnockback,knockbackGrowth,trajectory,
-                 hitstun,hitbox_lock,weight_influence=1,shield_multiplier=1):
+                 hitstun,hitbox_lock,weight_influence=1,shield_multiplier=1,
+                 transcendence=0,priority_diff=0):
         DamageHitbox.__init__(self, center, size, owner, damage, baseKnockback, knockbackGrowth, 
-                 trajectory, hitstun, hitbox_lock, weight_influence, shield_multiplier)
+                 trajectory, hitstun, hitbox_lock, weight_influence, shield_multiplier,
+                 transcendence,priority_diff)
 
     def onCollision(self, other):
         Hitbox.onCollision(self, other)
@@ -101,8 +106,10 @@ class SakuraiAngleHitbox(DamageHitbox):
 
 class AutolinkHitbox(DamageHitbox):
     def __init__(self,center,size,owner,damage,
-                hitstun,hitbox_lock,shield_multiplier=1,velocity_multiplier=1):
-        DamageHitbox.__init__(self,center,size,owner,damage,0,0,0,hitstun,hitbox_lock,0,shield_multiplier)
+                hitstun,hitbox_lock,shield_multiplier=1,velocity_multiplier=1,
+                transcendence=0,priority_diff=0):
+        DamageHitbox.__init__(self,center,size,owner,damage,0,0,0,hitstun,hitbox_lock,0,shield_multiplier,
+                transcendence,priority_diff)
         self.velocity_multiplier=velocity_multiplier
 
     def onCollision(self, other):
@@ -120,8 +127,8 @@ class AutolinkHitbox(DamageHitbox):
             self.article.onCollision(other)
 
 class GrabHitbox(Hitbox):
-    def __init__(self,center,size,owner,hitbox_lock, height=0):
-        Hitbox.__init__(self,center,size,owner,hitbox_lock)
+    def __init__(self,center,size,owner,hitbox_lock, height=0, transcendence=0, priority=0):
+        Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,priority)
         self.height = height;
 
     def onCollision(self,other):

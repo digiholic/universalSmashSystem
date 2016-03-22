@@ -2,7 +2,7 @@ import engine.action as action
 import pygame
 import math
 import settingsManager
-           
+
 class Move(action.Action):
     def __init__(self,length):
         action.Action.__init__(self,length)
@@ -718,6 +718,7 @@ class LedgeGetup(action.Action):
 #               TRANSITION STATES                     #
 ########################################################
 def neutralState(actor):
+    (key,invkey) = actor.getForwardBackwardKeys()
     if actor.bufferContains('shield', 8):
         actor.doPreShield()
     elif actor.bufferContains('attack', 8):
@@ -726,10 +727,10 @@ def neutralState(actor):
         actor.doGroundSpecial()
     elif actor.bufferContains('jump', 8):
         actor.doJump()
-    elif actor.keysContain('left'):
-        actor.doGroundMove(180)
-    elif actor.keysContain('right'):
-        actor.doGroundMove(0)
+    elif actor.keysContain(invkey):
+        actor.doGroundMove(actor.getFacingDirection()+180)
+    elif actor.keysContain(key):
+        actor.doGroundMove(actor.getFacingDirection())
     elif actor.keysContain('down'):
         actor.doCrouch()
 

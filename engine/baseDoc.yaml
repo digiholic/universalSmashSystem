@@ -1,0 +1,616 @@
+---
+Name: LeftWalk
+Class: baseActions.Move
+Input: [0: ['left': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 10
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftWalk, LeftMoonwalk, LeftStop, LeftJump, LeftAttack, LeftSpecial]
+            Priority: 0
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['maxGroundSpeed'],-1)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: RightWalk
+Class: baseActions.Move
+Input: [0: ['right': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightWalk, RightMoonwalk, RightStop, RightJump, RightAttack, RightSpecial]
+            Priority: 0
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['maxGroundSpeed'],1)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: LeftMoonwalk
+Class: baseActions.Move
+Input: [0: ['left': 1, 'right': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftWalk, LeftMoonwalk, LeftStop, LeftJump, RightAttack, RightSpecial]
+            Priority: 0
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                if self.direction == actor.direction:
+                    actor.flip()
+                actor.setPreferredSpeed(actor.var['maxGroundSpeed'],self.direction)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: RightMoonwalk
+Class: baseActions.Move
+Input: [0: ['left': 1, 'right': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightWalk, RightMoonwalk, RightStop, RightJump, LeftAttack, LeftSpecial]
+            Priority: 0
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                if self.direction == actor.direction:
+                    actor.flip()
+                actor.setPreferredSpeed(actor.var['maxGroundSpeed'],self.direction)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: LeftDash
+Class: baseActions.Dash
+Input: [0: ['left': 1]]
+Prerequisite: "self.frame < self.lastFrame"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftDash, LeftMoondash, LeftDashCommit, LeftStop, LeftJump, LeftAttack, LeftSpecial]
+            Priority: -1
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['runSpeed'],-1)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: RightDash
+Class: baseActions.Dash
+Input: [0: ['right': 1]]
+Prerequisite: "self.frame < self.lastFrame"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightDash, RightMoondash, RightDashCommit, RightStop, RightJump, RightAttack, RightSpecial]
+            Priority: -1
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['runSpeed'],1)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: LeftMoondash
+Class: baseActions.Dash
+Input: [0: ['left': 1, 'right': 1]]
+Prerequisite: "self.frame < self.lastFrame"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftMoondash, LeftStop, LeftMoondashCommit, LeftJump, RightAttack, RightSpecial]
+            Priority: -2
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                if self.direction == actor.direction:
+                    actor.flip()
+                actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: RightMoondash
+Class: baseActions.Dash
+Input: [0: ['left': 1, 'right': 1]]
+Prerequisite: "self.frame < self.lastFrame"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightMoondash, RightStop, RightMoondashCommit, RightJump, LeftAttack, LeftSpecial]
+            Priority: -2
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                if self.direction == actor.direction:
+                    actor.flip()
+                actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: LeftDashCommit
+Class: baseActions.Dash
+Input: [0: ['left': 1]]
+Prerequisite: "self.frame == self.lastFrame"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftRun, LeftStop, LeftJump, LeftAttack, LeftSpecial]
+            Priority: -3
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['runSpeed'],-1)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: RightDashCommit
+Class: baseActions.Dash
+Input: [0: ['right': 1]]
+Prerequisite: "self.frame == self.lastFrame"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightRun, RightStop, RightJump, RightAttack, RightSpecial]
+            Priority: -3
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['runSpeed'],1)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: LeftMoondashCommit
+Class: baseActions.Dash
+Input: [0: ['left': 1, 'right': 1]]
+Prerequisite: "self.frame == self.lastFrame"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftMoonrun, LeftStop, LeftJump, RightAttack, RightSpecial]
+            Priority: -3
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: RightMoondashCommit
+Class: baseActions.Dash
+Input: [0: ['left': 1, 'right': 1]]
+Prerequisite: "self.frame == self.lastFrame"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightMoonrun, RightStop, RightJump, LeftAttack, LeftSpecial]
+            Priority: -3
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
+                actor.accel(${actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: LeftRun
+Class: baseActions.Run
+Input: [0: ['left': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftRun, LeftStop, LeftJump, LeftAttack, LeftSpecial]
+            Priority: -3
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['runSpeed'],-1)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: RightRun
+Class: baseActions.Run
+Input: [0: ['right': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightRun, RightStop, RightJump, RightAttack, RightSpecial]
+            Priority: -3
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['runSpeed'],1)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: LeftMoonrun
+Class: baseActions.Run
+Input: [0: ['left': 1, 'right': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftMoonrun, LeftStop, LeftJump, RightAttack, RightSpecial]
+            Priority: -3
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: RightMoonrun
+Class: baseActions.Run
+Input: [0: ['left': 1, 'right': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightMoonrun, RightStop, RightJump, LeftAttack, LeftSpecial]
+            Priority: -3
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: LeftPivot
+Class: baseActions.Pivot
+Input: [0: ['right': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 5
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftWalk, RightWalk, Idle]
+            Priority: -1
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(0)
+                for i in range(0, self.lastFrame-1):
+                    actor.accel(actor.var['friction'])
+                    actor.rect.x += actor.change_x
+---
+Name: RightPivot
+Class: baseActions.Pivot
+Input: [0: ['left': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 5
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftWalk, RightWalk, Idle]
+            Priority: -1
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(0)
+                for i in range(0, self.lastFrame-1):
+                    actor.accel(actor.var['friction'])
+                    actor.rect.x += actor.change_x
+---
+Name: LeftStop
+Class: baseActions.Stop
+Input: []
+Prerequisite: "self.frame < 8"
+Pattern: 
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow: 
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftDash, LeftPivot, StopCommit]
+            Priority: -1
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(0)
+                actor.accel(actor.var['friction'])
+                actor.rect.x += actor.change_x
+---
+Name: RightStop
+Class: baseActions.Stop
+Input: []
+Prerequisite: "and self.frame < 8"
+Pattern: 
+    - Start: 0
+      End: 0
+      Hitbox: [40, 40, 32, 32]
+      LandingLag: 0
+      Follow: 
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightDash, RightPivot, StopCommit]
+            Priority: -1
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(0)
+                actor.accel(actor.var['friction'])
+                actor.rect.x += actor.change_x
+---
+Name: StopCommit
+Class: baseActions.Stop
+Input: []
+Prerequisite: "self.frame >= 8"
+Pattern:
+    - Start: 0
+      End: self.lastFrame-8
+      Hitbox: [34, 34, 32, 32]
+      LandingLag: 0
+      Follow: 
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [Idle]
+            Priority: -3
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(0)
+                actor.accel(actor.var['friction']
+                actor.rect.x += actor.change_x
+---
+Name: Idle
+Class: baseActions.NeutralAction
+Input: []
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [32, 32, 32, 32]
+      LandingLag: 0
+      Follow: 
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [Idle, LeftWalk, RightWalk, LeftCrouch, RightCrouch, Attack, Special, LeftJump, RightJump, LeftShield, RightShield]
+            Priority: 0
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.accel(actor.var['friction'])
+                actor.rect.x += actor.change_x
+---
+Name: LeftCrouch
+Class: baseAction.Crouch
+Input: [0: ['down': 1]]
+Prerequisite: "actor.direction==-1"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [46, 46, 10, 10]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftCrouch, LeftLeftCrawl, LeftRightCrawl, CrouchGetup, Attack, Special, LeftJump]
+            Priority: 0
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(0)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: RightCrouch
+Class: baseAction.Crouch
+Input: [0: ['down': 1]]
+Prerequisite: "actor.direction==1"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [46, 46, 10, 10]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightCrouch, RightLeftCrawl, RightRightCrawl, CrouchGetup, Attack, Special, RightJump]
+            Priority: 0
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(0)
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: LeftLeftCrawl
+Class: baseAction.Crouch
+Input: [0: ['down': 1, 'left': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [46, 46, 10, 10]
+      LandingLag: 0
+      Follow: 
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftCrouch, LeftLeftCrawl, LeftRightCrawl, CrouchGetup, Attack, Special, LeftJump]
+            Priority: 0
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['crawlSpeed'], actor.getFacingDirection())
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: LeftRightCrawl
+Class: baseAction.Crouch
+Input: [0, ['down': 1, 'right': 1]]
+Prerequisite: "True"
+Pattern: 
+    - Start: 0
+      End: 0
+      Hitbox: [46, 46, 10, 10]
+      LandingLag: 0
+      Follow: 
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [LeftCrouch, LeftLeftCrawl, LeftRightCrawl, CrouchGetup, Attack, Special, LeftJump]
+            Priority: 0
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(-actor.var['crawlSpeed'], actor.getFacingDirection())
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: RightLeftCrawl
+Class: baseAction.Crouch
+Input: [0: ['down': 1, 'left': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [46, 46, 10, 10]
+      LandingLag: 0
+      Follow: 
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightCrouch, RightLeftCrawl, RightRightCrawl, CrouchGetup, Attack, Special, RightJump]
+            Priority: 0
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(-actor.var['crawlSpeed'], actor.getFacingDirection())
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: RightRightCrawl
+Class: baseAction.Crouch
+Input: [0, ['down': 1, 'right': 1]]
+Prerequisite: "True"
+Pattern: 
+    - Start: 0
+      End: 0
+      Hitbox: [46, 46, 10, 10]
+      LandingLag: 0
+      Follow: 
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [RightCrouch, RightLeftCrawl, RightRightCrawl, CrouchGetup, Attack, Special, RightJump]
+            Priority: 0
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.setPreferredSpeed(actor.var['crawlSpeed'], actor.getFacingDirection())
+                actor.accel(actor.var['friction']+actor.var['staticGrip'])
+                actor.rect.x += actor.change_x
+---
+Name: CrouchGetup
+Class: baseAction.CrouchGetup
+Input: []
+Prerequisite: "self.frame < self.lastFrame"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [32, 32, 32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000,-10000,20000,20000)
+            Follow: [CrouchGetup, CrouchGetupCommit, PlatformDrop]
+            Priority: -2
+            Type: [0, 0]
+            Precedence: 0
+            Connect: |
+                actor.accel(actor.var['friction'])
+                actor.rect.x += actor.change_x
+...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
