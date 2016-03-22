@@ -164,15 +164,15 @@ class ForwardSpecial(action.Action):
                 if actor.keysContain(invkey):
                     actor.setPreferredSpeed(actor.var['runSpeed']/2, actor.getForwardWithOffset(0))
                     self.frame += 2
-                    if (self.frame > self.lastFrame):
-                        self.frame = self.lastFrame
+                    if (self.frame > self.lastFrame-32):
+                        self.frame = self.lastFrame-32
                 elif actor.keysContain(key):
                     actor.setPreferredSpeed(actor.var['runSpeed'], actor.getForwardWithOffset(0))
                 else:
                     actor.setPreferredSpeed(actor.var['runSpeed']*3/4, actor.getForwardWithOffset(0))
                     self.frame += 1
-                    if (self.frame > self.lastFrame):
-                        self.frame = self.lastFrame
+                    if (self.frame > self.lastFrame-32):
+                        self.frame = self.lastFrame-32
                 
         else:
             if self.frame == self.lastFrame-32:
