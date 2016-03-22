@@ -5,7 +5,7 @@ Input: [0: ['left': 1]]
 Prerequisite: "True"
 Pattern:
     - Start: 0
-      End: 10
+      End: 0
       Hitbox: [40, 40, 32, 32]
       LandingLag: 0
       Follow:
@@ -16,8 +16,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['maxGroundSpeed'],-1)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: RightWalk
 Class: baseActions.Move
@@ -36,8 +35,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['maxGroundSpeed'],1)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: LeftMoonwalk
 Class: baseActions.Move
@@ -58,8 +56,7 @@ Pattern:
                 if self.direction == actor.direction:
                     actor.flip()
                 actor.setPreferredSpeed(actor.var['maxGroundSpeed'],self.direction)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: RightMoonwalk
 Class: baseActions.Move
@@ -80,8 +77,7 @@ Pattern:
                 if self.direction == actor.direction:
                     actor.flip()
                 actor.setPreferredSpeed(actor.var['maxGroundSpeed'],self.direction)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: LeftDash
 Class: baseActions.Dash
@@ -100,8 +96,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['runSpeed'],-1)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: RightDash
 Class: baseActions.Dash
@@ -120,8 +115,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['runSpeed'],1)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: LeftMoondash
 Class: baseActions.Dash
@@ -142,8 +136,7 @@ Pattern:
                 if self.direction == actor.direction:
                     actor.flip()
                 actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: RightMoondash
 Class: baseActions.Dash
@@ -164,8 +157,7 @@ Pattern:
                 if self.direction == actor.direction:
                     actor.flip()
                 actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: LeftDashCommit
 Class: baseActions.Dash
@@ -184,8 +176,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['runSpeed'],-1)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: RightDashCommit
 Class: baseActions.Dash
@@ -204,8 +195,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['runSpeed'],1)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: LeftMoondashCommit
 Class: baseActions.Dash
@@ -224,8 +214,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: RightMoondashCommit
 Class: baseActions.Dash
@@ -244,8 +233,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
-                actor.accel(${actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: LeftRun
 Class: baseActions.Run
@@ -264,8 +252,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['runSpeed'],-1)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: RightRun
 Class: baseActions.Run
@@ -284,8 +271,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['runSpeed'],1)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: LeftMoonrun
 Class: baseActions.Run
@@ -304,8 +290,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: RightMoonrun
 Class: baseActions.Run
@@ -324,8 +309,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: LeftPivot
 Class: baseActions.Pivot
@@ -344,9 +328,6 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(0)
-                for i in range(0, self.lastFrame-1):
-                    actor.accel(actor.var['friction'])
-                    actor.rect.x += actor.change_x
 ---
 Name: RightPivot
 Class: baseActions.Pivot
@@ -365,9 +346,6 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(0)
-                for i in range(0, self.lastFrame-1):
-                    actor.accel(actor.var['friction'])
-                    actor.rect.x += actor.change_x
 ---
 Name: LeftStop
 Class: baseActions.Stop
@@ -386,8 +364,6 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(0)
-                actor.accel(actor.var['friction'])
-                actor.rect.x += actor.change_x
 ---
 Name: RightStop
 Class: baseActions.Stop
@@ -406,8 +382,6 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(0)
-                actor.accel(actor.var['friction'])
-                actor.rect.x += actor.change_x
 ---
 Name: StopCommit
 Class: baseActions.Stop
@@ -426,8 +400,6 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(0)
-                actor.accel(actor.var['friction']
-                actor.rect.x += actor.change_x
 ---
 Name: Idle
 Class: baseActions.NeutralAction
@@ -445,8 +417,7 @@ Pattern:
             Type: [0, 0]
             Precedence: 0
             Connect: |
-                actor.accel(actor.var['friction'])
-                actor.rect.x += actor.change_x
+                pass
 ---
 Name: LeftCrouch
 Class: baseActions.Crouch
@@ -465,8 +436,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(0)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: RightCrouch
 Class: baseActions.Crouch
@@ -485,8 +455,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(0)
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: LeftLeftCrawl
 Class: baseActions.Crouch
@@ -505,8 +474,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['crawlSpeed'], actor.getFacingDirection())
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: LeftRightCrawl
 Class: baseActions.Crouch
@@ -525,8 +493,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(-actor.var['crawlSpeed'], actor.getFacingDirection())
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: RightLeftCrawl
 Class: baseActions.Crouch
@@ -545,8 +512,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(-actor.var['crawlSpeed'], actor.getFacingDirection())
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: RightRightCrawl
 Class: baseActions.Crouch
@@ -565,8 +531,7 @@ Pattern:
             Precedence: 0
             Connect: |
                 actor.setPreferredSpeed(actor.var['crawlSpeed'], actor.getFacingDirection())
-                actor.accel(actor.var['friction']+actor.var['staticGrip'])
-                actor.rect.x += actor.change_x
+                actor.accel(actor.var['staticGrip'])
 ---
 Name: CrouchGetup
 Class: baseActions.CrouchGetup
@@ -584,8 +549,7 @@ Pattern:
             Type: [0, 0]
             Precedence: 0
             Connect: |
-                actor.accel(actor.var['friction'])
-                actor.rect.x += actor.change_x
+                pass
 ---
 Name: CrouchGetupCommit
 Class: baseActions.CrouchGetup
@@ -603,8 +567,7 @@ Pattern:
             Type: [0, 0]
             Precedence: 0
             Connect: |
-                actor.accel(actor.var['friction'])
-                actor.rect.x += actor.change_x
+                pass
 ---
 Name: Grabbing
 Class: baseActions.Grabbing
@@ -622,8 +585,7 @@ Pattern:
             Type: [0, 5]
             Precedence: 0
             Connect: |
-                actor.accel(actor.var['friction'])
-                actor.rect.x += actor.change_x
+                pass
 ---
 Name: Hitstun
 Class: baseActions.HitStun
@@ -656,11 +618,6 @@ Pattern:
                         pass
                     else: #Firm landing during hitstun
                         actor.change_y = -0.4*actor.change_y
-                if actor.gravityEnabled:
-                    actor.calc_grav()
-                actor.accel(actor.var['airControl']
-                actor.rect.x += actor.change_x
-                actor.rect.y += actor.change_y
 ---
 Name: Tumble
 Class: baseActions.HitStun
@@ -693,12 +650,7 @@ Pattern:
                         pass
                     else: #Firm landing during hitstun
                         actor.change_y = -0.4*actor.change_y
-                if actor.gravityEnabled:
-                    actor.calc_grav()
                 actor.setPreferredSpeed(0)
-                actor.accel(actor.var['airControl'])
-                actor.rect.x += actor.change_x
-                actor.rect.y += actor.change_y
 ---
 Name: TumbleLeft
 Class: baseActions.HitStun
@@ -731,12 +683,7 @@ Pattern:
                         pass
                     else: #Firm landing during hitstun
                         actor.change_y = -0.4*actor.change_y
-                if actor.gravityEnabled:
-                    actor.calc_grav()
                 actor.setPreferredSpeed(-actor.var['maxAirSpeed'])
-                actor.accel(actor.var['airControl'])
-                actor.rect.x += actor.change_x
-                actor.rect.y += actor.change_y
 ---
 Name: TumbleRight
 Class: baseActions.HitStun
@@ -769,12 +716,7 @@ Pattern:
                         pass
                     else: #Firm landing during hitstun
                         actor.change_y = -0.4*actor.change_y
-                if actor.gravityEnabled:
-                    actor.calc_grav()
                 actor.setPreferredSpeed(actor.var['maxAirSpeed'])
-                actor.accel(actor.var['airControl'])
-                actor.rect.x += actor.change_x
-                actor.rect.y += actor.change_y
 ---
 Name: TumbleDown
 Class: baseActions.HitStun
@@ -807,13 +749,8 @@ Pattern:
                         pass
                     else: #Firm landing during hitstun
                         actor.change_y = -0.4*actor.change_y
-                if actor.gravityEnabled:
-                    actor.calc_grav()
-                    actor.calc_grav()
+                actor.calc_grav()
                 actor.setPreferredSpeed(0)
-                actor.accel(actor.var['airControl'])
-                actor.rect.x += actor.change_x
-                actor.rect.y += actor.change_y
 ---
 Name: TumbleDownLeft
 Class: baseActions.HitStun
@@ -846,13 +783,8 @@ Pattern:
                         pass
                     else: #Firm landing during hitstun
                         actor.change_y = -0.4*actor.change_y
-                if actor.gravityEnabled:
-                    actor.calc_grav()
-                    actor.calc_grav()
+                actor.calc_grav()
                 actor.setPreferredSpeed(-actor.var['maxAirSpeed'])
-                actor.accel(actor.var['airControl'])
-                actor.rect.x += actor.change_x
-                actor.rect.y += actor.change_y
 ---
 Name: TumbleDownRight
 Class: baseActions.HitStun
@@ -885,13 +817,8 @@ Pattern:
                         pass
                     else: #Firm landing during hitstun
                         actor.change_y = -0.4*actor.change_y
-                if actor.gravityEnabled:
-                    actor.calc_grav()
-                    actor.calc_grav()
+                actor.calc_grav()
                 actor.setPreferredSpeed(-actor.var['maxAirSpeed'])
-                actor.accel(actor.var['airControl'])
-                actor.rect.x += actor.change_x
-                actor.rect.y += actor.change_y
 ---
 Name: TryTech
 Class: baseActions.TryTech
@@ -909,13 +836,7 @@ Pattern:
             Type: [-5, 0]
             Precedence: 0
             Connect: |
-                for i in range(0, 19):
-                    if actor.gravityEnabled:
-                        actor.calc_grav()
-                    actor.setPreferredSpeed(0)
-                    actor.accel(actor.var['airControl'])
-                    actor.rect.x += actor.change_x
-                    actor.rect.y += actor.change_y
+                actor.setPreferredSpeed(0)
     - Start: 20
       End: 40
       Hitbox: [23, 23, 46, 46]
@@ -927,28 +848,22 @@ Pattern:
             Type: [-5, 0]
             Precedence: 0
             Connect: |
-                for i in range(20, 40):
-                    if actor.grounded and self.frame > 2:
-                        if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
-                            actor.change_y = -0.4*actor.change_y
-                        elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2:
-                            actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
-                        elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
-                            pass
-                        elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
-                            pass
-                        elif self.frame >= self.lastFrame: #Firm landing during tumble
-                            pass
-                        elif actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during hitstun
-                            pass
-                        else: #Firm landing during hitstun
-                            actor.change_y = -0.4*actor.change_y
-                    if actor.gravityEnabled:
-                        actor.calc_grav()
-                    actor.setPreferredSpeed(0)
-                    actor.accel(actor.var['airControl'])
-                    actor.rect.x += actor.change_x
-                    actor.rect.y += actor.change_y
+                if actor.grounded and self.frame > 2:
+                    if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
+                        actor.change_y = -0.4*actor.change_y
+                    elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2:
+                        actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
+                    elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
+                        pass
+                    elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
+                        pass
+                    elif self.frame >= self.lastFrame: #Firm landing during tumble
+                        pass
+                    elif actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during hitstun
+                        pass
+                    else: #Firm landing during hitstun
+                        actor.change_y = -0.4*actor.change_y
+                actor.setPreferredSpeed(0)
 ---
 Name: SkidTrip
 Class: baseActions.Trip
@@ -962,7 +877,11 @@ Pattern:
       Follow: 
           - Bounds: (-10000, -10000, 10000, 10000)
             Follow: [Trip, GetupAttack, ForwardRoll, BackwardRoll, SpotDodge]
-      
+            Priority: -8
+            Type: [-2, -2]
+            Precedence: 0
+            Connect: |
+                
 
 
 ...
