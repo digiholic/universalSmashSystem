@@ -482,10 +482,6 @@ class PreShield(action.Action):
             actor.doShield()
         self.frame += 1
 
-"""
-@ai-priority['actor.hurtbox.rect'] = (75-actor.shieldIntegerity)/2.5
-@ai-alignment['actor.hurtbox.rect'] = [(50-actor.shieldIntegerity)/5, 0]
-"""
 class Shield(action.Action):
     def __init__(self):
         action.Action.__init__(self, 2)
@@ -517,10 +513,6 @@ class Shield(action.Action):
             actor.doIdle()
         else: self.frame += 1
 
-"""
-@ai-priority['actor.hurtbox.rect'] = (75-actor.shieldIntegerity)/2.5
-@ai-alignment['actor.hurtbox.rect'] = [(50-actor.shieldIntegerity)/5, 0]
-"""
 class ShieldStun(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)

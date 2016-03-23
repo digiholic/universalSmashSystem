@@ -7,12 +7,6 @@ import math
 
 import settingsManager #TEMPORARY until I figure out article sprites
 
-"""
-@ai-priority['hitbox'] = 6
-@ai-priority['article.rect'] = 0
-@ai-alignment['hitbox'] = [-3, -3]
-@ai-alignment['article.rect'] = [-2, 0]
-"""
 class SplatArticle(article.AnimatedArticle):
     def __init__(self, owner, origin, direction):
         article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/hitboxie_projectile.png'), owner, origin, imageWidth=16,length=120)
@@ -28,7 +22,6 @@ class SplatArticle(article.AnimatedArticle):
             self.hitbox.kill()
             self.kill()
         #TODO check for verticality of platform landing
-            
             
     def update(self):
         self.rect.x += 24 * self.direction
@@ -104,12 +97,6 @@ class NeutralAirSpecial(action.Action):
         self.frame += 1
 
 """
-@ai-priority['actor.hurtbox.rect'] = 2
-@ai-priority['chainHitbox'] = 6
-@ai-priority['flingHitbox'] = self.numFrames
-@ai-alignment['actor.hurtbox.rect'] = [2, 0]
-@ai-alignment['chainHitbox'] = [0, 2]
-@ai-alignment['flingHitbox'] = [-self.numFrames/2, self.numFrames/2]
 @ai-move-forward
 @ai-move-stop
 @ai-move-up
@@ -215,8 +202,6 @@ class ForwardSpecial(action.Action):
         self.frame += 1
            
 """
-@ai-priority['jabHitbox'] = 2
-@ai-alignment['jabhitbox'] = [-0.5, -1]
 @ai-move-stop
 """
 class NeutralAttack(action.Action):
@@ -265,14 +250,6 @@ class NeutralAttack(action.Action):
             actor.doIdle()
         self.frame += 1
 
-"""
-@ai-priority['sweetHitbox'] = 7
-@ai-priority['tangyHitbox'] = 5
-@ai-priority['sourHitbox'] = 3
-@ai-alignment['sweetHitbox'] = [0, -5]
-@ai-alignment['tangyHitbox'] = [0, -4]
-@ai-alignment['sourHitbox'] = [0, -3]
-"""
 class UpAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,28)
@@ -310,16 +287,6 @@ class UpAttack(action.Action):
             actor.doIdle()
         self.frame += 1
 
-"""
-@ai-priority['popupHBox'] = 1
-@ai-priority['weakHBoxL'] = 2+chargeLevel/3.0
-@ai-priority['weakHBoxR'] = 2+chargeLevel/3.0
-@ai-priority['uSmashHitbox'] = 8+chargeLevel
-@ai-alignment['popupHBox'] = [0, -1]
-@ai-alignment['weakHBoxL'] = [0, -2-chargeLevel/3.0]
-@ai-alignment['weakHBoxR'] = [0, -2-chargeLevel/3.0]
-@ai-alignment['uSmashHitbox'] = [1, -8-chargeLevel]
-"""
 class UpSmash(action.Action):
     def __init__(self):
         action.Action.__init__(self, 48)
@@ -393,10 +360,6 @@ class UpSmash(action.Action):
         self.frame += 1 
        
 """
-@ai-priority['dashHitbox'] = 2
-@ai-priority['chainHitbox'] = 3
-@ai-alignment['dashHitbox'] = [0, -0.5]
-@ai-alignment['chainHitbox'] = [0, -3]
 @ai-move-forward
 """ 
 class DashAttack(action.Action):
@@ -444,10 +407,6 @@ class DashAttack(action.Action):
         self.frame += 1
         
 """
-@ai-priority['dsmashHitbox1'] = 12
-@ai-priority['dsmashHitbox2'] = 12
-@ai-alignment['dsmashHitbox1'] = [0, -12]
-@ai-alignment['dsmashHitbox2'] = [0, -12]
 @ai-move-stop
 """
 class DownAttack(action.Action):
@@ -506,8 +465,6 @@ class DownAttack(action.Action):
         self.frame += 1
                        
 """
-@ai-priority['fSmashHitbox'] = 8
-@ai-alignment['fSmashHitbox'] = [0, -8]
 @ai-move-stop
 """
 class ForwardAttack(action.Action):
@@ -552,8 +509,6 @@ class ForwardAttack(action.Action):
                 baseActions.neutralState(actor)    
 
 """
-@ai-priority['fSmashHitbox'] = 12+self.chargeLevel
-@ai-alignment['fSmashHitbox'] = [0, -12-self.chargeLevel]
 @ai-move-stop
 """
 class ForwardSmash(action.Action):
@@ -609,8 +564,6 @@ class ForwardSmash(action.Action):
         self.frame += 1 
 
 """
-@ai-priority['nairHitbox'] = self.nairHitbox.damage
-@ai-alignment['fSmashHitbox'] = [0, -3]
 @ai-move-down
 @ai-move-stop
 @ai-move-forward
@@ -657,16 +610,6 @@ class NeutralAir(action.Action):
         self.frame += 1
 
 """
-@ai-priority['downHitbox'] = 12
-@ai-priority['leftDiagonalHitbox'] = 9
-@ai-priority['rightDiagonalHitbox'] = 9
-@ai-priority['leftSourSpot'] = 6
-@ai-priority['rightSourSpot'] = 6
-@ai-alignment['downHitbox'] = [-2, -10]
-@ai-alignment['leftDiagonalHitbox'] = [-2, -8]
-@ai-alignment['rightDiagonalHitbox'] = [-2, -8]
-@ai-alignment['leftSourSpot'] = [-2, -6]
-@ai-alignment['rightSourSpot'] = [-2, -6]
 @ai-move-down
 @ai-move-stop
 @ai-move-forward
@@ -752,12 +695,6 @@ class DownAir(action.Action):
             actor.changeAction(Fall())
         self.frame += 1
 """
-@ai-priority['sourspot'] = 5
-@ai-priority['semisweet'] = 8
-@ai-priority['sweetspot'] = 13
-@ai-alignment['sourspot'] = [0, -3]
-@ai-alignment['semisweet'] = [0, -7]
-@ai-alignment['sweetspot'] = [0, -12]
 @ai-move-forward
 @ai-move-backward
 @ai-move-down
@@ -805,11 +742,7 @@ class UpAir(action.Action):
         elif self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
-        
-"""
-@ai-priority['grabHitbox'] = 9
-@ai-alignment['grabHitbox'] = [-2, 8]
-"""
+
 class GroundGrab(action.Action):
     def __init__(self):
         action.Action.__init__(self, 35)
@@ -867,8 +800,6 @@ class Pummel(baseActions.BaseGrabbing):
         self.frame += 1
         
 """
-@ai-priority['fSmashHitbox'] = 11
-@ai-alignment['fSmashHitbox'] = [-2, 6]
 @ai-move-stop
 """
 class ForwardThrow(baseActions.BaseGrabbing):
@@ -913,10 +844,6 @@ class ForwardThrow(baseActions.BaseGrabbing):
         
         self.frame += 1
 
-"""
-@ai-priority['bottomHitbox'] = 1
-@ai-alignment['bottomHitbox'] = [0, 0]
-"""
 class DownThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self, 32)
