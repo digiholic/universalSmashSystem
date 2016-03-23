@@ -645,6 +645,16 @@ class NeutralAir(action.Action):
         self.frame += 1
 
 """
+@ai-priority['downHitbox'] = 12
+@ai-priority['leftDiagonalHitbox'] = 9
+@ai-priority['rightDiagonalHitbox'] = 9
+@ai-priority['leftSourSpot'] = 6
+@ai-priority['rightSourSpot'] = 6
+@ai-alignment['downHitbox'] = [-2, -10]
+@ai-alignment['leftDiagonalHitbox'] = [-2, -8]
+@ai-alignment['rightDiagonalHitbox'] = [-2, -8]
+@ai-alignment['leftSourSpot'] = [-2, -6]
+@ai-alignment['rightSourSpot'] = [-2, -6]
 """
 class DownAir(action.Action):
     def __init__(self):
@@ -725,7 +735,14 @@ class DownAir(action.Action):
             actor.landingLag = 16
             actor.changeAction(Fall())
         self.frame += 1
-
+"""
+@ai-priority['sourspot'] = 5
+@ai-priority['semisweet'] = 8
+@ai-priority['sweetspot'] = 13
+@ai-alignment['sourspot'] = [0, -3]
+@ai-alignment['semisweet'] = [0, -7]
+@ai-alignment['sweetspot'] = [0, -12]
+"""
 class UpAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 28)
@@ -770,6 +787,10 @@ class UpAir(action.Action):
             actor.doFall()
         self.frame += 1
         
+"""
+@ai-priority['grabHitbox'] = 9
+@ai-alignment['grabHitbox'] = [-2, 8]
+"""
 class GroundGrab(action.Action):
     def __init__(self):
         action.Action.__init__(self, 35)
@@ -826,6 +847,10 @@ class Pummel(baseActions.BaseGrabbing):
             actor.doGrabbing()
         self.frame += 1
         
+"""
+@ai-priority['fSmashHitbox'] = 11
+@ai-alignment['fSmashHitbox'] = [-2, 6]
+"""
 class ForwardThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self,20)
