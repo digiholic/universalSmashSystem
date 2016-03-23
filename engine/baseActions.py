@@ -5,7 +5,7 @@ import settingsManager
 
 class Move(action.Action):
     def __init__(self,length):
-        action.Action.__init__(self,length)
+        action.Action.__init__(self,length) 
         self.direction = -1
         
     def setUp(self,actor):

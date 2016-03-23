@@ -468,9 +468,15 @@ class AbstractFighter():
         self.preferred_xspeed = x
         self.preferred_yspeed = y
         
+    """
+    @ai-ignore = true
+    """
     def rotateSprite(self,direction):
-        self.sprite.rotate(-1 * (90 - direction))
+        self.sprite.rotate(-1 * (90 - direction)) 
             
+    """
+    @ai-ignore = true
+    """
     def unRotate(self):
         self.sprite.rotate()
         
@@ -665,6 +671,9 @@ class AbstractFighter():
         if self.facing == 1: return ('right','left')
         else: return ('left','right')
         
+    """
+    @ai-ignore = true
+    """
     def draw(self,screen,offset,scale):
         if (settingsManager.getSetting('showSpriteArea')): spriteManager.RectSprite(self.rect).draw(screen, offset, scale)
         self.sprite.draw(screen,offset,scale)
@@ -688,6 +697,9 @@ class AbstractFighter():
         else:
             return 180 - offSet
         
+    """
+    @ai-ignore = true
+    """
     def createMask(self,color,duration,pulse = False,pulseSize = 16):
         self.mask = spriteManager.MaskSprite(self.sprite,color,duration,pulse, pulseSize)
         
@@ -943,6 +955,9 @@ class ECB():
         self.yBar.rect.center = center
         self.xBar.rect.center = center
         
+    """
+    @ai-ignore = true
+    """
     def draw(self,screen,offset,scale):
         self.yBar.draw(screen,self.actor.gameState.stageToScreen(self.yBar.rect),scale)
         self.xBar.draw(screen,self.actor.gameState.stageToScreen(self.xBar.rect),scale)
