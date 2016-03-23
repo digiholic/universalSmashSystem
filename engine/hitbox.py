@@ -6,6 +6,21 @@ class HitboxLock(object):
     # Yes, it's that goddamn simple. 
     # All the HitboxLock class does is serve as a dummy for refcounting
 
+"""
+How to annotate hitboxes for the AI:
+Use the tag of the at sign, followed by ai-priority, to establish the base priority of a hitbox. 
+Use the tag of the at sign, followed by ai-alignment, to establish where in the hit-block-grapple cycle the move is. 
+The first argument is defense, and the second is piercing. Higher magnitudes represent more polarized moves
+Representative values of alignment:
+[x,0]: High defense, medium pierce I.E. a shield
+[x,y]: High defense, high pierce I.E. an armored command grab
+[0,y]: Medium defense, high pierce I.E. a fast grab
+[-x,y]: Low defense, high pierce I.E. a slow grab
+[-x,0]: Low defense, medium pierce I.E. a transcendent shield-safe jab
+[-x,-y]: Low defense, low pierce I.E. a smash attack
+[0,-y]: Medium defense, low pierce I.E. an armored attack
+[x,-y]: High defense, low pierce I.E. a counterattack
+"""
 class Hitbox(spriteObject.RectSprite):
     def __init__(self,center,size,owner,hitbox_lock, transcendence=0, priority=0):
         #Flip the distance from center if the fighter is facing the other way

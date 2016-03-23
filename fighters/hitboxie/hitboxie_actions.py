@@ -7,6 +7,12 @@ import math
 
 import settingsManager #TEMPORARY until I figure out article sprites
 
+"""
+@ai-priority['hitbox'] = 6
+@ai-priority['article.rect'] = 0
+@ai-alignment['hitbox'] = [-3, -3]
+@ai-alignment['article.rect'] = [-2, 0]
+"""
 class SplatArticle(article.AnimatedArticle):
     def __init__(self, owner, origin, direction):
         article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/hitboxie_projectile.png'), owner, origin, imageWidth=16,length=120)
@@ -97,6 +103,14 @@ class NeutralAirSpecial(action.Action):
             actor.changeAction(Fall())
         self.frame += 1
 
+"""
+@ai-priority['actor.hurtbox.rect'] = 2
+@ai-priority['chainHitbox'] = 6
+@ai-priority['flingHitbox'] = self.numFrames
+@ai-alignment['actor.hurtbox.rect'] = [2, 0]
+@ai-alignment['chainHitbox'] = [0, 2]
+@ai-alignment['flingHitbox'] = [-self.numFrames/2, self.numFrames/2]
+"""
 class ForwardSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self, 96)
@@ -197,6 +211,10 @@ class ForwardSpecial(action.Action):
 
         self.frame += 1
            
+"""
+@ai-priority['jabHitbox'] = 2
+@ai-alignment['jabhitbox'] = [-0.5, -1]
+"""
 class NeutralAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,17)
@@ -243,6 +261,14 @@ class NeutralAttack(action.Action):
             actor.doIdle()
         self.frame += 1
 
+"""
+@ai-priority['sweetHitbox'] = 7
+@ai-priority['tangyHitbox'] = 5
+@ai-priority['sourHitbox'] = 3
+@ai-alignment['sweetHitbox'] = [0, -5]
+@ai-alignment['tangyHitbox'] = [0, -4]
+@ai-alignment['sourHitbox'] = [0, -3]
+"""
 class UpAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,28)
@@ -280,6 +306,16 @@ class UpAttack(action.Action):
             actor.doIdle()
         self.frame += 1
 
+"""
+@ai-priority['popupHBox'] = 1
+@ai-priority['weakHBoxL'] = 2+chargeLevel/3.0
+@ai-priority['weakHBoxR'] = 2+chargeLevel/3.0
+@ai-priority['uSmashHitbox'] = 8+chargeLevel
+@ai-alignment['popupHBox'] = [0, -1]
+@ai-alignment['weakHBoxL'] = [0, -2-chargeLevel/3.0]
+@ai-alignment['weakHBoxR'] = [0, -2-chargeLevel/3.0]
+@ai-alignment['uSmashHitbox'] = [1, -8-chargeLevel]
+"""
 class UpSmash(action.Action):
     def __init__(self):
         action.Action.__init__(self, 48)
@@ -351,7 +387,13 @@ class UpSmash(action.Action):
             actor.doIdle()
         
         self.frame += 1 
-        
+       
+"""
+@ai-priority['dashHitbox'] = 2
+@ai-priority['chainHitbox'] = 3
+@ai-alignment['dashHitbox'] = [0, -0.5]
+@ai-alignment['chainHitbox'] = [0, -3]
+""" 
 class DashAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,32)
@@ -396,6 +438,12 @@ class DashAttack(action.Action):
             actor.doIdle()
         self.frame += 1
         
+"""
+@ai-priority['dsmashHitbox1'] = 12
+@ai-priority['dsmashHitbox2'] = 12
+@ai-alignment['dsmashHitbox1'] = [0, -12]
+@ai-alignment['dsmashHitbox2'] = [0, -12]
+"""
 class DownAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 34)
@@ -451,6 +499,10 @@ class DownAttack(action.Action):
             actor.doIdle()
         self.frame += 1
                        
+"""
+@ai-priority['fSmashHitbox'] = 8
+@ai-alignment['fSmashHitbox'] = [0, -8]
+"""
 class ForwardAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)
@@ -492,6 +544,10 @@ class ForwardAttack(action.Action):
             if self.frame > 20:
                 baseActions.neutralState(actor)    
 
+"""
+@ai-priority['fSmashHitbox'] = 12+self.chargeLevel
+@ai-alignment['fSmashHitbox'] = [0, -12-self.chargeLevel]
+"""
 class ForwardSmash(action.Action):
     def __init__(self):
         action.Action.__init__(self, 42)
@@ -544,6 +600,10 @@ class ForwardSmash(action.Action):
         
         self.frame += 1 
 
+"""
+@ai-priority['nairHitbox'] = self.nairHitbox.damage
+@ai-alignment['fSmashHitbox'] = [0, -3]
+"""
 class NeutralAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 34)
@@ -584,6 +644,8 @@ class NeutralAir(action.Action):
             actor.changeAction(Fall())
         self.frame += 1
 
+"""
+"""
 class DownAir(action.Action):
     def __init__(self):
         action.Action.__init__(self,30)

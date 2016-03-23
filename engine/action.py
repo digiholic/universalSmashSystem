@@ -1,6 +1,11 @@
 # The action class is used for creating attacks, movement options,
 # air dodges, rolls, and pretty much anything that happens to your
 # character. It has a length, and keeps track of its current frame.
+
+"""
+@ai-priority['actor.hurtbox'] = 0
+@ai-alignment['actor.hurtbox'] = [0,0]
+"""
 class Action():
     def __init__(self,length,startingFrame = 0):
         self.frame = startingFrame
