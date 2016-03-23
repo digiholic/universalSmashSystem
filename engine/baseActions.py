@@ -325,7 +325,6 @@ class AirJump(action.Action):
         actor.jumps -= 1
         
     def update(self,actor):
-        
         if self.frame < self.jumpFrame:
             actor.change_y = 0
         if self.frame == self.jumpFrame:

@@ -35,6 +35,9 @@ class AnimatedArticle(spriteManager.SheetSprite):
         self.frame += 1
         if self.frame == self.length: self.kill()
         
+"""
+@ai-ignore = true
+"""
 class ShieldArticle(Article):
     def __init__(self,image,owner):
         Article.__init__(self,image, owner, owner.rect.center)

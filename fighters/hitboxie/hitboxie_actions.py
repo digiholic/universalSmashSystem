@@ -893,6 +893,10 @@ class ForwardThrow(baseActions.BaseGrabbing):
         
         self.frame += 1
 
+"""
+@ai-priority['bottomHitbox'] = 1
+@ai-alignment['bottomHitbox'] = [0, 0]
+"""
 class DownThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self, 32)
