@@ -2,10 +2,14 @@ import engine.action as action
 import pygame
 import math
 import settingsManager
-           
+
+"""
+@ai-move-forward
+@ai-move-backward
+"""
 class Move(action.Action):
     def __init__(self,length):
-        action.Action.__init__(self,length)
+        action.Action.__init__(self,length) 
         self.direction = -1
         
     def setUp(self,actor):
@@ -31,6 +35,10 @@ class Move(action.Action):
     def stateTransitions(self,actor):
         moveState(actor,self.direction)
 
+"""
+@ai-move-forward
+@ai-move-backward
+"""
 class Dash(action.Action):
     def __init__(self,length): 
         action.Action.__init__(self,length)
@@ -58,6 +66,10 @@ class Dash(action.Action):
     def stateTransitions(self,actor):
         dashState(actor,self.direction)
         
+"""
+@ai-move-forward
+@ai-move-backward
+"""
 class Run(action.Action):
     def __init__(self,length):
         action.Action.__init__(self,length)
@@ -96,7 +108,7 @@ class Pivot(action.Action):
                     actor.doGroundMove(180)
             else:
                 actor.doIdle()
-            
+          
 class Stop(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
@@ -127,6 +139,11 @@ class NeutralAction(action.Action):
             actor.doFall()
         neutralState(actor)
 
+"""
+@ai-move-stop
+@ai-move-forward
+@ai-move-backward
+"""
 class Crouch(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
@@ -195,6 +212,11 @@ class Grabbing(BaseGrabbing):
             actor.doFall()
         grabbingState(actor)
         
+"""
+@ai-move-forward
+@ai-move-backward
+@ai-move-down
+"""
 class HitStun(action.Action):
     def __init__(self,hitstun,direction,hitstop):
         action.Action.__init__(self, hitstun)
@@ -204,9 +226,7 @@ class HitStun(action.Action):
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
         if actor.bufferContains('shield', 20):
-            actor.doTryTech(self.lastFrame, self.direction)
-        elif self.frame >= self.lastFrame:
-            tumbleState(actor)
+            actor.doTryTech(self.lastFrame-self.frame, self.direction)
         elif actor.grounded and self.frame > 2:
             if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
                 actor.change_y = -0.4*actor.change_y
@@ -224,6 +244,8 @@ class HitStun(action.Action):
                 actor.doLand()
             else: #Firm landing during hitstun
                 actor.change_y = -0.4*actor.change_y
+        elif self.frame >= self.lastFrame:
+            tumbleState(actor)
         
     def tearDown(self, actor, newAction):
         actor.unRotate()
@@ -250,6 +272,9 @@ class HitStun(action.Action):
 
         self.frame += 1
 
+"""
+@ai-move-stop
+"""
 class TryTech(HitStun):
     def __init__(self, hitstun, direction):
         HitStun.__init__(self, hitstun, direction)
@@ -304,7 +329,10 @@ class Getup(action.Action):
             actor.doIdle()
         self.frame += 1
         
-
+"""
+@ai-move-up
+@ai-move-stop
+"""
 class Jump(action.Action):
     def __init__(self,length,jumpFrame):
         action.Action.__init__(self, length)
@@ -324,6 +352,10 @@ class Jump(action.Action):
             
         self.frame += 1
         
+"""
+@ai-move-up
+@ai-move-stop
+"""
 class AirJump(action.Action):
     def __init__(self,length,jumpFrame):
         action.Action.__init__(self, length)
@@ -333,7 +365,6 @@ class AirJump(action.Action):
         actor.jumps -= 1
         
     def update(self,actor):
-        
         if self.frame < self.jumpFrame:
             actor.change_y = 0
         if self.frame == self.jumpFrame:
@@ -350,6 +381,11 @@ class AirJump(action.Action):
                     actor.change_x = actor.facing * actor.var['maxAirSpeed']    
         self.frame += 1
         
+"""
+@ai-move-down
+@ai-move-forward
+@ai-move-backward
+"""
 class Fall(action.Action):
     def __init__(self):
         action.Action.__init__(self, 1)
@@ -361,6 +397,11 @@ class Fall(action.Action):
     def update(self,actor):
         actor.grounded = False
 
+"""
+@ai-move-down
+@ai-move-forward
+@ai-move-backward
+"""
 class Helpless(action.Action):
     def __init__(self):
         action.Action.__init__(self, 1)
@@ -420,6 +461,9 @@ class HelplessLand(action.Action):
             actor.setPreferredSpeed(0, actor.getFacingDirection())
         self.frame += 1
 
+"""
+@ai-move-down
+"""
 class PlatformDrop(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
@@ -501,6 +545,9 @@ class Stunned(action.Action):
             actor.doIdle()
         self.frame += 1
 
+"""
+@ai-move-stop
+"""
 class Trapped(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
@@ -541,6 +588,10 @@ class Release(action.Action):
             actor.doIdle()
         self.frame += 1
         
+"""
+@ai-move-forward
+@ai-move-stop
+"""
 class ForwardRoll(action.Action):
     def __init__(self):
         action.Action.__init__(self, 46)
@@ -570,6 +621,10 @@ class ForwardRoll(action.Action):
                 actor.doIdle()
         self.frame += 1
         
+"""
+@ai-move-backward
+@ai-move-stop
+"""
 class BackwardRoll(action.Action):
     def __init__(self):
         action.Action.__init__(self, 50)
@@ -598,6 +653,9 @@ class BackwardRoll(action.Action):
                 actor.doIdle()
         self.frame += 1
         
+"""
+@ai-move-stop
+"""
 class SpotDodge(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)
@@ -633,6 +691,13 @@ class SpotDodge(action.Action):
                 actor.doIdle()
         self.frame += 1
         
+"""
+@ai-move-forward
+@ai-move-backward
+@ai-move-up
+@ai-move-down
+@ai-move-stop
+"""
 class AirDodge(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)
@@ -692,6 +757,13 @@ class TechDodge(AirDodge):
             return
         airControl(actor)
         
+"""
+@ai-move-stop
+@ai-move-forward
+@ai-move-backward
+@ai-move-up
+@ai-move-down
+"""
 class LedgeGrab(action.Action):
     def __init__(self,ledge):
         action.Action.__init__(self, 1)
@@ -712,6 +784,11 @@ class LedgeGrab(action.Action):
         actor.jumps = actor.var['jumps']
         actor.setSpeed(0, actor.getFacingDirection())
 
+"""
+@ai-move-forward
+@ai-move-up
+@ai-move-stop
+"""
 class LedgeGetup(action.Action):
     def __init__(self):
         action.Action.__init__(self, 27)
@@ -725,6 +802,7 @@ class LedgeGetup(action.Action):
 #               TRANSITION STATES                     #
 ########################################################
 def neutralState(actor):
+    (key,invkey) = actor.getForwardBackwardKeys()
     if actor.bufferContains('shield', 8):
         actor.doPreShield()
     elif actor.bufferContains('attack', 8):
@@ -733,10 +811,10 @@ def neutralState(actor):
         actor.doGroundSpecial()
     elif actor.bufferContains('jump', 8):
         actor.doJump()
-    elif actor.keysContain('left'):
-        actor.doGroundMove(180)
-    elif actor.keysContain('right'):
-        actor.doGroundMove(0)
+    elif actor.keysContain(invkey):
+        actor.doGroundMove(actor.getFacingDirection()+180)
+    elif actor.keysContain(key):
+        actor.doGroundMove(actor.getFacingDirection())
     elif actor.keysContain('down'):
         actor.doCrouch()
 

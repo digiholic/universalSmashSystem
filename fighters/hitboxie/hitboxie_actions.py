@@ -12,7 +12,7 @@ class SplatArticle(article.AnimatedArticle):
         article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/hitboxie_projectile.png'), owner, origin, imageWidth=16,length=120)
         self.direction = direction
         self.change_y = 0
-        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock())  
+        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)  
         self.hitbox.article = self
             
     # Override the onCollision of the hitbox
@@ -22,7 +22,6 @@ class SplatArticle(article.AnimatedArticle):
             self.hitbox.kill()
             self.kill()
         #TODO check for verticality of platform landing
-            
             
     def update(self):
         self.rect.x += 24 * self.direction
@@ -97,6 +96,11 @@ class NeutralAirSpecial(action.Action):
             actor.changeAction(Fall())
         self.frame += 1
 
+"""
+@ai-move-forward
+@ai-move-stop
+@ai-move-up
+"""
 class ForwardSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self, 96)
@@ -107,7 +111,7 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
         actor.changeSprite("nair",0)
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 1, 1)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 1, 1, 0, 0)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
     
@@ -116,7 +120,7 @@ class ForwardSpecial(action.Action):
     
     class sideSpecialHitbox(hitbox.SakuraiAngleHitbox):
         def __init__(self,actor):
-            hitbox.SakuraiAngleHitbox.__init__(self, [0,0], [80,80], actor, 8, 5, .3, 300, 1, hitbox.HitboxLock(), 1, 5)
+            hitbox.SakuraiAngleHitbox.__init__(self, [0,0], [80,80], actor, 8, 5, .3, 300, 1, hitbox.HitboxLock(), 1, 5, 0, 0)
 
         def onCollision(self, other):
             hitbox.Hitbox.onCollision(self, other)
@@ -181,6 +185,7 @@ class ForwardSpecial(action.Action):
             if self.frame == self.lastFrame-32:
                 print(self.numFrames)
                 self.flingHitbox.damage += int(float(self.numFrames)/float(12))
+                self.flingHitbox.priority += int(float(self.numFrames)/float(12))
                 self.flingHitbox.baseKnockback += float(self.numFrames)/float(12)
                 self.flingHitbox.update()
                 actor.active_hitboxes.add(self.flingHitbox)
@@ -200,6 +205,9 @@ class ForwardSpecial(action.Action):
 
         self.frame += 1
            
+"""
+@ai-move-stop
+"""
 class NeutralAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,17)
@@ -354,7 +362,10 @@ class UpSmash(action.Action):
             actor.doIdle()
         
         self.frame += 1 
-        
+       
+"""
+@ai-move-forward
+""" 
 class DashAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,32)
@@ -399,6 +410,9 @@ class DashAttack(action.Action):
             actor.doIdle()
         self.frame += 1
         
+"""
+@ai-move-stop
+"""
 class DownAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 34)
@@ -454,6 +468,9 @@ class DownAttack(action.Action):
             actor.doIdle()
         self.frame += 1
                        
+"""
+@ai-move-stop
+"""
 class ForwardAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)
@@ -495,6 +512,9 @@ class ForwardAttack(action.Action):
             if self.frame > 20:
                 baseActions.neutralState(actor)    
 
+"""
+@ai-move-stop
+"""
 class ForwardSmash(action.Action):
     def __init__(self):
         action.Action.__init__(self, 42)
@@ -547,6 +567,12 @@ class ForwardSmash(action.Action):
         
         self.frame += 1 
 
+"""
+@ai-move-down
+@ai-move-stop
+@ai-move-forward
+@ai-move-backward
+"""
 class NeutralAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 34)
@@ -556,7 +582,7 @@ class NeutralAir(action.Action):
         actor.preferred_xspeed = 0
         actor.changeSprite("nair",0)
         self.subImage = 0
-        self.nairHitbox = hitbox.SakuraiAngleHitbox([0,0],[72,72],actor,10,4,0.06,40,1,hitbox.HitboxLock())
+        self.nairHitbox = hitbox.SakuraiAngleHitbox([0,0],[72,72],actor,10,4,0.06,40,1,hitbox.HitboxLock(),1,1,1,0)
     
     def stateTransitions(self, actor):
         if actor.keysContain('down'):
@@ -587,6 +613,12 @@ class NeutralAir(action.Action):
             actor.changeAction(Fall())
         self.frame += 1
 
+"""
+@ai-move-down
+@ai-move-stop
+@ai-move-forward
+@ai-move-backward
+"""
 class DownAir(action.Action):
     def __init__(self):
         action.Action.__init__(self,30)
@@ -596,11 +628,11 @@ class DownAir(action.Action):
         actor.setSpeed(0, actor.getFacingDirection())
         actor.changeSprite("dair", 0)
         allLock = hitbox.HitboxLock()
-        self.downHitbox = hitbox.DamageHitbox([0,80], [10,50], actor, 9, 8, 0.08, 270, 1, allLock)
-        self.leftDiagonalHitbox = hitbox.DamageHitbox([-10,70], [10,30], actor, 7, 7, 0.06, 225, 1, allLock)
-        self.rightDiagonalHitbox = hitbox.DamageHitbox([10,70], [10,30], actor, 7, 7, 0.06, 315, 1, allLock)
-        self.leftSourSpot = hitbox.DamageHitbox([-20,60], [10,10], actor, 5, 6, 0.04, 180, 1, allLock)
-        self.rightSourSpot = hitbox.DamageHitbox([20,60], [10,10], actor, 5, 6, 0.04, 0, 1, allLock)
+        self.downHitbox = hitbox.DamageHitbox([0,80], [10,50], actor, 9, 8, 0.08, 270, 1, allLock, 1, 1, 1, 0)
+        self.leftDiagonalHitbox = hitbox.DamageHitbox([-10,70], [10,30], actor, 7, 7, 0.06, 225, 1, allLock, 1, 1, 1, 0)
+        self.rightDiagonalHitbox = hitbox.DamageHitbox([10,70], [10,30], actor, 7, 7, 0.06, 315, 1, allLock, 1, 1, 1, 0)
+        self.leftSourSpot = hitbox.DamageHitbox([-20,60], [10,10], actor, 5, 6, 0.04, 180, 1, allLock, 1, 1, 1, 0)
+        self.rightSourSpot = hitbox.DamageHitbox([20,60], [10,10], actor, 5, 6, 0.04, 0, 1, allLock, 1, 1, 1, 0)
 
     def stateTransitions(self, actor):
         baseActions.airControl(actor)
@@ -666,16 +698,20 @@ class DownAir(action.Action):
             actor.landingLag = 16
             actor.changeAction(Fall())
         self.frame += 1
-
+"""
+@ai-move-forward
+@ai-move-backward
+@ai-move-down
+"""
 class UpAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 28)
         
     def setUp(self, actor):
         sharedLock = hitbox.HitboxLock()
-        self.sourspot = hitbox.DamageHitbox([0,18],[60,47], actor, 6, 8, 0.05, 60, 1, sharedLock)
-        self.semisweet = hitbox.DamageHitbox([0,-21],[30,32], actor, 8, 6, 0.1, 75, 1, sharedLock)
-        self.sweetspot = hitbox.DamageHitbox([0,-21],[30,32], actor, 12, 6, 0.2, 90, 1, sharedLock)
+        self.sourspot = hitbox.DamageHitbox([0,18],[60,47], actor, 6, 8, 0.05, 60, 1, sharedLock, 1, 1, 1, 0)
+        self.semisweet = hitbox.DamageHitbox([0,-21],[30,32], actor, 8, 6, 0.1, 75, 1, sharedLock, 1, 1, 1, 0)
+        self.sweetspot = hitbox.DamageHitbox([0,-21],[30,32], actor, 12, 6, 0.2, 90, 1, sharedLock, 1, 1, 1, 0)
     
     def stateTransitions(self, actor):
         baseActions.airControl(actor)
@@ -710,7 +746,7 @@ class UpAir(action.Action):
         elif self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
-        
+
 class GroundGrab(action.Action):
     def __init__(self):
         action.Action.__init__(self, 35)
@@ -767,6 +803,9 @@ class Pummel(baseActions.BaseGrabbing):
             actor.doGrabbing()
         self.frame += 1
         
+"""
+@ai-move-stop
+"""
 class ForwardThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self,20)
@@ -837,6 +876,11 @@ class DownThrow(baseActions.BaseGrabbing):
             actor.doIdle()
         self.frame += 1
 
+"""
+@ai-move-up
+@ai-move-down
+@ai-move-stop
+"""
 class UpThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self, 100)
@@ -959,6 +1003,9 @@ class NeutralAction(baseActions.NeutralAction):
             actor.changeSprite("idle")
             self.frame += 1
 
+"""
+@ai-move-stop
+"""
 class Grabbing(baseActions.Grabbing):
     def __init__(self):
         baseActions.Grabbing.__init__(self,1)
@@ -1122,7 +1169,7 @@ class HelplessLand(baseActions.HelplessLand):
         else:
             if self.frame < 12:
                 if self.frame % 3 == 0:
-                    actor.changeSpriteImage(self.frame / 3)
+                    actor.changeSpriteImage(self.frame // 3)
         
         baseActions.HelplessLand.update(self, actor)
 

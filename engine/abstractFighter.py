@@ -434,8 +434,7 @@ class AbstractFighter():
         totalKB = (((((p/10) + (p*d)/20) * (200/(w*weight_influence+100))*1.4) + 5) * s) + b
         
         if damage < self.flinch_damage_threshold or totalKB < self.flinch_knockback_threshold:
-            #self.dealDamage(math.floor(damage*armor_multiplier))
-            self.dealDamage(damage)
+            self.dealDamage(math.floor(damage*armor_damage_multiplier))
             return 0
 
         di_vec = self.getSmoothedInput()
@@ -453,13 +452,12 @@ class AbstractFighter():
         if self.no_flinch_hits > 0:
             if hitstun_frames > 0:
                 self.no_flinch_hits -= 1
-            #self.dealDamage(math.floor(damage*armor_multiplier))
-            self.dealDamage(damage)
+            self.dealDamage(math.floor(damage*armor_damage_multiplier))
             return 0
 
         if hitstun_frames > 0:
             print totalKB
-            self.doHitStun(hitstun_frames,trajectory,math.floor(damage / 2))
+            self.doHitStun(hitstun_frames,trajectory,math.floor(damage / 4 + 2))
         
 
         print(totalKB*DI_multiplier, trajectory)
@@ -490,9 +488,15 @@ class AbstractFighter():
         self.preferred_xspeed = x
         self.preferred_yspeed = y
         
+    """
+    @ai-ignore = true
+    """
     def rotateSprite(self,direction):
-        self.sprite.rotate(-1 * (90 - direction))
+        self.sprite.rotate(-1 * (90 - direction)) 
             
+    """
+    @ai-ignore = true
+    """
     def unRotate(self):
         self.sprite.rotate()
         
@@ -687,6 +691,9 @@ class AbstractFighter():
         if self.facing == 1: return ('right','left')
         else: return ('left','right')
         
+    """
+    @ai-ignore = true
+    """
     def draw(self,screen,offset,scale):
         if (settingsManager.getSetting('showSpriteArea')): spriteManager.RectSprite(self.rect).draw(screen, offset, scale)
         self.sprite.draw(screen,offset,scale)
@@ -710,6 +717,9 @@ class AbstractFighter():
         else:
             return 180 - offSet
         
+    """
+    @ai-ignore = true
+    """
     def createMask(self,color,duration,pulse = False,pulseSize = 16):
         self.mask = spriteManager.MaskSprite(self.sprite,color,duration,pulse, pulseSize)
         
@@ -965,6 +975,9 @@ class ECB():
         self.yBar.rect.center = center
         self.xBar.rect.center = center
         
+    """
+    @ai-ignore = true
+    """
     def draw(self,screen,offset,scale):
         self.yBar.draw(screen,self.actor.gameState.stageToScreen(self.yBar.rect),scale)
         self.xBar.draw(screen,self.actor.gameState.stageToScreen(self.xBar.rect),scale)
