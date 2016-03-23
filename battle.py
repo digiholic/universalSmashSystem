@@ -226,7 +226,7 @@ class Battle():
                 countdownSprite.alpha(countAlpha)
                 
             
-            clock.tick(40) #change back
+            clock.tick(60) #change back
             pygame.display.flip()
         # End while loop
         

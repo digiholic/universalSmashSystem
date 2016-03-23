@@ -218,9 +218,10 @@ class Grabbing(BaseGrabbing):
 @ai-move-down
 """
 class HitStun(action.Action):
-    def __init__(self,hitstun,direction):
+    def __init__(self,hitstun,direction,hitstop):
         action.Action.__init__(self, hitstun)
         self.direction = direction
+        self.hitstop = hitstop
 
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
@@ -258,6 +259,12 @@ class HitStun(action.Action):
                 if mag > 10:
                     actor.rotateSprite(self.direction)
             actor.preferred_xspeed = 0
+            actor.hitstop = self.hitstop
+            if actor.grounded:
+                actor.hitstopVibration = (3,0)
+            else:
+                actor.hitstopVibration = (0,3)
+            actor.hitstopPos = actor.rect.center
             
         if self.frame == self.lastFrame:
             actor.unRotate()
