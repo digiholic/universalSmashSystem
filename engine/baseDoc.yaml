@@ -875,15 +875,128 @@ Pattern:
       Hitbox: [-40, 40, -20, 20]
       LandingLag: 0
       Follow: 
-          - Bounds: (-10000, -10000, 10000, 10000)
-            Follow: [Trip, GetupAttack, ForwardRoll, BackwardRoll, SpotDodge]
+          - Bounds: (-10000, -10000, 20000, 20000)
+            Follow: [Trip, Getup, GetupAttack, ForwardRoll, BackwardRoll, SpotDodge]
             Priority: -8
             Type: [-2, -2]
             Precedence: 0
             Connect: |
-                
-
-
+                pass
+---
+Name: Trip
+Class: baseActions.Trip
+Input: []
+Prerequisite: "self.frame < self.lastFrame + 180"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [-40, 40, -20, 20]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000, -10000, 20000, 20000)
+            Follow: [Trip, Getup, GetupAttack, ForwardRoll, BackwardRoll, SpotDodge]
+            Priority: -8
+            Type: [-2, -2]
+            Precedence: 0
+            Connect: |
+                pass
+---
+Name: Getup
+Class: baseActions.Getup
+Input: [0: ['up': 1]]
+Prerequisite: "self.frame >= self.lastFrame"
+Pattern:
+    - Start: 0
+      End: 7
+      Hitbox: [-32, 32, -32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000, -10000, 20000, 20000)
+            Follow: [Idle]
+            Priority: -9
+            Type: [-2, 0]
+            Precedence: 0
+            Connect: |
+                pass
+---
+Name: Jump
+Class: baseActions.GroundJump
+Input: [0: ['jump': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 6
+      Hitbox: [-46, 46, -32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000, -10000, 20000, 20000)
+            Follow: [ShortJumpFinish, LongJumpFinish]
+            Priority: -4
+            Type: [0, -1]
+            Precedence: 0
+            Connect: |
+                pass
+---
+Name: ShortJumpFinish
+Class: baseActions.GroundJump
+Input: []
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [-32, 32, -32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000, -10000, 20000, 20000)
+            Follow: [Fall, FallLeft, FallRight, FallDown, FallDownLeft, FallDownRight, AirDodge, AirAttack, AirSpecial, AirJump]
+            Priority: -1
+            Type: [0, -1]
+            Precedence: 0
+            Connect: |
+                actor.change_y = -actor.var['jumpHeight']/1.5
+                if actor.change_x > actor.var['maxAirSpeed']:
+                    actor.change_x = actor.var['maxAirSpeed']
+                elif actor.change_x < -actor.var['maxAirSpeed']:
+                    actor.change_x = -actor.var['maxAirSpeed']
+---
+Name: LongJumpFinish
+Class: baseActions.GroundJump
+Input: [0: ['jump': 1]]
+Prerequisite: "True"
+Pattern:
+    - Start: 0
+      End: 0
+      Hitbox: [-32, 32, -32, 32]
+      LandingLag: 0
+      Follow:
+          - Bounds: (-10000, -10000, 20000, 20000)
+            Follow: [Fall, FallLeft, FallRight, FallDown, FallDownLeft, FallDownRight, AirDodge, AirAttack, AirSpecial, AirJump]
+            Priority: -1
+            Type: [0, -1]
+            Precedence: 0
+            Connect: |
+                actor.change_y = -actor.var['jumpHeight']
+                if actor.change_x > actor.var['maxAirSpeed']:
+                    actor.change_x = actor.var['maxAirSpeed']
+                elif actor.change_x < -actor.var['maxAirSpeed']:
+                    actor.change_x = -actor.var['maxAirSpeed']
+---
+Name: AirJump
+Class: baseActions.AirJump
+Input: [0: ['jump': 1]]
+Prerequisite: "actor.jumps > 0"
+Pattern:
+    - Start: 0
+      End: 7
+      Hitbox: [-42, 42, -32, 32]
+      LandingLag: 2
+      Follow:
+          - Bounds: (-10000, -10000, 20000, 20000)
+            Follow: [Fall, FallLeft, FallRight, FallDown, FallDownLeft, FallDownRight, AirDodge, AirAttack, AirSpecial, AirJump]
+            Priority: -1
+            Type: [0, -1]
+            Precedence: 0
+            Connect: |
 ...
 
 
