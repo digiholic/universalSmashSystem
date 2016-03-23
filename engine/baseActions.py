@@ -203,7 +203,7 @@ class HitStun(action.Action):
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
         if actor.bufferContains('shield', 20):
-            actor.doTryTech(self.lastFrame, self.direction)
+            actor.doTryTech(self.lastFrame-self.frame, self.direction)
         elif actor.grounded and self.frame > 2:
             if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
                 actor.change_y = -0.4*actor.change_y
