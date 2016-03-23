@@ -26,7 +26,7 @@ class AbstractFighter():
         self.flinch_damage_threshold = 0
         self.flinch_knockback_threshold = 0
         self.armor_damage_multipler = 1
-
+        
         # Invulnerable flag
         # While this is above zero, hitboxes can't connect with the fighter
         # There are ways of bypassing invulnerability, but please avoid doing so
@@ -53,6 +53,11 @@ class AbstractFighter():
         
         self.shield = False
         self.shieldIntegrity = 100
+        
+        # Hitstop freezes the character for a few frames when hitting or being hit.
+        self.hitstop = 0
+        self.hitstopVibration = (0,0)
+        self.hitstopPos = (0,0)
         
         # HitboxLock is a list of hitboxes that will not hit the fighter again for a given amount of time.
         # Each entry in the list is a hitboxLock object
@@ -91,6 +96,18 @@ class AbstractFighter():
         #Step one, push the input buffer
         self.inputBuffer.push()
         
+        if self.hitstop > 0:
+            if not self.hitstopVibration == (0,0):
+                (x,y) = self.hitstopVibration
+                self.rect.x += x
+                self.rect.y += y
+                self.hitstopVibration = (-x,-y)
+            self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
+            return
+        elif self.hitstop == 0 and not self.hitstopVibration == (0,0):
+            self.hitstopVibration = False
+            self.rect.center = self.hitstopPos
+            self.hitstopVibration = (0,0)
         #Step two, accelerate/decelerate
         if self.grounded: self.accel(self.var['friction'])
         else: self.accel(self.var['airControl'])
@@ -268,8 +285,8 @@ class AbstractFighter():
     def doAirJump(self):
         self.changeAction(baseActions.AirJump())
 
-    def doHitStun(self,hitstun,direction):
-        self.changeAction(baseActions.HitStun(hitstun,direction))
+    def doHitStun(self,hitstun,direction,hitstop):
+        self.changeAction(baseActions.HitStun(hitstun,direction,hitstop))
 
     def doTryTech(self, hitstun, direction):
         self.changeAction(baseActions.TryTech(hitstun, direction))
@@ -441,10 +458,13 @@ class AbstractFighter():
             return 0
 
         if hitstun_frames > 0:
-            self.doHitStun(hitstun_frames,trajectory)
+            print totalKB
+            self.doHitStun(hitstun_frames,trajectory,math.floor(damage / 2))
+        
 
         print(totalKB*DI_multiplier, trajectory)
         self.dealDamage(damage)
+        
         self.setSpeed(totalKB*DI_multiplier, trajectory)
         self.setPreferredSpeed(0, self.getFacingDirection())
 

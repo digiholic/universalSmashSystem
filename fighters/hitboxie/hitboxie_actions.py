@@ -1012,18 +1012,19 @@ class CrouchGetup(baseActions.CrouchGetup):
         baseActions.CrouchGetup.update(self, actor)
         
 class HitStun(baseActions.HitStun):
-    def __init__(self,hitstun,direction):
-        baseActions.HitStun.__init__(self, hitstun, direction)
-        
-    def update(self,actor):
-        baseActions.HitStun.update(self, actor)
-        
+    def __init__(self,hitstun,direction,hitstop):
+        baseActions.HitStun.__init__(self, hitstun, direction,hitstop)
+    
+    def setUp(self, actor):
         if self.frame == 1:
             if actor.grounded:
                 actor.changeSprite("land",1)
             else:
                 actor.changeSprite("jump")
 
+    def update(self,actor):
+        baseActions.HitStun.update(self, actor)
+        
 class TryTech(baseActions.TryTech):
     def __init__(self,hitstun,direction):
         baseActions.TryTech.__init__(self, hitstun, direction)

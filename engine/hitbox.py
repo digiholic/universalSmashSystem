@@ -52,6 +52,7 @@ class DamageHitbox(Hitbox):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
                 else:
+                    self.owner.hitstop = math.floor(self.damage / 2)
                     other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
         
         if self.article and hasattr(self.article, 'onCollision'):

@@ -225,8 +225,8 @@ class Hitboxie(abstractFighter.AbstractFighter):
         else: 
             self.changeAction(self.actions.NeutralAirSpecial())
 
-    def doHitStun(self,hitstun,trajectory):
-        self.changeAction(self.actions.HitStun(hitstun,trajectory))
+    def doHitStun(self,hitstun,trajectory,hitstop):
+        self.changeAction(self.actions.HitStun(hitstun,trajectory,hitstop))
 
     def doTryTech(self, hitstun, trajectory):
         self.changeAction(self.actions.TryTech(hitstun, trajectory))
