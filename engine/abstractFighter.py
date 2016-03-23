@@ -434,8 +434,7 @@ class AbstractFighter():
         totalKB = (((((p/10) + (p*d)/20) * (200/(w*weight_influence+100))*1.4) + 5) * s) + b
         
         if damage < self.flinch_damage_threshold or totalKB < self.flinch_knockback_threshold:
-            #self.dealDamage(math.floor(damage*armor_multiplier))
-            self.dealDamage(damage)
+            self.dealDamage(math.floor(damage*armor_damage_multiplier))
             return 0
 
         di_vec = self.getSmoothedInput()
@@ -453,13 +452,12 @@ class AbstractFighter():
         if self.no_flinch_hits > 0:
             if hitstun_frames > 0:
                 self.no_flinch_hits -= 1
-            #self.dealDamage(math.floor(damage*armor_multiplier))
-            self.dealDamage(damage)
+            self.dealDamage(math.floor(damage*armor_damage_multiplier))
             return 0
 
         if hitstun_frames > 0:
             print totalKB
-            self.doHitStun(hitstun_frames,trajectory,math.floor(damage / 2))
+            self.doHitStun(hitstun_frames,trajectory,math.floor(damage / 4 + 2))
         
 
         print(totalKB*DI_multiplier, trajectory)
