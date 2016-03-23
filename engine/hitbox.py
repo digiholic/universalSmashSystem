@@ -63,7 +63,11 @@ class DamageHitbox(Hitbox):
  
     def compareTo(self,other):
         if hasattr(other, 'damage'):
-            return (self.damage > other.damage)
+            diff = self.damage - other.damage
+            if diff >= 2:
+                return True
+            else:
+                return False
         else:
             return True
 

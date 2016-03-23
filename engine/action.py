@@ -29,6 +29,8 @@ class Action():
     def tearDown(self,actor,newAction):
         return
     
+    def onClank(self,actor):
+        return
 """
 The Dynamic Action is created by the Builder. It contains most things that an action would
 need, but anything more than that can still be defined as above.
