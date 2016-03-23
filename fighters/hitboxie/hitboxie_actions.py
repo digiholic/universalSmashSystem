@@ -110,6 +110,9 @@ class NeutralAirSpecial(action.Action):
 @ai-alignment['actor.hurtbox.rect'] = [2, 0]
 @ai-alignment['chainHitbox'] = [0, 2]
 @ai-alignment['flingHitbox'] = [-self.numFrames/2, self.numFrames/2]
+@ai-move-forward
+@ai-move-stop
+@ai-move-up
 """
 class ForwardSpecial(action.Action):
     def __init__(self):
@@ -214,6 +217,7 @@ class ForwardSpecial(action.Action):
 """
 @ai-priority['jabHitbox'] = 2
 @ai-alignment['jabhitbox'] = [-0.5, -1]
+@ai-move-stop
 """
 class NeutralAttack(action.Action):
     def __init__(self):
@@ -393,6 +397,7 @@ class UpSmash(action.Action):
 @ai-priority['chainHitbox'] = 3
 @ai-alignment['dashHitbox'] = [0, -0.5]
 @ai-alignment['chainHitbox'] = [0, -3]
+@ai-move-forward
 """ 
 class DashAttack(action.Action):
     def __init__(self):
@@ -443,6 +448,7 @@ class DashAttack(action.Action):
 @ai-priority['dsmashHitbox2'] = 12
 @ai-alignment['dsmashHitbox1'] = [0, -12]
 @ai-alignment['dsmashHitbox2'] = [0, -12]
+@ai-move-stop
 """
 class DownAttack(action.Action):
     def __init__(self):
@@ -502,6 +508,7 @@ class DownAttack(action.Action):
 """
 @ai-priority['fSmashHitbox'] = 8
 @ai-alignment['fSmashHitbox'] = [0, -8]
+@ai-move-stop
 """
 class ForwardAttack(action.Action):
     def __init__(self):
@@ -547,6 +554,7 @@ class ForwardAttack(action.Action):
 """
 @ai-priority['fSmashHitbox'] = 12+self.chargeLevel
 @ai-alignment['fSmashHitbox'] = [0, -12-self.chargeLevel]
+@ai-move-stop
 """
 class ForwardSmash(action.Action):
     def __init__(self):
@@ -603,6 +611,10 @@ class ForwardSmash(action.Action):
 """
 @ai-priority['nairHitbox'] = self.nairHitbox.damage
 @ai-alignment['fSmashHitbox'] = [0, -3]
+@ai-move-down
+@ai-move-stop
+@ai-move-forward
+@ai-move-backward
 """
 class NeutralAir(action.Action):
     def __init__(self):
@@ -655,6 +667,10 @@ class NeutralAir(action.Action):
 @ai-alignment['rightDiagonalHitbox'] = [-2, -8]
 @ai-alignment['leftSourSpot'] = [-2, -6]
 @ai-alignment['rightSourSpot'] = [-2, -6]
+@ai-move-down
+@ai-move-stop
+@ai-move-forward
+@ai-move-backward
 """
 class DownAir(action.Action):
     def __init__(self):
@@ -742,6 +758,9 @@ class DownAir(action.Action):
 @ai-alignment['sourspot'] = [0, -3]
 @ai-alignment['semisweet'] = [0, -7]
 @ai-alignment['sweetspot'] = [0, -12]
+@ai-move-forward
+@ai-move-backward
+@ai-move-down
 """
 class UpAir(action.Action):
     def __init__(self):
@@ -850,6 +869,7 @@ class Pummel(baseActions.BaseGrabbing):
 """
 @ai-priority['fSmashHitbox'] = 11
 @ai-alignment['fSmashHitbox'] = [-2, 6]
+@ai-move-stop
 """
 class ForwardThrow(baseActions.BaseGrabbing):
     def __init__(self):
@@ -925,6 +945,11 @@ class DownThrow(baseActions.BaseGrabbing):
             actor.doIdle()
         self.frame += 1
 
+"""
+@ai-move-up
+@ai-move-down
+@ai-move-stop
+"""
 class UpThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self, 100)
@@ -1047,6 +1072,9 @@ class NeutralAction(baseActions.NeutralAction):
             actor.changeSprite("idle")
             self.frame += 1
 
+"""
+@ai-move-stop
+"""
 class Grabbing(baseActions.Grabbing):
     def __init__(self):
         baseActions.Grabbing.__init__(self,1)
@@ -1209,7 +1237,7 @@ class HelplessLand(baseActions.HelplessLand):
         else:
             if self.frame < 12:
                 if self.frame % 3 == 0:
-                    actor.changeSpriteImage(self.frame / 3)
+                    actor.changeSpriteImage(self.frame // 3)
         
         baseActions.HelplessLand.update(self, actor)
 
