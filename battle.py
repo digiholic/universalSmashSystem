@@ -153,6 +153,22 @@ class Battle():
             current_stage.update()
             current_stage.cameraUpdate()
             current_stage.drawBG(screen)
+            
+            for hitbox in active_hitboxes:
+                hitbox_clank = pygame.sprite.spritecollide(hitbox,active_hitboxes, False)
+                for other in hitbox_clank:
+                    if other is not hitbox:
+                        if not hitbox.compareTo(other):
+                            if hasattr(hitbox.owner,'current_action'):
+                                hitbox.owner.current_action.onClank(hitbox.owner)
+                            print("CLANK!")
+                            hitbox.kill()
+                        if not other.compareTo(hitbox):
+                            if hasattr(other.owner,'current_action'):
+                                other.owner.current_action.onClank(other.owner)
+                            print("CLANK!")
+                            other.kill()
+            
             for obj in gameObjects:
                 obj.update()
                 if hasattr(obj,'active_hitboxes'):
@@ -210,7 +226,7 @@ class Battle():
                 countdownSprite.alpha(countAlpha)
                 
             
-            clock.tick(60) #change back
+            clock.tick(40) #change back
             pygame.display.flip()
         # End while loop
         

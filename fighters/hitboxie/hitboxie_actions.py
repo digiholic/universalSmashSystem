@@ -114,7 +114,10 @@ class ForwardSpecial(action.Action):
         self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 1, 1)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
-
+    
+    def onClank(self,actor):
+        self.frame = self.lastFrame-31
+    
     class sideSpecialHitbox(hitbox.SakuraiAngleHitbox):
         def __init__(self,actor):
             hitbox.SakuraiAngleHitbox.__init__(self, [0,0], [80,80], actor, 8, 5, .3, 300, 1, hitbox.HitboxLock(), 1, 5)
