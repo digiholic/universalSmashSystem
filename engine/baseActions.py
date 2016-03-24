@@ -121,10 +121,11 @@ class Stop(action.Action):
         if actor.grounded == False:
             actor.doFall()
         (key,invkey) = actor.getForwardBackwardKeys()
-        if actor.bufferContains(key,8,andReleased=True) and actor.keysContain(key):
+        if actor.bufferContains(key,self.frame):
             print("run")
             actor.doDash(actor.getFacingDirection())
-        if actor.bufferContains(invkey,8,notReleased = True):
+        if actor.bufferContains(invkey,self.frame):
+            print("pivot")
             actor.doPivot()
                 
 class NeutralAction(action.Action):
@@ -534,7 +535,6 @@ class ShieldStun(action.Action):
             actor.doFall()
         if self.frame >= self.lastFrame and actor.keysContain('shield'):
             actor.doShield()
-        actor.shieldDamage(1)
         self.frame += 1
 
 class Stunned(action.Action):
@@ -812,10 +812,10 @@ def neutralState(actor):
         actor.doGroundSpecial()
     elif actor.bufferContains('jump', 8):
         actor.doJump()
-    elif actor.keysContain(invkey):
-        actor.doGroundMove(actor.getFacingDirection()+180)
-    elif actor.keysContain(key):
-        actor.doGroundMove(actor.getFacingDirection())
+    elif actor.keysContain('left'):
+        actor.doGroundMove(180)
+    elif actor.keysContain('right'):
+        actor.doGroundMove(0)
     elif actor.keysContain('down'):
         actor.doCrouch()
 

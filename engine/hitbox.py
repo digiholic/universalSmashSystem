@@ -60,6 +60,8 @@ class DamageHitbox(Hitbox):
             if other.lockHitbox(self):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
+                    if self.article == None:
+                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
                 else:
                     if self.article == None:
                         self.owner.hitstop = math.floor(self.damage / 4 + 2)
@@ -87,6 +89,8 @@ class SakuraiAngleHitbox(DamageHitbox):
             if other.lockHitbox(self):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
+                    if self.article == None:
+                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
                 else:
                     p = float(other.damage)
                     d = float(self.damage)
@@ -122,6 +126,8 @@ class AutolinkHitbox(DamageHitbox):
             if other.lockHitbox(self):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
+                    if self.article == None:
+                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
                 else:
                     velocity = math.sqrt(self.owner.change_x ** 2 + self.owner.change_y ** 2)
                     angle = math.atan2(self.owner.change_y, self.owner.change_x)
