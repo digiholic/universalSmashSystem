@@ -168,7 +168,7 @@ class Crouch(action.Action):
         elif actor.keysContain(invkey):
             actor.setPreferredSpeed(-actor.var['crawlSpeed'], actor.getFacingDirection())
         else:
-            actor.setPreferredSpeed(0, self.direction)
+            actor.setPreferredSpeed(0)
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
@@ -178,6 +178,7 @@ class CrouchGetup(action.Action):
         action.Action.__init__(self, length)
 
     def update(self, actor):
+        actor.setPreferredSpeed(0)
         if actor.grounded == False:
             actor.doFall()
         elif actor.bufferContains('down') and self.frame > 0:
