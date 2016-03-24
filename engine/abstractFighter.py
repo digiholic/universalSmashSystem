@@ -103,6 +103,17 @@ class AbstractFighter():
                 self.rect.y += y
                 self.hitstopVibration = (-x,-y)
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
+            block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+            for block in block_hit_list:
+                if block.solid or (self.platformPhase <= 0):
+                    self.platformPhase = 0
+                    self.eject(block)
+
+            self.sprite.updatePosition(self.rect)
+
+            #Update Sprite
+            self.ecb.store()
+            self.ecb.normalize()
             return
         elif self.hitstop == 0 and not self.hitstopVibration == (0,0):
             self.hitstopVibration = False
