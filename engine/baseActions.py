@@ -178,7 +178,7 @@ class CrouchGetup(action.Action):
         action.Action.__init__(self, length)
 
     def update(self, actor):
-        actor.setPreferredSpeed(0, actor.getFacingDirection)
+        actor.setPreferredSpeed(0, actor.getFacingDirection())
         if actor.grounded == False:
             actor.doFall()
         elif actor.bufferContains('down') and self.frame > 0:
