@@ -587,7 +587,7 @@ class NeutralAir(action.Action):
     def stateTransitions(self, actor):
         if actor.keysContain('down'):
             if actor.change_y >= 0:
-                actor.change_y = actor.var['maxFallSpeed']
+                actor.change_y = max(math.floor(actor.var['maxFallSpeed'] / 2), actor.change_y)
         baseActions.airControl(actor)
     
     def tearDown(self,actor,other):
@@ -1191,7 +1191,7 @@ class Getup(baseActions.Getup):
 
 class PlatformDrop(baseActions.PlatformDrop):
     def __init__(self):
-        baseActions.PlatformDrop.__init__(self, 25)
+        baseActions.PlatformDrop.__init__(self, 12)
     
     def stateTransitions(self, actor):
         if self.frame > 5:
@@ -1200,13 +1200,14 @@ class PlatformDrop(baseActions.PlatformDrop):
     def update(self,actor):
         if self.frame == 2:
             actor.changeSprite("airjump",4)
-        elif self.frame == 5:
+            actor.change_y = 3
+        elif self.frame == 4:
             actor.changeSpriteImage(3)
-        elif self.frame == 10:
+        elif self.frame == 6:
             actor.changeSpriteImage(2)
-        elif self.frame == 15:
+        elif self.frame == 8:
             actor.changeSpriteImage(1)
-        elif self.frame == 20:
+        elif self.frame == 10:
             actor.changeSpriteImage(0)
         baseActions.PlatformDrop.update(self, actor)
         
