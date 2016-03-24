@@ -813,10 +813,10 @@ def neutralState(actor):
         actor.doGroundSpecial()
     elif actor.bufferContains('jump', 8):
         actor.doJump()
-    elif actor.keysContain('left'):
-        actor.doGroundMove(180)
-    elif actor.keysContain('right'):
-        actor.doGroundMove(0)
+    elif actor.keysContain(invkey):
+        actor.doGroundMove(actor.getForwardWithOffset(180))
+    elif actor.keysContain(key):
+        actor.doGroundMove(actor.getForwardWithOffset(0))
     elif actor.keysContain('down'):
         actor.doCrouch()
 
