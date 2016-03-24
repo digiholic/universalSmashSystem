@@ -1062,15 +1062,13 @@ class HitStun(baseActions.HitStun):
     def __init__(self,hitstun,direction,hitstop):
         baseActions.HitStun.__init__(self, hitstun, direction,hitstop)
     
-    def setUp(self, actor):
+    def update(self, actor):
+        baseActions.HitStun.update(self, actor)
         if self.frame == 1:
             if actor.grounded:
                 actor.changeSprite("land",1)
             else:
                 actor.changeSprite("jump")
-
-    def update(self,actor):
-        baseActions.HitStun.update(self, actor)
         
 class TryTech(baseActions.TryTech):
     def __init__(self,hitstun,direction):
@@ -1078,7 +1076,6 @@ class TryTech(baseActions.TryTech):
 
     def update(self,actor):
         baseActions.TryTech.update(self, actor)
-        
         if self.frame == 1:
             if actor.grounded:
                 actor.changeSprite("land",1)
