@@ -4,7 +4,6 @@ python:
 - '3.2'
 - pypy
 install:
-- pip install .
 - pip install -r requirements.txt
 script:
 - cxfreeze main.py
