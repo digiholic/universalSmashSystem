@@ -1,16 +1,15 @@
 language: python
 python:
-  - "2.7"
-  - "3.2"
-  # does not have headers provided, please ask https://launchpad.net/~pypy/+archive/ppa
-  # maintainers to fix their pypy-dev package.
-  - "pypy"
-# command to install dependencies
+- '2.7'
+- '3.2'
+before_install:
+- sudo apt-get -qq update
+- sudo apt-get install -y python-pygame
 install:
-  - pip install .
-  - pip install -r requirements.txt
-# command to run tests
-script: 
-  - python pygame2exe.py
-  - cp -r dist/* ./
-  - rm -r dist/
+- pip install numpy
+- pip install cx_Freeze
+script:
+- cxfreeze main.py
+- cp -r dist/* ./
+- rm -r dist/
+

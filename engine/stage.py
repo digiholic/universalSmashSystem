@@ -67,6 +67,7 @@ class Stage():
     Updates all entities, then moves the camera closer to its preferred size
     """    
     def update(self):
+
         for entity in self.entity_list:
             entity.update()
         
