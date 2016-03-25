@@ -7,6 +7,7 @@ import menu
 import battle
 import sys
 import stages.true_arena as stage
+import engine.cpuPlayer as cpuPlayer
 try:
     import sss
 except ImportError:
@@ -57,7 +58,7 @@ class CSSScreen():
                         elif bindings.get(event.key) == 'attack':
                             self.playerPanels[i].keyPressed('confirm')
                             if self.checkForSelections():
-                                sss.StageScreen(self.rules,self.getFightersFromPanels())
+                                sss.StageScreen(self.rules,self.getFightersFromPanels(),self.getCPUPlayers())
                                 for panel in self.playerPanels:
                                     panel.activeObject = panel.wheel
                                     panel.chosenFighter = None
@@ -94,6 +95,9 @@ class CSSScreen():
             if panel.active:
                 fighterList.append(panel.chosenFighter.getFighter(num,num))
         return fighterList
+    
+    def getCPUPlayers(self):
+        return [None,cpuPlayer.CPUplayer(),None]
     
 class CSSWidget():
     def __init__(self,panel,displayList,choicesList):

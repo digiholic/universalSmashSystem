@@ -302,7 +302,7 @@ class TryTech(HitStun):
 
     def update(self, actor):
         if self.frame >= 40:
-            actor.doHitStun(self.lastFrame-self.frame, self.direction)
+            actor.doHitStun(self.lastFrame-self.frame, self.direction,0)
         HitStun.update(self, actor)
 
 class Trip(action.Action):
@@ -313,7 +313,7 @@ class Trip(action.Action):
 
     def update(self, actor):
         if actor.grounded == False:
-            actor.doHitStun(self.lastFrame-self.frame, self.direction)
+            actor.doHitStun(self.lastFrame-self.frame, self.direction,0)
         if self.frame >= self.lastFrame + 180: #You aren't up yet?
             actor.doGetup(self.direction)
         self.frame += 1
@@ -754,6 +754,7 @@ class TechDodge(AirDodge):
         AirDodge.__init__(self)
 
     def stateTransitions(self, actor):
+        (direct,_) = actor.getDirectionMagnitude()
         if actor.grounded and self.frame < 20:
             actor.doTrip(-175, direct)
             return
@@ -840,8 +841,9 @@ def airState(actor):
         actor.doAirSpecial()
     elif actor.bufferContains('jump', 8) and actor.jumps > 0:
         actor.doAirJump()
-    elif actor.keysContain('down'):
+    elif actor.keysContain('down') and actor.change_y > 0:
         actor.platformPhase = 1
+        actor.change_y = max(math.floor(actor.var['maxFallSpeed'] / 2), actor.change_y)
         actor.change_y += actor.var['airControl']
         if actor.change_y > actor.var['maxFallSpeed']:
             actor.change_y = actor.var['maxFallSpeed']

@@ -73,6 +73,7 @@ def getFighter(playerNum,colorNum):
     sprites = spriteManager.SpriteHandler(directory,prefix,"idle",imgwidth,color.colorDict)
     
     fighter = fight.Hitboxie(playerNum,sprites)
+    fighter.article_path = os.path.join(directory,'articles')
     fighter.franchise_icon = franchise_icon()
     return fighter
 

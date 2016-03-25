@@ -18,7 +18,8 @@ class AbstractFighter():
         self.var = var
         self.playerNum = playerNum
         self.franchise_icon = spriteManager.ImageSprite(settingsManager.createPath("sprites/default_franchise_icon.png"))
-
+        self.article_path = ''
+        
         # Super armor variables
         # Set with attacks to make them super armored
         # Remember to set them back at some point

@@ -10,10 +10,11 @@ import musicManager
 import random
 
 class StageScreen():
-    def __init__(self,rules,characters):
+    def __init__(self,rules,characters,cpuPlayers):
         settings = settingsManager.getSetting().setting
         self.rules = rules
         self.fighters = characters
+        self.cpuPlayers = cpuPlayers
         self.stages = []
         self.getStages()
         self.grid = StageGrid(self.stages)
@@ -77,7 +78,7 @@ class StageScreen():
                                 musicList = stage.getMusicList()
                                 musicManager.getMusicManager().createMusicSet('stage', musicList)
                                 musicManager.getMusicManager().rollMusic('stage')
-                                currentBattle = battle.Battle(self.rules,self.fighters,stage.getStage())
+                                currentBattle = battle.Battle(self.rules,self.fighters,stage.getStage(),self.cpuPlayers)
                                 currentBattle.startBattle(screen)
                                 status = 1
                                 #do something with battle result

@@ -19,7 +19,7 @@ It takes a Rules object (see below), a list of players, and a stage.
 
 """
 class Battle():
-    def __init__(self,rules,players,stage):
+    def __init__(self,rules,players,stage,cpuPlayers):
         self.settings = settingsManager.getSetting().setting
         
         if rules == None: rules = Rules()
@@ -27,6 +27,12 @@ class Battle():
         self.rules = rules
         self.players = players
         self.stage = stage
+        self.cpuPlayers = []
+        for i in range(0,len(self.players)):
+            if cpuPlayers[i]:
+                cpu = cpuPlayers[i]
+                cpu.loadGameState(self.players[i],self.stage,[x for x in self.players if x is not cpu])
+                self.cpuPlayers.append(cpu)
         self.inputBuffer = None
         self.dataLogs = []
         
@@ -108,6 +114,10 @@ class Battle():
         dataLog.addSection('test', 1)
         dataLog.setData('test', 3, (lambda x,y: x + y))
         while exitStatus == 0:
+            #First thing's first, update CPUs
+            for cpu in self.cpuPlayers:
+                cpu.update()
+                
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
