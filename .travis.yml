@@ -3,9 +3,11 @@ python:
 - '2.7'
 - '3.2'
 - pypy
+before_install:
+- sudo apt-get -qq update
+- sudo apt-get install -y python-pygame
 install:
 - pip install numpy
-- pip install pygame
 - pip install cx_Freeze
 script:
 - cxfreeze main.py
