@@ -304,6 +304,7 @@ class RulesMenu (SubMenu):
         self.menuText = [spriteManager.TextSprite('Play','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('3 Stocks','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('8 Minutes','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('Player Two Bot OFF','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Teams Enabled','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Team Attack On','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Cancel','full Pack 2025',24,[255,255,255])]
@@ -319,7 +320,7 @@ class RulesMenu (SubMenu):
         canPress = True
         controls = settingsManager.getControls('menu')
         holding = {'up': False,'down': False,'left': False,'right': False}
-        rules = {'Stocks':3,'Time':8,'Teams':False,'Team Attack':True}
+        rules = {'Stocks':3,'Time':8,'Teams':False,'Team Attack':True,'Bots':False}
 
         while self.status == 0:
             self.update(screen)
@@ -328,14 +329,19 @@ class RulesMenu (SubMenu):
                     holding[controls.get(event.key)] = True
                     if controls.get(event.key) == 'confirm':
                         if self.selectedOption == 0:
+                            botlist = [False,False,False,False]
+                            if rules['Bots']: botlist = [False,True,False,False]
                             gameRules = battle.Rules(rules['Stocks'],rules['Time'],[])
-                            status = css.CSSScreen(gameRules)
+                            status = css.CSSScreen(gameRules,botlist)
+                            holding = {'up': False,'down': False,'left': False,'right': False}
                             if status == -1: return -1
                         if self.selectedOption == 3:
-                            rules['Teams'] = not rules['Teams']
+                            rules['Bots'] = not rules['Bots']
                         if self.selectedOption == 4:
-                            rules['Team Attack'] = not rules['Team Attack']
+                            rules['Teams'] = not rules['Teams']
                         if self.selectedOption == 5:
+                            rules['Team Attack'] = not rules['Team Attack']
+                        if self.selectedOption == 6:
                             self.status = 1
                     if event.key == pygame.K_ESCAPE:
                         self.status = 1
@@ -362,8 +368,10 @@ class RulesMenu (SubMenu):
                         if self.selectedOption == 2:
                             rules['Time'] -= 1
                         if self.selectedOption == 3:
-                            rules['Teams'] = not rules['Teams']
+                            rules['Bots'] = not rules['Bots']
                         if self.selectedOption == 4:
+                            rules['Teams'] = not rules['Teams']
+                        if self.selectedOption == 5:
                             rules['Team Attack'] = not rules['Team Attack']
                     if button == 'right':
                         if self.selectedOption == 1:
@@ -371,8 +379,10 @@ class RulesMenu (SubMenu):
                         if self.selectedOption == 2:
                             rules['Time'] += 1
                         if self.selectedOption == 3:
-                            rules['Teams'] = not rules['Teams']
+                            rules['Bots'] = not rules['Bots']
                         if self.selectedOption == 4:
+                            rules['Teams'] = not rules['Teams']
+                        if self.selectedOption == 5:
                             rules['Team Attack'] = not rules['Team Attack']
                     rules['Stocks'] = rules['Stocks'] % 100
                     rules['Time'] = rules['Time'] % 100
@@ -384,16 +394,21 @@ class RulesMenu (SubMenu):
                 self.menuText[1].changeText('Unlimited Stock Battle')
             if (rules['Time'] == 0):
                 self.menuText[2].changeText('Unlimited Time Match')
-                
-            if rules['Teams']:
-                self.menuText[3].changeText('Teams Enabled')
+            
+            if rules['Bots']:
+                self.menuText[3].changeText('Player Two Bot ON')
             else:
-                self.menuText[3].changeText('Teams Disabled')
+                self.menuText[3].changeText('Player Two Bot OFF')
+            
+            if rules['Teams']:
+                self.menuText[4].changeText('Teams Enabled')
+            else:
+                self.menuText[4].changeText('Teams Disabled')
 
             if rules['Team Attack']:
-                self.menuText[4].changeText('Team Attack Enabled')
+                self.menuText[5].changeText('Team Attack Enabled')
             else:
-                self.menuText[4].changeText('Team Attack Disabled')
+                self.menuText[5].changeText('Team Attack Disabled')
 
 
             self.parent.bg.update(screen)

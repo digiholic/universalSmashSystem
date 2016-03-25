@@ -14,10 +14,11 @@ except ImportError:
     from menu import sss
 import musicManager
 class CSSScreen():
-    def __init__(self,rules=None):
+    def __init__(self,rules=None,botlist=[False,False,False,False]):
         settings = settingsManager.getSetting().setting
         
         self.rules = rules
+        self.botList = botlist
         self.height = settings['windowHeight']
         self.width = settings['windowWidth']
         
@@ -97,7 +98,13 @@ class CSSScreen():
         return fighterList
     
     def getCPUPlayers(self):
-        return [None,cpuPlayer.CPUplayer(),None]
+        retlist = []
+        for bot in self.botList:
+            if bot:
+                retlist.append(cpuPlayer.CPUplayer())
+            else:
+                retlist.append(None)
+        return retlist
     
 class CSSWidget():
     def __init__(self,panel,displayList,choicesList):
