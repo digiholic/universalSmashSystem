@@ -7,7 +7,7 @@ install:
 - pip install .
 - pip install -r requirements.txt
 script:
-- python pygame2exe.py
+- cxfreeze main.py
 - cp -r dist/* ./
 - rm -r dist/
 before_deploy:
