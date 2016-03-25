@@ -1,16 +1,25 @@
 language: python
 python:
-  - "2.7"
-  - "3.2"
-  # does not have headers provided, please ask https://launchpad.net/~pypy/+archive/ppa
-  # maintainers to fix their pypy-dev package.
-  - "pypy"
-# command to install dependencies
+- '2.7'
+- '3.2'
+- pypy
 install:
-  - pip install .
-  - pip install -r requirements.txt
-# command to run tests
-script: 
-  - python pygame2exe.py
-  - cp -r dist/* ./
-  - rm -r dist/
+- pip install .
+- pip install -r requirements.txt
+script:
+- python pygame2exe.py
+- cp -r dist/* ./
+- rm -r dist/
+before_deploy:
+- zip -r fullzip *
+deploy:
+  provider: releases
+  api_key:
+    secure: aCsiIq3RejBURQ3kWc+6KNsobtI+6LqWB/8fyX6vyf9BSlwhjmq6UznRMxhCl8h++a6xwdbO+YFm2Ls2gvg0fU8MtP4Rj+6vC9hul5UJ8QoJ97PJzloH1O8Axx53wSpRfrYlZqC/qT7NlTG6QbfdJYv2WsYQhO6uz5kqsUdFFJHrKEQ0tzDPzJ8HcsOrbiBKQrKHo9CFFCtgjdyFDv2/DVfvRPWRa9Ruxc0asqt8cO9ajtwsPTtDLVLG/aq0NGOYoOIK5u9DlUpbapZs0o++YONLE81qlGOrw5hqPkpE6vJaIdLDPQ8g2zEC2W1A6gFxXDEN8GhEj1a66IvZeO2yTLHsPSyWH3rMSe0U6RlPKHkHXr5g9X/Md37cRC0jvuXmg1Xo9bGIW0tQ0kDjyY7sciMJx9BbD+wVyYbGf9wynKn2otVO7O2XSFP5tO1pjZdyD3XLZ00IqRkI88For0dMmiN9LI3Ye4cs4EaMcxM2qnZURTA0VihL+jQ1IkM+q/QI2+qR2djq1vdqP4EFTlC06+1YfZonHGVcBIBipTOVqsFmaZJh3GfJFNSs0YeUh8UyttvcObuMy48iMx0vlroI0zngFVafNz2YUOEzEkokW0juDzdGxHnZ6NysnkUrEEGf2xf2S2ZsDCvsIFqZwe7ncBS32PD9R2JZ0HstIMlIIn0=
+  file: fullzip.zip
+  skip_cleanup: true
+  on:
+    tags: true
+after_deploy: 
+- rm fullzip.zip
+
