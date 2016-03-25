@@ -10,8 +10,6 @@ install:
 - pip install cx_Freeze
 script:
 - cxfreeze main.py
-- cp -r build/* ./
-- rm -r build/
 - cp -r dist/* ./
 - rm -r dist/
 
