@@ -9,7 +9,7 @@ import settingsManager #TEMPORARY until I figure out article sprites
 
 class SplatArticle(article.AnimatedArticle):
     def __init__(self, owner, origin, direction):
-        article.AnimatedArticle.__init__(self, settingsManager.createPath('sprites/hitboxie_projectile.png'), owner, origin, imageWidth=16,length=120)
+        article.AnimatedArticle.__init__(self, owner.article_path+'/hitboxie_projectile.png', owner, origin, imageWidth=16,length=120)
         self.direction = direction
         self.change_y = 0
         self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)  
