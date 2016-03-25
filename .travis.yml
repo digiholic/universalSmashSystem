@@ -4,7 +4,9 @@ python:
 - '3.2'
 - pypy
 install:
-- pip install -r requirements.txt
+- pip install numpy
+- pip install pygame
+- pip install cx_Freeze
 script:
 - cxfreeze main.py
 - cp -r dist/* ./
