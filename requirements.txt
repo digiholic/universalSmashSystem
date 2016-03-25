@@ -1,3 +1,0 @@
-numpy
-pygame
-cx_Freeze

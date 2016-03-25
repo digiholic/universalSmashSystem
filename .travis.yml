@@ -9,10 +9,10 @@ install:
 - pip install numpy
 - pip install cx_Freeze
 script:
-- cxfreeze main.py
 - cp -r dist/* ./
 - rm -r dist/
 before_deploy:
+- cxfreeze main.py
 - zip -r fullzip *
 deploy:
   provider: releases
@@ -23,5 +23,6 @@ deploy:
   on:
     tags: true
 after_deploy: 
+- rm -r build
 - rm fullzip.zip
 
