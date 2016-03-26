@@ -299,8 +299,8 @@ class AbstractFighter():
     def doHitStun(self,hitstun,direction,hitstop):
         self.changeAction(baseActions.HitStun(hitstun,direction,hitstop))
 
-    def doTryTech(self, hitstun, direction):
-        self.changeAction(baseActions.TryTech(hitstun, direction))
+    def doTryTech(self, hitstun, direction, hitstop):
+        self.changeAction(baseActions.TryTech(hitstun, direction, hitstop))
 
     def doTrip(self, length, direction):
         self.changeAction(baseActions.Trip(length, direction))

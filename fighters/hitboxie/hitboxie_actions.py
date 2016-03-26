@@ -11,6 +11,7 @@ class SplatArticle(article.AnimatedArticle):
     def __init__(self, owner, origin, direction):
         article.AnimatedArticle.__init__(self, owner.article_path+'/hitboxie_projectile.png', owner, origin, imageWidth=16,length=120)
         self.direction = direction
+        self.change_x = self.direction*24
         self.change_y = 0
         self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)  
         self.hitbox.article = self
@@ -24,7 +25,7 @@ class SplatArticle(article.AnimatedArticle):
         #TODO check for verticality of platform landing
             
     def update(self):
-        self.rect.x += 24 * self.direction
+        self.rect.x += self.change_x
         self.rect.y += self.change_y
         self.change_y += 0.5
         self.hitbox.rect.center = self.rect.center #update adjusts to the actor
@@ -1071,8 +1072,8 @@ class HitStun(baseActions.HitStun):
                 actor.changeSprite("jump")
         
 class TryTech(baseActions.TryTech):
-    def __init__(self,hitstun,direction):
-        baseActions.TryTech.__init__(self, hitstun, direction)
+    def __init__(self,hitstun,direction,hitstop):
+        baseActions.TryTech.__init__(self, hitstun, direction, hitstop)
 
     def update(self,actor):
         baseActions.TryTech.update(self, actor)

@@ -228,8 +228,8 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def doHitStun(self,hitstun,trajectory,hitstop):
         self.changeAction(self.actions.HitStun(hitstun,trajectory,hitstop))
 
-    def doTryTech(self, hitstun, trajectory):
-        self.changeAction(self.actions.TryTech(hitstun, trajectory))
+    def doTryTech(self, hitstun, trajectory, hitstop):
+        self.changeAction(self.actions.TryTech(hitstun, trajectory, hitstop))
 
     def doTrip(self, length, direction):
         self.changeAction(self.actions.Trip(length, direction))

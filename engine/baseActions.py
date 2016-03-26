@@ -1,4 +1,5 @@
 import engine.action as action
+import engine.hitbox as hitbox
 import pygame
 import math
 import settingsManager
@@ -228,7 +229,7 @@ class HitStun(action.Action):
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
         if actor.bufferContains('shield', 8) and self.frame < self.lastFrame:
-            actor.doTryTech(self.lastFrame-self.frame, self.direction)
+            actor.doTryTech(self.lastFrame-self.frame, self.direction, self.hitstop)
         elif actor.grounded and self.frame > 2:
             print actor.change_y
             if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
@@ -279,8 +280,8 @@ class HitStun(action.Action):
 @ai-move-stop
 """
 class TryTech(HitStun):
-    def __init__(self, hitstun, direction):
-        HitStun.__init__(self, hitstun, direction)
+    def __init__(self, hitstun, direction, hitstop):
+        HitStun.__init__(self, hitstun, direction, hitstop)
 
     def stateTransitions(self, actor):
         (direct,mag) = actor.getDirectionMagnitude()
@@ -482,13 +483,23 @@ class PreShield(action.Action):
     def __init__(self):
         action.Action.__init__(self, 4)
 
+    def setUp(self, actor):
+        self.reflectHitbox = hitbox.ReflectorHitbox([0,0], [actor.hurtbox.rect.width+10, actor.hurtbox.rect.height+10], actor, hitbox.HitboxLock(), 1, 1, 9999, 0, -5)
+
+    def tearDown(self, actor, nextAction):
+        self.reflectHitbox.kill()
+
     def stateTransitions(self, actor):
         shieldState(actor)
 
     def update(self, actor):
+        if self.frame == 0:
+            actor.active_hitboxes.add(self.reflectHitbox)
         if actor.grounded == False:
+            self.reflectHitbox.kill()
             actor.doFall()
         if self.frame == self.lastFrame:
+            self.reflectHitbox.kill()
             actor.doShield()
         self.frame += 1
 
@@ -505,6 +516,7 @@ class Shield(action.Action):
        
     def update(self, actor):
         if actor.grounded == False:
+            actor.shield = False
             actor.doFall()
         if self.frame == 0:
             actor.shield = True
@@ -533,9 +545,12 @@ class ShieldStun(action.Action):
 
     def update(self, actor):
         if actor.grounded == False:
+            actor.shield = False
             actor.doFall()
         if self.frame >= self.lastFrame and actor.keysContain('shield'):
             actor.doShield()
+        elif self.frame >= self.lastFrame:
+            actor.doIdle()
         self.frame += 1
 
 class Stunned(action.Action):

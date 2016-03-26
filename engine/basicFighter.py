@@ -63,11 +63,11 @@ class BasicFighter():
     def doRun(self,direction):
         self.changeAction(self.actions.Run())
 
-    def doHitStun(self,hitstun,trajectory):
-        self.changeAction(self.actions.HitStun(hitstun,trajectory))
+    def doHitStun(self,hitstun,trajectory, hitstop):
+        self.changeAction(self.actions.HitStun(hitstun,trajectory, hitstop))
 
-    def doTryTech(self, hitstun, trajectory):
-        self.changeAction(self.actions.TryTech(hitstun, trajectory))
+    def doTryTech(self, hitstun, trajectory, hitstop):
+        self.changeAction(self.actions.TryTech(hitstun, trajectory, hitstop))
     
     def doPivot(self):
         self.changeAction(self.actions.Pivot())

@@ -503,7 +503,7 @@ class DebugMenu(SubMenu):
                             self.fighters = [fighter.getFighter(0,0)]
                             if self.spawnSandbag:
                                 self.fighters.append(sandbag.getFighter(1,0))
-                            currentBattle = battle.Battle(battle.Rules(),self.fighters,self.currentStage.getStage())
+                            currentBattle = battle.Battle(battle.Rules(),self.fighters,self.currentStage.getStage(),[None, None, None, None])
                             currentBattle.startBattle(screen)
                         if self.selectedOption == len(self.menuText)-1: #quit
                             self.status = 1

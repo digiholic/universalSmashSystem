@@ -1,5 +1,6 @@
 import spriteObject
 import math
+import abstractFighter
 
 class HitboxLock(object):
     pass
@@ -140,7 +141,7 @@ class AutolinkHitbox(DamageHitbox):
             self.article.onCollision(other)
 
 class GrabHitbox(Hitbox):
-    def __init__(self,center,size,owner,hitbox_lock, height=0, transcendence=0, priority=0):
+    def __init__(self,center,size,owner,hitbox_lock, height=0, transcendence=-1, priority=0):
         Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,priority)
         self.height = height;
 
@@ -156,3 +157,36 @@ class GrabHitbox(Hitbox):
         Hitbox.update(self)
         self.recenterSelfOnOwner()
 
+class ReflectorHitbox(Hitbox):
+    def __init__(self, center, size, owner, hitbox_lock, damage_multiplier, velocity_multiplier, hp, angle=0, transcendence=2):
+        Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,hp)
+        self.damage_multiplier = damage_multiplier
+        self.velocity_multiplier = velocity_multiplier
+        self.angle = angle
+
+    def compareTo(self, other):
+        if other.article != None and other.article.owner != self.owner:
+            if hasattr(other.article, 'owner'):
+                other.owner = self.owner
+                other.article.owner = self.owner
+            if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
+                article_direction = math.atan2(other.article.change_y, other.article.change_x)*180/math.pi
+                article_speed = math.hypot(other.article.change_x, other.article.change_y)
+                (other.article.change_x, other.article.change_y) = abstractFighter.getXYFromDM(article_speed*self.velocity_multiplier, 2*self.angle-article_direction)
+            if hasattr(other, 'damage'):
+                self.priority -= other.damage
+                other.damage *= self.damage_multiplier
+
+        if hasattr(other, 'transcendence') and hasattr(other, 'priority'):
+            if self.transcendence+other.transcendence <= 0:
+                return self.priority - other.priority
+        return True
+
+    def onCollision(self, other):
+        Hitbox.onCollision(self, other)
+        if self.article and hasattr(self.article, 'onCollision'):
+            self.article.onCollision(other)
+
+    def update(self):
+        Hitbox.update(self)
+        self.recenterSelfOnOwner()
