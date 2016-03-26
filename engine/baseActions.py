@@ -505,7 +505,7 @@ class PreShield(action.Action):
 
 class Shield(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 2)
+        action.Action.__init__(self, 4)
    
     def stateTransitions(self, actor):
         shieldState(actor)
@@ -530,8 +530,10 @@ class Shield(action.Action):
                 actor.shieldDamage(1)
             else:
                 self.frame += 1
-        elif self.frame >= self.lastFrame:
+        elif self.frame >= 2 and self.frame < self.lastFrame:
             actor.shield = False
+            self.frame += 1
+        elif self.frame >= self.lastFrame:
             actor.doIdle()
         else: self.frame += 1
 
