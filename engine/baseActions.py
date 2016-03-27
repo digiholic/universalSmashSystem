@@ -12,7 +12,6 @@ class Move(action.Action):
     def __init__(self,length):
         action.Action.__init__(self,length) 
         self.direction = -1
-        self.pivoted = False
         
     def setUp(self,actor):
         self.direction = actor.getForwardWithOffset(0)
@@ -22,11 +21,14 @@ class Move(action.Action):
             actor.doFall()
         actor.setPreferredSpeed(actor.var['maxGroundSpeed'],self.direction)
         actor.accel(actor.var['staticGrip'])
-        if not self.pivoted:
-            (key,invkey) = actor.getForwardBackwardKeys()
+
+        (key,invkey) = actor.getForwardBackwardKeys()
+        if self.direction == actor.getForwardWithOffset(0):
             if actor.keysContain(invkey):
-                actor.flip() #Do the moonwalk!
-                self.pivoted = True
+                actor.flip()
+        else:
+            if not actor.keysContain(key):
+                actor.flip()
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
