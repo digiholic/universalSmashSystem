@@ -104,7 +104,7 @@ class NeutralAirSpecial(action.Action):
 """
 class ForwardSpecial(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 96)
+        action.Action.__init__(self, 64)
         self.spriteImage = 0
 
     def setUp(self, actor):
@@ -112,12 +112,16 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
         actor.changeSprite("nair",0)
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 1, 1, 0, 0)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 1, 1, 0, -6)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
     
     def onClank(self,actor):
-        self.frame = self.lastFrame-31
+        if actor.grounded:
+            actor.doIdle()
+        else:
+            actor.landingLag = 5
+            actor.doFall()
     
     class sideSpecialHitbox(hitbox.SakuraiAngleHitbox):
         def __init__(self,actor):
@@ -132,7 +136,7 @@ class ForwardSpecial(action.Action):
                     elif other.grounded:
                         other.dealDamage(self.damage)
                         (actorDirect,_) = self.owner.getDirectionMagnitude()
-                        other.doTrip(40, other.getForwardWithOffset(actorDirect))
+                        other.doTrip(20, other.getForwardWithOffset(actorDirect))
                     else:
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
@@ -147,7 +151,7 @@ class ForwardSpecial(action.Action):
 
     def update(self, actor):
         actor.changeSpriteImage(self.spriteImage%16)
-        if self.frame < self.lastFrame-32:
+        if self.frame <= self.lastFrame-2:
             self.spriteImage += 1
             if self.frame <= 1:
                 actor.setSpeed(0, actor.getForwardWithOffset(0))
@@ -156,7 +160,7 @@ class ForwardSpecial(action.Action):
                     actor.change_y = 2
                 if actor.keysContain('shield'):
                     actor.doShield()
-                elif actor.keysContain('special') and self.lastFrame < 272:
+                elif actor.keysContain('special') and self.lastFrame < 240:
                     self.lastFrame += 1
                     self.frame -= 1
             else: #Actually launch forwards
@@ -172,31 +176,32 @@ class ForwardSpecial(action.Action):
                 if actor.keysContain(invkey):
                     actor.setPreferredSpeed(actor.var['runSpeed']//2, actor.getForwardWithOffset(0))
                     self.frame += 2
-                    if (self.frame > self.lastFrame-33):
-                        self.frame = self.lastFrame-33
+                    if (self.frame > self.lastFrame-2):
+                        self.frame = self.lastFrame-2
                 elif actor.keysContain(key):
                     actor.setPreferredSpeed(actor.var['runSpeed'], actor.getForwardWithOffset(0))
+                    if (self.frame > self.lastFrame-2):
+                        self.frame = self.lastFrame-2
                 else:
                     actor.setPreferredSpeed(actor.var['runSpeed']*3//4, actor.getForwardWithOffset(0))
                     self.frame += 1
-                    if (self.frame > self.lastFrame-33):
-                        self.frame = self.lastFrame-33
+                    if (self.frame > self.lastFrame-2):
+                        self.frame = self.lastFrame-2
                 
         else:
-            if self.frame == self.lastFrame-32:
-                print(self.numFrames)
-                self.flingHitbox.damage += int(float(self.numFrames)/float(12))
-                self.flingHitbox.priority += int(float(self.numFrames)/float(12))
-                self.flingHitbox.baseKnockback += float(self.numFrames)/float(12)
+            if self.frame == self.lastFrame-1:
+                self.flingHitbox.damage += int(float(self.numFrames)/float(18))
+                self.flingHitbox.priority += int(float(self.numFrames)/float(18))
+                self.flingHitbox.baseKnockback += float(self.numFrames)/float(18)
+                print self.flingHitbox.damage
+                print self.flingHitbox.priority
+                print self.flingHitbox.baseKnockback
                 self.flingHitbox.update()
                 actor.active_hitboxes.add(self.flingHitbox)
             else:
                 self.flingHitbox.kill()
             self.chainHitbox.kill()
-            # 32 frames of wind-down. Plenty to punish if it was expected.
             actor.setPreferredSpeed(0, actor.facing) 
-            if self.frame % 2 == 0:
-                self.spriteImage += 1
             if self.frame >= self.lastFrame:
                 if actor.grounded:
                     actor.doIdle()
