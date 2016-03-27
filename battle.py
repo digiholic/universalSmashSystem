@@ -9,6 +9,7 @@ import fighters.sandbag.fighter
 import stages.true_arena
 import stages.arena
 import colorsys
+import engine.hitbox as hitbox
 from cgi import log
 
 """
@@ -26,6 +27,9 @@ class Battle():
         
         self.rules = rules
         self.players = players
+        self.nullLock = hitbox.HitboxLock()
+        for player in players:
+	    player.hitboxLock.add(self.nullLock)
         self.stage = stage
         self.cpuPlayers = []
         for i in range(0,len(self.players)):
@@ -172,12 +176,12 @@ class Battle():
                             if hasattr(hitbox.owner,'current_action'):
                                 hitbox.owner.current_action.onClank(hitbox.owner)
                             print("CLANK!")
-                            hitbox.kill()
+                            hitbox.hitbox_lock = self.nullLock
                         if not other.compareTo(hitbox):
                             if hasattr(other.owner,'current_action'):
                                 other.owner.current_action.onClank(other.owner)
                             print("CLANK!")
-                            other.kill()
+                            hitbox.hitbox_lock = self.nullLock
             
             for obj in gameObjects:
                 obj.update()

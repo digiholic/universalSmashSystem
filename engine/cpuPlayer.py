@@ -5,7 +5,8 @@ import math
 class CPUplayer():
     def __init__(self):
         self.mode = 'duckling'
-        self.keysHeld = []
+        self.keysHeld = set()
+        self.keysPlanning = set()
         self.jump_last_frame = 0
     
     def loadGameState(self,fighter,stage,players):
@@ -18,16 +19,14 @@ class CPUplayer():
         tx,ty = target.rect.center
         
         return (tx - sx, ty - sy)
-    
-    def pressButton(self,button):
-        if not button in self.keysHeld:
-            self.fighter.keyPressed(button)
-            self.keysHeld.append(button)
-    
-    def releaseButton(self,button):
-        if button in self.keysHeld:
-            self.fighter.keyReleased(button)
-            self.keysHeld.remove(button)
+
+    def pushInput(self):
+        for key in self.keysPlanning - self.keysHeld:
+            self.fighter.keyPressed(key)
+        for key in self.keysHeld - self.keysPlanning:
+            self.fighter.keyReleased(key)
+        self.keysHeld = self.keysPlanning.copy()
+        self.keysPlanning.clear()
 
     def segmentIntersects(self, startPoint, endPoint, rect):
         if startPoint[0]==endPoint[0] and startPoint[1]==endPoint[1]: #Degenerate
@@ -72,7 +71,7 @@ class CPUplayer():
         for platform in self.gameState.platform_list:
             if platform.solid:
                 solid_list += [platform.rect]
-                nodes += [[platform.rect.right+1, platform.rect.top-1], [platform.rect.right+1, platform.rect.bottom+1], [platform.rect.left-1, platform.rect.top-1], [platform.rect.left-1, platform.rect.bottom+1]]
+                nodes += [[platform.rect.right+40, platform.rect.top-40], [platform.rect.right+40, platform.rect.bottom+40], [platform.rect.left-40, platform.rect.top-40], [platform.rect.left-40, platform.rect.bottom+40]]
 
         closedSet = set()
         openSet = set([0])
@@ -113,23 +112,22 @@ class CPUplayer():
         if self.mode == 'duckling':
             dx, dy = self.getDistanceTo(self.players[0])
             if dx < 0 and abs(dx)>abs(dy)//2:
-                self.pressButton('left')
-            else:
-                self.releaseButton('left')
+                self.keysPlanning.add('left')
                 
             if dx > 0 and abs(dx)>abs(dy)//2:
-                self.pressButton('right')
-            else:
-                self.releaseButton('right')
+                self.keysPlanning.add('right')
 
             if dy < 0 and abs(dy)>abs(dx)//2 and self.jump_last_frame > 8 and self.fighter.change_y>=-1:
-                self.pressButton('jump')
+                self.keysPlanning.add('jump')
                 self.jump_last_frame = 0
             else:
-                self.releaseButton('jump')
                 self.jump_last_frame += 1
 
             if dy > 0 and abs(dy)>abs(dx)//2 and self.fighter.grounded and not isinstance(self.fighter.current_action, baseActions.Crouch):
-                self.pressButton('down')
-            else:
-                self.releaseButton('down')
+                self.keysPlanning.add('down')
+        #elif self.move == 'recover':
+        #    ledgeDistances = map(lambda x: getPathDistance(self.fighter.rect.center, x.rect.center), self.gameState.platform_ledges)
+        #    targetLedge = ledgeDistances.index(min(ledgeDistances))
+        #    dx, dy = self.getDistanceTo(self.gameState.platform_ledges(targetLedge)
+        self.pushInput()
+
