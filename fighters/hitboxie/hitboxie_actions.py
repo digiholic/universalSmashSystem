@@ -148,6 +148,7 @@ class ForwardSpecial(action.Action):
         self.chainHitbox.kill()
         self.flingHitbox.kill()
         actor.flinch_knockback_threshold = 0
+        self.preferred_xspeed = 0
 
     def update(self, actor):
         actor.changeSpriteImage(self.spriteImage%16)
@@ -193,15 +194,11 @@ class ForwardSpecial(action.Action):
                 self.flingHitbox.damage += int(float(self.numFrames)/float(18))
                 self.flingHitbox.priority += int(float(self.numFrames)/float(18))
                 self.flingHitbox.baseKnockback += float(self.numFrames)/float(18)
-                print self.flingHitbox.damage
-                print self.flingHitbox.priority
-                print self.flingHitbox.baseKnockback
                 self.flingHitbox.update()
                 actor.active_hitboxes.add(self.flingHitbox)
             else:
                 self.flingHitbox.kill()
             self.chainHitbox.kill()
-            actor.preferred_xspeed = 0
             if self.frame >= self.lastFrame:
                 if actor.grounded:
                     actor.landingLag = 15
@@ -374,10 +371,10 @@ class DashAttack(action.Action):
         action.Action.__init__(self,32)
 
     def setUp(self, actor):
-        actor.preferred_xspeed = actor.change_x*actor.facing
+        actor.preferred_xspeed = actor.change_x
         actor.changeSprite("nair")
 
-        self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,5,0.1,20,1,hitbox.HitboxLock())
+        self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,8,0.2,20,1,hitbox.HitboxLock())
         self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),1,1.5)
 
     def tearDown(self,actor,other):
@@ -796,7 +793,7 @@ class UpAir(action.Action):
 
 class GroundGrab(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 27)
+        action.Action.__init__(self, 36)
 
     def setUp(self, actor):
         self.grabHitbox = hitbox.GrabHitbox([30,0], [30,30], actor, hitbox.HitboxLock(), 30)
@@ -821,9 +818,9 @@ class GroundGrab(action.Action):
             self.grabHitbox.kill()
         elif self.frame == 20:
             actor.changeSpriteImage(2)
-        elif self.frame == 21:
+        elif self.frame == 25:
             actor.changeSpriteImage(1)
-        elif self.frame == 24:
+        elif self.frame == 30:
             actor.changeSpriteImage(0)
         if self.frame == self.lastFrame:
             actor.doIdle()
