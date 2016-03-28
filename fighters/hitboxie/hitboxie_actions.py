@@ -468,17 +468,17 @@ class DownAttack(action.Action):
 
 class DownSmash(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 52)
+        action.Action.__init__(self, 54)
         self.chargeLevel = 0
 
     def setUp(self, actor):
         actor.preferred_xspeed = 0
         actor.changeSprite("dsmash", 0)
         hitbox_lock = hitbox.HitboxLock()
-        self.spikeBox1 = hitbox.DamageHitbox([0, 46], [90, 20], actor, 1, 4, 0, 270, 1, hitbox.HitboxLock())
-        self.spikeBox2 = hitbox.DamageHitbox([0, 46], [90, 20], actor, 1, 4, 0, 270, 1, hitbox.HitboxLock())
-        self.dsmashHitbox1 = hitbox.DamageHitbox([23,46],[46,20],actor,12,8,0.1,20,1,hitbox_lock)
-        self.dsmashHitbox2 = hitbox.DamageHitbox([-23,46],[46,20],actor,12,8,0.1,160,1,hitbox_lock)
+        self.spikeBox1 = hitbox.DamageHitbox([0, 26], [90, 40], actor, 2, 4, 0, 270, 1, hitbox.HitboxLock())
+        self.spikeBox2 = hitbox.DamageHitbox([0, 26], [90, 40], actor, 2, 4, 0, 270, 1, hitbox.HitboxLock())
+        self.dsmashHitbox1 = hitbox.DamageHitbox([23,26],[46,40],actor,8,8,0.2,20,1,hitbox_lock)
+        self.dsmashHitbox2 = hitbox.DamageHitbox([-23,26],[46,40],actor,8,8,0.2,160,1,hitbox_lock)
 
     def tearDown(self, actor, nextAction):
         self.spikeBox1.kill()
@@ -487,7 +487,7 @@ class DownSmash(action.Action):
         self.dsmashHitbox2.kill()
 
     def update(self, actor):
-        if self.frame <= 6 and not actor.keysContain('attack') and self.chargeLevel > 0:
+        if self.frame <= 6 and not actor.keysContain('attack'):
             self.frame = 7
             actor.mask = None
         if self.frame == 0: 
@@ -495,15 +495,15 @@ class DownSmash(action.Action):
                 actor.createMask([255,255,0],72,True,32)
             actor.changeSpriteImage(0)
         elif self.frame == 6:
-            actor.changeSpriteImage(1)
+            actor.changeSpriteImage(0)
             if actor.keysContain('attack') and self.chargeLevel <= 5:
                 print("charging...")
                 self.chargeLevel += 1
                 self.dsmashHitbox1.damage += 1
                 self.dsmashHitbox2.damage += 1
                 self.frame = 0
-        elif self.frame < self.lastFrame:
-            actor.changeSpriteImage((self.frame//2-2)%6)
+        elif self.frame > 6 and self.frame < self.lastFrame:
+            actor.changeSpriteImage((self.frame//2-3)%6)
             if self.frame == 14:
                 actor.active_hitboxes.add(self.spikeBox1)
             elif self.frame == 18:
