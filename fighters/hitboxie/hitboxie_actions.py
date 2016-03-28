@@ -475,8 +475,8 @@ class DownSmash(action.Action):
         hitbox_lock = hitbox.HitboxLock()
         self.spikeBox1 = hitbox.DamageHitbox([0, 26], [90, 40], actor, 2, 4, 0, 270, 1, hitbox.HitboxLock())
         self.spikeBox2 = hitbox.DamageHitbox([0, 26], [90, 40], actor, 2, 4, 0, 270, 1, hitbox.HitboxLock())
-        self.dsmashHitbox1 = hitbox.DamageHitbox([23,26],[46,40],actor,8,8,0.2,20,1,hitbox_lock)
-        self.dsmashHitbox2 = hitbox.DamageHitbox([-23,26],[46,40],actor,8,8,0.2,160,1,hitbox_lock)
+        self.dsmashHitbox1 = hitbox.DamageHitbox([23,26],[46,40],actor,8,8,0.3,20,1,hitbox_lock)
+        self.dsmashHitbox2 = hitbox.DamageHitbox([-23,26],[46,40],actor,8,8,0.3,160,1,hitbox_lock)
 
     def tearDown(self, actor, nextAction):
         self.spikeBox1.kill()
