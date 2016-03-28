@@ -111,15 +111,16 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
         actor.changeSprite("nair",0)
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 1, 1, 0, -6)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 1, 1, -1, -7)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
     
     def onClank(self,actor):
         if actor.grounded:
-            actor.doIdle()
+            actor.landingLag = 15
+            actor.doLand()
         else:
-            actor.landingLag = 5
+            actor.landingLag = 15
             actor.doFall()
     
     class sideSpecialHitbox(hitbox.DamageHitbox):
@@ -178,7 +179,6 @@ class ForwardSpecial(action.Action):
                     if (self.frame > self.lastFrame-2):
                         self.frame = self.lastFrame-2
                 elif actor.keysContain(key):
-
                     actor.preferred_xspeed = actor.var['runSpeed']*actor.facing
                     if (self.frame > self.lastFrame-2):
                         self.frame = self.lastFrame-2
@@ -204,9 +204,10 @@ class ForwardSpecial(action.Action):
             actor.preferred_xspeed = 0
             if self.frame >= self.lastFrame:
                 if actor.grounded:
-                    actor.doIdle()
+                    actor.landingLag = 15
+                    actor.doLand()
                 else:
-                    actor.landingLag = 5
+                    actor.landingLag = 15
                     actor.doFall()
 
         self.frame += 1
