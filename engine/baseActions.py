@@ -872,9 +872,7 @@ def airState(actor):
         actor.doAirJump()
     elif actor.keysContain('down') and actor.change_y > 0:
         actor.platformPhase = 1
-        actor.change_y += actor.var['airControl']
-        if actor.change_y > actor.var['maxFallSpeed']:
-            actor.change_y = actor.var['maxFallSpeed']
+        actor.calc_grav()
 
 def tumbleState(actor):
     airControl(actor)
@@ -889,7 +887,7 @@ def tumbleState(actor):
     elif actor.keysContain('down'):
         if actor.change_y >= 0:
             actor.platformPhase = 1
-            actor.change_y = actor.var['maxFallSpeed']
+            actor.calc_grav()
             
 def moveState(actor, direction):
     if actor.bufferContains('attack', 8):
@@ -1007,7 +1005,7 @@ def airControl(actor):
         actor.landingLag = actor.var['heavyLandLag']
 
     if actor.grounded:
-        actor.change_x = 0
+        actor.preferred_xspeed = 0
         actor.doLand()
 
 def helplessControl(actor):
@@ -1025,7 +1023,7 @@ def helplessControl(actor):
         actor.landingLag = actor.var['heavyLandLag']
 
     if actor.grounded:
-        actor.change_x = 0
+        actor.preferred_xspeed = 0
         actor.doHelplessLand()
 
 def grabLedges(actor):
