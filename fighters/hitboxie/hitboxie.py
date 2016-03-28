@@ -175,7 +175,11 @@ class Hitboxie(abstractFighter.AbstractFighter):
             else:
                 self.changeAction(self.actions.UpAttack())
         elif self.keysContain('down'):
-            self.changeAction(self.actions.DownAttack())
+            if self.checkSmash('down'):
+                print("SMASH!")
+                self.changeAction(self.actions.DownSmash())
+            else:
+                self.changeAction(self.actions.DownAttack())
         else:
             self.changeAction(self.actions.NeutralAttack())
 
