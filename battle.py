@@ -10,6 +10,7 @@ import stages.true_arena
 import stages.arena
 import colorsys
 import engine.hitbox as hitbox
+import engine.controller as controller
 from cgi import log
 
 """
@@ -28,8 +29,11 @@ class Battle():
         self.rules = rules
         self.players = players
         self.nullLock = hitbox.HitboxLock()
+        self.controllers = []
         for player in players:
-	    player.hitboxLock.add(self.nullLock)
+            player.hitboxLock.add(self.nullLock)
+            self.controllers.append(controller.Controller(player))
+            
         self.stage = stage
         self.cpuPlayers = []
         for i in range(0,len(self.players)):
@@ -121,6 +125,9 @@ class Battle():
             #First thing's first, update CPUs
             for cpu in self.cpuPlayers:
                 cpu.update()
+            
+            for cont in self.controllers:
+                cont.passInputs()
                 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -131,10 +138,9 @@ class Battle():
                         print("saving screenshot")
                         pygame.image.save(screen,settingsManager.createPath('screenshot.jpg'))
                     
-                    for fight in currentFighters:
-                        k = fight.keyBindings.get(event.key)
-                        if k:
-                            fight.keyPressed(k)
+                    for cont in self.controllers:
+                        cont.getInputs(event)
+                        
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_ESCAPE:
                         exitStatus = 1
