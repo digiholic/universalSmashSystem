@@ -946,6 +946,43 @@ class UpThrow(baseActions.BaseGrabbing):
                 actor.doLand()
         self.frame += 1
 
+class BackThrow(baseActions.BaseGrabbing):
+    def __init__(self):
+        baseActions.BaseGrabbing.__init__(self, 22)
+
+    def setUp(self, actor):
+        actor.changeSprite("bthrow")
+
+    def tearDown(self, actor, nextAction):
+        baseActions.BaseGrabbing.tearDown(self, actor, nextAction)
+
+    def update(self, actor):
+        baseActions.BaseGrabbing.update(self, actor)
+        if self.frame == 0 and actor.isGrabbing():
+            actor.grabbing.applyKnockback(7, 10, 0.3, actor.getForwardWithOffset(180), 0.2)
+        if self.frame == 0:
+            actor.changeSpriteImage(0)
+        elif self.frame == 2:
+            actor.changeSpriteImage(1)
+        elif self.frame == 4:
+            actor.changeSpriteImage(2)
+        elif self.frame == 6:
+            actor.changeSpriteImage(3)
+        elif self.frame == 8:
+            actor.changeSpriteImage(4)
+        elif self.frame == 10:
+            actor.changeSpriteImage(5)
+        elif self.frame == 12:
+            actor.changeSpriteImage(6)
+        elif self.frame == 14:
+            actor.changeSpriteImage(7)
+        elif self.frame == 16:
+            actor.changeSpriteImage(8)
+        elif self.frame == self.lastFrame: 
+            actor.flip()
+            actor.doIdle()
+        self.frame += 1
+
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
 ########################################################
