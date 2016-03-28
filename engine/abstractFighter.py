@@ -41,9 +41,8 @@ class AbstractFighter():
         
         #Initialize engine variables
         self.keyBindings = settingsManager.getSetting('controls_' + str(playerNum))
-        self.currentKeys = []
         self.inputBuffer = InputBuffer()
-        self.keysHeld = []
+        self.keysHeld = dict()
         
         self.sprite = sprite
         self.mask = None
@@ -585,15 +584,15 @@ class AbstractFighter():
     """
     def keyPressed(self,key):
         self.inputBuffer.append((key,1.0))
-        self.keysHeld.append(key)
+        self.keysHeld[key] = 1.0
         
     """
     As above, but opposite.
     """
     def keyReleased(self,key):
-        if self.keysContain(key):
-            self.inputBuffer.append((key,0))
-            self.keysHeld.remove(key)
+        if key in self.keysHeld:
+            self.inputBuffer.append((key,0))	
+            del self.keysHeld[key]
             return True
         else: return False
     
@@ -614,7 +613,7 @@ class AbstractFighter():
         
         k = self.keyBindings.get('axis ' + str(axis) + sign)
         self.inputBuffer.append((k,value)) # This should hopefully append something along the line of ('left',0.8)
-        self.keysHeld.append(k)
+        self.keysHeld[key] = value
     
     """
     A wrapper for the InputBuffer.contains function, since this will be called a lot.
@@ -686,8 +685,10 @@ class AbstractFighter():
     If you are looking for a button PRESS, use bufferContains. If you are looking for IF A KEY IS STILL BEING HELD,
     this is your function.
     """
-    def keysContain(self,key):
-        return key in self.keysHeld    
+    def keysContain(self,key,threshold=0.1):
+        if key in self.keysHeld:
+            return self.keysHeld[key] >= threshold
+        return False
     
     """
     This returns a tuple of the key for forward, then backward

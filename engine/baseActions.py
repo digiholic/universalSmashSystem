@@ -831,12 +831,12 @@ def neutralState(actor):
         actor.doGroundSpecial()
     elif actor.bufferContains('jump', 8):
         actor.doJump()
+    elif actor.keysContain('down',0.5):
+        actor.doCrouch()
     elif actor.keysContain(invkey):
         actor.doGroundMove(actor.getForwardWithOffset(180))
     elif actor.keysContain(key):
         actor.doGroundMove(actor.getForwardWithOffset(0))
-    elif actor.keysContain('down'):
-        actor.doCrouch()
 
 def crouchState(actor):
     if actor.bufferContains('attack', 8):
@@ -860,7 +860,6 @@ def airState(actor):
         actor.doAirJump()
     elif actor.keysContain('down') and actor.change_y > 0:
         actor.platformPhase = 1
-        actor.change_y = max(math.floor(actor.var['maxFallSpeed'] / 2), actor.change_y)
         actor.change_y += actor.var['airControl']
         if actor.change_y > actor.var['maxFallSpeed']:
             actor.change_y = actor.var['maxFallSpeed']
@@ -881,40 +880,39 @@ def tumbleState(actor):
             actor.change_y = actor.var['maxFallSpeed']
             
 def moveState(actor, direction):
-    (key,invkey) = actor.getForwardBackwardKeys()
     if actor.bufferContains('attack', 8):
         actor.doGroundAttack()
     elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
     elif actor.bufferContains('jump', 8):
         actor.doJump()
-    elif direction == actor.getForwardWithOffset(0) and not actor.keysContain(key):
-        actor.doStop()
-    elif direction == actor.getForwardWithOffset(180) and not actor.keysContain(invkey):
+    elif actor.keysContain('down', 0.5):
+        actor.doCrouch()
+    elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
         actor.doStop()
 
 def dashState(actor, direction):
-    (key,invkey) = actor.getForwardBackwardKeys()
     if actor.bufferContains('attack', 8):
         actor.doDashAttack()
     elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
     elif actor.bufferContains('jump', 8):
         actor.doJump()
-    elif direction == actor.getForwardWithOffset(0) and not actor.keysContain(key):
-        actor.doStop()
-    elif direction == actor.getForwardWithOffset(180) and not actor.keysContain(invkey):
+    elif actor.keysContain('down', 0.5):
+        actor.doCrouch()
+    elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
         actor.doStop()
 
 def runState(actor, direction):
-    (key,_) = actor.getForwardBackwardKeys()
     if actor.bufferContains('attack', 8):
         actor.doDashAttack()
     elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
     elif actor.bufferContains('jump', 8):
         actor.doJump()
-    elif not actor.keysContain(key):
+    elif actor.keysContain('down', 0.5):
+        actor.doCrouch()
+    elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
         actor.doStop()
             
 def shieldState(actor):
@@ -983,14 +981,14 @@ def tripState(actor, direction):
 ########################################################
 
 def airControl(actor):
-    if actor.keysHeld.count('left'):
+    if actor.keysContain('left'):
         actor.preferred_xspeed = -actor.var['maxAirSpeed']
-    elif actor.keysHeld.count('right'):
+    elif actor.keysContain('right'):
         actor.preferred_xspeed = actor.var['maxAirSpeed']
     
-    if (actor.change_x < 0) and not actor.keysHeld.count('left'):
+    if (actor.change_x < 0) and not actor.keysContain('left'):
         actor.preferred_xspeed = 0
-    elif (actor.change_x > 0) and not actor.keysHeld.count('right'):
+    elif (actor.change_x > 0) and not actor.keysContain('right'):
         actor.preferred_xspeed = 0
 
     if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:
@@ -1001,14 +999,14 @@ def airControl(actor):
         actor.doLand()
 
 def helplessControl(actor):
-    if actor.keysHeld.count('left'):
+    if actor.keysContain('left'):
         actor.preferred_xspeed = -actor.var['maxAirSpeed']
-    elif actor.keysHeld.count('right'):
+    elif actor.keysContain('right'):
         actor.preferred_xspeed = actor.var['maxAirSpeed']
     
-    if (actor.change_x < 0) and not actor.keysHeld.count('left'):
+    if (actor.change_x < 0) and not actor.keysContain('left'):
         actor.preferred_xspeed = 0
-    elif (actor.change_x > 0) and not actor.keysHeld.count('right'):
+    elif (actor.change_x > 0) and not actor.keysContain('right'):
         actor.preferred_xspeed = 0
 
     if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:

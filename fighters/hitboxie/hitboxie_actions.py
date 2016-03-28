@@ -41,7 +41,6 @@ class NeutralGroundSpecial(action.Action):
                 
     def setUp(self, actor):
         self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (32 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
-        actor.change_x = 0
         actor.preferred_xspeed = 0
         actor.changeSprite("nspecial",0)
         
@@ -125,7 +124,7 @@ class ForwardSpecial(action.Action):
     
     class sideSpecialHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
-            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 5, 2, .3, 300, 1, hitbox.HitboxLock(), 1, 6, 0, 0)
+            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 5, 2, .2, 300, 1, hitbox.HitboxLock(), 1, 6, 0, 0)
 
         def onCollision(self, other):
             hitbox.Hitbox.onCollision(self, other)
@@ -211,9 +210,6 @@ class ForwardSpecial(action.Action):
 
         self.frame += 1
            
-"""
-@ai-move-stop
-"""
 class NeutralAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,17)
@@ -415,9 +411,6 @@ class DashAttack(action.Action):
             actor.doIdle()
         self.frame += 1
         
-"""
-@ai-move-stop
-"""
 class DownAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 34)
@@ -472,9 +465,6 @@ class DownAttack(action.Action):
             actor.doIdle()
         self.frame += 1
 
-"""
-@ai-move-stop
-"""
 class DownSmash(action.Action):
     def __init__(self):
         action.Action.__init__(self, 52)
@@ -532,10 +522,6 @@ class DownSmash(action.Action):
         
         self.frame += 1 
         
-                       
-"""
-@ai-move-stop
-"""
 class ForwardAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)
@@ -575,9 +561,6 @@ class ForwardAttack(action.Action):
         
         self.frame += 1   
 
-"""
-@ai-move-stop
-"""
 class ForwardSmash(action.Action):
     def __init__(self):
         action.Action.__init__(self, 42)
@@ -634,7 +617,6 @@ class ForwardSmash(action.Action):
 
 """
 @ai-move-down
-@ai-move-stop
 @ai-move-forward
 @ai-move-backward
 """
@@ -866,9 +848,6 @@ class Pummel(baseActions.BaseGrabbing):
             actor.doGrabbing()
         self.frame += 1
         
-"""
-@ai-move-stop
-"""
 class ForwardThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self,20)
@@ -883,7 +862,6 @@ class ForwardThrow(baseActions.BaseGrabbing):
     def update(self, actor): 
         baseActions.BaseGrabbing.update(self, actor)
         if self.frame == 0:
-            actor.change_x = 0
             actor.preferred_xspeed = 0
             actor.changeSprite("fsmash",0)
         elif self.frame == 2:
@@ -941,8 +919,6 @@ class DownThrow(baseActions.BaseGrabbing):
 
 """
 @ai-move-up
-@ai-move-down
-@ai-move-stop
 """
 class UpThrow(baseActions.BaseGrabbing):
     def __init__(self):
