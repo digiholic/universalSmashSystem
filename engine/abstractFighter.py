@@ -197,11 +197,9 @@ class AbstractFighter():
     
     # Change ySpeed according to gravity.        
     def calc_grav(self):
-        if self.change_y == 0:
-            self.change_y = 1
-        else:
-            self.change_y += self.var['gravity']
-            if self.change_y > self.var['maxFallSpeed']: self.change_y = self.var['maxFallSpeed']
+        
+        self.change_y += self.var['gravity']
+        if self.change_y > self.preferred_yspeed: self.change_y = self.preferred_yspeed
        
         if self.grounded: self.jumps = self.var['jumps']
 
@@ -474,7 +472,6 @@ class AbstractFighter():
         self.dealDamage(damage)
         
         self.setSpeed(totalKB*DI_multiplier, trajectory)
-        self.setPreferredSpeed(0, self.getFacingDirection())
 
         return math.floor(totalKB*DI_multiplier)
 
@@ -492,11 +489,6 @@ class AbstractFighter():
         (x,y) = getXYFromDM(direction,speed)
         self.change_x = x
         self.change_y = y
-
-    def setPreferredSpeed(self, speed, direction):
-        (x,y) = getXYFromDM(direction,speed)
-        self.preferred_xspeed = x
-        self.preferred_yspeed = y
         
     """
     @ai-ignore = true

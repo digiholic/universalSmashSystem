@@ -153,16 +153,16 @@ class ForwardSpecial(action.Action):
         if self.frame <= self.lastFrame-2:
             self.spriteImage += 1
             if self.frame <= 1:
-                actor.setSpeed(0, actor.getForwardWithOffset(0))
+                actor.preferred_xspeed = 0
                 actor.change_x = 0
-                if actor.change_y > 2:
-                    actor.change_y = 2
+                actor.preferred_yspeed = 2
                 if actor.keysContain('shield'):
                     actor.doShield()
                 elif actor.keysContain('special') and self.lastFrame < 240:
                     self.lastFrame += 1
                     self.frame -= 1
             else: #Actually launch forwards
+                actor.preferred_yspeed = actor.var['maxFallSpeed']
                 self.numFrames += 1
                 self.chainHitbox.update()
                 actor.active_hitboxes.add(self.chainHitbox)
@@ -173,16 +173,17 @@ class ForwardSpecial(action.Action):
                 if self.spriteImage%6 == 0:
                     self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
                 if actor.keysContain(invkey):
-                    actor.setPreferredSpeed(actor.var['runSpeed']//2, actor.getForwardWithOffset(0))
+                    actor.preferred_xspeed = actor.var['runSpeed']//2*actor.facing
                     self.frame += 2
                     if (self.frame > self.lastFrame-2):
                         self.frame = self.lastFrame-2
                 elif actor.keysContain(key):
-                    actor.setPreferredSpeed(actor.var['runSpeed'], actor.getForwardWithOffset(0))
+
+                    actor.preferred_xspeed = actor.var['runSpeed']*actor.facing
                     if (self.frame > self.lastFrame-2):
                         self.frame = self.lastFrame-2
                 else:
-                    actor.setPreferredSpeed(actor.var['runSpeed']*3//4, actor.getForwardWithOffset(0))
+                    actor.preferred_xspeed = actor.var['runSpeed']*3//4*actor.facing
                     self.frame += 1
                     if (self.frame > self.lastFrame-2):
                         self.frame = self.lastFrame-2
@@ -200,7 +201,7 @@ class ForwardSpecial(action.Action):
             else:
                 self.flingHitbox.kill()
             self.chainHitbox.kill()
-            actor.setPreferredSpeed(0, actor.facing) 
+            actor.preferred_xspeed = 0
             if self.frame >= self.lastFrame:
                 if actor.grounded:
                     actor.doIdle()
@@ -262,7 +263,7 @@ class UpAttack(action.Action):
     def setUp(self, actor):
         actor.changeSprite("utilt")
         sharedLock = hitbox.HitboxLock()
-        actor.setPreferredSpeed(0, actor.facing)
+        actor.preferred_xspeed = 0
         self.sweetHitbox = hitbox.DamageHitbox([30,-20], [6,10], actor, 7, 8, 0.08, 100, 1, sharedLock)
         self.tangyHitbox = hitbox.DamageHitbox([27,-29], [12,18], actor, 5, 7, 0.08, 110, 1, sharedLock)
         self.sourHitbox = hitbox.DamageHitbox([21,-32], [24,26], actor, 3, 6, 0.08, 120, 1, sharedLock)
@@ -312,7 +313,7 @@ class UpSmash(action.Action):
             actor.mask = None
             
         if self.frame == 0:
-            actor.setPreferredSpeed(0, actor.facing)
+            actor.preferred_xspeed = 0
             actor.changeSprite("usmash",0)
         elif self.frame == 3:
             actor.changeSpriteImage(1)
@@ -372,7 +373,7 @@ class DashAttack(action.Action):
         action.Action.__init__(self,32)
 
     def setUp(self, actor):
-        actor.setPreferredSpeed(actor.change_x, actor.facing)
+        actor.preferred_xspeed = actor.change_x*actor.facing
         actor.changeSprite("nair")
 
         self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,5,0.1,20,1,hitbox.HitboxLock())
@@ -381,7 +382,7 @@ class DashAttack(action.Action):
     def tearDown(self,actor,other):
         self.dashHitbox.kill()
         self.chainHitbox.kill()
-        actor.setPreferredSpeed(0, actor.facing)
+        actor.preferred_xspeed = 0
 
     def update(self,actor):
         if self.frame%2 == 0 and self.frame <= 8:
@@ -405,7 +406,7 @@ class DashAttack(action.Action):
             actor.active_hitboxes.add(self.dashHitbox)
         if self.frame == 24:
             self.dashHitbox.kill()
-            actor.setPreferredSpeed(0, actor.facing)
+            actor.preferred_xspeed = 0
 
         if self.frame == self.lastFrame:
             actor.doIdle()

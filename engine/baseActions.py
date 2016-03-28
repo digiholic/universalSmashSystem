@@ -14,16 +14,17 @@ class Move(action.Action):
         self.direction = -1
         
     def setUp(self,actor):
-        self.direction = actor.getForwardWithOffset(0)
+        self.direction = actor.facing
         
     def update(self, actor):
         if actor.grounded == False:
             actor.doFall()
-        actor.setPreferredSpeed(actor.var['maxGroundSpeed'],self.direction)
+        actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
+        actor.preferred_yspeed = actor.var['maxFallSpeed']
         actor.accel(actor.var['staticGrip'])
 
         (key,invkey) = actor.getForwardBackwardKeys()
-        if self.direction == actor.getForwardWithOffset(0):
+        if self.direction == actor.facing:
             if actor.keysContain(invkey):
                 actor.flip()
         else:
@@ -46,12 +47,13 @@ class Dash(action.Action):
         self.pivoted = False
 
     def setUp(self,actor):
-        if actor.facing == 1: self.direction = 0
-        else: self.direction = 180
+        if actor.facing == 1: self.direction = 1
+        else: self.direction = -1
 
     def update(self, actor):
         if self.frame == 0:
-            actor.setPreferredSpeed(actor.var['runSpeed'],self.direction)
+            actor.preferred_xspeed = actor.var['runSpeed']*self.direction
+            actor.preferred_yspeed = actor.var['maxFallSpeed']
         if actor.grounded == False:
             actor.doFall()
         if not self.pivoted:
@@ -76,8 +78,8 @@ class Run(action.Action):
         action.Action.__init__(self,length)
         
     def setUp(self,actor):
-        if actor.facing == 1: self.direction = 0
-        else: self.direction = 180
+        if actor.facing == 1: self.direction = 1
+        else: self.direction = -1
             
     def update(self, actor):
         if actor.grounded == False:
@@ -165,11 +167,11 @@ class Crouch(action.Action):
         actor.accel(actor.var['staticGrip'])
         (key, invkey) = actor.getForwardBackwardKeys()
         if actor.keysContain(key):
-            actor.setPreferredSpeed(actor.var['crawlSpeed'], actor.getFacingDirection())
+            actor.preferred_xspeed = actor.var['crawlSpeed']*actor.facing
         elif actor.keysContain(invkey):
-            actor.setPreferredSpeed(-actor.var['crawlSpeed'], actor.getFacingDirection())
+            actor.preferred_xspeed = -actor.var['crawlSpeed']*actor.facing
         else:
-            actor.setPreferredSpeed(0, actor.getFacingDirection())
+            actor.preferred_xspeed = 0
         
         self.frame += 1
         if self.frame > self.lastFrame: self.frame = 0
@@ -179,7 +181,7 @@ class CrouchGetup(action.Action):
         action.Action.__init__(self, length)
 
     def update(self, actor):
-        actor.setPreferredSpeed(0, actor.getFacingDirection())
+        actor.preferred_xspeed = 0
         if actor.grounded == False:
             actor.doFall()
         elif actor.bufferContains('down') and self.frame > 0:
@@ -226,6 +228,10 @@ class HitStun(action.Action):
         self.direction = direction
         self.hitstop = hitstop
 
+    def setUp(self, actor):
+        actor.preferred_xspeed = 0
+        actor.preferred_yspeed = actor.var['maxFallSpeed']
+
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
         if actor.bufferContains('shield', 8) and self.frame < self.lastFrame:
@@ -262,7 +268,6 @@ class HitStun(action.Action):
                 actor.grounded = False
                 if mag > 10:
                     actor.rotateSprite(self.direction)
-            actor.preferred_xspeed = 0
             actor.hitstop = self.hitstop
             if actor.grounded:
                 actor.hitstopVibration = (3,0)
@@ -399,6 +404,7 @@ class Fall(action.Action):
         grabLedges(actor)
         
     def update(self,actor):
+        actor.preferred_yspeed=actor.var['maxFallSpeed']
         actor.grounded = False
 
 """
@@ -415,6 +421,7 @@ class Helpless(action.Action):
         grabLedges(actor)
 
     def update(self, actor):
+        actor.preferred_yspeed=actor.var['maxFallSpeed']
         actor.grounded = False
             
 class Land(action.Action):
@@ -423,6 +430,7 @@ class Land(action.Action):
 
     def update(self,actor):
         if self.frame == 0:
+            actor.preferred_yspeed = actor.var['maxFallSpeed']
             self.lastFrame = actor.landingLag
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
@@ -438,7 +446,7 @@ class Land(action.Action):
             actor.landingLag = 6
             actor.doIdle()
             actor.platformPhase = 0
-            actor.setPreferredSpeed(0, actor.getFacingDirection())
+            actor.preferred_xspeed = 0
         self.frame+= 1
 
 class HelplessLand(action.Action):
@@ -447,6 +455,7 @@ class HelplessLand(action.Action):
 
     def update(self,actor):
         if self.frame == 0:
+            actor.preferred_yspeed = actor.var['maxFallSpeed']
             self.lastFrame = actor.landingLag
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
@@ -462,7 +471,7 @@ class HelplessLand(action.Action):
             actor.landingLag = 6
             actor.doIdle()
             actor.platformPhase = 0
-            actor.setPreferredSpeed(0, actor.getFacingDirection())
+            actor.preferred_xspeed = 0
         self.frame += 1
 
 """
@@ -473,6 +482,7 @@ class PlatformDrop(action.Action):
         action.Action.__init__(self, length)
     
     def update(self,actor):
+        actor.preferred_yspeed=actor.var['maxFallSpeed']
         if self.frame == 0:
             actor.platformPhase = actor.var['dropPhase']
         if self.frame == self.lastFrame:
@@ -560,6 +570,8 @@ class Stunned(action.Action):
         action.Action.__init__(self, length)
 
     def update(self, actor):
+        actor.preferred_xspeed = 0
+        actor.preferred_yspeed = actor.var['maxFallSpeed']
         if self.frame == self.lastFrame:
             actor.doIdle()
         self.frame += 1
