@@ -959,7 +959,7 @@ class BackThrow(baseActions.BaseGrabbing):
     def update(self, actor):
         baseActions.BaseGrabbing.update(self, actor)
         if self.frame == 0 and actor.isGrabbing():
-            actor.grabbing.applyKnockback(7, 10, 0.3, actor.getForwardWithOffset(180), 0.2)
+            actor.grabbing.applyKnockback(7, 10, 0.1, actor.getForwardWithOffset(180), 0.5)
         if self.frame == 0:
             actor.changeSpriteImage(0)
         elif self.frame == 2:
