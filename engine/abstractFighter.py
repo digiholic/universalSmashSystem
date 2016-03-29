@@ -74,7 +74,7 @@ class AbstractFighter():
         #state variables and flags
         self.angle = 0
         self.grounded = False
-        self.rect = self.sprite.rect
+        self.rect = self.sprite.boundingRect
         self.jumps = self.var['jumps']
         self.damage = 0
         self.landingLag = 6
