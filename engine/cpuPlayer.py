@@ -105,7 +105,22 @@ class CPUplayer():
         if 1 not in dists:
             return 99999
         else: return dists[1]
-    
+
+    def ducklingTargeting(self):
+        opposingPlayers = filter(lambda k: k != fighter, players)
+        opposingDists = map(lambda x: self.getPathDistance(self.fighter.rect.center, x.fighter.rect.center), opposingPlayers)
+        return opposingPlayers[opposingDists.index(min(opposingDists))].rect.center
+
+    def ledgeTargeting(self):
+        ledgePoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], self.gameState.platform_ledges)
+        ledgeDistances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), ledgePoints)
+        return ledgePoints[ledgeDistances.index(min(ledgeDistances))]
+
+    def platformTargeting(self):
+        targetPoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.stage.platform_list)+map(lambda x: [x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.stage.platform_list)
+        targetDistances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), targetPoints)
+        return targetPoints[targetDistances.index(min(targetDistances))]
+
     def update(self):
         if self.mode == 'duckling': #Follow the player
             distance = self.getPathDistance(self.fighter.rect.center, self.players[0].rect.center)
@@ -127,13 +142,6 @@ class CPUplayer():
                 self.jump_last_frame += 1
             if dy > 0 and self.fighter.grounded and not isinstance(self.fighter.current_action, baseActions.Crouch):
                 self.keysPlanning.add('down')
-        #elif self.mode == 'recoverLow': #Recover low to a ledge
-            ledgePoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], self.gameState.platform_ledges)
-            ledgeDistances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), ledgePoints)
-            targetLedge = ledgeDistances.index(min(ledgeDistances))
-        elif self.mode == 'recoverHigh': #Recover directly to a platform
-            targetPoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.stage.platform_list)+map(lambda x: [x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.stage.platform_list)
-            targetDistances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), targetPoints)
             
         self.pushInput()
 
