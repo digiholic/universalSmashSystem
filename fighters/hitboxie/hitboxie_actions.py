@@ -136,7 +136,7 @@ class ForwardSpecial(action.Action):
                     elif other.grounded:
                         other.dealDamage(self.damage)
                         (actorDirect,_) = self.owner.getDirectionMagnitude()
-                        other.doTrip(20, other.getForwardWithOffset(actorDirect))
+                        other.doTrip(35, other.getForwardWithOffset(actorDirect))
                     else:
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
@@ -191,9 +191,9 @@ class ForwardSpecial(action.Action):
                 
         else:
             if self.frame == self.lastFrame-1:
-                self.flingHitbox.damage += int(float(self.numFrames)/float(18))
-                self.flingHitbox.priority += int(float(self.numFrames)/float(18))
-                self.flingHitbox.baseKnockback += float(self.numFrames)/float(18)
+                self.flingHitbox.damage += int(float(self.numFrames)/float(16))
+                self.flingHitbox.priority += int(float(self.numFrames)/float(16))
+                self.flingHitbox.baseKnockback += float(self.numFrames)/float(16)
                 self.flingHitbox.update()
                 actor.active_hitboxes.add(self.flingHitbox)
             else:
