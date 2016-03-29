@@ -9,11 +9,7 @@ import weakref
 
 class AbstractFighter():
     
-    def __init__(self,
-                 playerNum,
-                 sprite,
-                 name,
-                 var):
+    def __init__(self,playerNum,sprite,name,var):
         self.name = name
         self.var = var
         self.playerNum = playerNum

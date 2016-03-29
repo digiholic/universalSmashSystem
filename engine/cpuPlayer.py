@@ -17,7 +17,6 @@ class CPUplayer():
     def getDistanceTo(self,target):
         sx,sy = self.fighter.rect.center
         tx,ty = target.rect.center
-        
         return (tx - sx, ty - sy)
 
     def pushInput(self):
@@ -44,17 +43,10 @@ class CPUplayer():
                 return False
             return True
         else:
-            # We have an implicit equation of the form:
-            # x = startPoint[0]+t*(endPoint[0]-startPoint[0])
-            # y = startPoint[1]+t*(endPoint[1]-startPoint[1])
             t_left = (rect.left-startPoint[0])/(endPoint[0]-startPoint[0])
             t_right = (rect.right-startPoint[0])/(endPoint[0]-startPoint[0])
             t_top = (rect.top-startPoint[1])/(endPoint[1]-startPoint[1])
             t_bottom = (rect.bottom-startPoint[1])/(endPoint[1]-startPoint[1])
-            #There are 3 cases:
-            #The line doesn't intersect the rectangle
-            #The line intersects the rectangle, but the segment stops before it does
-            #The segment intersects the rectangle
             if (t_left < 0 and t_right < 0) or (t_left > 1 and t_right > 1):
                 return False
             if (t_top < 0 and t_bottom < 0) or (t_top > 1 and t_bottom > 1):
@@ -66,8 +58,8 @@ class CPUplayer():
             return True
 
     def pathRectIntersects(self, startPoint, endPoint, solid_list, width, height):
-        startRect = pygame.Rect(startPoint[0]-width/2.0+2, startPoint[1]-height/2.0+2, width-4, height-4)
-        endRect = pygame.Rect(endPoint[0]-width/2.0+2, endPoint[1]-height/2.0+2, width-4, height-4)
+        startRect = pygame.Rect(startPoint[0]-width/2.0+2, startPoint[1]-height/2.0, width-4, height-1)
+        endRect = pygame.Rect(endPoint[0]-width/2.0+2, endPoint[1]-height/2.0, width-4, height-1)
         if any(map(lambda f: self.segmentIntersects(startRect.topleft, endRect.topleft, f), solid_list)): return True
         if any(map(lambda f: self.segmentIntersects(startRect.topright, endRect.topright, f), solid_list)): return True
         if any(map(lambda f: self.segmentIntersects(startRect.bottomleft, endRect.bottomleft, f), solid_list)): return True
@@ -122,11 +114,12 @@ class CPUplayer():
             dx, dy = self.getDistanceTo(self.players[0])
             if dx < 0:
                 if not isinstance(self.fighter.current_action, baseActions.LedgeGrab) or 'left' not in self.keysHeld:
-                    self.keysPlanning.add('left')
+                    if 'right' not in self.keysHeld:
+                        self.keysPlanning.add('left')
             if dx > 0:
                 if not isinstance(self.fighter.current_action, baseActions.LedgeGrab) or 'right' not in self.keysHeld:
-                    self.keysPlanning.add('right')
-
+                    if 'left' not in self.keysHeld:
+                        self.keysPlanning.add('right')
             if dy < 0 and self.jump_last_frame > 8 and distance-prevDistance>0:
                 self.keysPlanning.add('jump')
                 self.jump_last_frame = 0
@@ -134,15 +127,13 @@ class CPUplayer():
                 self.jump_last_frame += 1
             if dy > 0 and self.fighter.grounded and not isinstance(self.fighter.current_action, baseActions.Crouch):
                 self.keysPlanning.add('down')
-        elif self.mode == 'recoverLow': #Recover low to a ledge
+        #elif self.mode == 'recoverLow': #Recover low to a ledge
             ledgePoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], self.gameState.platform_ledges)
             ledgeDistances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), ledgePoints)
             targetLedge = ledgeDistances.index(min(ledgeDistances))
         elif self.mode == 'recoverHigh': #Recover directly to a platform
             targetPoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.stage.platform_list)+map(lambda x: [x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.stage.platform_list)
             targetDistances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), targetPoints)
-            
-            
             
         self.pushInput()
 
