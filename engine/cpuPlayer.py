@@ -15,7 +15,7 @@ class CPUplayer():
         self.players = players
         
     def getDistanceTo(self,target):
-        sx,sy = self.fighter.sprite.boundingRect.center
+        sx,sy = self.fighter.rect.center
         tx,ty = target.rect.center
         
         return (tx - sx, ty - sy)
@@ -117,21 +117,22 @@ class CPUplayer():
     def update(self):
         if self.mode == 'duckling': #Follow the player
             distance = self.getPathDistance(self.fighter.rect.center, self.players[0].rect.center)
-            prevDistance = self.getPathDistance(self.fighter.ecb.previousECB[1].rect.center, self.players[0].ecb.yBar.rect.center)
+            prevDistance = self.getPathDistance(self.fighter.ecb.yBar.rect.center, self.players[0].sprite.boundingRect.center)
             #We offset by one so that simply running away doesn't trigger catchup behavior
             dx, dy = self.getDistanceTo(self.players[0])
-            if dx < 0 and abs(dx)>abs(dy)//2:
-                self.keysPlanning.add('left')
-                
-            if dx > 0 and abs(dx)>abs(dy)//2:
-                self.keysPlanning.add('right')
+            if dx < 0:
+                if not isinstance(self.fighter.current_action, baseActions.LedgeGrab) or 'left' not in self.keysHeld:
+                    self.keysPlanning.add('left')
+            if dx > 0:
+                if not isinstance(self.fighter.current_action, baseActions.LedgeGrab) or 'right' not in self.keysHeld:
+                    self.keysPlanning.add('right')
 
-            if dy < 0 and abs(dy)>abs(dx)//2 and self.jump_last_frame > 8 and distance-prevDistance>0:
+            if dy < 0 and self.jump_last_frame > 8 and distance-prevDistance>0:
                 self.keysPlanning.add('jump')
                 self.jump_last_frame = 0
             else:
                 self.jump_last_frame += 1
-            if dy > 0 and abs(dy)>abs(dx)//2 and self.fighter.grounded and not isinstance(self.fighter.current_action, baseActions.Crouch):
+            if dy > 0 and self.fighter.grounded and not isinstance(self.fighter.current_action, baseActions.Crouch):
                 self.keysPlanning.add('down')
         elif self.mode == 'recoverLow': #Recover low to a ledge
             ledgePoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], self.gameState.platform_ledges)
