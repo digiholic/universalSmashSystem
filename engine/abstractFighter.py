@@ -513,7 +513,9 @@ class AbstractFighter():
                 self.hitTagged.dataLog.setData('KOs',1,lambda x,y: x+y)
         
         if respawn:
-            self.rect.midtop = self.gameState.size.midtop
+            self.rect.midbottom = self.gameState.spawnLocations[self.playerNum]
+            self.createMask([255,255,255], 120, True, 12)
+            self.invulnerable = 120
         
     def changeSprite(self,newSprite,frame=0):
         self.sprite.changeImage(newSprite)

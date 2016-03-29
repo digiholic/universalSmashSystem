@@ -70,7 +70,6 @@ class NeutralAirSpecial(action.Action):
         self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (32 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
         actor.changeSprite("nspecial",0)
 
-
     def stateTransitions(self, actor):
         if actor.keysContain('down'):
             if actor.change_y >= 0:
@@ -223,7 +222,7 @@ class NeutralAttack(action.Action):
     
     def stateTransitions(self, actor):
         if self.frame == self.lastFrame:
-            if actor.keysContain('attack'):
+            if actor.keysContain('attack') and not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('up') and not actor.keysContain('down'):
                 self.jabHitbox.hitbox_lock = hitbox.HitboxLock()
                 self.frame = 0
                 

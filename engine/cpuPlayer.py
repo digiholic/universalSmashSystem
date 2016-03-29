@@ -15,7 +15,7 @@ class CPUplayer():
         self.players = players
         
     def getDistanceTo(self,target):
-        sx,sy = self.fighter.rect.center
+        sx,sy = self.fighter.sprite.boundingRect.center
         tx,ty = target.rect.center
         
         return (tx - sx, ty - sy)
@@ -30,7 +30,7 @@ class CPUplayer():
 
     def segmentIntersects(self, startPoint, endPoint, rect):
         if startPoint[0]==endPoint[0] and startPoint[1]==endPoint[1]: #Degenerate
-            return rect.collidePoint(startPoint)
+            return rect.collidepoint(startPoint)
         elif startPoint[0]==endPoint[0]: #Vertical
             if rect.left > startPoint[0] or rect.right < startPoint[0]:
                 return False
@@ -65,13 +65,25 @@ class CPUplayer():
                 return False
             return True
 
+    def pathRectIntersects(self, startPoint, endPoint, solid_list, width, height):
+        startRect = pygame.Rect(startPoint[0]-width/2.0+2, startPoint[1]-height/2.0+2, width-4, height-4)
+        endRect = pygame.Rect(endPoint[0]-width/2.0+2, endPoint[1]-height/2.0+2, width-4, height-4)
+        if any(map(lambda f: self.segmentIntersects(startRect.topleft, endRect.topleft, f), solid_list)): return True
+        if any(map(lambda f: self.segmentIntersects(startRect.topright, endRect.topright, f), solid_list)): return True
+        if any(map(lambda f: self.segmentIntersects(startRect.bottomleft, endRect.bottomleft, f), solid_list)): return True
+        if any(map(lambda f: self.segmentIntersects(startRect.bottomright, endRect.bottomright, f), solid_list)): return True
+        return False
+
     def getPathDistance(self, startPoint, endPoint):
         nodes = [startPoint, endPoint]
         solid_list = []
         for platform in self.gameState.platform_list:
             if platform.solid:
                 solid_list += [platform.rect]
-                nodes += [[platform.rect.right+40, platform.rect.top-40], [platform.rect.right+40, platform.rect.bottom+40], [platform.rect.left-40, platform.rect.top-40], [platform.rect.left-40, platform.rect.bottom+40]]
+                nodes += [[platform.rect.right+self.fighter.sprite.boundingRect.width/2.0, platform.rect.top-self.fighter.sprite.boundingRect.height/2.0], 
+                          [platform.rect.right+self.fighter.sprite.boundingRect.width/2.0, platform.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], 
+                          [platform.rect.left-self.fighter.sprite.boundingRect.width/2.0, platform.rect.top-self.fighter.sprite.boundingRect.height/2.0], 
+                          [platform.rect.left-self.fighter.sprite.boundingRect.width/2.0, platform.rect.bottom+self.fighter.sprite.boundingRect.height/2.0]]
 
         closedSet = set()
         openSet = set([0])
@@ -89,7 +101,7 @@ class CPUplayer():
             for node in range(0,len(nodes)):
                 if node in closedSet:
                     continue
-                if not any(map(lambda f: self.segmentIntersects(nodes[node], nodes[current], f), solid_list)):
+                if not self.pathRectIntersects(nodes[current], nodes[node], solid_list, self.fighter.sprite.boundingRect.width, self.fighter.sprite.boundingRect.height):
                     tentativeDist = dists[current] + math.sqrt((nodes[current][0]-nodes[node][0])**2+(nodes[current][1]-nodes[node][1])**2)
                     if node not in openSet:
                         openSet.add(node)
@@ -98,18 +110,12 @@ class CPUplayer():
                     cameFrom[node] = current
                     dists[node] = tentativeDist
                     estimates[node] = dists[node]+math.sqrt((nodes[node][0]-endPoint[0])**2+(nodes[node][1]-endPoint[1])**2)
-        print cameFrom
         if 1 not in dists:
-            return -1
+            return 99999
         else: return dists[1]
     
     def update(self):
-        print self.getPathDistance(self.fighter.rect.center, [1000,1500])
-        """
-        These modes will determine the current state of the player. Right now,
-        the only mode is 'duckling' mode, where the AI will follow the player.
-        """
-        if self.mode == 'duckling':
+        if self.mode == 'duckling': #Follow the player
             dx, dy = self.getDistanceTo(self.players[0])
             if dx < 0 and abs(dx)>abs(dy)//2:
                 self.keysPlanning.add('left')
@@ -122,12 +128,15 @@ class CPUplayer():
                 self.jump_last_frame = 0
             else:
                 self.jump_last_frame += 1
-
+            
             if dy > 0 and abs(dy)>abs(dx)//2 and self.fighter.grounded and not isinstance(self.fighter.current_action, baseActions.Crouch):
                 self.keysPlanning.add('down')
-        #elif self.move == 'recover':
-        #    ledgeDistances = map(lambda x: getPathDistance(self.fighter.rect.center, x.rect.center), self.gameState.platform_ledges)
-        #    targetLedge = ledgeDistances.index(min(ledgeDistances))
-        #    dx, dy = self.getDistanceTo(self.gameState.platform_ledges(targetLedge)
+        #elif self.mode == 'recoverLow': #Recover low to a ledge
+            ledgePoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], self.gameState.platform_ledges)
+            ledgeDistances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), ledgePoints)
+            targetLedge = ledgeDistances.index(min(ledgeDistances))
+            
+            
+            
         self.pushInput()
 

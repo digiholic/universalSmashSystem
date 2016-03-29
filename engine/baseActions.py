@@ -802,7 +802,7 @@ class LedgeGrab(action.Action):
         self.ledge = ledge
 
     def setUp(self, actor):
-        actor.createMask([255,255,255], 120, True, 12)
+        actor.createMask([255,255,255], settingsManager.getSetting('ledgeInvincibilityTime'), True, 12)
         if actor.invulnerable > -30:
             actor.invulnerable = settingsManager.getSetting('ledgeInvincibilityTime')
         
