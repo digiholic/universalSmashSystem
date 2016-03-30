@@ -34,7 +34,7 @@ def getChangedList():
         else:
             for filepath in files(directory): #for each file in the directory
                 filename = os.path.join(directory,filepath)
-                print filename
+                print(filename)
                 if filename in excludeFiles:
                     print('----------omitting file '+ filename)
                 else:
@@ -45,19 +45,19 @@ def getChangedList():
                             if f.read() == r.content:
                                 pass
                             else:
-                                print '-----files differ',filename
+                                print('-----files differ',filename)
                                 changedList.append((os.path.join(base_url,subdir,filepath),filename))
                         
             #after checking all of the files, add subdirectories, then remove itself
             upcomingDirs.extend(getDirectories(directory))
         upcomingDirs.remove(directory)
         #print upcomingDirs
-    print changedList
+    print(changedList)
     return changedList
 
 def downloadUpdates(changedList):
     for changedfile in changedList:
-        print changedfile
+        print(changedfile)
         r = requests.get(changedfile[0])
         if r.status_code == 200:
             with open(changedfile[1],'w') as f:

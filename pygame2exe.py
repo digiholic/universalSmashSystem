@@ -17,8 +17,8 @@ try:
     import glob, fnmatch
     import sys, os, shutil
     import operator
-except ImportError, message:
-    raise SystemExit,  "Unable to load module. %s" % message
+except ImportError as message:
+    raise (SystemExit, "Unable to load module. %s" % message)
  
 #hack which fixes the pygame mixer and pygame font
 origIsSystemDLL = py2exe.build_exe.isSystemDLL # save the orginal before we edit it
