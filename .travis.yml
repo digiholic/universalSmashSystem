@@ -9,7 +9,7 @@ install:
 - pip install numpy
 - pip install cx_Freeze
 script:
-- python -m compileall .
+- python -m compileall -q .
 after_script:
 - find . -name "*.pyc" -type f -delete
 - find . -name "*.pyo" -type f -delete
