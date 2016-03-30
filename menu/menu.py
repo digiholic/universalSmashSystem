@@ -361,7 +361,7 @@ class RulesMenu (SubMenu):
                         self.selectedOption -= 1
                     if button == 'down':
                         self.selectedOption += 1
-                    self.selectedOption = self.selectedOption % 6
+                    self.selectedOption = self.selectedOption % 7
 
                     if button == 'left':
                         if self.selectedOption == 1:
