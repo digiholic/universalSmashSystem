@@ -134,30 +134,19 @@ class Battle():
                 if event.type == pygame.QUIT:
                     sys.exit()
                     return -1
+                
+                for cont in self.controllers:
+                        cont.getInputs(event)
+                
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         print("saving screenshot")
                         pygame.image.save(screen,settingsManager.createPath('screenshot.jpg'))
-                    
-                    for cont in self.controllers:
-                        cont.getInputs(event)
                         
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_ESCAPE:
                         exitStatus = 1
-                    for fight in currentFighters:
-                        k = fight.keyBindings.get(event.key)
-                        if k:
-                            fight.keyReleased(k)
-                if event.type == pygame.JOYAXISMOTION:
-                    for fight in currentFighters:
-                        fight.joyAxisMotion(event.joy, event.axis)
-                if event.type == pygame.JOYBUTTONDOWN:
-                    for fight in currentFighters:
-                        fight.joyButtonPressed(event.joy, event.button)
-                if event.type == pygame.JOYBUTTONUP:
-                    for fight in currentFighters:
-                        fight.joyButtonReleased(event.joy, event.button)
+                            
                 if event.type == pygame.USEREVENT+2:
                     pygame.time.set_timer(pygame.USEREVENT+2, 1000)
                     clockSprite.changeText(str(clockTime / 60)+':'+str(clockTime % 60).zfill(2))
@@ -327,19 +316,22 @@ class Battle():
                     if event.type == pygame.QUIT:
                         sys.exit()
                         return -1
+                    for i in range(0,len(self.players)):
+                        controls = settingsManager.getControls(i)
+                        k = controls.getInputs(event)
+                        if k == 'attack':
+                            resultSprites[i].image.set_alpha(0)
+                            confirmedList[i] = True
+                        elif k == 'special':
+                            resultSprites[i].image.set_alpha(255)
+                            confirmedList[i] = False
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_RETURN:
                             print("saving screenshot")
                             pygame.image.save(screen,settingsManager.createPath('screenshot.jpg'))
                         if event.key == pygame.K_ESCAPE:
                             return
-                        for i in range(0,len(self.players)):
-                            if event.key in settingsManager.getControls(i).getAction('attack'):
-                                resultSprites[i].image.set_alpha(0)
-                                confirmedList[i] = True
-                            if event.key in settingsManager.getControls(i).getAction('shield'):
-                                resultSprites[i].image.set_alpha(255)
-                                confirmedList[i] = False
+                                
                 screen.fill((0,0,0))
                 for sprite in resultSprites:
                     sprite.draw(screen, sprite.rect.topleft, 1.0)

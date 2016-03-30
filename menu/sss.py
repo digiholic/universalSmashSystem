@@ -38,59 +38,53 @@ class StageScreen():
         
         for i in range(0,4):
             self.playerControls.append(settingsManager.getControls(i))
-        
+            
         status = 0
         
         while status == 0:
             #Start event loop
             for event in pygame.event.get():
+                for bindings in self.playerControls:
+                    k = bindings.getInputs(event)
+                    if k == 'left':
+                        self.grid.updateSelection(-1, 0)    
+                    elif k == 'right':
+                        self.grid.updateSelection(1, 0)
+                    elif k == 'up':
+                        self.grid.updateSelection(0, -1)  
+                    elif k == 'down':
+                        self.grid.updateSelection(0, 1) 
+                    elif k == 'attack':
+                        if not self.grid.isStageStruckAt(self.grid.getXY()[0],self.grid.getXY()[1]):
+                            #choose
+                            if self.grid.getSelectedStage() == 'random':
+                                stage = self.grid.getRandomStage()
+                            else:
+                                stage = self.grid.getSelectedStage()
+                            
+                            musicManager.getMusicManager().stopMusic(500)
+                            #This will wait until the music fades out for cool effect
+                            while musicManager.getMusicManager().isPlaying():
+                                pass
+                            musicList = stage.getMusicList()
+                            musicManager.getMusicManager().createMusicSet('stage', musicList)
+                            musicManager.getMusicManager().rollMusic('stage')
+                            bindings.flushInputs()
+                            currentBattle = battle.Battle(self.rules,self.fighters,stage.getStage(),self.cpuPlayers)
+                            currentBattle.startBattle(screen)
+                            status = 1
+                            #do something with battle result
+                    
+                    elif k == 'jump':
+                        x,y = self.grid.getXY()
+                        self.grid.changeStageStruckAt(x,y)
+                    bindings.flushInputs()
+                        
                 if event.type == pygame.QUIT:
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         status = 1
-                    
-                    for i,bindings in enumerate(self.playerControls):
-                        if bindings.get(event.key) == 'left':
-                            self.grid.updateSelection(-1, 0)
-                                
-                        elif bindings.get(event.key) == 'right':
-                            self.grid.updateSelection(1, 0)
-                        
-                        elif bindings.get(event.key) == 'up':
-                            self.grid.updateSelection(0, -1)
-                            
-                        elif bindings.get(event.key) == 'down':
-                            self.grid.updateSelection(0, 1)
-                            
-                        elif bindings.get(event.key) == 'attack':
-                            if not self.grid.isStageStruckAt(self.grid.getXY()[0],self.grid.getXY()[1]):
-                                #choose
-                                if self.grid.getSelectedStage() == 'random':
-                                    stage = self.grid.getRandomStage()
-                                else:
-                                    stage = self.grid.getSelectedStage()
-                                
-                                musicManager.getMusicManager().stopMusic(500)
-                                #This will wait until the music fades out for cool effect
-                                while musicManager.getMusicManager().isPlaying():
-                                    pass
-                                musicList = stage.getMusicList()
-                                musicManager.getMusicManager().createMusicSet('stage', musicList)
-                                musicManager.getMusicManager().rollMusic('stage')
-                                currentBattle = battle.Battle(self.rules,self.fighters,stage.getStage(),self.cpuPlayers)
-                                currentBattle.startBattle(screen)
-                                status = 1
-                                #do something with battle result
-                                
-                        #TODO: Fix this when special button is added
-                        elif bindings.get(event.key) == 'jump':
-                            x,y = self.grid.getXY()
-                            self.grid.changeStageStruckAt(x,y)
-                            
-                elif event.type == pygame.KEYUP:
-                    pass
-                    #I shouldn't actually need this, but just in case.
                     
             #End event loop
             screen.fill((0,0,0))

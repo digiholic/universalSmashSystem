@@ -213,13 +213,33 @@ class Settings():
             groupName = 'controls_' + str(playerNum)
             controlType = self.parser.get(groupName, 'controlType')
             
-            # If the bindings are empty (as in, not set by the Gamepad)
-            for opt in self.parser.options(groupName):
-                if self.KeyNameMap.has_key(opt):
-                    bindings[self.KeyNameMap[opt]] = self.parser.get(groupName, opt)
+            if controlType == 'button':
+                for opt in self.parser.options(groupName):
+                    if self.KeyNameMap.has_key(opt):
+                        bindings[self.KeyNameMap[opt]] = self.parser.get(groupName, opt)
                     
-            self.setting[groupName] = engine.controller.Controller(bindings)
-            print(self.setting[groupName])
+                self.setting[groupName] = engine.controller.Controller(bindings)
+            else:
+                joystick = None
+                for pad in range(pygame.joystick.get_count()):
+                    joy = pygame.joystick.Joystick(pad)
+                    if joy.get_name() == controlType:
+                        joystick = joy
+                        joystick.init()
+                    
+                axes = {}
+                buttons = {}
+                for opt in self.parser.options(groupName):
+                    if opt[0] == 'a':
+                        axes[int(opt[1:])] = tuple(self.parser.get(groupName, opt)[1:-1].split(','))
+                    elif opt[0] == 'b':
+                        buttons[int(opt[1:])] = self.parser.get(groupName, opt)
+            
+                padBindings = engine.controller.PadBindings(joystick.get_id(),axes,buttons)
+                self.setting[groupName] = engine.controller.GamepadController(padBindings)
+                
+            # If the bindings are empty (as in, not set by the Gamepad)
+            
             playerNum += 1
     
     """

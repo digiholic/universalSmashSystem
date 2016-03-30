@@ -36,6 +36,8 @@ class CSSScreen():
         for i in range(0,4):
             self.playerControls.append(settingsManager.getControls(i))
             self.playerPanels.append(PlayerPanel(i))
+            self.playerControls[i].fighter = self.playerPanels[i] #So playerPanel will take the inputs
+            self.playerControls[i].flushInputs()
         
         status = 0
         musicManager.getMusicManager().stopMusic(100)
@@ -43,37 +45,27 @@ class CSSScreen():
         while status == 0:
             if not musicManager.getMusicManager().isPlaying():
                 musicManager.getMusicManager().rollMusic('css')
+            
             #Start event loop
+            for bindings in self.playerControls:
+                bindings.passInputs()
+                
             for event in pygame.event.get():
+                for bindings in self.playerControls:
+                    k = bindings.getInputs(event)
+                    if k == 'attack':
+                        if self.checkForSelections():
+                            sss.StageScreen(self.rules,self.getFightersFromPanels(),self.getCPUPlayers())
+                            for panel in self.playerPanels:
+                                panel.activeObject = panel.wheel
+                                panel.chosenFighter = None
+                                panel.bgSurface = None
+                
                 if event.type == pygame.QUIT:
                     status = -1
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        status = 1
-                    
-                    for i,bindings in enumerate(self.playerControls):
-                        if bindings.get(event.key) == 'left':
-                            self.playerPanels[i].keyPressed('left')    
-                        elif bindings.get(event.key) == 'right':
-                            self.playerPanels[i].keyPressed('right')
-                        elif bindings.get(event.key) == 'attack':
-                            self.playerPanels[i].keyPressed('confirm')
-                            if self.checkForSelections():
-                                sss.StageScreen(self.rules,self.getFightersFromPanels(),self.getCPUPlayers())
-                                for panel in self.playerPanels:
-                                    panel.activeObject = panel.wheel
-                                    panel.chosenFighter = None
-                                    panel.bgSurface = None
-                        #TODO: Fix this when special button is added
-                        elif bindings.get(event.key) == 'shield':
-                            self.playerPanels[i].keyPressed('cancel')
-                            
-                elif event.type == pygame.KEYUP:
-                    for i,bindings in enumerate(self.playerControls):
-                        if bindings.get(event.key) == 'left':
-                            self.playerPanels[i].keyReleased('left')
-                        elif bindings.get(event.key) == 'right':
-                            self.playerPanels[i].keyReleased('right')             
+                        status = 1          
             #End event loop
             
             screen.fill((128, 128, 128))
@@ -88,6 +80,8 @@ class CSSScreen():
         for panel in self.playerPanels:
             if panel.active and panel.chosenFighter == None:
                 return False
+        if not any([x.active for x in self.playerPanels]):
+            return False
         return True
     
     def getFightersFromPanels(self):
@@ -217,10 +211,10 @@ class PlayerPanel(pygame.Surface):
             self.bgSurface.set_alpha(self.bgSurface.get_alpha() - 10)
                 
     def keyPressed(self,key):
-        if key != 'cancel' and self.active == False:
+        if key != 'special' and self.active == False:
             self.active = True
             return
-        if key == 'cancel' and self.active == True:
+        if key == 'special' and self.active == True:
             if self.activeObject == self.wheel:
                 self.active = False
                 return
@@ -237,7 +231,7 @@ class PlayerPanel(pygame.Surface):
         elif key == 'right':
             if self.activeObject == self.wheel:
                 self.wheelIncrement = 1
-        elif key == 'confirm':
+        elif key == 'attack':
             if self.activeObject == self.wheel:
                 self.bgSurface = self.copy()
                 self.bgSurface.set_alpha(240)

@@ -27,6 +27,7 @@ class Menu():
     def __init__(self):
         self.settings = settingsManager.getSetting().setting
         pygame.init()
+        pygame.joystick.init()
         screen = pygame.display.set_mode((self.settings['windowSize'][0], self.settings['windowSize'][1]))
         pygame.display.set_caption(self.settings['windowName'])
             
