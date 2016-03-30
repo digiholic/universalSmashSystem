@@ -2,20 +2,35 @@ import settingsManager
 import pygame
 
 class Controller():
-    def __init__(self,fighter):
+    def __init__(self,bindings):
         self.keysToPass = []
-        self.keyBindings = settingsManager.getControls(fighter.playerNum)
+        self.keysToRelease = []
+        self.keyBindings = bindings
+    
+    def loadFighter(self,fighter):
         self.fighter = fighter
     
+    def flushInputs(self):
+        self.keysToPass = []
+        self.keysToRelease = []
+        
     def getInputs(self,event):
         k = self.keyBindings.get(event.key)
         if k:
-            self.keysToPass.append(k)
+            if event.type == pygame.KEYDOWN:
+                self.keysToPass.append(k)
+            elif event.type == pygame.KEYUP:
+                self.keysToRelease.append(k)
         return k
+    
+    def get(self,key):
+        return self.keyBindings.get(key)
     
     def passInputs(self):
         for key in self.keysToPass:
             self.fighter.keyPressed(key)
+        for key in self.keysToRelease:
+            self.fighter.keyReleased(key)
         self.keysToPass = []
         
 class GamepadController():

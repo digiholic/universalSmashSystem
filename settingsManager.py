@@ -3,6 +3,7 @@ import pygame.constants
 import re
 import os
 import imp
+import engine.controller
 try:
     from configparser import SafeConfigParser
 except ImportError:
@@ -114,8 +115,8 @@ class Settings():
         self.KeyNameMap = {}
         for name, value in vars(pygame.constants).items():
             if name.startswith("K_"):
-                self.KeyIdMap[value] = name
-                self.KeyNameMap[name] = value
+                self.KeyIdMap[value] = name.lower()
+                self.KeyNameMap[name.lower()] = value
         
         
         self.parser = SafeConfigParser()
@@ -198,33 +199,12 @@ class Settings():
         bindings = {}
         groupName = 'controls_menu'
         controlType = self.parser.get(groupName,'controlType')
-        if controlType == 'gamepad': # If the controls are set to Gamepad
-            gamepadName = self.parser.get(groupName, 'gamepad')
-            if gamepadName in self.setting['controllers']: # Check if that Gamepad is connected
-                print("okay", gamepadName)
-                bindings = {
-                    getGamepadTuple(self.parser, gamepadName, 'left') : 'left',
-                    getGamepadTuple(self.parser, gamepadName, 'right') : 'right',
-                    getGamepadTuple(self.parser, gamepadName, 'up') : 'up',
-                    getGamepadTuple(self.parser, gamepadName, 'down') : 'down',
-                    getGamepadTuple(self.parser, gamepadName, 'confirm') : 'confirm',
-                    getGamepadTuple(self.parser, gamepadName, 'cancel') : 'cancel'
-                }
-            else: # If it is not connected, use the buttons instead.
-                print("error", gamepadName)
-                bindings = {}
-            
-        # If the bindings are empty (as in, not set by the Gamepad)
-        if bindings == {}:
-            bindings = {
-                        self.KeyNameMap[self.parser.get(groupName, 'left')] : 'left',
-                        self.KeyNameMap[self.parser.get(groupName, 'right')] : 'right',
-                        self.KeyNameMap[self.parser.get(groupName, 'up')] : 'up',
-                        self.KeyNameMap[self.parser.get(groupName, 'down')] : 'down',
-                        self.KeyNameMap[self.parser.get(groupName, 'confirm')] : 'confirm',
-                        self.KeyNameMap[self.parser.get(groupName, 'cancel')] : 'cancel'
-            }
-            self.setting[groupName] = Keybindings(bindings)
+        
+        for opt in self.parser.options(groupName):
+            if self.KeyNameMap.has_key(opt):
+                bindings[self.KeyNameMap[opt]] = self.parser.get(groupName, opt)
+        
+        self.setting[groupName] = Keybindings(bindings)
             
         
         playerNum = 0
@@ -232,37 +212,14 @@ class Settings():
             bindings = {}
             groupName = 'controls_' + str(playerNum)
             controlType = self.parser.get(groupName, 'controlType')
-            if controlType == 'gamepad': # If the controls are set to Gamepad
-                gamepadName = self.parser.get(groupName, 'gamepad')
-                if gamepadName in self.setting['controllers']: # Check if that Gamepad is connected
-                    print("okay", gamepadName)
-                    bindings = {
-                        getGamepadTuple(self.parser, gamepadName, 'left') : 'left',
-                        getGamepadTuple(self.parser, gamepadName, 'right') : 'right',
-                        getGamepadTuple(self.parser, gamepadName, 'up') : 'up',
-                        getGamepadTuple(self.parser, gamepadName, 'down') : 'down',
-                        getGamepadTuple(self.parser, gamepadName, 'attack') : 'attack',
-                        getGamepadTuple(self.parser, gamepadName, 'special') : 'special',
-                        getGamepadTuple(self.parser, gamepadName, 'jump') : 'jump',
-                        getGamepadTuple(self.parser, gamepadName, 'shield') : 'shield',
-                        }
-                else: # If it is not connected, use the buttons instead.
-                    print("error", gamepadName)
-                    bindings = {}
             
             # If the bindings are empty (as in, not set by the Gamepad)
-            if bindings == {}:
-                bindings = {
-                        self.KeyNameMap[self.parser.get(groupName, 'left')] : 'left',
-                        self.KeyNameMap[self.parser.get(groupName, 'right')] : 'right',
-                        self.KeyNameMap[self.parser.get(groupName, 'up')] : 'up',
-                        self.KeyNameMap[self.parser.get(groupName, 'down')] : 'down',
-                        self.KeyNameMap[self.parser.get(groupName, 'jump')] : 'jump',
-                        self.KeyNameMap[self.parser.get(groupName, 'attack')] : 'attack',
-                        self.KeyNameMap[self.parser.get(groupName, 'special')] : 'special',
-                        self.KeyNameMap[self.parser.get(groupName, 'shield')] : 'shield'
-                        }
-            self.setting[groupName] = Keybindings(bindings)
+            for opt in self.parser.options(groupName):
+                if self.KeyNameMap.has_key(opt):
+                    bindings[self.KeyNameMap[opt]] = self.parser.get(groupName, opt)
+                    
+            self.setting[groupName] = engine.controller.Controller(bindings)
+            print(self.setting[groupName])
             playerNum += 1
     
     """

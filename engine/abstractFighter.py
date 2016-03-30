@@ -41,6 +41,9 @@ class AbstractFighter():
         
         #Initialize engine variables
         self.keyBindings = settingsManager.getSetting('controls_' + str(playerNum))
+        self.keyBindings.loadFighter(self)
+        self.keyBindings.flushInputs()
+        
         self.inputBuffer = InputBuffer()
         self.keysHeld = dict()
         

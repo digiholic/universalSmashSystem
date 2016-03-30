@@ -32,7 +32,8 @@ class Battle():
         self.controllers = []
         for player in players:
             player.hitboxLock.add(self.nullLock)
-            self.controllers.append(controller.Controller(player))
+            self.controllers.append(player.keyBindings)
+            
             
         self.stage = stage
         self.cpuPlayers = []
