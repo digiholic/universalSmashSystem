@@ -13,7 +13,7 @@ class SplatArticle(article.AnimatedArticle):
         self.direction = direction
         self.change_x = self.direction*24
         self.change_y = 0
-        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)  
+        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)
         self.hitbox.article = self
             
     # Override the onCollision of the hitbox
@@ -110,7 +110,7 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
         actor.changeSprite("nair",0)
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 0, 0, 0, 0, 1, 1, -1, -7)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 0, 0, 1, 1, -1, -7)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
     
@@ -374,7 +374,7 @@ class DashAttack(action.Action):
         actor.changeSprite("nair")
 
         self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,8,0.2,20,1,hitbox.HitboxLock())
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),1,1.5)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,0,1,1.5)
 
     def tearDown(self,actor,other):
         self.dashHitbox.kill()

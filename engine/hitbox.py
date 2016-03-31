@@ -132,12 +132,15 @@ class AutolinkHitbox(DamageHitbox):
                     if self.article is None:
                         self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
                 else:
-                    velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
-                    angle = math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))
-
                     if self.article is None:
+                        velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
+                        angle = math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
                         self.owner.hitstop = math.floor(self.damage / 4 + 2)
-                    other.applyKnockback(self.damage, velocity*self.velocity_multiplier, 0, self.owner.getForwardWithOffset(angle), 0, self.hitstun)
+                        other.applyKnockback(self.damage, velocity*self.velocity_multiplier, 0, angle, 0, self.hitstun)
+                    elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
+                        velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
+                        angle = math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
+                        other.applyKnockback(self.damage, velocity*self.velocity_multiplier, 0, angle, 0, self.hitstun)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(other)
