@@ -24,7 +24,7 @@ class Battle():
     def __init__(self,rules,players,stage,cpuPlayers):
         self.settings = settingsManager.getSetting().setting
         
-        if rules == None: rules = Rules()
+        if rules is None: rules = Rules()
         
         self.rules = rules
         self.players = players
@@ -136,7 +136,7 @@ class Battle():
                     return -1
                 
                 for cont in self.controllers:
-                        cont.getInputs(event)
+                    cont.getInputs(event)
                 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
@@ -164,20 +164,20 @@ class Battle():
             current_stage.cameraUpdate()
             current_stage.drawBG(screen)
             
-            for hitbox in active_hitboxes:
-                hitbox_clank = pygame.sprite.spritecollide(hitbox,active_hitboxes, False)
+            for hbox in active_hitboxes:
+                hitbox_clank = pygame.sprite.spritecollide(hbox,active_hitboxes, False)
                 for other in hitbox_clank:
-                    if other is not hitbox:
-                        if not hitbox.compareTo(other):
-                            if hasattr(hitbox.owner,'current_action'):
-                                hitbox.owner.current_action.onClank(hitbox.owner)
+                    if other is not hbox:
+                        if not hbox.compareTo(other):
+                            if hasattr(hbox.owner,'current_action'):
+                                hbox.owner.current_action.onClank(hbox.owner)
                             print("CLANK!")
-                            hitbox.hitbox_lock = self.nullLock
-                        if not other.compareTo(hitbox):
+                            hbox.hitbox_lock = self.nullLock
+                        if not other.compareTo(hbox):
                             if hasattr(other.owner,'current_action'):
                                 other.owner.current_action.onClank(other.owner)
                             print("CLANK!")
-                            hitbox.hitbox_lock = self.nullLock
+                            other.hitbox_lock = self.nullLock
             
             for obj in gameObjects:
                 obj.update()
@@ -449,7 +449,7 @@ A log will be made for each character, and it will be given to them on load. The
 and characters are free to give it new information as they see fit. For example, you could make a character like Game & Watch log
 how many of each number he scored.
 """
-class DataLog():
+class DataLog(object):
     def __init__(self):
         self.data = {
                      'KOs'          : 0,

@@ -115,7 +115,7 @@ class AbstractFighter():
             self.ecb.normalize()
             return
         elif self.hitstop == 0 and not self.hitstopVibration == (0,0):
-            self.hitstopVibration = False
+            #self.hitstopVibration = False #Lolwut?
             self.rect.center = self.hitstopPos
             self.hitstopVibration = (0,0)
         #Step two, accelerate/decelerate
@@ -441,7 +441,7 @@ class AbstractFighter():
         totalKB = (((((p/10) + (p*d)/20) * (200/(w*weight_influence+100))*1.4) + 5) * s) + b
         
         if damage < self.flinch_damage_threshold or totalKB < self.flinch_knockback_threshold:
-            self.dealDamage(math.floor(damage*armor_damage_multiplier))
+            self.dealDamage(math.floor(damage*self.armor_damage_multiplier))
             return 0
 
         di_vec = self.getSmoothedInput()
@@ -459,7 +459,7 @@ class AbstractFighter():
         if self.no_flinch_hits > 0:
             if hitstun_frames > 0:
                 self.no_flinch_hits -= 1
-            self.dealDamage(math.floor(damage*armor_damage_multiplier))
+            self.dealDamage(math.floor(damage*self.armor_damage_multiplier))
             return 0
 
         if hitstun_frames > 0:
@@ -527,7 +527,7 @@ class AbstractFighter():
             return False
 
         #If the hitbox belongs to something, get tagged by it
-        if not hbox.owner == None:
+        if not hbox.owner is None:
             self.hitTagged = hbox.owner
 
         if hbox.hitbox_lock in self.hitboxLock:
@@ -598,7 +598,7 @@ class AbstractFighter():
         
         k = self.keyBindings.get('axis ' + str(axis) + sign)
         self.inputBuffer.append((k,value)) # This should hopefully append something along the line of ('left',0.8)
-        self.keysHeld[key] = value
+        self.keysHeld[k] = value
     
     """
     A wrapper for the InputBuffer.contains function, since this will be called a lot.
@@ -839,7 +839,7 @@ class InputBuffer():
     notReleased - Check if the button was pressed in the given distance, and is still being held.
     """
     def contains(self, key, distanceBack = 0, state=1.0, andReleased=False, notReleased=False, threshold=False):
-        if state == 1.0: notState = 0
+        if state == 1.0: notState = 0.0
         else: notState = 1.0
         js = [] #If the key shows up multiple times, we might need to check all of them.
         if distanceBack > self.lastIndex: distanceBack = self.lastIndex #So we don't check farther back than we have data for

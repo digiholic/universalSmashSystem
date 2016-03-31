@@ -10,7 +10,7 @@ class Vec2d(object):
     __slots__ = ['x', 'y']
  
     def __init__(self, x_or_pair, y = None):
-        if y == None:
+        if y is None:
             self.x = x_or_pair[0]
             self.y = x_or_pair[1]
         else:
@@ -425,8 +425,8 @@ if __name__ == "__main__":
             zero_vec = Vec2d(0, 0)
             self.assert_(int_vec == flt_vec)
             self.assert_(int_vec != zero_vec)
-            self.assert_((flt_vec == zero_vec) == False)
-            self.assert_((flt_vec != int_vec) == False)
+            self.assert_((flt_vec == zero_vec) is False)
+            self.assert_((flt_vec != int_vec) is False)
             self.assert_(int_vec == (3, -2))
             self.assert_(int_vec != [0, 0])
             self.assert_(int_vec != 5)

@@ -61,10 +61,10 @@ class DamageHitbox(Hitbox):
             if other.lockHitbox(self):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
-                    if self.article == None:
+                    if self.article is None:
                         self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
                 else:
-                    if self.article == None:
+                    if self.article is None:
                         self.owner.hitstop = math.floor(self.damage / 4 + 2)
                     other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
         
@@ -90,7 +90,7 @@ class SakuraiAngleHitbox(DamageHitbox):
             if other.lockHitbox(self):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
-                    if self.article == None:
+                    if self.article is None:
                         self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
                 else:
                     p = float(other.damage)
@@ -106,7 +106,7 @@ class SakuraiAngleHitbox(DamageHitbox):
                     yVal = math.sqrt(knockbackRatio**2-1)/math.sqrt(2)
                     angle = math.atan2(yVal*math.sin(float(self.trajectory)/180*math.pi),xVal*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
 
-                    if self.article == None:
+                    if self.article is None:
                         self.owner.hitstop = math.floor(self.damage / 4 + 2)
                     other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, angle, self.weight_influence, self.hitstun)
 
@@ -127,13 +127,13 @@ class AutolinkHitbox(DamageHitbox):
             if other.lockHitbox(self):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
-                    if self.article == None:
+                    if self.article is None:
                         self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
                 else:
                     velocity = math.sqrt(self.owner.change_x ** 2 + self.owner.change_y ** 2)
                     angle = math.atan2(self.owner.change_y, self.owner.change_x)
 
-                    if self.article == None:
+                    if self.article is None:
                         self.owner.hitstop = math.floor(self.damage / 4 + 2)
                     other.applyKnockback(self.damage, velocity*self.velocity_multiplier, 0, self.owner.getForwardWithOffset(angle), 0, self.hitstun)
 

@@ -41,7 +41,7 @@ class ShieldArticle(Article):
         
     def update(self):
         self.rect.center = self.owner.rect.center
-        if self.owner.shield == False:
+        if not self.owner.shield:
             self.kill()            
    
     def draw(self,screen,offset,zoom):

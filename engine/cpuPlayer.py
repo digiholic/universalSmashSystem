@@ -107,7 +107,7 @@ class CPUplayer():
         else: return dists[1]
 
     def ducklingTargeting(self):
-        opposingPlayers = filter(lambda k: k != fighter, players)
+        opposingPlayers = filter(lambda k: k != self.fighter, players)
         opposingDists = map(lambda x: self.getPathDistance(self.fighter.rect.center, x.fighter.rect.center), opposingPlayers)
         return opposingPlayers[opposingDists.index(min(opposingDists))].rect.center
 

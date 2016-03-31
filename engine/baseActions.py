@@ -17,7 +17,7 @@ class Move(action.Action):
         self.direction = actor.facing
         
     def update(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
         actor.preferred_yspeed = actor.var['maxFallSpeed']
@@ -54,7 +54,7 @@ class Dash(action.Action):
         if self.frame == 0:
             actor.preferred_xspeed = actor.var['runSpeed']*self.direction
             actor.preferred_yspeed = actor.var['maxFallSpeed']
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         if not self.pivoted:
             (key,invkey) = actor.getForwardBackwardKeys()
@@ -82,7 +82,7 @@ class Run(action.Action):
         else: self.direction = -1
             
     def update(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         actor.accel(actor.var['staticGrip'])
         
@@ -97,7 +97,7 @@ class Pivot(action.Action):
         action.Action.__init__(self, length)
         
     def update(self,actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         if self.frame != self.lastFrame:
             self.frame += 1
@@ -121,7 +121,7 @@ class Stop(action.Action):
         self.frame += 1
         
     def stateTransitions(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.bufferContains(key,self.frame):
@@ -139,7 +139,7 @@ class NeutralAction(action.Action):
         return
     
     def stateTransitions(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         neutralState(actor)
 
@@ -157,12 +157,12 @@ class Crouch(action.Action):
         self.direction = actor.getForwardWithOffset(0)
 
     def stateTransitions(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         crouchState(actor)
 
     def update(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         actor.accel(actor.var['staticGrip'])
         (key, invkey) = actor.getForwardBackwardKeys()
@@ -182,7 +182,7 @@ class CrouchGetup(action.Action):
 
     def update(self, actor):
         actor.preferred_xspeed = 0
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         elif actor.bufferContains('down') and self.frame > 0:
             blocks = actor.checkForGround()
@@ -213,7 +213,7 @@ class Grabbing(BaseGrabbing):
         BaseGrabbing.__init__(self, length)
 
     def stateTransitions(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         grabbingState(actor)
         
@@ -318,7 +318,7 @@ class Trip(action.Action):
         print("direction:", self.direction)
 
     def update(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doHitStun(self.lastFrame-self.frame, self.direction,0)
         if self.frame >= self.lastFrame + 180: #You aren't up yet?
             actor.doGetup(self.direction)
@@ -505,7 +505,7 @@ class PreShield(action.Action):
     def update(self, actor):
         if self.frame == 0:
             actor.active_hitboxes.add(self.reflectHitbox)
-        if actor.grounded == False:
+        if actor.grounded is False:
             self.reflectHitbox.kill()
             actor.doFall()
         if self.frame == self.lastFrame:
@@ -525,7 +525,7 @@ class Shield(action.Action):
             actor.shield = False
        
     def update(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.shield = False
             actor.doFall()
         if self.frame == 0:
@@ -556,7 +556,7 @@ class ShieldStun(action.Action):
             actor.shield = False
 
     def update(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.shield = False
             actor.doFall()
         if self.frame >= self.lastFrame and actor.keysContain('shield'):
@@ -613,7 +613,7 @@ class Release(action.Action):
         action.Action.__init__(self,5)
 
     def update(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         if self.frame == self.lastFrame:
             actor.doIdle()
@@ -635,7 +635,7 @@ class ForwardRoll(action.Action):
         actor.mask = None
         
     def update(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         if self.frame == 1:
             actor.change_x = actor.facing * 10
@@ -668,7 +668,7 @@ class BackwardRoll(action.Action):
         actor.mask = None
         
     def update(self, actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         if self.frame == 1:
             actor.change_x = actor.facing * -10
@@ -699,7 +699,7 @@ class SpotDodge(action.Action):
         actor.mask = None
         
     def update(self,actor):
-        if actor.grounded == False:
+        if actor.grounded is False:
             actor.doFall()
         elif actor.bufferContains('down') and self.frame > 0:
             blocks = actor.checkForGround()
@@ -1032,7 +1032,7 @@ def grabLedges(actor):
         ledge_hit_list = pygame.sprite.spritecollide(actor, actor.gameState.platform_ledges, False)
         for ledge in ledge_hit_list:
             # Don't grab any ledges if the actor is holding down
-            if actor.keysContain('down') == False:
+            if actor.keysContain('down') is False:
                 # If the ledge is on the left side of a platform, and we're holding right
                 if ledge.side == 'left' and actor.keysContain('right'):
                     ledge.fighterGrabs(actor)
