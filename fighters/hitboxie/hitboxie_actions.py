@@ -110,7 +110,7 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
         actor.changeSprite("nair",0)
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 1, 1, -1, -7)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 0, 0, 0, 0, 1, 1, -1, -7)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
     

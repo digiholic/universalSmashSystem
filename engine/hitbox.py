@@ -115,11 +115,13 @@ class SakuraiAngleHitbox(DamageHitbox):
 
 class AutolinkHitbox(DamageHitbox):
     def __init__(self,center,size,owner,damage,
-                hitstun,hitbox_lock,shield_multiplier=1,velocity_multiplier=1,
-                transcendence=0,priority_diff=0):
+                hitstun,hitbox_lock,x_bias=0,y_bias=0,shield_multiplier=1,
+                velocity_multiplier=1,transcendence=0,priority_diff=0):
         DamageHitbox.__init__(self,center,size,owner,damage,0,0,0,hitstun,hitbox_lock,0,shield_multiplier,
                 transcendence,priority_diff)
         self.velocity_multiplier=velocity_multiplier
+        self.x_bias=x_bias
+        self.y_bias=y_bias
 
     def onCollision(self, other):
         Hitbox.onCollision(self, other)
@@ -130,8 +132,8 @@ class AutolinkHitbox(DamageHitbox):
                     if self.article is None:
                         self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
                 else:
-                    velocity = math.sqrt(self.owner.change_x ** 2 + self.owner.change_y ** 2)
-                    angle = math.atan2(self.owner.change_y, self.owner.change_x)
+                    velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
+                    angle = math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))
 
                     if self.article is None:
                         self.owner.hitstop = math.floor(self.damage / 4 + 2)
