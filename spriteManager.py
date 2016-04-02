@@ -7,8 +7,11 @@ class Sprite(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.angle = 0
+        self.visible = True
         
     def draw(self,screen,offset,scale):
+        if not self.visible:
+            return
         #TODO: Check for bit depth first, inform user about alpha
         h = int(round(self.rect.height * scale))
         w = int(round(self.rect.width * scale))

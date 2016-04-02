@@ -211,6 +211,7 @@ class PlayerPanel(pygame.Surface):
             self.bgSurface.set_alpha(self.bgSurface.get_alpha() - 10)
                 
     def keyPressed(self,key):
+        print(key)
         if key != 'special' and self.active == False:
             self.active = True
             return

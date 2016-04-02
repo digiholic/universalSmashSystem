@@ -160,7 +160,6 @@ class Settings():
         preset = self.parser.get('game','rulePreset')
         
         self.loadGameSettings(preset)
-        self.loadGamepads()
         self.loadControls()
         
         
@@ -213,45 +212,59 @@ class Settings():
             groupName = 'controls_' + str(playerNum)
             controlType = self.parser.get(groupName, 'controlType')
             
-            if controlType == 'button':
+            gamepad = None
+            if not controlType == 'Keyboard':
+                gamepad = self.loadGamepad(controlType)
+                if gamepad:
+                    self.setting['controlType_'+str(playerNum)] = gamepad[0]
+                    self.setting[groupName] = gamepad[1]
+            
+            if not gamepad:
                 for opt in self.parser.options(groupName):
                     if self.KeyNameMap.has_key(opt):
                         bindings[self.KeyNameMap[opt]] = self.parser.get(groupName, opt)
-                    
-                self.setting[groupName] = engine.controller.Controller(bindings)
-            else:
-                joystick = None
-                for pad in range(pygame.joystick.get_count()):
-                    joy = pygame.joystick.Joystick(pad)
-                    if joy.get_name() == controlType:
-                        joystick = joy
-                        joystick.init()
-                    
-                axes = {}
-                buttons = {}
-                for opt in self.parser.options(groupName):
-                    if opt[0] == 'a':
-                        axes[int(opt[1:])] = tuple(self.parser.get(groupName, opt)[1:-1].split(','))
-                    elif opt[0] == 'b':
-                        buttons[int(opt[1:])] = self.parser.get(groupName, opt)
-            
-                padBindings = engine.controller.PadBindings(joystick.get_id(),axes,buttons)
-                self.setting[groupName] = engine.controller.GamepadController(padBindings)
                 
-            # If the bindings are empty (as in, not set by the Gamepad)
-            
+                self.setting['controlType_'+str(playerNum)] = 'Keyboard'
+                self.setting[groupName] = engine.controller.Controller(bindings)
+                    
             playerNum += 1
     
     """
     Check all connected gamepads and add them to the settings.
     """
-    def loadGamepads(self):
+    def loadGamepad(self,controllerName):
         pygame.joystick.init()
-        self.joysticks = []
-        for i in range(0, pygame.joystick.get_count()):
-            self.joysticks.append(pygame.joystick.Joystick(i).get_name())
-        self.setting['controllers'] = self.joysticks
-
+        controllerParser = SafeConfigParser()
+        controllerParser.read(os.path.join(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings'),'gamepads.ini'))
+        joystick = None
+        for pad in range(pygame.joystick.get_count()):
+            joy = pygame.joystick.Joystick(pad)
+            if joy.get_name() == controllerName:
+                joystick = joy
+                joystick.init()
+        
+        if joystick:
+            axes = {}
+            buttons = {}
+            for opt in controllerParser.options(controllerName):
+                if opt[0] == 'a':
+                    axes[int(opt[1:])] = tuple(controllerParser.get(controllerName, opt)[1:-1].split(','))
+                elif opt[0] == 'b':
+                    buttons[int(opt[1:])] = controllerParser.get(controllerName, opt)
+        
+            padBindings = engine.controller.PadBindings(joystick.get_id(),axes,buttons)
+            return (joystick.get_name(),engine.controller.GamepadController(padBindings))
+        else: return None
+    
+    def getGamepadList(self):
+        controllerParser = SafeConfigParser()
+        controllerParser.read(os.path.join(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings'),'gamepads.ini'))
+        controllerList = []
+        
+        for control in controllerParser.sections():
+            controllerList.append(self.loadGamepad(control))
+        
+        return controllerParser.sections()
 """
 Save a modified settings object to the settings.ini file.
 """
@@ -295,7 +308,7 @@ def saveSettings(settings):
         print(str(settings['controls_menu'].keyBindings[key]))
         parser.set('controls_menu','controlType','button')
         parser.set('controls_menu','gamepad','None')
-        parser.set('controls_menu',str(settings['controls_menu'].keyBindings[key]),keyIdMap[key])
+        parser.set('controls_menu',keyIdMap[key],str(settings['controls_menu'].keyBindings[key]))
     
     
     for i in range(0,4):
@@ -306,8 +319,7 @@ def saveSettings(settings):
             print(keyIdMap[key])
             print(settings[sect].keyBindings[key])
             parser.set(sect,'controlType','button')
-            parser.set(sect,'gamepad','None')
-            parser.set(sect,str(settings[sect].keyBindings[key]),keyIdMap[key])
+            parser.set(sect,keyIdMap[key],str(settings[sect].keyBindings[key]))
     
             
     with open(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:

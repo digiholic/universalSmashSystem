@@ -16,18 +16,21 @@ class Controller():
         self.keysToRelease = []
         self.keysHeld = []
         
-    def getInputs(self,event):
+    def getInputs(self,event,push = True, outputOnRelease = True):
         if event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
             return None
+        output = True
         k = self.keyBindings.get(event.key)
         if k:
             if event.type == pygame.KEYDOWN:
-                self.keysToPass.append(k)
+                if push: self.keysToPass.append(k)
                 if k not in self.keysHeld: self.keysHeld.append(k)
             elif event.type == pygame.KEYUP:
-                self.keysToRelease.append(k)
+                output = outputOnRelease and output
+                if push: self.keysToRelease.append(k)
                 if k in self.keysHeld: self.keysHeld.remove(k)
-        return k
+        if output: return k
+        return None
     
     def get(self,key):
         return self.keyBindings.get(key)
@@ -55,36 +58,45 @@ class GamepadController():
         self.keysToRelease = []
         self.keysHeld = []
     
-    def getInputs(self,event):
+    def getInputs(self,event,push = True, outputOnRelease = True):
         if event.type not in [pygame.JOYAXISMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
             return None
         k = None
+        output = True
         if event.type == pygame.JOYAXISMOTION:
             #getJoystickInput will get a pad and an axis, and return the value of that stick
             #by checking it along with the other axis of that joystick, if there is one.
             k = self.padBindings.getJoystickInput(event.joy,event.axis,event.value)
-            if k:
+            if k and k in self.keysHeld: k = None
+            if k and k not in self.keysHeld:
+                self.keysHeld.append(k)
+            if k and push:
                 self.keysToPass.append(k)
-                if k not in self.keysHeld: self.keysHeld.append(k)
+                
             if k == 0:
+                output = output and outputOnRelease
                 a, b = self.padBindings.axisBindings.get(event.axis)
-                self.keysToRelease.extend([a,b])
                 if a in self.keysHeld: self.keysHeld.remove(a)
                 if b in self.keysHeld: self.keysHeld.remove(b)
+                if push:
+                    self.keysToRelease.extend([a,b])
         elif event.type == pygame.JOYBUTTONDOWN:
             #getButtonInput is much more simple. It gets the key that button is mapped to
             k = self.padBindings.getButtonInput(event.joy,event.button)
         elif event.type == pygame.JOYBUTTONUP:
+            output = output and outputOnRelease
             k = self.padBindings.getButtonInput(event.joy,event.button)
         
         if k:
             if event.type == pygame.JOYBUTTONDOWN:
-                self.keysToPass.append(k)
                 if k not in self.keysHeld: self.keysHeld.append(k)
+                if push: self.keysToPass.append(k)
+                
             elif event.type == pygame.JOYBUTTONUP:
-                self.keysToRelease.append(k)    
                 if k in self.keysHeld: self.keysHeld.remove(k)
-        return k
+                if push: self.keysToRelease.append(k)
+        if output: return k
+        return None
     
     def get(self,key):
         return self.keyBindings.get(key)

@@ -45,7 +45,7 @@ class StageScreen():
             #Start event loop
             for event in pygame.event.get():
                 for bindings in self.playerControls:
-                    k = bindings.getInputs(event)
+                    k = bindings.getInputs(event,False,False)
                     if k == 'left':
                         self.grid.updateSelection(-1, 0)    
                     elif k == 'right':
@@ -78,7 +78,6 @@ class StageScreen():
                     elif k == 'jump':
                         x,y = self.grid.getXY()
                         self.grid.changeStageStruckAt(x,y)
-                    bindings.flushInputs()
                         
                 if event.type == pygame.QUIT:
                     sys.exit()
