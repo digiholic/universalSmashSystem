@@ -18,6 +18,7 @@ class Article(spriteManager.ImageSprite):
         self.owner = owner
         self.frame = 0
         self.lastFrame = length
+        self.tags = []
         
     def update(self):
         pass
@@ -29,6 +30,7 @@ class AnimatedArticle(spriteManager.SheetSprite):
         self.owner = owner
         self.frame = 0
         self.lastFrame = length
+        self.tags = []
     
     def update(self):
         self.getImageAtIndex(self.frame)

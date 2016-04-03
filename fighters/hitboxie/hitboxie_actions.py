@@ -13,6 +13,7 @@ class SplatArticle(article.AnimatedArticle):
         self.change_y = 0
         self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)
         self.hitbox.article = self
+        self.tags = ['projectile']
             
     # Override the onCollision of the hitbox
     def onCollision(self, other):
@@ -204,7 +205,76 @@ class ForwardSpecial(action.Action):
                     actor.doFall()
 
         self.frame += 1
-           
+
+
+class ShineArticle(article.AnimatedArticle):
+    def __init__(self, owner):
+        article.AnimatedArticle.__init__(self, owner.article_path+'/hitboxie_shine.png', owner, [0,0], imageWidth=92,length=8)
+        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)
+        self.hitbox.article = self
+            
+    def update(self):
+        self.rect.center = self.owner.sprite.boundingRect.center
+        self.hitbox.rect.center = self.rect.center #update adjusts to the actor
+        if self.frame == 0:
+            self.getImageAtIndex(0)
+        elif self.frame == 2:
+            self.getImageAtIndex(1)
+        elif self.frame == 4:
+            self.getImageAtIndex(2)
+        elif self.frame == 6:
+            self.getImageAtIndex(3)
+        if self.frame == self.lastFrame:
+            self.frame = 2
+        else:
+            self.frame += 1
+        
+            
+class DownSpecial(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 32)
+    
+    def setUp(self, actor):
+        self.article = ShineArticle(actor)
+        self.damageHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 6, 9, 0.1, 330, 1.5, hitbox.HitboxLock())
+        self.reflectorHitbox = hitbox.ReflectorHitbox([0,0], [64,64], actor, hitbox.HitboxLock(), 1.3, 1.1,100)
+        return action.Action.setUp(self, actor)           
+    
+    def tearDown(self, actor, newAction):
+        self.article.kill()
+        actor.mask = None
+        return action.Action.tearDown(self, actor, newAction)
+    
+    def stateTransitions(self, actor):
+        return action.Action.stateTransitions(self, actor)
+    
+    def update(self, actor):
+        if self.frame == 0:
+            actor.change_y = 0
+            actor.preferred_yspeed = 2
+            actor.changeSprite('getup',12)
+            actor.articles.add(self.article)
+            actor.createMask([0,255,255],32,True,8)
+            actor.active_hitboxes.add(self.damageHitbox)
+            actor.active_hitboxes.add(self.reflectorHitbox)
+        elif self.frame == 1:
+            self.damageHitbox.kill()
+        elif self.frame == 12:
+            actor.preferred_yspeed = actor.var['maxFallSpeed']
+            if 'special' in actor.keysHeld:
+                if actor.mask == None:
+                    actor.createMask([0,255,255],32,True,8)
+                self.frame -= 1
+        elif self.frame == 18:
+            self.article.kill()
+            self.reflectorHitbox.kill()
+            actor.mask = None
+        elif self.frame == self.lastFrame:
+            actor.doIdle()
+        self.frame += 1
+        return action.Action.update(self, actor)
+    
+    
 class NeutralAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,17)

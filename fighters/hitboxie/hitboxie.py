@@ -214,7 +214,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
         elif (self.keysContain('up')):
             pass
         elif (self.keysContain('down')):
-            pass
+            self.changeAction(self.actions.DownSpecial())
         else: 
             self.changeAction(self.actions.NeutralGroundSpecial())
 
@@ -230,7 +230,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
         elif (self.keysContain('up')):
             pass
         elif (self.keysContain('down')):
-            pass
+            self.changeAction(self.actions.DownSpecial())
         else: 
             self.changeAction(self.actions.NeutralAirSpecial())
 

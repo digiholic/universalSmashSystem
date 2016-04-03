@@ -208,10 +208,12 @@ class ReflectorHitbox(Hitbox):
             if hasattr(other.article, 'owner'):
                 other.owner = self.owner
                 other.article.owner = self.owner
-            if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
+            if hasattr(other.article, 'tags') and 'projectile' in other.article.tags:
+                print(other.article.change_x)
                 article_direction = math.atan2(other.article.change_y, other.article.change_x)*180/math.pi
                 article_speed = math.hypot(other.article.change_x, other.article.change_y)
                 (other.article.change_x, other.article.change_y) = abstractFighter.getXYFromDM(article_speed*self.velocity_multiplier, 2*self.angle-article_direction)
+                print(other.article.change_x)
             if hasattr(other, 'damage'):
                 self.priority -= other.damage
                 other.damage *= self.damage_multiplier
