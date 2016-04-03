@@ -10,7 +10,7 @@ import colorsys
 import engine.article
 import engine.controller
 import sys
-from pip._vendor.pkg_resources import iteritems
+
 try:
     import css
 except ImportError:
