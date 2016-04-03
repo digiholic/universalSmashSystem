@@ -145,6 +145,40 @@ class AutolinkHitbox(DamageHitbox):
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(other)
 
+class FunnelHitbox(DamageHitbox):
+    def __init__(self,center,size,owner,damage,knockback,trajectory,
+                hitstun,hitbox_lock,x_draw=0.1,y_draw=0.1,
+                shield_multiplier=1,velocity_multiplier=1,transcendence=0,priority_diff=0):
+        DamageHitbox.__init__(self,center,size,owner,damage,knockback,0,trajectory,hitstun,hitbox_lock,0,shield_multiplier,
+                transcendence,priority_diff)
+        self.x_draw=x_draw
+        self.y_draw=y_draw
+
+    def onCollision(self,other):
+        Hitbox.onCollision(self, other)
+        if 'AbstractFighter' in list(map(lambda x:x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
+            if other.lockHitbox(self):
+                if other.shield:
+                    other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
+                    if self.article is None:
+                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
+                else:
+                    x_diff = self.rect.centerx - other.rect.centerx
+                    y_diff = self.rect.centery - other.rect.centery
+                    x_vel = self.knockback*math.cos(trajectory*math.pi/180)+self.x_draw*x_diff
+                    y_vel = self.knockback*math.sin(trajectory*math.pi/180)+self.y_draw*y_diff
+                    velocity = math.hypot(x_vel,y_vel)
+                    direction = math.atan2(y_vel,x_vel)*180/math.pi
+                    self.owner.hitstop = math.floor(self.damage / 4 + 2)
+                    other.applyKnockback(self.damage, velocity, 0, angle, 0, self.hitstun)
+
+        if self.article and hasattr(self.article, 'onCollision'):
+            self.article.onCollision(other)
+
+    def update(self):
+        Hitbox.update(self)
+        self.recenterSelfOnOwner()
+
 class GrabHitbox(Hitbox):
     def __init__(self,center,size,owner,hitbox_lock, height=0, transcendence=-1, priority=0):
         Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,priority)

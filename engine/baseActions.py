@@ -870,8 +870,9 @@ def airState(actor):
         actor.doAirSpecial()
     elif actor.bufferContains('jump', 8) and actor.jumps > 0:
         actor.doAirJump()
-    elif actor.keysContain('down') and actor.change_y > 0:
+    elif actor.keysContain('down'):
         actor.platformPhase = 1
+        actor.calc_grav()
         actor.calc_grav()
 
 def tumbleState(actor):
@@ -885,9 +886,9 @@ def tumbleState(actor):
     elif actor.bufferContains('jump', 8) and actor.jumps > 0:
         actor.doAirJump()
     elif actor.keysContain('down'):
-        if actor.change_y >= 0:
-            actor.platformPhase = 1
-            actor.calc_grav()
+        actor.platformPhase = 1
+        actor.calc_grav()
+        actor.calc_grav()
             
 def moveState(actor, direction):
     if actor.bufferContains('attack', 8):

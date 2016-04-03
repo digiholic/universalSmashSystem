@@ -5,8 +5,6 @@ import engine.article as article
 import engine.abstractFighter as abstractFighter
 import math
 
-import settingsManager #TEMPORARY until I figure out article sprites
-
 class SplatArticle(article.AnimatedArticle):
     def __init__(self, owner, origin, direction):
         article.AnimatedArticle.__init__(self, owner.article_path+'/hitboxie_projectile.png', owner, origin, imageWidth=16,length=120)
