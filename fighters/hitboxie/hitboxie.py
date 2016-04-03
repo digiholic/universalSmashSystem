@@ -221,8 +221,8 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def doAirSpecial(self):
         (forward, backward) = self.getForwardBackwardKeys()
         if self.keysContain(forward):
-                if self.sideSpecialUses > 0:
-            self.changeAction(self.actions.ForwardSpecial())
+            if self.sideSpecialUses > 0:
+                self.changeAction(self.actions.ForwardSpecial())
         elif self.keysContain(backward):
             self.flip()
             if self.sideSpecialUses > 0:

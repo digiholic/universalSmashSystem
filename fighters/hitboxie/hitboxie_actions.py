@@ -145,6 +145,8 @@ class ForwardSpecial(action.Action):
         self.preferred_xspeed = 0
 
     def update(self, actor):
+        if actor.grounded:
+            actor.sideSpecialUses = 1
         actor.changeSpriteImage(self.spriteImage%16)
         if self.frame <= self.lastFrame-2:
             self.spriteImage += 1
