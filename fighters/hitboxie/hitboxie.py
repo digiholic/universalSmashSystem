@@ -27,6 +27,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
                                  "HBoxie", #Name
                                  var)
         self.actions = settingsManager.importFromURI(__file__,'hitboxie_actions.py',suffix=str(playerNum))
+        self.sideSpecialUses = 1
         
         #try:
         self.current_action = self.actions.NeutralAction()
@@ -204,10 +205,12 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def doGroundSpecial(self):
         (forward, backward) = self.getForwardBackwardKeys()
         if self.keysContain(forward):
-            self.changeAction(self.actions.ForwardSpecial())
+            if self.sideSpecialUses > 0:
+                self.changeAction(self.actions.ForwardSpecial())
         elif self.keysContain(backward):
             self.flip()
-            self.changeAction(self.actions.ForwardSpecial())
+            if self.sideSpecialUses > 0:
+                self.changeAction(self.actions.ForwardSpecial())
         elif (self.keysContain('up')):
             pass
         elif (self.keysContain('down')):
@@ -218,10 +221,12 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def doAirSpecial(self):
         (forward, backward) = self.getForwardBackwardKeys()
         if self.keysContain(forward):
-            self.changeAction(self.actions.ForwardSpecial())
+            if self.sideSpecialUses > 0:
+                self.changeAction(self.actions.ForwardSpecial())
         elif self.keysContain(backward):
             self.flip()
-            self.changeAction(self.actions.ForwardSpecial())
+            if self.sideSpecialUses > 0:
+                self.changeAction(self.actions.ForwardSpecial())
         elif (self.keysContain('up')):
             pass
         elif (self.keysContain('down')):

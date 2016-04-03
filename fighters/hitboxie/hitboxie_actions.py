@@ -91,7 +91,7 @@ class NeutralAirSpecial(action.Action):
             
         if self.frame == self.lastFrame:
             actor.landingLag = 8
-            actor.changeAction(Fall())
+            actor.doFall()
         self.frame += 1
 
 """
@@ -105,6 +105,7 @@ class ForwardSpecial(action.Action):
         self.spriteImage = 0
 
     def setUp(self, actor):
+        actor.sideSpecialUses -= 1
         actor.change_x = 0
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
@@ -114,12 +115,8 @@ class ForwardSpecial(action.Action):
         self.numFrames = 0
     
     def onClank(self,actor):
-        if actor.grounded:
-            actor.landingLag = 15
-            actor.doLand()
-        else:
-            actor.landingLag = 15
-            actor.doFall()
+        actor.landingLag = 15
+        actor.doFall()
     
     class sideSpecialHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
@@ -149,6 +146,8 @@ class ForwardSpecial(action.Action):
         self.preferred_xspeed = 0
 
     def update(self, actor):
+        if actor.grounded:
+            actor.sideSpecialUses = 1
         actor.changeSpriteImage(self.spriteImage%16)
         if self.frame <= self.lastFrame-2:
             self.spriteImage += 1
@@ -1203,6 +1202,10 @@ class CrouchGetup(baseActions.CrouchGetup):
 class HitStun(baseActions.HitStun):
     def __init__(self,hitstun,direction,hitstop):
         baseActions.HitStun.__init__(self, hitstun, direction,hitstop)
+
+    def setUp(self, actor):
+        baseActions.HitStun.setUp(self, actor)
+        actor.sideSpecialUses = 1
     
     def update(self, actor):
         baseActions.HitStun.update(self, actor)
@@ -1287,6 +1290,10 @@ class Helpless(baseActions.Helpless):
 class Land(baseActions.Land):
     def __init__(self):
         baseActions.Land.__init__(self)
+
+    def setUp(self, actor):
+        baseActions.Land.setUp(self, actor)
+        actor.sideSpecialUses = 1
         
     def update(self,actor):
         if self.frame == 0:
@@ -1301,6 +1308,10 @@ class Land(baseActions.Land):
 class HelplessLand(baseActions.HelplessLand):
     def __init__(self):
         baseActions.HelplessLand.__init__(self)
+
+    def setUp(self, actor):
+        baseActions.HelplessLand.setUp(self, actor)
+        actor.sideSpecialUses = 1
         
     def update(self,actor):
         if self.frame == 0:
@@ -1315,6 +1326,10 @@ class HelplessLand(baseActions.HelplessLand):
 class Trip(baseActions.Trip):
     def __init__(self, length, direction):
         baseActions.Trip.__init__(self, length, direction)
+
+    def setUp(self, actor):
+        baseActions.Trip.setUp(self, actor)
+        actor.sideSpecialUses = 1
 
     def update(self, actor):
         if self.frame == 0:
@@ -1382,6 +1397,10 @@ class ShieldStun(baseActions.ShieldStun):
 class Stunned(baseActions.Stunned):
     def __init__(self, length):
         baseActions.Stunned.__init__(self, length)
+
+    def setUp(self, actor):
+        baseActions.Stunned.setUp(self, actor)
+        actor.sideSpecialUses = 1
 
     def tearDown(self, actor, newAction):
         actor.mask = None
@@ -1460,6 +1479,10 @@ class Trapped(baseActions.Trapped):
     def __init__(self, length):
         baseActions.Trapped.__init__(self, length)
 
+    def setUp(self, actor):
+        baseActions.Trapped.setUp(self, actor)
+        actor.sideSpecialUses = 1
+
     def update(self, actor):
         actor.changeSprite("idle")
         baseActions.Trapped.update(self, actor)
@@ -1471,6 +1494,8 @@ class Grabbed(baseActions.Grabbed):
     def setUp(self, actor):
         if (self.height > 65):
             self.rect.y += self.height-65
+        baseActions.Grabbed.setUp(self, actor)
+        actor.sideSpecialUses = 1
 
     def update(self,actor):
         actor.changeSprite("idle")
@@ -1493,6 +1518,10 @@ class LedgeGrab(baseActions.LedgeGrab):
     def __init__(self,ledge):
         baseActions.LedgeGrab.__init__(self, ledge)
         self.sweetSpotLocation = [64,64]
+
+    def setUp(self, actor):
+        baseActions.LedgeGrab.setUp(self, actor)
+        actor.sideSpecialUses = 1
         
     def update(self,actor):
         actor.changeSprite('jump')
