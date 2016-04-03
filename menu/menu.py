@@ -10,6 +10,7 @@ import colorsys
 import engine.article
 import engine.controller
 import sys
+from pip._vendor.pkg_resources import iteritems
 try:
     import css
 except ImportError:
@@ -128,7 +129,6 @@ class MainMenu(SubMenu):
         clock = pygame.time.Clock()
         
         controls = settingsManager.getControls('menu')
-        print(controls.keyBindings)
         canPress = True
         holding = {'up': False,'down': False,'left': False,'right': False}
         
@@ -715,7 +715,7 @@ class ControlsMenu(SubMenu):
                         GamepadMenu(self.parent).executeMenu(screen)
                     elif self.selectedOption == 2: #quit
                         self.status = 1
-                elif k == 'cancel':
+                elif k == 'cancel' or k == 'special':
                     self.status = 1
             
             self.parent.bg.update(screen)
@@ -738,23 +738,31 @@ class GamepadMenu(SubMenu):
         SubMenu.__init__(self, parent)
         
         self.controllerList = []
+        self.connectedControllers = []
         for i in range(0,pygame.joystick.get_count()):
-            self.controllerList.append(pygame.joystick.Joystick(i).get_name())
+            controllerName = pygame.joystick.Joystick(i).get_name()
+            self.controllerList.append((controllerName,settingsManager.getSetting().loadGamepad(controllerName)))
+            self.connectedControllers.append(pygame.joystick.Joystick(i).get_name())
         
-        for name in settingsManager.getSetting().getGamepadList():
-            if not name in self.controllerList:
-                self.controllerList.append(name)
+        for controllerName in settingsManager.getSetting().getGamepadList():
+            if not controllerName in [data[0] for data in self.controllerList]:
+                self.controllerList.append((controllerName,settingsManager.getSetting().loadGamepad(controllerName)))
                 
         if self.controllerList:
             self.currentController = 0
-        else: self.controllerName = 'No Gamepads Connected'
         
-            
-        self.menuText = [spriteManager.TextSprite(self.controllerList[self.currentController],'rexlia rg',18,[255,255,255]),
+        self.menuText = [spriteManager.TextSprite(self.controllerList[self.currentController][0],'rexlia rg',18,[255,255,255]),
                          spriteManager.TextSprite('Exit','full Pack 2025',20,[255,255,255])]
         
+        self.statusText = spriteManager.TextSprite('Controller not connected','rexlia rg',16,[255,255,255])
         
-        
+        if self.controllerList[self.currentController][0] in self.connectedControllers:
+            self.statusText.changeText('Controller connected')
+            self.statusText.changeColor([255,255,255])
+        else:
+            self.statusText.changeText('Controller not connected')
+            self.statusText.changeColor([55,55,55])
+                            
         self.actionColumn = [spriteManager.TextSprite('left','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('right','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('up','rexlia rg',16,[55,55,55]),
@@ -779,12 +787,13 @@ class GamepadMenu(SubMenu):
         for i in range(0,len(self.actionColumn)):
             self.actionColumn[i].rect.left = self.parent.settings['windowSize'][0] / 4
             self.keyColumn[i].rect.right = (self.parent.settings['windowSize'][0] / 4) * 3
-            self.actionColumn[i].rect.centery = 60 + 16*i
-            self.keyColumn[i].rect.centery = 60 + 16*i
+            self.actionColumn[i].rect.centery = 76 + 16*i
+            self.keyColumn[i].rect.centery = 76 + 16*i
             
         self.menuText[0].rect.midtop = (self.parent.settings['windowSize'][0] / 2,20)
         self.menuText[-1].rect.midbottom = (self.parent.settings['windowSize'][0] / 2,self.parent.settings['windowSize'][1] - 20)
-    
+        self.statusText.rect.midtop = self.menuText[0].rect.midbottom
+        
         self.selectedOption = 0
         
     def executeMenu(self, screen):
@@ -806,11 +815,25 @@ class GamepadMenu(SubMenu):
                 elif k == 'down':
                     self.selectedOption = (self.selectedOption + 1) % len(self.menuText)
                 elif k =='left':
+                    print('left')
                     if self.selectedOption == 0:
                         self.currentController = (self.currentController - 1) % len(self.controllerList)
+                        if self.controllerList[self.currentController][0] in self.connectedControllers:
+                            self.statusText.changeText('Controller connected')
+                            self.statusText.changeColor([255,255,255])
+                        else:
+                            self.statusText.changeText('Controller not connected')
+                            self.statusText.changeColor([55,55,55])
                 elif k =='right':
+                    print('right')
                     if self.selectedOption == 0:
                         self.currentController = (self.currentController + 1) % len(self.controllerList)
+                        if self.controllerList[self.currentController][0] in self.connectedControllers:
+                            self.statusText.changeText('Controller connected')
+                            self.statusText.changeColor([255,255,255])
+                        else:
+                            self.statusText.changeText('Controller not connected')
+                            self.statusText.changeColor([55,55,55])
                 elif k == 'confirm' or k == 'attack':
                     if self.selectedOption == 1: #quit
                         self.status = 1
@@ -819,7 +842,15 @@ class GamepadMenu(SubMenu):
             
             self.parent.bg.update(screen)
             self.parent.bg.draw(screen,(0,0),1.0)
-                   
+            
+            for i,action in enumerate(self.actionColumn):
+                padControls = self.controllerList[self.currentController][1]
+                self.keyColumn[i].changeText('---')
+                if padControls:
+                    k = padControls.getKeysForAction(action.text)
+                    if k:
+                        self.keyColumn[i].changeText(str(k))
+                
             for m in self.menuText:
                 m.draw(screen,m.rect.topleft,1.0)
                 m.changeColor([255,255,255])
@@ -830,9 +861,12 @@ class GamepadMenu(SubMenu):
                 m.draw(screen,m.rect.topleft,1.0)
                 m.changeColor([55,55,55])
             
+            
+            self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
             rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
             self.menuText[self.selectedOption].changeColor(rgb)
-            self.menuText[0].changeText(self.controllerList[self.currentController])
+            self.menuText[0].changeText(self.controllerList[self.currentController][0])
+            
             
             clock.tick(60)    
             pygame.display.flip()

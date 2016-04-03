@@ -59,8 +59,10 @@ class CSSScreen():
                             for panel in self.playerPanels:
                                 panel.activeObject = panel.wheel
                                 panel.chosenFighter = None
-                                panel.bgSurface = None
-                
+                                panel.bgSurface = None                
+                            for i in range(0,4):
+                                self.playerControls[i].fighter = self.playerPanels[i] #So playerPanel will take the inputs
+                                self.playerControls[i].flushInputs()
                 if event.type == pygame.QUIT:
                     status = -1
                 elif event.type == pygame.KEYDOWN:
@@ -211,7 +213,6 @@ class PlayerPanel(pygame.Surface):
             self.bgSurface.set_alpha(self.bgSurface.get_alpha() - 10)
                 
     def keyPressed(self,key):
-        print(key)
         if key != 'special' and self.active == False:
             self.active = True
             return

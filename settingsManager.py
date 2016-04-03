@@ -216,8 +216,8 @@ class Settings():
             if not controlType == 'Keyboard':
                 gamepad = self.loadGamepad(controlType)
                 if gamepad:
-                    self.setting['controlType_'+str(playerNum)] = gamepad[0]
-                    self.setting[groupName] = gamepad[1]
+                    self.setting['controlType_'+str(playerNum)] = controlType
+                    self.setting[groupName] = gamepad
             
             if not gamepad:
                 for opt in self.parser.options(groupName):
@@ -253,7 +253,7 @@ class Settings():
                     buttons[int(opt[1:])] = controllerParser.get(controllerName, opt)
         
             padBindings = engine.controller.PadBindings(joystick.get_id(),axes,buttons)
-            return (joystick.get_name(),engine.controller.GamepadController(padBindings))
+            return engine.controller.GamepadController(padBindings)
         else: return None
     
     def getGamepadList(self):

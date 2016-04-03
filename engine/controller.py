@@ -42,7 +42,14 @@ class Controller():
             self.fighter.keyReleased(key)
         self.keysToPass = []
         self.keysToRelease = []
-        
+    
+    def getKeysForAction(self,action):
+        listOfBindings = []
+        for binding,name in self.keyBindings.items():
+            if name == action:
+                listOfBindings.append(settingsManager.getSetting().KeyIdMap[binding])
+        return listOfBindings
+    
 class GamepadController():
     def __init__(self,padBindings):
         self.keysToPass = []
@@ -108,18 +115,17 @@ class GamepadController():
             self.fighter.keyReleased(key)
         self.keysToPass = []
         self.keysToRelease = []
-
+    
+    def getKeysForAction(self,action):
+        return self.padBindings.getKeysForAction(action)
+    
 class PadBindings():
     def __init__(self,joystick,axisBindings,buttonBindings):
         self.joystick = joystick
         #Each axis is bound to a tuple of what a negative value is, and what a positive value is.
         #So, in this hard-coded example, axis 0 is left when negative, right when positive.
         self.axisBindings = axisBindings
-        
         self.buttonBindings = buttonBindings
-        
-        print(axisBindings)
-        print(buttonBindings)
         
     def getJoystickInput(self,joy,axis,value):
         if not joy == self.joystick:
@@ -138,4 +144,16 @@ class PadBindings():
         if not joy == self.joystick:
             return None
         return self.buttonBindings.get(button)
+    
+    def getKeysForAction(self,action):
+        listOfBindings = []
+        for button,name in self.buttonBindings.items():
+            if name == action:
+                listOfBindings.append('Button ' + str(button))
+        for axis,(pos,neg) in self.axisBindings.items():
+            if pos == action:
+                listOfBindings.append('Axis ' + str(axis) + ' Positive')
+            if neg == action:
+                listOfBindings.append('Axis ' + str(axis) + ' Negative')
+        return listOfBindings
     
