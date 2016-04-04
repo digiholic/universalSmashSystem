@@ -83,19 +83,8 @@ def getControls(playerNum):
     try:
         return settings.setting['controls_' + str(playerNum)]
     except:
-        settings.setting['controls_' + str(playerNum)] = Keybindings({
-                                                          'left': None,
-                                                          'right': None,
-                                                          'up': None,
-                                                          'down': None,
-                                                          'jump': None,
-                                                          'attack': None,
-                                                          'special': None,
-                                                          'shield': None
-                                                          })
+        return engine.controller.Controller({})
         
-        return settings.setting['controls_' + str(playerNum)]
-    
 """
 Creates or returns the SFX Library.
 """
@@ -194,18 +183,6 @@ class Settings():
         print(self.setting)
     
     def loadControls(self):
-        # load menu controls first
-        bindings = {}
-        groupName = 'controls_menu'
-        controlType = self.parser.get(groupName,'controlType')
-        
-        for opt in self.parser.options(groupName):
-            if self.KeyNameMap.has_key(opt):
-                bindings[self.KeyNameMap[opt]] = self.parser.get(groupName, opt)
-        
-        self.setting[groupName] = Keybindings(bindings)
-            
-        
         playerNum = 0
         while self.parser.has_section('controls_' + str(playerNum)):
             bindings = {}
@@ -309,26 +286,17 @@ def saveSettings(settings):
     parser.add_section('game')
     parser.set('game','rulePreset',str(settings['current_preset']))
     
-    parser.add_section('controls_menu')
-    for key in settings['controls_menu'].keyBindings:
-        print(keyIdMap[key])
-        print(str(settings['controls_menu'].keyBindings[key]))
-        parser.set('controls_menu','controlType','button')
-        parser.set('controls_menu','gamepad','None')
-        parser.set('controls_menu',keyIdMap[key],str(settings['controls_menu'].keyBindings[key]))
-    
-    
     for i in range(0,4):
         if settings['controlType_'+str(i)] == 'button':
             sect = 'controls_'+str(i)
-            print(str(sect) + ": " + str(settings[sect].keyBindings))
             parser.add_section(sect)
             for key in settings[sect].keyBindings:
-                print(keyIdMap[key])
-                print(settings[sect].keyBindings[key])
-                parser.set(sect,'controlType','button')
+                parser.set(sect,'controlType',settings['controlType_'+str(i)])
                 parser.set(sect,keyIdMap[key],str(settings[sect].keyBindings[key]))
-        
+        else:
+            sect = 'controls_'+str(i)
+            parser.add_section(sect)
+            parser.set(sect,'controlType',settings['controlType_'+str(i)])
             
     with open(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
         parser.write(configfile)
@@ -358,29 +326,6 @@ def savePreset(settings, preset):
     parser.set(preset,'enableWavedash',settings['enableWavedash'])
     
     parser.write(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings.ini'))
-    
-"""
-The Keybindings object is just a shorthand for looking up
-the keys in the game settings. A dictionary is passed
-that maps the action to the key that does it.
-"""
-class Keybindings():
-    
-    def __init__(self,keyBindings):
-        self.keyBindings = keyBindings
-        print(self.keyBindings)
-        
-    def get(self,key): #Used for checking which action a key is bound to
-        return self.keyBindings.get(key)
-
-    def getAction(self,action): #Used for getting all the bindings to an action (Example: 'jump' might return ['c','v'] or whatever)
-        listOfBindings = []
-        print(self.keyBindings)
-        for binding,name in self.keyBindings.items():
-            if name == action:
-                listOfBindings.append(binding)
-            
-        return listOfBindings
     
 """
 The SFXLibrary object contains a dict of all sound effects that are being used.
@@ -450,7 +395,7 @@ A wrapper that'll get a lowercase String from the parser, or return gracefully w
 def getString(parser,preset,key):
     try:
         return str(parser.get(preset,key).lower())
-    except (Exception,e):
+    except Exception as e:
         print(e)
         return ""
 
@@ -460,7 +405,7 @@ A wrapper that'll get a boolean from the parser, or return gracefully with an er
 def getBoolean(parser,preset,key):
     try:
         return boolean(parser.get(preset,key))
-    except (Exception,e):
+    except Exception as e:
         print(e)
         return False
 
@@ -470,26 +415,9 @@ A wrapper that'll get a number from the parser, or return gracefully with an err
 def getNumber(parser,preset,key,islist = False):
     try:
         return getNumbersFromString(parser.get(preset,key),islist)
-    except (Exception,e):
+    except Exception as e:
         print(e)
         return 0
-
-"""
-A wrapper that'll get a Gamepad Tuple from the parser, or return gracefully with an error.
-
-A Gamepad Tuple is in the form of (type, id[, value])
-If type is button, id is the number of the button on that pad.
-If type is axis, the id is that axis, and value is + or - depending on which direction
-corresponds to that item.
-"""
-def getGamepadTuple(parser,preset,key):
-    try:
-        joyInfo = parser.get(preset,key).split(' ')
-        if len(joyInfo) < 3: joyInfo.append('')
-        return (joyInfo[0], getNumbersFromString(joyInfo[1],False),joyInfo[2]) 
-    except (Exception,e):
-        print(e)
-        return ("",0)
 
 """
 Main method for debugging purposes
