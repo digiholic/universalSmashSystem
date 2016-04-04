@@ -211,21 +211,28 @@ class Stage():
     Draws the background elements in order.
     """
     def drawBG(self,screen):
+        rects = []
         for sprite,paralax in self.backgroundSprites:
             x = sprite.rect.x - (self.camera_position.x * paralax)
             y = sprite.rect.y - (self.camera_position.y)
-            sprite.draw(screen,(x,y),self.getScale())
+            rect = sprite.draw(screen,(x,y),self.getScale())
+            if rect: rects.append(rect)
+        return rects
             
     def drawFG(self,screen):
+        rects = []
         if settingsManager.getSetting('showPlatformLines'):
             for plat in self.platform_list: 
                 platSprite = spriteObject.RectSprite(plat.rect.topleft,plat.rect.size)
-                platSprite.draw(screen,self.stageToScreen(platSprite.rect),self.getScale())
+                rect = platSprite.draw(screen,self.stageToScreen(platSprite.rect),self.getScale())
+                if rect: rects.append(rect)
         #for ledge in self.platform_ledges:
             #ledgeSprite = spriteObject.RectSprite(ledge.rect.topleft,ledge.rect.size,[0,0,255])
             #ledgeSprite.draw(screen,self.stageToScreen(ledge.rect),self.getScale())
         for sprite in self.foregroundSprites:
-            sprite.draw(screen,self.stageToScreen(sprite.rect),self.getScale())
+            rect = sprite.draw(screen,self.stageToScreen(sprite.rect),self.getScale())
+            if rect: rects.append(rect)
+        return rects
     
     """
     Adds an object to the background. Optionally pass a paralax factor which determines how much

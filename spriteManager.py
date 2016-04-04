@@ -8,6 +8,8 @@ class Sprite(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.angle = 0
         self.visible = True
+        self.changed = False
+        self.lastDrawnPosition = pygame.Rect(0,0,0,0)
         
     def draw(self,screen,offset,scale):
         if not self.visible:
@@ -23,7 +25,18 @@ class Sprite(pygame.sprite.Sprite):
             raise ValueError("Please use 32-bit PNG files")
         if self.angle != 0:
             blitSprite = pygame.transform.rotate(blitSprite,self.angle)
-        screen.blit(blitSprite,pygame.Rect(newOff,(w,h)))
+        newRect = pygame.Rect(newOff,(w,h))
+        retRect = newRect
+        if not newRect == self.lastDrawnPosition:
+            self.changed = True
+            retRect = newRect.union(self.lastDrawnPosition)
+            self.lastDrawnPosition = newRect
+        if self.changed:
+            screen.blit(blitSprite,newRect)
+            self.changed = False
+            return retRect
+        screen.blit(blitSprite,newRect) #Until this starts working
+        return None
   
 class SpriteHandler(Sprite):
     def __init__(self,directory,prefix,startingImage,offset,colorMap = {}):
@@ -46,6 +59,7 @@ class SpriteHandler(Sprite):
     def flipX(self):
         if self.flip == "right": self.flip = "left"
         else: self.flip = "right"
+        self.changed = True
     
     def getBoundingBox(self):
         boundingRect = self.image.get_bounding_rect()
@@ -56,18 +70,22 @@ class SpriteHandler(Sprite):
     def updatePosition(self,rect):
         self.rect = rect
         self.boundingRect = self.getBoundingBox()
+        self.changed = True
                 
     def changeImage(self,newImage,subImage = 0):
         self.currentSheet = newImage
         self.index = subImage
         self.get_image()
+        self.changed = True
         
     def changeSubImage(self,index):
         self.index = index % len(self.imageLibrary[self.flip][self.currentSheet])
         self.get_image()
+        self.changed = True
     
     def rotate(self,angle = 0):
         self.angle = angle
+        self.changed = True
     
     def get_image(self):
         try:
@@ -82,7 +100,7 @@ class SpriteHandler(Sprite):
     
     def draw(self,screen,offset,scale):
         self.get_image()
-        Sprite.draw(self,screen,offset,scale)
+        return Sprite.draw(self,screen,offset,scale)
     
     def buildImageLibrary(self,lib,offset):
         library = {}
@@ -114,7 +132,8 @@ class SpriteHandler(Sprite):
     def recolor(self,image,fromColor,toColor):
         arr = pygame.PixelArray(image)
         arr.replace(fromColor,toColor)
-        del arr  
+        del arr
+        self.changed = True
         
             
 class ImageSprite(Sprite):
@@ -129,16 +148,19 @@ class ImageSprite(Sprite):
         arr[:,:,1] = color[1]
         arr[:,:,2] = color[2]
         del arr
+        self.changed = True
     
     def alpha(self,newAlpha):
         arr = pygame.surfarray.pixels_alpha(self.image)
         arr[arr!=0] = newAlpha
         del arr
+        self.changed = True
     
     def recolor(self,image,fromColor,toColor):
         arr = pygame.PixelArray(image)
         arr.replace(fromColor,toColor)
-        del arr  
+        del arr
+        self.changed = True
         
 class SheetSprite(ImageSprite):
     def __init__(self,sheet,offset=0,colorMap = {}):
@@ -182,19 +204,22 @@ class SheetSprite(ImageSprite):
     def flipX(self):
         self.flip = not self.flip
         self.image = pygame.transform.flip(self.image,True,False)
+        self.changed = True
         
     def recolor(self,image,fromColor,toColor):
         arr = pygame.PixelArray(image)
         arr.replace(fromColor,toColor)
         del arr
+        self.changed = True
         
     def getImageAtIndex(self,index):
         self.index = index % self.maxIndex
         self.image = self.imageList[self.index]
         return self.image
+        self.changed = True
         
     def draw(self,screen,offset,scale):
-        Sprite.draw(self, screen, offset, scale)
+        return Sprite.draw(self, screen, offset, scale)
                 
 class MaskSprite(ImageSprite):
     def __init__(self, parentSprite,color,duration,pulse = False,pulseSize = 16):
@@ -222,6 +247,7 @@ class MaskSprite(ImageSprite):
         arr = pygame.surfarray.pixels_alpha(self.image)
         arr[arr!=0] = self.alpha
         del arr
+        self.changed = True
         
     
     def update(self):
@@ -261,12 +287,13 @@ class TextSprite(ImageSprite):
     def changeColor(self,color):
         self.image = self.font.render(self.text,False,color).convert_alpha()
         self.color = color
+        self.changed = True
         
     def changeText(self,text):
         self.image = self.font.render(text,False,self.color).convert_alpha()
         self.text = text
         self.rect = self.image.get_rect(center=self.rect.center)
-        
+        self.changed = True
         
 class ImageLibrary():
     def __init__(self,directory,prefix=""):

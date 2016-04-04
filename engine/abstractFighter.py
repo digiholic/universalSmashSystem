@@ -690,11 +690,11 @@ class AbstractFighter():
         
     def draw(self,screen,offset,scale):
         if (settingsManager.getSetting('showSpriteArea')): spriteManager.RectSprite(self.rect).draw(screen, offset, scale)
-        self.sprite.draw(screen,offset,scale)
+        rect = self.sprite.draw(screen,offset,scale)
         
         if self.mask: self.mask.draw(screen,offset,scale)
         #self.ecb.draw(screen,offset,scale)
-        
+        return rect
         
     """
     Use this function to get a direction that is angled from the direction the fighter

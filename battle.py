@@ -54,6 +54,8 @@ class Battle():
         background = pygame.Surface(screen.get_size())
         background = background.convert()
         background.fill((128, 128, 128))
+        
+        screen.fill(self.stage.backgroundColor)
         current_stage = self.stage
         active_hitboxes = pygame.sprite.Group()
     
@@ -122,7 +124,9 @@ class Battle():
         dataLog = DataLog();
         dataLog.addSection('test', 1)
         dataLog.setData('test', 3, (lambda x,y: x + y))
+        self.dirty_rects = [pygame.Rect(0,0,self.settings['windowWidth'],self.settings['windowHeight'])]
         while exitStatus == 0:
+            
             #First thing's first, update CPUs
             for cpu in self.cpuPlayers:
                 cpu.update()
@@ -162,7 +166,8 @@ class Battle():
             
             current_stage.update()
             current_stage.cameraUpdate()
-            current_stage.drawBG(screen)
+            drawRects = current_stage.drawBG(screen)
+            self.dirty_rects.extend(drawRects)
             
             for hbox in active_hitboxes:
                 hitbox_clank = pygame.sprite.spritecollide(hbox,active_hitboxes, False)
@@ -186,11 +191,13 @@ class Battle():
                 
                 offset = current_stage.stageToScreen(obj.rect)
                 scale =  current_stage.getScale()
-                obj.draw(screen,offset,scale)
+                drawRect = obj.draw(screen,offset,scale)
+                if drawRect: self.dirty_rects.append(drawRect)
                 if hasattr(obj, 'hurtbox'):
                     if (self.settings['showHurtboxes']): 
                         offset = current_stage.stageToScreen(obj.hurtbox.rect)
-                        obj.hurtbox.draw(screen,offset,scale)
+                        drawRect = obj.hurtbox.draw(screen,offset,scale)
+                        if drawRect: self.dirty_rects.append(drawRect)
                     
                     hitbox_collisions = pygame.sprite.spritecollide(obj.hurtbox, active_hitboxes, False)
                     for hbox in hitbox_collisions:
@@ -200,11 +207,13 @@ class Battle():
                     for art in obj.articles:
                         offset = current_stage.stageToScreen(art.rect)
                         scale =  current_stage.getScale()
-                        art.draw(screen,offset,scale)
+                        drawRect = art.draw(screen,offset,scale)
+                        if drawRect: self.dirty_rects.append(drawRect)
         
                 if (self.settings['showHitboxes']):
                     for hbox in active_hitboxes:
-                        hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
+                        drawRect = hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
+                        if drawRect: self.dirty_rects.append(drawRect)
             #hitbox collision with hurtboxes is covered above, this will check for collision with stages
             for hitbox in active_hitboxes:
                 hitbox_collisions = pygame.sprite.spritecollide(hitbox, self.stage.platform_list, False)
@@ -227,17 +236,21 @@ class Battle():
                                 exitStatus = 2 #Game set
                         else: fight.die()
             # End object updates
-            current_stage.drawFG(screen)    
+            drawRects = current_stage.drawFG(screen)    
+            self.dirty_rects.extend(drawRects)
             
             for obj in guiObjects:
-                obj.draw(screen, obj.rect.topleft,1)
+                drawRect = obj.draw(screen, obj.rect.topleft,1)
+                if drawRect: self.dirty_rects.append(drawRect)
             if trackTime and clockTime <= 5:
                 countAlpha = max(0,countAlpha - 5)
                 countdownSprite.alpha(countAlpha)
                 
             
             clock.tick(60) #change back
-            pygame.display.flip()
+            #pygame.display.update(self.dirty_rects)
+            self.dirty_rects = []
+            pygame.display.update()
         # End while loop
         
         if exitStatus == 1:
