@@ -1,31 +1,31 @@
 import engine.baseActions as baseActions
+import engine.controller as controller
 import pygame
 import math
 
-class CPUplayer():
-    def __init__(self):
+class CPUplayer(controller.Controller):
+    def __init__(self,bindings):
+        controller.Controller.__init__(self,bindings)
         self.mode = 'duckling'
-        self.keysHeld = set()
-        self.keysPlanning = set()
         self.jump_last_frame = 0
+
+    def getInputs(self, event, push=True, outputOnRelease=True):
+        return None #We don't accept inputs
+
+    def get(self, key):
+        return ({}).copy()
     
-    def loadGameState(self,fighter,stage,players):
-        self.fighter = fighter
-        self.gameState = stage
-        self.players = players
+    def getKeysForAction(self,action):
+        return ([]).copy() 
         
     def getDistanceTo(self,target):
         sx,sy = self.fighter.rect.center
         tx,ty = target.rect.center
         return (tx - sx, ty - sy)
 
-    def pushInput(self):
-        for key in self.keysPlanning - self.keysHeld:
-            self.fighter.keyPressed(key)
-        for key in self.keysHeld - self.keysPlanning:
-            self.fighter.keyReleased(key)
-        self.keysHeld = self.keysPlanning.copy()
-        self.keysPlanning.clear()
+    def passInputs(self):
+        update(self)
+        controller.Controller.passInputs(self)
 
     def segmentIntersects(self, startPoint, endPoint, rect):
         if startPoint[0]==endPoint[0] and startPoint[1]==endPoint[1]: #Degenerate
@@ -130,18 +130,16 @@ class CPUplayer():
             if dx < 0:
                 if not isinstance(self.fighter.current_action, baseActions.LedgeGrab) or 'left' not in self.keysHeld:
                     if 'right' not in self.keysHeld:
-                        self.keysPlanning.add('left')
+                        self.keysToPass.add('left')
             if dx > 0:
                 if not isinstance(self.fighter.current_action, baseActions.LedgeGrab) or 'right' not in self.keysHeld:
                     if 'left' not in self.keysHeld:
-                        self.keysPlanning.add('right')
+                        self.keysToPass.add('right')
             if dy < 0 and self.jump_last_frame > 8 and distance-prevDistance>0:
-                self.keysPlanning.add('jump')
+                self.keysToPass.add('jump')
                 self.jump_last_frame = 0
             else:
                 self.jump_last_frame += 1
             if dy > 0 and self.fighter.grounded and not isinstance(self.fighter.current_action, baseActions.Crouch):
-                self.keysPlanning.add('down')
-            
-        self.pushInput()
+                self.keysToPass.add('down')
 

@@ -14,6 +14,7 @@ from Tix import OptionName
 try:
     import css
 except ImportError:
+    raise(ImportError)
     from menu import css
 import spriteManager
 import battle
