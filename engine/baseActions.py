@@ -891,6 +891,7 @@ def tumbleState(actor):
         actor.calc_grav()
             
 def moveState(actor, direction):
+    (key,invkey) = actor.getForwardBackwardKeys()
     if actor.bufferContains('attack', 8):
         actor.doGroundAttack()
     elif actor.bufferContains('special', 8):
@@ -901,8 +902,13 @@ def moveState(actor, direction):
         actor.doCrouch()
     elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
         actor.doStop()
+    elif actor.preferred_xspeed < 0 and not actor.keysContain('left',1) and actor.keysContain('right',1):
+        actor.doStop()
+    elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
+        actor.doStop()
 
 def dashState(actor, direction):
+    (key,invkey) = actor.getForwardBackwardKeys()
     if actor.bufferContains('attack', 8):
         actor.doDashAttack()
     elif actor.bufferContains('special', 8):
@@ -913,8 +919,13 @@ def dashState(actor, direction):
         actor.doCrouch()
     elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
         actor.doStop()
+    elif actor.preferred_xspeed < 0 and not actor.keysContain('left',1) and actor.keysContain('right',1):
+        actor.doStop()
+    elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
+        actor.doStop()
 
 def runState(actor, direction):
+    (key,invkey) = actor.getForwardBackwardKeys()
     if actor.bufferContains('attack', 8):
         actor.doDashAttack()
     elif actor.bufferContains('special', 8):
@@ -924,6 +935,10 @@ def runState(actor, direction):
     elif actor.keysContain('down', 0.5):
         actor.doCrouch()
     elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
+        actor.doStop()
+    elif actor.preferred_xspeed < 0 and not actor.keysContain('left',1) and actor.keysContain('right',1):
+        actor.doStop()
+    elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
         actor.doStop()
             
 def shieldState(actor):
