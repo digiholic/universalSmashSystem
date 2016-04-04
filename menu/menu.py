@@ -10,7 +10,6 @@ import colorsys
 import engine.article
 import engine.controller
 import sys
-
 try:
     import css
 except ImportError:
@@ -768,7 +767,7 @@ class GamepadMenu(SubMenu):
                              spriteManager.TextSprite('up','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('down','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('attack','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('shield','rexlia rg',16,[55,55,55]),
+                             spriteManager.TextSprite('special','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('jump','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('shield','rexlia rg',16,[55,55,55]),
                              ]
@@ -797,7 +796,7 @@ class GamepadMenu(SubMenu):
         self.selectedOption = 0
         
     def executeMenu(self, screen):
-        clock = pygame.time.Clock()
+        self.clock = pygame.time.Clock()
         controls = settingsManager.getControls(0)
         
         while self.status == 0:
@@ -835,6 +834,8 @@ class GamepadMenu(SubMenu):
                             self.statusText.changeText('Controller not connected')
                             self.statusText.changeColor([55,55,55])
                 elif k == 'confirm' or k == 'attack':
+                    if self.selectedOption == 0: #gamepad
+                        self.status = self.bindControls(screen, settingsManager.getSetting().getGamepadByName(self.controllerList[self.currentController][0]))
                     if self.selectedOption == 1: #quit
                         self.status = 1
                 elif k == 'cancel':
@@ -868,11 +869,165 @@ class GamepadMenu(SubMenu):
             self.menuText[0].changeText(self.controllerList[self.currentController][0])
             
             
+            self.clock.tick(60)    
+            pygame.display.flip()
+            
+        return self.status
+    
+    def bindControls(self,screen,joystick):
+        selectedSubOption = 0
+        newAxisBinding = {}
+        newButtonBinding = {}
+        
+        heldButtons = []
+        heldAxis = []
+        workingAxis = []
+        workingButton = []
+        
+        status = 0
+        ready = False
+        while status == 0:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return -1
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    return 0
+                elif event.type == pygame.JOYBUTTONDOWN:
+                    if event.joy == joystick.get_id():
+                        value = (self.actionColumn[selectedSubOption].text,event.button)
+                        if value not in workingButton:
+                            workingButton.append(value)
+                        heldButtons.append(event.button)
+                elif event.type == pygame.JOYBUTTONUP:
+                    if event.joy == joystick.get_id():
+                        if event.button in heldButtons:
+                            heldButtons.remove(event.button)
+                            if not heldAxis and not heldButtons:
+                                ready = True
+                elif event.type == pygame.JOYAXISMOTION:
+                    if event.joy == joystick.get_id():
+                        if abs(event.value) > 0.5: #joy motion
+                            if event.value > 0: #positive
+                                value = (self.actionColumn[selectedSubOption].text,event.axis,1)
+                            else:
+                                value = (self.actionColumn[selectedSubOption].text,event.axis,0)
+                            if value not in workingAxis:
+                                workingAxis.append(value)
+                                heldAxis.append(event.axis)
+                            
+                        else: #joy released
+                            if event.axis in heldAxis:
+                                heldAxis.remove(event.axis)
+                                if not heldAxis and not heldButtons:
+                                    ready = True
+                
+                if ready:
+                    buttonList = []
+                    for action,button in workingButton:
+                        newButtonBinding[button] = action
+                        buttonList.append('Button '+str(button))
+                    workingButton = []
+                    
+                    for action,axis,direction in workingAxis:
+                        if axis in newAxisBinding: #if we already have one of the axis points set, we need to pull it
+                            newBinding = list(newAxisBinding[axis])
+                        else: #If it's fresh, we need to build it
+                            newBinding = ['','']
+                        newBinding[direction] = action
+                        newAxisBinding[axis] = tuple(newBinding)
+                        
+                        #get the string value of the direction of the axis
+                        if direction == 1: string = ' Positive'
+                        else: string = ' Negative'
+                        buttonList.append('Axis '+str(axis)+string)
+                    workingAxis = []
+                     
+                    self.keyColumn[selectedSubOption].changeText(str(buttonList))
+                    selectedSubOption += 1
+                    ready = False
+                    if selectedSubOption >= len(self.actionColumn):
+                        newPadBindings = engine.controller.PadBindings(joystick.get_id(),newAxisBinding,newButtonBinding)
+                        newController = engine.controller.GamepadController(newPadBindings)
+                        settingsManager.getSetting().setting['controls_0'] = newController
+                        return 0
+                        
+            self.parent.bg.update(screen)
+            self.parent.bg.draw(screen,(0,0),1.0)
+            
+            for m in self.menuText:
+                m.draw(screen,m.rect.topleft,1.0)
+                m.changeColor([55,55,55])
+            for m in self.actionColumn:
+                m.draw(screen,m.rect.topleft,1.0)
+                m.changeColor([255,255,255])
+            for m in self.keyColumn:
+                m.draw(screen,m.rect.topleft,1.0)
+                m.changeColor([255,255,255])
+            
+            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
+            self.actionColumn[selectedSubOption].changeColor(rgb)
+            self.keyColumn[selectedSubOption].changeColor(rgb)
+            
+            self.clock.tick(60)    
+            pygame.display.update()
+   
+class PlayerControlsMenu(SubMenu):
+    def __init__(self, parent):
+        SubMenu.__init__(self, parent)
+        self.menuText = [spriteManager.TextSprite('Player 1','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('Use Gamepad: None','full Pack 2025',20,[255,255,255]),
+                         spriteManager.TextSprite('Exit','full Pack 2025',20,[255,255,255])]
+        
+        
+        for i in range(0,len(self.menuText)):
+            self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
+            self.menuText[i].rect.centery = 90 + i*60
+                
+        self.selectedOption = 0
+    
+    def executeMenu(self, screen):
+        clock = pygame.time.Clock()
+        controls = settingsManager.getControls(0)
+        
+        while self.status == 0:
+            self.update(screen)
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.status = -1
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    self.status = 1
+                
+                k = controls.getInputs(event,False,False)
+                if k == 'up':
+                    self.selectedOption = (self.selectedOption - 1) % len(self.menuText)
+                elif k == 'down':
+                    self.selectedOption = (self.selectedOption + 1) % len(self.menuText)
+                elif k == 'confirm' or k == 'attack':
+                    if self.selectedOption == 0: #Player
+                        pass
+                    elif self.selectedOption == 1: #Gamepad Selection
+                        GamepadMenu(self.parent).executeMenu(screen)
+                    elif self.selectedOption == 2: #quit
+                        self.status = 1
+                elif k == 'cancel' or k == 'special':
+                    self.status = 1
+            
+            self.parent.bg.update(screen)
+            self.parent.bg.draw(screen,(0,0),1.0)
+                   
+            for m in self.menuText:
+                m.draw(screen,m.rect.topleft,1.0)
+                m.changeColor([255,255,255])
+            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
+            self.menuText[self.selectedOption].changeColor(rgb)
+                
+            #self.menuText.draw(screen, (128,128), 1.0)
             clock.tick(60)    
             pygame.display.flip()
             
         return self.status
-
+    
 class GraphicsMenu(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self,parent)

@@ -265,6 +265,13 @@ class Settings():
             controllerList.append(self.loadGamepad(control))
         
         return controllerParser.sections()
+    
+    def getGamepadByName(self,joyName):
+        for i in range(pygame.joystick.get_count()):
+            joystick = pygame.joystick.Joystick(i)
+            if joystick.get_name() == joyName:
+                return joystick
+        return None
 """
 Save a modified settings object to the settings.ini file.
 """
@@ -312,15 +319,16 @@ def saveSettings(settings):
     
     
     for i in range(0,4):
-        sect = 'controls_'+str(i)
-        print(str(sect) + ": " + str(settings[sect].keyBindings))
-        parser.add_section(sect)
-        for key in settings[sect].keyBindings:
-            print(keyIdMap[key])
-            print(settings[sect].keyBindings[key])
-            parser.set(sect,'controlType','button')
-            parser.set(sect,keyIdMap[key],str(settings[sect].keyBindings[key]))
-    
+        if settings['controlType_'+str(i)] == 'button':
+            sect = 'controls_'+str(i)
+            print(str(sect) + ": " + str(settings[sect].keyBindings))
+            parser.add_section(sect)
+            for key in settings[sect].keyBindings:
+                print(keyIdMap[key])
+                print(settings[sect].keyBindings[key])
+                parser.set(sect,'controlType','button')
+                parser.set(sect,keyIdMap[key],str(settings[sect].keyBindings[key]))
+        
             
     with open(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
         parser.write(configfile)

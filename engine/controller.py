@@ -150,7 +150,7 @@ class PadBindings():
         for button,name in self.buttonBindings.items():
             if name == action:
                 listOfBindings.append('Button ' + str(button))
-        for axis,(pos,neg) in self.axisBindings.items():
+        for axis,(neg,pos) in self.axisBindings.items():
             if pos == action:
                 listOfBindings.append('Axis ' + str(axis) + ' Positive')
             if neg == action:

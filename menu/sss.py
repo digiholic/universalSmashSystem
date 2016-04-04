@@ -23,8 +23,7 @@ class StageScreen():
         self.width = settings['windowWidth']
         
         pygame.init()
-        screen = pygame.display.set_mode((self.width, self.height))
-        pygame.display.set_caption(settings['windowName'])
+        screen = pygame.display.get_surface()
         
         background = pygame.Surface(screen.get_size())
         background = background.convert()
