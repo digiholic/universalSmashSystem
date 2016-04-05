@@ -190,17 +190,18 @@ class Settings():
             controlType = self.parser.get(groupName, 'controlType')
             
             gamepad = None
-            if not controlType == 'Keyboard':
+            if not controlType == 'Keyboard' and not controlType == 'Bot':
                 gamepad = self.loadGamepad(controlType)
                 if gamepad:
                     self.setting['controlType_'+str(playerNum)] = controlType
                     self.setting[groupName] = gamepad
-            
-            if not gamepad:
+            if controlType == 'Bot':
+                self.setting['controltype_'+str(playerNum)] = 'Bot'
+                self.setting[groupName] = engine.cpuPlayer()
+            elif not gamepad:
                 for opt in self.parser.options(groupName):
                     if self.KeyNameMap.has_key(opt):
                         bindings[self.KeyNameMap[opt]] = self.parser.get(groupName, opt)
-                
                 self.setting['controlType_'+str(playerNum)] = 'Keyboard'
                 self.setting[groupName] = engine.controller.Controller(bindings)
                     

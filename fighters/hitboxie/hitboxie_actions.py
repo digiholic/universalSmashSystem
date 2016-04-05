@@ -4,6 +4,7 @@ import engine.hitbox as hitbox
 import engine.article as article
 import engine.abstractFighter as abstractFighter
 import math
+import pygame
 
 class SplatArticle(article.AnimatedArticle):
     def __init__(self, owner, origin, direction):
@@ -33,6 +34,20 @@ class SplatArticle(article.AnimatedArticle):
         if self.frame > 120:
             self.kill()
             self.hitbox.kill()
+
+    def draw(self, screen, offset, zoom):
+        # This is all the same as the base Draw method. We're overriding because we need to put some code in the middle of it.
+        h = int(round(self.rect.height * zoom))
+        w = int(round(self.rect.width * zoom))
+        newOff = (int(offset[0] * zoom), int(offset[1] * zoom))
+        
+        screenRect = pygame.Rect(newOff,(w,h)) # Store the rect that it WOULD have drawn to at full size
+        blitRect = pygame.Rect(newOff,(w,h)) # Make a new rect with the shrunk sizes
+        blitRect.center = screenRect.center # Center it on the screen rect
+        angle = -math.atan2(self.change_y, self.change_x)*180.0/math.pi
+        blitSprite = pygame.transform.rotate(self.image, angle) # Scale down the image
+        
+        screen.blit(blitSprite,blitRect)
 
 class NeutralGroundSpecial(action.Action):
     def __init__(self):
@@ -237,7 +252,7 @@ class DownSpecial(action.Action):
     def setUp(self, actor):
         self.article = ShineArticle(actor)
         self.damageHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 6, 9, 0.1, 330, 1.5, hitbox.HitboxLock())
-        self.reflectorHitbox = hitbox.ReflectorHitbox([0,0], [64,64], actor, hitbox.HitboxLock(), 1.3, 1.1,100)
+        self.reflectorHitbox = hitbox.ReflectorHitbox([0,0], [80,80], actor, hitbox.HitboxLock(), 1.3, 1.1,100)
         return action.Action.setUp(self, actor)           
     
     def tearDown(self, actor, newAction):

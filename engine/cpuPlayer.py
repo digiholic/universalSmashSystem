@@ -107,7 +107,7 @@ class CPUplayer(controller.Controller):
         else: return dists[1]
 
     def ducklingTargeting(self):
-        opposingPlayers = filter(lambda k: k != self.fighter, players)
+        opposingPlayers = filter(lambda k: k != self.fighter, self.players)
         opposingDists = map(lambda x: self.getPathDistance(self.fighter.rect.center, x.fighter.rect.center), opposingPlayers)
         return opposingPlayers[opposingDists.index(min(opposingDists))].rect.center
 
@@ -117,16 +117,16 @@ class CPUplayer(controller.Controller):
         return ledgePoints[ledgeDistances.index(min(ledgeDistances))]
 
     def platformTargeting(self):
-        targetPoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.stage.platform_list)+map(lambda x: [x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.stage.platform_list)
+        targetPoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.platform_list)+map(lambda x: [x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.platform_list)
         targetDistances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), targetPoints)
         return targetPoints[targetDistances.index(min(targetDistances))]
 
     def update(self):
         if self.mode == 'duckling': #Follow the player
-            distance = self.getPathDistance(self.fighter.rect.center, self.players[0].rect.center)
-            prevDistance = self.getPathDistance(self.fighter.ecb.yBar.rect.center, self.players[0].sprite.boundingRect.center)
+            distance = self.getPathDistance(self.fighter.rect.center, self.fighter.players[0].rect.center)
+            prevDistance = self.getPathDistance(self.fighter.ecb.yBar.rect.center, self.fighter.players[0].sprite.boundingRect.center)
             #We offset by one so that simply running away doesn't trigger catchup behavior
-            dx, dy = self.getDistanceTo(self.players[0])
+            dx, dy = self.getDistanceTo(self.fighter.players[0])
             if dx < 0:
                 if not isinstance(self.fighter.current_action, baseActions.LedgeGrab) or 'left' not in self.keysHeld:
                     if 'right' not in self.keysHeld:
@@ -143,3 +143,4 @@ class CPUplayer(controller.Controller):
             if dy > 0 and self.fighter.grounded and not isinstance(self.fighter.current_action, baseActions.Crouch):
                 self.keysToPass.add('down')
 
+import engine.baseActions as baseActions

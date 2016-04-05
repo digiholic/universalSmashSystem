@@ -205,18 +205,18 @@ class ReflectorHitbox(Hitbox):
 
     def compareTo(self, other):
         if other.article != None and other.article.owner != self.owner:
+            print("Reflected!")
             if hasattr(other.article, 'owner'):
                 other.owner = self.owner
                 other.article.owner = self.owner
             if hasattr(other.article, 'tags') and 'projectile' in other.article.tags:
-                print(other.article.change_x)
                 article_direction = math.atan2(other.article.change_y, other.article.change_x)*180/math.pi
                 article_speed = math.hypot(other.article.change_x, other.article.change_y)
                 (other.article.change_x, other.article.change_y) = abstractFighter.getXYFromDM(article_speed*self.velocity_multiplier, 2*self.angle-article_direction)
-                print(other.article.change_x)
             if hasattr(other, 'damage'):
                 self.priority -= other.damage
                 other.damage *= self.damage_multiplier
+                print(other.damage)
 
         if hasattr(other, 'transcendence') and hasattr(other, 'priority'):
             if self.transcendence+other.transcendence <= 0:
@@ -231,3 +231,26 @@ class ReflectorHitbox(Hitbox):
     def update(self):
         Hitbox.update(self)
         self.recenterSelfOnOwner()
+
+class PerfectShieldHitbox(ReflectorHitbox):
+    def __init__(self, center, size, owner, hitbox_lock):
+        ReflectorHitbox.__init__(self,center,size,owner,hitbox_lock,1,1,9999,0)
+
+    def compareTo(self, other):
+        if other.article != None and other.article.owner != self.owner:
+            print("Perfect shield!")
+            if hasattr(other.article, 'owner'):
+                other.owner = self.owner
+                other.article.owner = self.owner
+            if hasattr(other.article, 'tags') and 'projectile' in other.article.tags:
+                self_direction = abstractFighter.getDirectionBetweenPoints(self.rect.center, other.article.rect.center)
+                article_direction = math.atan2(other.article.change_y, other.article.change_x)*180/math.pi
+                article_speed = math.hypot(other.article.change_x, other.article.change_y)
+                (other.article.change_x, other.article.change_y) = abstractFighter.getXYFromDM(article_speed, 2*self_direction-article_direction)
+            if hasattr(other, 'damage'):
+                self.priority -= other.damage
+                other.damage *= self.damage_multiplier
+        if hasattr(other, 'transcendence') and hasattr(other, 'priority'):
+            if self.transcendence+other.transcendence <= 0:
+                return self.priority - other.priority
+        return True

@@ -21,7 +21,7 @@ It takes a Rules object (see below), a list of players, and a stage.
 
 """
 class Battle():
-    def __init__(self,rules,players,stage,cpuPlayers):
+    def __init__(self,rules,players,stage):
         self.settings = settingsManager.getSetting().setting
         
         if rules is None: rules = Rules()
@@ -34,14 +34,7 @@ class Battle():
             player.hitboxLock.add(self.nullLock)
             self.controllers.append(player.keyBindings)
             
-            
         self.stage = stage
-        self.cpuPlayers = []
-        for i in range(0,len(self.players)):
-            if cpuPlayers[i]:
-                cpu = cpuPlayers[i]
-                cpu.loadGameState(self.players[i],self.stage,[x for x in self.players if x is not cpu])
-                self.cpuPlayers.append(cpu)
         self.inputBuffer = None
         self.dataLogs = []
         
@@ -92,6 +85,7 @@ class Battle():
         for fighter in currentFighters:
             fighter.rect.midbottom = current_stage.spawnLocations[fighter.playerNum]
             fighter.gameState = current_stage
+            fighter.players = self.players
             current_stage.follows.append(fighter.rect)
             log = DataLog()
             self.dataLogs.append(log)
@@ -126,11 +120,6 @@ class Battle():
         dataLog.setData('test', 3, (lambda x,y: x + y))
         self.dirty_rects = [pygame.Rect(0,0,self.settings['windowWidth'],self.settings['windowHeight'])]
         while exitStatus == 0:
-            
-            #First thing's first, update CPUs
-            for cpu in self.cpuPlayers:
-                cpu.update()
-            
             for cont in self.controllers:
                 cont.passInputs()
                 

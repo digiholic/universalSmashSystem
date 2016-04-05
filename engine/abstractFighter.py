@@ -90,6 +90,7 @@ class AbstractFighter():
         
         #list of all of the other things to worry about
         self.gameState = None
+        self.players = None
         
     def update(self):
         #Step one, push the input buffer

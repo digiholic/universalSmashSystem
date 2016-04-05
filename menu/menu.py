@@ -229,7 +229,6 @@ class RulesMenu (SubMenu):
         self.menuText = [spriteManager.TextSprite('Play','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('3 Stocks','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('8 Minutes','full Pack 2025',20,[255,255,255]),
-                         spriteManager.TextSprite('Player Two Bot OFF','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Teams Enabled','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Team Attack On','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Cancel','full Pack 2025',24,[255,255,255])]
@@ -239,23 +238,19 @@ class RulesMenu (SubMenu):
             self.menuText[i].rect.centery = 90 + i*40
         
         self.selectedOption = 0
-        self.rules = {'Stocks':3,'Time':8,'Teams':False,'Team Attack':True,'Bots':False}
+        self.rules = {'Stocks':3,'Time':8,'Teams':False,'Team Attack':True}
         
     def confirmOption(self, optionNum):
         SubMenu.confirmOption(self, optionNum)
         if optionNum == 0: #play
-            botlist = [False,False,False,False]
-            if self.rules['Bots']: botlist = [False,True,False,False]
             gameRules = battle.Rules(self.rules['Stocks'],self.rules['Time'],[])
-            status = css.CSSScreen(gameRules,botlist)
+            status = css.CSSScreen(gameRules)
             if status == -1: self.status = -1
-        elif optionNum == 3: #bots
-            self.rules['Bots'] = not self.rules['Bots']
-        elif optionNum == 4: #teams
+        elif optionNum == 3: #teams
             self.rules['Teams'] = not self.rules['Teams']
-        elif optionNum == 5: #team attack
+        elif optionNum == 4: #team attack
             self.rules['Team Attack'] = not self.rules['Team Attack']
-        elif optionNum == 6: #quit
+        elif optionNum == 5: #quit
             self.status = 1
             return
             
@@ -266,10 +261,8 @@ class RulesMenu (SubMenu):
         elif optionNum == 2:
             self.rules['Time'] += direction
         elif optionNum == 3:
-            self.rules['Bots'] = not self.rules['Bots']
-        elif optionNum == 4:
             self.rules['Teams'] = not self.rules['Teams']
-        elif optionNum == 5:
+        elif optionNum == 4:
             self.rules['Team Attack'] = not self.rules['Team Attack']
         self.rules['Stocks'] = self.rules['Stocks'] % 100
         self.rules['Time'] = self.rules['Time'] % 100
@@ -289,20 +282,15 @@ class RulesMenu (SubMenu):
         if (self.rules['Time'] == 0):
             self.menuText[2].changeText('Unlimited Time Match')
         
-        if self.rules['Bots']:
-            self.menuText[3].changeText('Player Two Bot ON')
-        else:
-            self.menuText[3].changeText('Player Two Bot OFF')
-        
         if self.rules['Teams']:
-            self.menuText[4].changeText('Teams Enabled')
+            self.menuText[3].changeText('Teams Enabled')
         else:
-            self.menuText[4].changeText('Teams Disabled')
+            self.menuText[3].changeText('Teams Disabled')
 
         if self.rules['Team Attack']:
-            self.menuText[5].changeText('Team Attack Enabled')
+            self.menuText[4].changeText('Team Attack Enabled')
         else:
-            self.menuText[5].changeText('Team Attack Disabled')
+            self.menuText[4].changeText('Team Attack Disabled')
 
 class ControlsMenu(SubMenu):
     def __init__(self,parent):

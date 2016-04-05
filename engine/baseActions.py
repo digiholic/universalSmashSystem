@@ -494,7 +494,7 @@ class PreShield(action.Action):
         action.Action.__init__(self, 4)
 
     def setUp(self, actor):
-        self.reflectHitbox = hitbox.ReflectorHitbox([0,0], [actor.hurtbox.rect.width+10, actor.hurtbox.rect.height+10], actor, hitbox.HitboxLock(), 1, 1, 9999, 0, -5)
+        self.reflectHitbox = hitbox.PerfectShieldHitbox([0,0], [actor.hurtbox.rect.width+10, actor.hurtbox.rect.height+10], actor, hitbox.HitboxLock())
 
     def tearDown(self, actor, nextAction):
         self.reflectHitbox.kill()
