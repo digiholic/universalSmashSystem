@@ -215,7 +215,7 @@ class ReflectorHitbox(Hitbox):
                 (other.article.change_x, other.article.change_y) = abstractFighter.getXYFromDM(article_speed*self.velocity_multiplier, 2*self.angle-article_direction)
             if hasattr(other, 'damage'):
                 self.priority -= other.damage
-                other.damage *= self.damage_multiplier
+                other.damage = int(math.floor(other.damage*self.damage_multiplier))
                 print(other.damage)
 
         if hasattr(other, 'transcendence') and hasattr(other, 'priority'):
@@ -249,7 +249,7 @@ class PerfectShieldHitbox(ReflectorHitbox):
                 (other.article.change_x, other.article.change_y) = abstractFighter.getXYFromDM(article_speed, 2*self_direction-article_direction)
             if hasattr(other, 'damage'):
                 self.priority -= other.damage
-                other.damage *= self.damage_multiplier
+                other.damage = int(math.floor(other.damage*self.damage_multiplier))
         if hasattr(other, 'transcendence') and hasattr(other, 'priority'):
             if self.transcendence+other.transcendence <= 0:
                 return self.priority - other.priority
