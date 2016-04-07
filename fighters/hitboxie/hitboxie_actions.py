@@ -289,7 +289,106 @@ class DownSpecial(action.Action):
         self.frame += 1
         return action.Action.update(self, actor)
     
+class UpSpecial(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 80)
+        self.angle = 90
+        
+    def setUp(self, actor):
+        sharedLock = hitbox.HitboxLock()
+        self.launchHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 14, 12, 0.1, 90, 1.5, sharedLock)
+        self.flyingHitbox = hitbox.DamageHitbox([0,0],[64,64], actor, 8, 10, 0.05, 90, 1, sharedLock)
+        actor.changeSprite('dtilt',4)
+        return action.Action.setUp(self,actor)
+        
+    def tearDown(self, actor, newAction):
+        self.launchHitbox.kill()
+        self.flyingHitbox.kill()
+        actor.unRotate()
+        actor.gravityEnabled = True
+        return action.Action.tearDown(self,actor,newAction)
     
+    def stateTransitions(self,actor):
+        if self.frame < 24:
+            actor.gravityEnabled = False
+        if self.frame > 24:
+            baseActions.grabLedges(actor)
+        if self.frame >= 60:
+            actor.gravityEnabled = True
+            baseActions.airControl(actor)
+    
+    def update(self,actor):
+        #The angle changing code
+        print(actor.change_x)
+        if self.frame <= 24:
+            actor.unRotate()
+            actor.change_x = 0
+            actor.change_y = 0
+            direction = [0,0]
+            if actor.keysContain('up'):
+                direction[1] -= 1
+            if actor.keysContain('down'):
+                direction[1] += 1
+            if actor.keysContain('left'):
+                direction[0] -= 1
+            if actor.keysContain('right'):
+                direction[0] += 1
+            if direction == [0,0]: direction = [0,-1]
+            if direction == [0,-1]: #upward
+                self.angle = 90
+            elif direction == [-1,-1]: #upleft
+                self.angle = 135
+                actor.rotateSprite(135)
+            elif direction == [-1,0]: #left
+                self.angle = 180
+                actor.rotateSprite(180)
+            elif direction == [-1,1]: #downleft
+                self.angle = 225
+                actor.rotateSprite(225)
+            elif direction == [0,1]: #down
+                self.angle = 270
+                actor.rotateSprite(270)
+            elif direction == [1,1]: #downright
+                self.angle = 315
+                actor.rotateSprite(315)
+            elif direction == [1,0]: #right
+                self.angle = 0
+                actor.rotateSprite(0)
+            elif direction == [1,-1]: #upright
+                self.angle = 45
+                actor.rotateSprite(45)
+        if self.frame == 3:
+            actor.changeSpriteImage(5)
+        if self.frame == 6:
+            actor.changeSpriteImage(6)
+        if self.frame == 9:
+            actor.changeSpriteImage(7)
+        if self.frame == 12:
+            actor.changeSpriteImage(8)
+        if self.frame == 15:
+            actor.changeSpriteImage(9)
+        if self.frame == 24:
+            self.launchHitbox.trajectory = self.angle
+            self.flyingHitbox.trajectory = self.angle
+            actor.active_hitboxes.add(self.launchHitbox)
+            actor.changeSprite('airjump')
+            actor.gravityEnabled = True
+            actor.change_x = direction[0] * 20
+            actor.preferred_xspeed = actor.var['maxAirSpeed'] * direction[0]
+            actor.change_y = direction[1] * 20
+        if self.frame == 26:
+            self.launchHitbox.kill()
+            actor.active_hitboxes.add(self.flyingHitbox)
+        if self.frame == 60:
+            self.flyingHitbox.kill()
+        if self.frame > 24:
+            if self.frame % 2 == 0:
+                actor.changeSpriteImage((self.frame - 24) / 2)
+            self.flyingHitbox.update()
+        if self.frame == self.lastFrame:
+            actor.doHelpless()
+        self.frame += 1
+        
 class NeutralAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,17)

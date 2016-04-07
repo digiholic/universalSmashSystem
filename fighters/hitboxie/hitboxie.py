@@ -212,7 +212,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
             if self.sideSpecialUses > 0:
                 self.changeAction(self.actions.ForwardSpecial())
         elif (self.keysContain('up')):
-            pass
+            self.changeAction(self.actions.UpSpecial())
         elif (self.keysContain('down')):
             self.changeAction(self.actions.DownSpecial())
         else: 
@@ -228,7 +228,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
             if self.sideSpecialUses > 0:
                 self.changeAction(self.actions.ForwardSpecial())
         elif (self.keysContain('up')):
-            pass
+            self.changeAction(self.actions.UpSpecial())
         elif (self.keysContain('down')):
             self.changeAction(self.actions.DownSpecial())
         else: 
