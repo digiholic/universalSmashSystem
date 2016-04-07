@@ -8,7 +8,9 @@ TUSSLE is currently in alpha, but development is moving quickly! If you want to 
 # How to play
 **Simple**:
 
-In the front page, click on "Download Zip" to get an archive of the game. Open it, and run main.exe. This will run the game at it's last stable compiled state. If the exe does not run at all, please submit an issue with the contents of your main.exe.log file. If you would like to run the most recent code, or are running the game on Linux, please see the advanced section.
+Currently, an unknown bug is preventing the EXE file from compiling. Please use the advanced option below.
+
+~~In the front page, click on "Download Zip" to get an archive of the game. Open it, and run main.exe. This will run the game at it's last stable compiled state. If the exe does not run at all, please submit an issue with the contents of your main.exe.log file. If you would like to run the most recent code, or are running the game on Linux, please see the advanced section.~~
 
 **Advanced**:
 
