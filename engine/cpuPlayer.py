@@ -8,15 +8,6 @@ class CPUplayer(controller.Controller):
         controller.Controller.__init__(self,bindings)
         self.mode = 'duckling'
         self.jump_last_frame = 0
-
-    def getInputs(self, event, push=True, outputOnRelease=True):
-        return None #We don't accept inputs
-
-    def get(self, key):
-        return ({}).copy()
-    
-    def getKeysForAction(self,action):
-        return ([]).copy() 
         
     def getDistanceTo(self,target):
         sx,sy = self.fighter.rect.center
