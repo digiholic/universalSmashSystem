@@ -7,7 +7,6 @@ before_install:
 - sudo apt-get install -y python-pygame
 install:
 - pip install numpy
-- pip install cx_Freeze
 script:
 - python -m compileall -q .
 after_script:
