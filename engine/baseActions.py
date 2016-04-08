@@ -782,9 +782,27 @@ class TechDodge(AirDodge):
 
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
-        if actor.grounded and self.frame < 20:
+
+        (direct,mag) = actor.getDirectionMagnitude()
+        if self.frame < 20 and actor.grounded:
+            print('Ground tech!')
+            actor.unRotate()
             actor.doTrip(-175, direct)
-            return
+        elif self.frame < 20:
+            actor.ecb.xBar.rect.x += actor.change_x
+            actor.ecb.yBar.rect.y += actor.change_y
+            block_x_hit_list = actor.getXCollisionsWith(actor.gameState.platform_list)
+            block_y_hit_list = actor.getYCollisionsWith(actor.gameState.platform_list)
+            actor.ecb.xBar.rect.x -= actor.change_x
+            actor.ecb.yBar.rect.y -= actor.change_y
+            for block in block_x_hit_list:
+                if block.solid:
+                    print('Wall tech!')
+                    actor.change_x *= 0.25
+            for block in block_y_hit_list:
+                if block.solid:
+                    print('Ceiling tech!')
+                    actor.change_y *= 0.25
         airControl(actor)
         
 """
