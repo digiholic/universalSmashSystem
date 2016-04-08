@@ -15,7 +15,7 @@ class CPUplayer(controller.Controller):
         return (tx - sx, ty - sy)
 
     def passInputs(self):
-        update(self)
+        self.update()
         controller.Controller.passInputs(self)
 
     def segmentIntersects(self, startPoint, endPoint, rect):

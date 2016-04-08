@@ -184,6 +184,8 @@ class CrouchGetup(action.Action):
         actor.preferred_xspeed = 0
         if actor.grounded is False:
             actor.doFall()
+        elif self.frame >= self.lastFrame:
+            actor.doIdle()
         elif actor.bufferContains('down') and self.frame > 0:
             blocks = actor.checkForGround()
             #Turn it into a list of true/false if the block is solid
@@ -191,8 +193,6 @@ class CrouchGetup(action.Action):
             #If none of the ground is solid
             if not any(blocks):
                 actor.doPlatformDrop()
-        elif self.frame >= self.lastFrame:
-            actor.doIdle()
         self.frame += 1
 
 class BaseGrabbing(action.Action):
@@ -435,17 +435,16 @@ class Land(action.Action):
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame / 2
-        if self.frame == self.lastFrame:
-            if actor.keysContain('down'):
-                blocks = actor.checkForGround()
-                blocks = map(lambda x :x.solid,blocks)
-                if not any(blocks):
-                    actor.doPlatformDrop()
-            else:
-                actor.landingLag = 6
-                actor.doIdle()
-                actor.platformPhase = 0
-                actor.preferred_xspeed = 0
+        if actor.keysContain('down'):
+            blocks = actor.checkForGround()
+            blocks = map(lambda x: x.solid, blocks)
+            if not any(blocks):
+                actor.doPlatformDrop()
+        if self.frame >= self.lastFrame:
+            actor.landingLag = 6
+            actor.doIdle()
+            actor.platformPhase = 0
+            actor.preferred_xspeed = 0
         self.frame+= 1
 
 class HelplessLand(action.Action):
@@ -459,19 +458,16 @@ class HelplessLand(action.Action):
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame / 2
+        if actor.keysContain('down'):
+            blocks = actor.checkForGround()
+            blocks = map(lambda x: x.solid, blocks)
+            if not any(blocks):
+                actor.doPlatformDrop()
         if self.frame == self.lastFrame:
-            if actor.keysContain('down'):
-                blocks = actor.checkForGround()
-                #Turn it into a list of true/false if the block is solid
-                blocks = map(lambda x:x.solid,blocks)
-                #If none of the ground is solid
-                if not any(blocks):
-                    actor.doPlatformDrop()
-            else:
-                actor.landingLag = 6
-                actor.doIdle()
-                actor.platformPhase = 0
-                actor.preferred_xspeed = 0
+            actor.landingLag = 6
+            actor.doIdle()
+            actor.platformPhase = 0
+            actor.preferred_xspeed = 0
         self.frame += 1
 
 """

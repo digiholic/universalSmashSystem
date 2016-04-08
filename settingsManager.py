@@ -285,7 +285,7 @@ def saveSettings(settings):
     parser.set('game','rulePreset',str(settings['current_preset']))
     
     for i in range(0,4):
-        if settings['controlType_'+str(i)] == 'button':
+        if settings['controlType_'+str(i)] == 'button' or settings['controlType_'+str(i)] == 'bot':
             sect = 'controls_'+str(i)
             parser.add_section(sect)
             for key in settings[sect].keyBindings:
