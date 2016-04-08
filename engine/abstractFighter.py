@@ -104,11 +104,16 @@ class AbstractFighter():
                 self.rect.y += y
                 self.hitstopVibration = (-x,-y)
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
-            block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
-            for block in block_hit_list:
+            block_x_hit_list = self.getXCollisionsWith(self.gameState.platform_list)
+            block_y_hit_list = self.getYCollisionsWith(self.gameState.platform_list)
+            for block in block_x_hit_list:
                 if block.solid or (self.platformPhase <= 0):
                     self.platformPhase = 0
-                    self.eject(block)
+                    self.Xeject(block)
+            for block in block_y_hit_list:
+                if block.solid or (self.platformPhase <= 0):
+                    self.platformPhase = 0
+                    self.Yeject(block)
 
             self.sprite.updatePosition(self.rect)
 
@@ -144,12 +149,18 @@ class AbstractFighter():
         
         for art in self.articles:
             art.update()
+
+        self.ecb.normalize()
         
         # This will "unstick" us if a sprite change would have gotten us in the wall
-        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
-        for block in block_hit_list:
+        block_x_hit_list = self.getXCollisionsWith(self.gameState.platform_list)
+        block_y_hit_list = self.getYCollisionsWith(self.gameState.platform_list)
+        for block in block_x_hit_list:
             if block.solid:
-                self.eject(block)
+                self.Xeject(block)
+        for block in block_y_hit_list:
+            if block.solid:
+                self.Yeject(block)
 
         # Gravity
         if self.gravityEnabled:
@@ -167,11 +178,16 @@ class AbstractFighter():
             self.rect.x += block.change_x
             self.ecb.normalize()
             
-        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
-        for block in block_hit_list:
+        block_x_hit_list = self.getXCollisionsWith(self.gameState.platform_list)
+        block_y_hit_list = self.getYCollisionsWith(self.gameState.platform_list)
+        for block in block_x_hit_list:
             if block.solid or (self.platformPhase <= 0):
                 self.platformPhase = 0
-                self.eject(block)
+                self.Xeject(block)
+        for block in block_y_hit_list:
+            if block.solid or (self.platformPhase <= 0):
+                self.platformPhase = 0
+                self.Yeject(block)
 
         self.sprite.updatePosition(self.rect)
 
@@ -746,9 +762,11 @@ class AbstractFighter():
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
 
     def getXCollisionsWith(self,spriteGroup):
+        self.sprite.updatePosition(self.rect)
         return pygame.sprite.spritecollide(self.ecb.xBar, spriteGroup, False)
 
     def getYCollisionsWith(self,spriteGroup):
+        self.sprite.updatePosition(self.rect)
         return pygame.sprite.spritecollide(self.ecb.yBar, spriteGroup, False)
         
     def eject(self,other):
@@ -784,6 +802,36 @@ class AbstractFighter():
                 self.rect.top = other.rect.bottom+self.rect.top-self.ecb.yBar.rect.top
                 if self.change_y < other.change_y - self.var['gravity']:
                     self.change_y = -0.8*self.change_y + other.change_y - self.var['gravity']
+
+    def Xeject(self, other):
+        self.ecb.normalize()
+        dxLeft = -self.ecb.previousECB[1].rect.left+other.rect.right+other.change_x
+        dxRight = self.ecb.previousECB[1].rect.right-other.rect.left-other.change_x
+        if self.ecb.xBar.rect.centerx < other.rect.centerx and dxLeft >= dxRight and other.solid:
+            self.rect.right = other.rect.left+self.rect.right-self.ecb.xBar.rect.right
+            if self.change_x > other.change_x:
+                self.change_x = -0.8*self.change_x + other.change_x
+        elif self.ecb.xBar.rect.centerx > other.rect.centerx and dxRight >= dxLeft and other.solid:
+            self.rect.left = other.rect.right+self.rect.left-self.ecb.xBar.rect.left
+            if self.change_x < other.change_x:
+                self.change_x = -0.8*self.change_x + other.change_x
+
+    def Yeject(self, other):
+        self.ecb.normalize()
+        dyUp = -self.ecb.previousECB[0].rect.top+other.rect.bottom+other.change_y
+        dyDown = -self.ecb.previousECB[0].rect.bottom-other.rect.top-other.change_y
+        if self.ecb.yBar.rect.centery < other.rect.centery and dyUp >= dyDown and other.solid:
+            self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.yBar.rect.bottom
+            if self.change_y > other.change_y - self.var['gravity']:
+                self.change_y = other.change_y-self.var['gravity']
+        elif self.ecb.yBar.rect.bottom >= other.rect.top-other.change_y and self.ecb.previousECB[0].rect.bottom <= other.rect.top-other.change_y:
+            self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.yBar.rect.bottom)
+            if self.change_y > other.change_y - self.var['gravity']:
+                self.change_y = other.change_y-self.var['gravity']
+        elif self.ecb.yBar.rect.centery > other.rect.centery and dyDown >= dyUp and other.solid:
+            self.rect.top = other.rect.bottom+self.rect.top-self.ecb.yBar.rect.top
+            if self.change_y < other.change_y - self.var['gravity']:
+                self.change_y = -0.8*self.change_y + other.change_y - self.var['gravity']
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
