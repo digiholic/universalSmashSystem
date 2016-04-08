@@ -203,11 +203,6 @@ class BaseGrabbing(action.Action):
         if not isinstance(newAction, BaseGrabbing) and actor.isGrabbing():
             actor.grabbing.doIdle()
 
-    def update(self, actor):
-        if actor.isGrabbing():
-            actor.grabbing.rect.centerx = actor.rect.centerx+actor.facing*actor.rect.width/2
-            actor.grabbing.rect.bottom = actor.rect.bottom
-
 class Grabbing(BaseGrabbing):
     def __init__(self,length):
         BaseGrabbing.__init__(self, length)
@@ -600,6 +595,11 @@ class Grabbed(Trapped):
     def update(self,actor):
         if self.frame == 0:
             self.lastFrame = 40 + actor.damage/2
+        if (self.height > actor.rect.height):
+            actor.rect.top = actor.grabbedBy.rect.bottom-self.height
+        else:
+            actor.rect.bottom = actor.grabbedBy.rect.bottom
+        actor.rect.centerx = actor.grabbedBy.rect.centerx+actor.grabbedBy.facing*actor.grabbedBy.rect.width/2.0
         Trapped.update(self, actor)
         
 class Release(action.Action):

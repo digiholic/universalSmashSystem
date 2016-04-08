@@ -1608,8 +1608,6 @@ class Grabbed(baseActions.Grabbed):
         baseActions.Grabbed.__init__(self, height)
 
     def setUp(self, actor):
-        if (self.height > 65):
-            self.rect.y += self.height-65
         baseActions.Grabbed.setUp(self, actor)
         actor.sideSpecialUses = 1
 
