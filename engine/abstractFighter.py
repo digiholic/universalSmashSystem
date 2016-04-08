@@ -93,6 +93,7 @@ class AbstractFighter():
         self.players = None
         
     def update(self):
+        self.ecb.normalize()
         #Step one, push the input buffer
         self.inputBuffer.push()
         
@@ -155,14 +156,15 @@ class AbstractFighter():
         
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
+        self.rect.x += self.change_x
+        self.ecb.normalize()
 
         groundBlocks = self.checkForGround()
 
         # Move x and resolve collisions
-        self.rect.x += self.change_x
-        
         for block in groundBlocks:
             self.rect.x += block.change_x
+            self.ecb.normalize()
             
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
@@ -176,12 +178,11 @@ class AbstractFighter():
         if self.invulnerable > -1000:
             self.invulnerable -= 1
 
-        #Update Sprite
-        self.ecb.store()
-        self.ecb.normalize()
-
         if self.platformPhase > 0:
             self.platformPhase -= 1
+
+        self.ecb.normalize()
+        self.ecb.store()
         
     """
     Change speed to get closer to the preferred speed without going over.
@@ -211,7 +212,7 @@ class AbstractFighter():
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
             if block.solid or (self.platformPhase <= 0):
-                if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom) <= block.rect.top-block.change_y:
+                if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.previousECB[1].rect.bottom) <= block.rect.top-block.change_y:
                     self.grounded = True
                     groundBlock.add(block)
         self.rect.y -= 2 if self.change_y < 2 else self.change_y
@@ -744,11 +745,11 @@ class AbstractFighter():
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
         
     def eject(self,other):
-        dxLeft = -self.sprite.boundingRect.left+(self.sprite.boundingRect.left-self.ecb.xBar.rect.left)+other.rect.right+other.change_x
-        dxRight = self.sprite.boundingRect.right-(self.sprite.boundingRect.right-self.ecb.xBar.rect.right)-other.rect.left-other.change_x
+        dxLeft = -self.sprite.boundingRect.left+(self.sprite.boundingRect.left-self.ecb.previousECB[0].rect.left)+other.rect.right+other.change_x
+        dxRight = self.sprite.boundingRect.right-(self.sprite.boundingRect.right-self.ecb.previousECB[0].rect.right)-other.rect.left-other.change_x
 
-        dyUp = -self.sprite.boundingRect.top+(self.sprite.boundingRect.top-self.ecb.yBar.rect.top)+other.rect.bottom+other.change_y
-        dyDown = self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.yBar.rect.bottom)-other.rect.top-other.change_y
+        dyUp = -self.sprite.boundingRect.top+(self.sprite.boundingRect.top-self.ecb.previousECB[1].rect.top)+other.rect.bottom+other.change_y
+        dyDown = self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.previousECB[1].rect.bottom)-other.rect.top-other.change_y
 
         dx = min(dxLeft, dxRight)
         dy = min(dyUp, dyDown)
@@ -767,7 +768,7 @@ class AbstractFighter():
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.sprite.boundingRect.bottom
                 if self.change_y > other.change_y - self.var['gravity']:
                     self.change_y = other.change_y-self.var['gravity']
-            elif self.sprite.boundingRect.bottom >= other.rect.top+other.change_y and self.ecb.yBar.rect.bottom <= other.rect.top-other.change_y:
+            elif self.sprite.boundingRect.bottom >= other.rect.top+other.change_y and self.ecb.previousECB[1].rect.bottom <= other.rect.top-other.change_y:
                 self.rect.bottom = other.rect.top+(self.rect.bottom-self.sprite.boundingRect.bottom)
                 if self.change_y > other.change_y - self.var['gravity']:
                     self.change_y = other.change_y-self.var['gravity']
