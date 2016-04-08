@@ -213,7 +213,7 @@ class AbstractFighter():
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
             if block.solid or (self.platformPhase <= 0):
-                if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.previousECB[0].rect.bottom) <= block.rect.top-block.change_y:
+                if self.ecb.previousECB[0].rect.bottom <= block.rect.top-block.change_y:
                     self.grounded = True
                     groundBlock.add(block)
         self.rect.y -= 2 if self.change_y < 2 else self.change_y
@@ -744,6 +744,12 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
         collideSprite = spriteManager.RectSprite(self.sprite.boundingRect)
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
+
+    def getXCollisionsWith(self,spriteGroup):
+        return pygame.sprite.spritecollide(self.ecb.xBar, spriteGroup, False)
+
+    def getYCollisionsWith(self,spriteGroup):
+        return pygame.sprite.spritecollide(self.ecb.yBar, spriteGroup, False)
         
     def eject(self,other):
         self.ecb.normalize()
