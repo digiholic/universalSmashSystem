@@ -303,8 +303,8 @@ class TryTech(HitStun):
             for block in block_hit_list:
                 if block.solid:
                     print('Wall tech!')
-                    actor.change_x = 0
-                    actor.change_y = 0
+                    actor.change_x *= 0.25
+                    actor.change_y *= 0.25
 
     def update(self, actor):
         if self.frame >= 40:
@@ -435,18 +435,17 @@ class Land(action.Action):
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame / 2
-        elif actor.keysContain('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
-            blocks = actor.checkForGround()
-            #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda x :x.solid,blocks)
-            #If none of the ground is solid
-            if not any(blocks):
-                actor.doPlatformDrop()
         if self.frame == self.lastFrame:
-            actor.landingLag = 6
-            actor.doIdle()
-            actor.platformPhase = 0
-            actor.preferred_xspeed = 0
+            if actor.keysContain('down'):
+                blocks = actor.checkForGround()
+                blocks = map(lambda x :x.solid,blocks)
+                if not any(blocks):
+                    actor.doPlatformDrop()
+            else:
+                actor.landingLag = 6
+                actor.doIdle()
+                actor.platformPhase = 0
+                actor.preferred_xspeed = 0
         self.frame+= 1
 
 class HelplessLand(action.Action):
@@ -460,18 +459,19 @@ class HelplessLand(action.Action):
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame / 2
-        elif actor.keysContain('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
-            blocks = actor.checkForGround()
-            #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda x:x.solid,blocks)
-            #If none of the ground is solid
-            if not any(blocks):
-                actor.doPlatformDrop()
         if self.frame == self.lastFrame:
-            actor.landingLag = 6
-            actor.doIdle()
-            actor.platformPhase = 0
-            actor.preferred_xspeed = 0
+            if actor.keysContain('down'):
+                blocks = actor.checkForGround()
+                #Turn it into a list of true/false if the block is solid
+                blocks = map(lambda x:x.solid,blocks)
+                #If none of the ground is solid
+                if not any(blocks):
+                    actor.doPlatformDrop()
+            else:
+                actor.landingLag = 6
+                actor.doIdle()
+                actor.platformPhase = 0
+                actor.preferred_xspeed = 0
         self.frame += 1
 
 """
@@ -483,8 +483,6 @@ class PlatformDrop(action.Action):
     
     def update(self,actor):
         actor.preferred_yspeed=actor.var['maxFallSpeed']
-        if self.frame == 0:
-            actor.platformPhase = actor.var['dropPhase']
         if self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
