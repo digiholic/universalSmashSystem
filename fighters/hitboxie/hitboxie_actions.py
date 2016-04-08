@@ -1104,7 +1104,7 @@ class UpThrow(baseActions.BaseGrabbing):
         baseActions.BaseGrabbing.__init__(self, 100)
 
     def setUp(self, actor):
-        actor.changeSprite("land")
+        actor.changeSprite("land",3)
 
     def tearDown(self, actor, nextAction):
         baseActions.BaseGrabbing.tearDown(self, actor, nextAction)
@@ -1112,18 +1112,21 @@ class UpThrow(baseActions.BaseGrabbing):
     def update(self, actor):
         baseActions.BaseGrabbing.update(self, actor)
         if self.frame < 8:
-            actor.changeSpriteImage(self.frame/2+1)
+            actor.changeSpriteImage(3-self.frame//2)
         elif self.frame == 8:
             actor.change_y -= 45
             actor.landingLag = 12
-        else:
-            actor.change_y += 2
+        elif self.frame > 10:
+            actor.calc_grav()
+            actor.calc_grav()
+            actor.calc_grav()
+            actor.calc_grav()
             if actor.change_y > actor.var['maxFallSpeed']:
                 actor.change_y = actor.var['maxFallSpeed']
             if actor.grounded:
                 if actor.isGrabbing():
                     actor.grabbing.applyKnockback(9, 12, 0.15, actor.getForwardWithOffset(70))
-                actor.doLand()
+                actor.doFall()
         self.frame += 1
 
 class BackThrow(baseActions.BaseGrabbing):

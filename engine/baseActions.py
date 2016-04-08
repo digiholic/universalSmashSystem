@@ -290,15 +290,19 @@ class TryTech(HitStun):
             actor.unRotate()
             actor.doTrip(-175, direct)
         elif self.frame < 20:
-            actor.rect.x += actor.change_x
-            actor.rect.y += actor.change_y
-            block_hit_list = actor.getCollisionsWith(actor.gameState.platform_list)
-            actor.rect.x -= actor.change_x
-            actor.rect.y -= actor.change_y
-            for block in block_hit_list:
+            actor.ecb.xBar.rect.x += actor.change_x
+            actor.ecb.yBar.rect.y += actor.change_y
+            block_x_hit_list = actor.getXCollisionsWith(actor.gameState.platform_list)
+            block_y_hit_list = actor.getYCollisionsWith(actor.gameState.platform_list)
+            actor.ecb.xBar.rect.x -= actor.change_x
+            actor.ecb.yBar.rect.y -= actor.change_y
+            for block in block_x_hit_list:
                 if block.solid:
                     print('Wall tech!')
                     actor.change_x *= 0.25
+            for block in block_y_hit_list:
+                if block.solid:
+                    print('Ceiling tech!')
                     actor.change_y *= 0.25
 
     def update(self, actor):
