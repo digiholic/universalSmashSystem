@@ -1,5 +1,6 @@
-import spriteObject
 import math
+import pygame
+import spriteManager
 import abstractFighter
 
 class HitboxLock(object):
@@ -7,13 +8,13 @@ class HitboxLock(object):
     # Yes, it's that goddamn simple. 
     # All the HitboxLock class does is serve as a dummy for refcounting
 
-class Hitbox(spriteObject.RectSprite):
+class Hitbox(spriteManager.RectSprite):
     def __init__(self,center,size,owner,hitbox_lock, transcendence=0, priority=0):
         #Flip the distance from center if the fighter is facing the other way
         self.center = center
         if owner.facing == -1:
             self.center = (-self.center[0],self.center[1])
-        spriteObject.RectSprite.__init__(self,[0,0],size,[255,0,0])
+        spriteManager.RectSprite.__init__(self,pygame.Rect([0,0],size),[255,0,0])
         self.rect.center = [owner.rect.center[0] + self.center[0], owner.rect.center[1] + self.center[1]]
         self.owner = owner
         self.article = None

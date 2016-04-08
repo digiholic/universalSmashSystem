@@ -11,11 +11,7 @@ import engine.article
 import engine.controller
 import sys
 from Tix import OptionName
-try:
-    import css
-except ImportError:
-    raise(ImportError)
-    from menu import css
+import css
 import spriteManager
 import battle
 import stages.arena.stage as stage0

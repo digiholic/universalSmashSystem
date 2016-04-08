@@ -104,7 +104,9 @@ class Battle():
         current_stage.initializeCamera()
             
         clock = pygame.time.Clock()
-        
+        clock_speed = 60
+        debug_mode = False
+        debug_pass = False
         """
         ExitStatus breaks us out of the loop. The battle loop can end in many ways, which is reflected here.
         In general, ExitStatus positive means that the game was supposed to end, while a negative value indicates an error.
@@ -135,7 +137,8 @@ class Battle():
                     if event.key == pygame.K_RETURN:
                         print("saving screenshot")
                         pygame.image.save(screen,settingsManager.createPath('screenshot.jpg'))
-                        
+                    elif event.key == pygame.K_RSHIFT:
+                        debug_mode = not debug_mode
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_ESCAPE:
                         exitStatus = 1
@@ -236,10 +239,26 @@ class Battle():
                 countdownSprite.alpha(countAlpha)
                 
             
-            clock.tick(60) #change back
+            clock.tick(clock_speed) #change back
             #pygame.display.update(self.dirty_rects)
             self.dirty_rects = []
             pygame.display.update()
+            if debug_mode:
+                while not debug_pass:
+                    for event in pygame.event.get():
+                        if event.type == pygame.QUIT:
+                            sys.exit()
+                            return -1
+                        
+                        if event.type == pygame.KEYDOWN:
+                            if event.key == pygame.K_RCTRL:
+                                debug_pass = True
+                        
+                        for cont in self.controllers:
+                            cont.getInputs(event)
+                
+            debug_pass = False
+                
         # End while loop
         
         if exitStatus == 1:

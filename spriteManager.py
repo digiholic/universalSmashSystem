@@ -276,7 +276,7 @@ class TextSprite(ImageSprite):
         try:
             self.font = pygame.font.Font(settingsManager.createPath(font+".ttf"),size)
         except Exception as e:
-            self.font = pygame.font.SysFont(font, size)
+            self.font = pygame.font.Font(font, size)
             
         self.image = self.font.render(text,False,color).convert_alpha()
         self.rect = self.image.get_rect()

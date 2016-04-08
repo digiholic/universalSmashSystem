@@ -1,6 +1,6 @@
 from __future__ import print_function
 import pygame
-import spriteObject
+import spriteManager
 import settingsManager
 import math
 
@@ -49,7 +49,6 @@ class Stage():
         self.camera_preferred_position = pygame.Rect(24,16,settingsManager.getSetting('windowWidth'),settingsManager.getSetting('windowHeight'))
         self.camera_preferred_position.midtop = self.size.midtop
         
-        #self.centerSprite = spriteObject.RectSprite([0,0],[32,32])
         self.deadZone = [64,32]
     
         self.cameraUpdate()
@@ -223,7 +222,7 @@ class Stage():
         rects = []
         if settingsManager.getSetting('showPlatformLines'):
             for plat in self.platform_list: 
-                platSprite = spriteObject.RectSprite(plat.rect.topleft,plat.rect.size)
+                platSprite = spriteManager.RectSprite(pygame.Rect(plat.rect.topleft,plat.rect.size))
                 rect = platSprite.draw(screen,self.stageToScreen(platSprite.rect),self.getScale())
                 if rect: rects.append(rect)
         #for ledge in self.platform_ledges:
