@@ -213,7 +213,7 @@ class AbstractFighter():
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
             if block.solid or (self.platformPhase <= 0):
-                if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.previousECB[1].rect.bottom) <= block.rect.top-block.change_y:
+                if self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.previousECB[0].rect.bottom) <= block.rect.top-block.change_y:
                     self.grounded = True
                     groundBlock.add(block)
         self.rect.y -= 2 if self.change_y < 2 else self.change_y
@@ -747,35 +747,35 @@ class AbstractFighter():
         
     def eject(self,other):
         self.ecb.normalize()
-        dxLeft = -self.ecb.previousECB[0].rect.left+other.rect.right+other.change_x
-        dxRight = self.ecb.previousECB[0].rect.right-other.rect.left-other.change_x
+        dxLeft = -self.ecb.previousECB[1].rect.left+other.rect.right+other.change_x
+        dxRight = self.ecb.previousECB[1].rect.right-other.rect.left-other.change_x
 
-        dyUp = -self.ecb.previousECB[1].rect.top+other.rect.bottom+other.change_y
-        dyDown = -self.ecb.previousECB[1].rect.bottom-other.rect.top-other.change_y
+        dyUp = -self.ecb.previousECB[0].rect.top+other.rect.bottom+other.change_y
+        dyDown = -self.ecb.previousECB[0].rect.bottom-other.rect.top-other.change_y
 
         dx = min(dxLeft, dxRight)
         dy = min(dyUp, dyDown)
 
         if dy >= dx:
-            if self.sprite.boundingRect.centerx < other.rect.centerx and dxLeft >= dxRight and other.solid:
-                self.rect.right = other.rect.left+self.rect.right-self.sprite.boundingRect.right
+            if self.ecb.xBar.rect.centerx < other.rect.centerx and dxLeft >= dxRight and other.solid:
+                self.rect.right = other.rect.left+self.rect.right-self.ecb.xBar.rect.right
                 if self.change_x > other.change_x:
                     self.change_x = -0.8*self.change_x + other.change_x
-            elif self.sprite.boundingRect.centerx > other.rect.centerx and dxRight >= dxLeft and other.solid:
-                self.rect.left = other.rect.right+self.rect.left-self.sprite.boundingRect.left
+            elif self.ecb.xBar.rect.centerx > other.rect.centerx and dxRight >= dxLeft and other.solid:
+                self.rect.left = other.rect.right+self.rect.left-self.ecb.xBar.rect.left
                 if self.change_x < other.change_x:
                     self.change_x = -0.8*self.change_x + other.change_x
         elif dx >= dy:
-            if self.sprite.boundingRect.centery < other.rect.centery and dyUp >= dyDown and other.solid:
-                self.rect.bottom = other.rect.top+self.rect.bottom-self.sprite.boundingRect.bottom
+            if self.ecb.yBar.rect.centery < other.rect.centery and dyUp >= dyDown and other.solid:
+                self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.yBar.rect.bottom
                 if self.change_y > other.change_y - self.var['gravity']:
                     self.change_y = other.change_y-self.var['gravity']
-            elif self.sprite.boundingRect.bottom >= other.rect.top+other.change_y and self.ecb.previousECB[1].rect.bottom <= other.rect.top-other.change_y:
-                self.rect.bottom = other.rect.top+(self.rect.bottom-self.sprite.boundingRect.bottom)
+            elif self.ecb.yBar.rect.bottom >= other.rect.top-other.change_y and self.ecb.previousECB[0].rect.bottom <= other.rect.top-other.change_y:
+                self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.yBar.rect.bottom)
                 if self.change_y > other.change_y - self.var['gravity']:
                     self.change_y = other.change_y-self.var['gravity']
-            elif self.sprite.boundingRect.centery > other.rect.centery and dyDown >= dyUp and other.solid:
-                self.rect.top = other.rect.bottom+self.rect.top-self.sprite.boundingRect.top
+            elif self.ecb.yBar.rect.centery > other.rect.centery and dyDown >= dyUp and other.solid:
+                self.rect.top = other.rect.bottom+self.rect.top-self.ecb.yBar.rect.top
                 if self.change_y < other.change_y - self.var['gravity']:
                     self.change_y = -0.8*self.change_y + other.change_y - self.var['gravity']
         
