@@ -207,16 +207,16 @@ class AbstractFighter():
 
     def checkForGround(self):
         self.grounded = False
-        self.rect.y += 2 if self.change_y < 2 else self.change_y
+        self.ecb.yBar.rect.y += 2 if self.change_y < 2 else self.change_y
         groundBlock = pygame.sprite.Group()
-        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+        block_hit_list = self.getYCollisionsWith(self.gameState.platform_list)
+        self.ecb.yBar.rect.y -= 2 if self.change_y < 2 else self.change_y
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
             if block.solid or (self.platformPhase <= 0):
                 if self.ecb.previousECB[0].rect.bottom <= block.rect.top-block.change_y:
                     self.grounded = True
                     groundBlock.add(block)
-        self.rect.y -= 2 if self.change_y < 2 else self.change_y
         return groundBlock
     
     """
