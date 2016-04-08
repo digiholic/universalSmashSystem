@@ -184,6 +184,8 @@ class CrouchGetup(action.Action):
         actor.preferred_xspeed = 0
         if actor.grounded is False:
             actor.doFall()
+        elif self.frame >= self.lastFrame:
+            actor.doIdle()
         elif actor.bufferContains('down') and self.frame > 0:
             blocks = actor.checkForGround()
             #Turn it into a list of true/false if the block is solid
@@ -191,8 +193,6 @@ class CrouchGetup(action.Action):
             #If none of the ground is solid
             if not any(blocks):
                 actor.doPlatformDrop()
-        elif self.frame >= self.lastFrame:
-            actor.doIdle()
         self.frame += 1
 
 class BaseGrabbing(action.Action):
@@ -202,11 +202,6 @@ class BaseGrabbing(action.Action):
     def tearDown(self, actor, newAction):
         if not isinstance(newAction, BaseGrabbing) and actor.isGrabbing():
             actor.grabbing.doIdle()
-
-    def update(self, actor):
-        if actor.isGrabbing():
-            actor.grabbing.rect.centerx = actor.rect.centerx+actor.facing*actor.rect.width/2
-            actor.grabbing.rect.bottom = actor.rect.bottom
 
 class Grabbing(BaseGrabbing):
     def __init__(self,length):
@@ -303,8 +298,8 @@ class TryTech(HitStun):
             for block in block_hit_list:
                 if block.solid:
                     print('Wall tech!')
-                    actor.change_x = 0
-                    actor.change_y = 0
+                    actor.change_x *= 0.25
+                    actor.change_y *= 0.25
 
     def update(self, actor):
         if self.frame >= 40:
@@ -435,14 +430,12 @@ class Land(action.Action):
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame / 2
-        elif actor.keysContain('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
+        if actor.keysContain('down'):
             blocks = actor.checkForGround()
-            #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda x :x.solid,blocks)
-            #If none of the ground is solid
+            blocks = map(lambda x: x.solid, blocks)
             if not any(blocks):
                 actor.doPlatformDrop()
-        if self.frame == self.lastFrame:
+        if self.frame >= self.lastFrame:
             actor.landingLag = 6
             actor.doIdle()
             actor.platformPhase = 0
@@ -460,11 +453,9 @@ class HelplessLand(action.Action):
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame / 2
-        elif actor.keysContain('down') and self.lastFrame - self.frame < actor.var['dropPhase']:
+        if actor.keysContain('down'):
             blocks = actor.checkForGround()
-            #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda x:x.solid,blocks)
-            #If none of the ground is solid
+            blocks = map(lambda x: x.solid, blocks)
             if not any(blocks):
                 actor.doPlatformDrop()
         if self.frame == self.lastFrame:
@@ -483,8 +474,6 @@ class PlatformDrop(action.Action):
     
     def update(self,actor):
         actor.preferred_yspeed=actor.var['maxFallSpeed']
-        if self.frame == 0:
-            actor.platformPhase = actor.var['dropPhase']
         if self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
@@ -606,6 +595,11 @@ class Grabbed(Trapped):
     def update(self,actor):
         if self.frame == 0:
             self.lastFrame = 40 + actor.damage/2
+        if (self.height > actor.rect.height):
+            actor.rect.top = actor.grabbedBy.rect.bottom-self.height
+        else:
+            actor.rect.bottom = actor.grabbedBy.rect.bottom
+        actor.rect.centerx = actor.grabbedBy.rect.centerx+actor.grabbedBy.facing*actor.grabbedBy.rect.width/2.0
         Trapped.update(self, actor)
         
 class Release(action.Action):

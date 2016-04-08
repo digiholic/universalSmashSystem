@@ -190,15 +190,12 @@ class Settings():
             controlType = self.parser.get(groupName, 'controlType')
             
             gamepad = None
-            if not controlType == 'Keyboard' and not controlType == 'Bot':
+            if not controlType == 'Keyboard':
                 gamepad = self.loadGamepad(controlType)
                 if gamepad:
                     self.setting['controlType_'+str(playerNum)] = controlType
                     self.setting[groupName] = gamepad
-            if controlType == 'Bot':
-                self.setting['controltype_'+str(playerNum)] = 'Bot'
-                self.setting[groupName] = engine.cpuPlayer()
-            elif not gamepad:
+            if not gamepad:
                 for opt in self.parser.options(groupName):
                     if self.KeyNameMap.has_key(opt):
                         bindings[self.KeyNameMap[opt]] = self.parser.get(groupName, opt)
@@ -288,7 +285,7 @@ def saveSettings(settings):
     parser.set('game','rulePreset',str(settings['current_preset']))
     
     for i in range(0,4):
-        if settings['controlType_'+str(i)] == 'button':
+        if settings['controlType_'+str(i)] == 'button' or settings['controlType_'+str(i)] == 'bot':
             sect = 'controls_'+str(i)
             parser.add_section(sect)
             for key in settings[sect].keyBindings:
