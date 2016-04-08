@@ -199,9 +199,8 @@ class Settings():
                 for opt in self.parser.options(groupName):
                     if self.KeyNameMap.has_key(opt):
                         bindings[self.KeyNameMap[opt]] = self.parser.get(groupName, opt)
-                if controlType == 'Keyboard':
-                    self.setting['controlType_'+str(playerNum)] = 'Keyboard'
-                    self.setting[groupName] = engine.controller.Controller(bindings)
+                self.setting['controlType_'+str(playerNum)] = 'Keyboard'
+                self.setting[groupName] = engine.controller.Controller(bindings)
                     
             playerNum += 1
     
