@@ -120,6 +120,7 @@ class AbstractFighter():
             #self.hitstopVibration = False #Lolwut?
             self.rect.center = self.hitstopPos
             self.hitstopVibration = (0,0)
+            self.ecb.normalize()
         #Step two, accelerate/decelerate
         if self.grounded: self.accel(self.var['friction'])
         else: self.accel(self.var['airControl'])
@@ -745,11 +746,12 @@ class AbstractFighter():
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
         
     def eject(self,other):
-        dxLeft = -self.sprite.boundingRect.left+(self.sprite.boundingRect.left-self.ecb.previousECB[0].rect.left)+other.rect.right+other.change_x
-        dxRight = self.sprite.boundingRect.right-(self.sprite.boundingRect.right-self.ecb.previousECB[0].rect.right)-other.rect.left-other.change_x
+        self.ecb.normalize()
+        dxLeft = -self.ecb.previousECB[0].rect.left+other.rect.right+other.change_x
+        dxRight = self.ecb.previousECB[0].rect.right-other.rect.left-other.change_x
 
-        dyUp = -self.sprite.boundingRect.top+(self.sprite.boundingRect.top-self.ecb.previousECB[1].rect.top)+other.rect.bottom+other.change_y
-        dyDown = self.sprite.boundingRect.bottom-(self.sprite.boundingRect.bottom-self.ecb.previousECB[1].rect.bottom)-other.rect.top-other.change_y
+        dyUp = -self.ecb.previousECB[1].rect.top+other.rect.bottom+other.change_y
+        dyDown = -self.ecb.previousECB[1].rect.bottom-other.rect.top-other.change_y
 
         dx = min(dxLeft, dxRight)
         dy = min(dyUp, dyDown)
