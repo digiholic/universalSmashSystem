@@ -51,7 +51,8 @@ class Battle():
         screen.fill(self.stage.backgroundColor)
         current_stage = self.stage
         active_hitboxes = pygame.sprite.Group()
-    
+        active_hurtboxes = pygame.sprite.Group()
+        
         #gameObjects
         currentFighters = self.players[:] #We have to slice this list so it passes by value instead of reference
         gameObjects = []
@@ -161,26 +162,12 @@ class Battle():
             drawRects = current_stage.drawBG(screen)
             self.dirty_rects.extend(drawRects)
             
-            for hbox in active_hitboxes:
-                hitbox_clank = pygame.sprite.spritecollide(hbox,active_hitboxes, False)
-                for other in hitbox_clank:
-                    if other is not hbox:
-                        if not hbox.compareTo(other):
-                            if hasattr(hbox.owner,'current_action') and hbox.article == None:
-                                hbox.owner.current_action.onClank(hbox.owner)
-                            print("CLANK!")
-                            hbox.hitbox_lock = self.nullLock
-                        if not other.compareTo(hbox):
-                            if hasattr(other.owner,'current_action') and hbox.article == None:
-                                other.owner.current_action.onClank(other.owner)
-                            print("CLANK!")
-                            other.hitbox_lock = self.nullLock
-            
             for obj in gameObjects:
                 obj.update()
                 if hasattr(obj,'active_hitboxes'):
                     active_hitboxes.add(obj.active_hitboxes)
-                
+                if hasattr(obj, 'hurtbox'):
+                    active_hurtboxes.add(obj.hurtbox)
                 offset = current_stage.stageToScreen(obj.rect)
                 scale =  current_stage.getScale()
                 drawRect = obj.draw(screen,offset,scale)
@@ -191,10 +178,7 @@ class Battle():
                         drawRect = obj.hurtbox.draw(screen,offset,scale)
                         if drawRect: self.dirty_rects.append(drawRect)
                     
-                    hitbox_collisions = pygame.sprite.spritecollide(obj.hurtbox, active_hitboxes, False)
-                    for hbox in hitbox_collisions:
-                        if hbox.owner != obj:
-                            hbox.onCollision(obj)
+                    
                 if hasattr(obj, 'articles'):
                     for art in obj.articles:
                         offset = current_stage.stageToScreen(art.rect)
@@ -206,11 +190,36 @@ class Battle():
                     for hbox in active_hitboxes:
                         drawRect = hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
                         if drawRect: self.dirty_rects.append(drawRect)
-            #hitbox collision with hurtboxes is covered above, this will check for collision with stages
-            for hitbox in active_hitboxes:
-                hitbox_collisions = pygame.sprite.spritecollide(hitbox, self.stage.platform_list, False)
-                for wall in hitbox_collisions:
-                    hitbox.onCollision(wall)
+            
+            for hbox in active_hitboxes:
+                #first, check for clanks
+                hitbox_clank = pygame.sprite.spritecollide(hbox,active_hitboxes, False)
+                hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner)]
+                if hitbox_clank: print(hitbox_clank)
+                for other in hitbox_clank:
+                    print('Other hitbox: '+str(other))
+                    if not hbox.compareTo(other):
+                        if hasattr(hbox.owner,'current_action') and hbox.article == None:
+                            hbox.owner.current_action.onClank(hbox.owner)
+                        print("CLANK!")
+                        hbox.hitbox_lock = self.nullLock
+                    if not other.compareTo(hbox):
+                        if hasattr(other.owner,'current_action') and hbox.article == None:
+                            other.owner.current_action.onClank(other.owner)
+                        print("CLANK!")
+                        other.hitbox_lock = self.nullLock
+                
+                #then, hurtbox collisions
+                hitbox_collisions = pygame.sprite.spritecollide(hbox, active_hurtboxes, False)
+                for hurtbox in hitbox_collisions:
+                    if hbox.owner != hurtbox.owner:
+                        hbox.onCollision(hurtbox.owner)
+                        
+                #then platform collisions
+                platform_collisions = pygame.sprite.spritecollide(hbox, self.stage.platform_list, False)
+                for wall in platform_collisions:
+                    hbox.onCollision(wall)            
+            
             for fight in currentFighters:
                 if fight.rect.right < current_stage.blast_line.left or fight.rect.left > current_stage.blast_line.right or fight.rect.top > current_stage.blast_line.bottom or fight.rect.bottom < current_stage.blast_line.top:
                     if not trackStocks:

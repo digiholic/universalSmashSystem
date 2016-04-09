@@ -40,7 +40,13 @@ class Hitbox(spriteManager.RectSprite):
 
     def recenterSelfOnOwner(self):
         self.rect.center = [self.owner.rect.center[0] + self.x_offset*self.owner.facing, self.owner.rect.center[1] + self.y_offset]
+ 
+class Hurtbox(spriteManager.RectSprite):
+    def __init__(self,owner,rect,color):
+        self.owner = owner
+        spriteManager.RectSprite.__init__(self, rect, color)
         
+       
 class DamageHitbox(Hitbox):
     def __init__(self,center,size,owner,
                  damage,baseKnockback,knockbackGrowth,trajectory,
@@ -71,6 +77,9 @@ class DamageHitbox(Hitbox):
         
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(other)
+    
+    def compareTo(self, other):
+        return Hitbox.compareTo(self, other)
         
     def update(self):
         Hitbox.update(self)
@@ -210,13 +219,15 @@ class ReflectorHitbox(Hitbox):
             if hasattr(other.article, 'changeOwner'):
                 other.article.changeOwner(self.owner)
             if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
-                article_direction = math.atan2(other.article.change_y, other.article.change_x)*180/math.pi
-                article_speed = math.hypot(other.article.change_x, other.article.change_y)
-                (other.article.change_x, other.article.change_y) = abstractFighter.getXYFromDM(article_speed*self.velocity_multiplier, 2*self.angle-article_direction)
+                other.article.change_x *= -1
+                other.article.change_y *= -1
+                #article_direction = math.atan2(other.article.change_y, other.article.change_x)*180/math.pi
+                #article_speed = math.hypot(other.article.change_x, other.article.change_y)
+                #(other.article.change_x, other.article.change_y) = abstractFighter.getXYFromDM(article_speed*self.velocity_multiplier, 2*self.angle-article_direction)
             if hasattr(other, 'damage'):
                 self.priority -= other.damage
                 other.damage = int(math.floor(other.damage*self.damage_multiplier))
-
+        
         return Hitbox.compareTo(self, other)
 
     def onCollision(self, other):

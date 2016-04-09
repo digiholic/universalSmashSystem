@@ -211,25 +211,27 @@ class Settings():
         pygame.joystick.init()
         controllerParser = SafeConfigParser()
         controllerParser.read(os.path.join(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings'),'gamepads.ini'))
-        joystick = None
-        for pad in range(pygame.joystick.get_count()):
-            joy = pygame.joystick.Joystick(pad)
-            if joy.get_name() == controllerName:
-                joystick = joy
-                joystick.init()
+        if controllerParser.has_section(controllerName):
+            joystick = None
+            for pad in range(pygame.joystick.get_count()):
+                joy = pygame.joystick.Joystick(pad)
+                if joy.get_name() == controllerName:
+                    joystick = joy
+                    joystick.init()
+            
+            if joystick:
+                axes = {}
+                buttons = {}
+                for opt in controllerParser.options(controllerName):
+                    if opt[0] == 'a':
+                        axes[int(opt[1:])] = tuple(controllerParser.get(controllerName, opt)[1:-1].split(','))
+                    elif opt[0] == 'b':
+                        buttons[int(opt[1:])] = controllerParser.get(controllerName, opt)
+            
+                padBindings = engine.controller.PadBindings(joystick.get_id(),axes,buttons)
+                return engine.controller.GamepadController(padBindings)
         
-        if joystick:
-            axes = {}
-            buttons = {}
-            for opt in controllerParser.options(controllerName):
-                if opt[0] == 'a':
-                    axes[int(opt[1:])] = tuple(controllerParser.get(controllerName, opt)[1:-1].split(','))
-                elif opt[0] == 'b':
-                    buttons[int(opt[1:])] = controllerParser.get(controllerName, opt)
-        
-            padBindings = engine.controller.PadBindings(joystick.get_id(),axes,buttons)
-            return engine.controller.GamepadController(padBindings)
-        else: return None
+        return None
     
     def getGamepadList(self):
         controllerParser = SafeConfigParser()

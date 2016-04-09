@@ -4,6 +4,7 @@ import math
 import settingsManager
 import spriteManager
 import engine.article as article
+import hitbox
 import math
 import weakref
 
@@ -68,7 +69,7 @@ class AbstractFighter():
         
         #initialize the action
         self.current_action = None
-        self.hurtbox = spriteManager.RectSprite(self.sprite.boundingRect,[255,255,0])
+        self.hurtbox = hitbox.Hurtbox(self,self.sprite.boundingRect,[255,255,0])
         
         #state variables and flags
         self.angle = 0
