@@ -390,7 +390,13 @@ class AbstractFighter():
         self.changeAction(baseActions.LedgeGrab(ledge))
         
     def doLedgeGetup(self):
-        self.changeAction(baseActions.LedgeGetup())
+        return None
+
+    def doLedgeAttack(self):
+        return None
+
+    def doLedgeRoll(self):
+        return None
         
     def doGetTrumped(self):
         print("trumped")

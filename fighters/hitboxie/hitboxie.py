@@ -121,6 +121,12 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def doLedgeGetup(self):
         self.changeAction(self.actions.LedgeGetup())
 
+    def doLedgeAttack(self):
+        self.changeAction(self.actions.LedgeAttack())
+
+    def doLedgeRoll(self):
+        self.changeAction(self.actions.LedgeRoll())
+
     def doGroundGrab(self):
         self.changeAction(self.actions.GroundGrab())
 

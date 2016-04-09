@@ -33,9 +33,9 @@ class Hitbox(spriteManager.RectSprite):
         return
 
     def compareTo(self, other):
-        if hasattr(other, 'transcendence') and hasattr(other, 'priority'):
+        if (hasattr(other, 'transcendence') and hasattr(other, 'priority')) and not isinstance(other, ReflectorHitbox):
             if self.transcendence+other.transcendence <= 0:
-                return self.priority - other.priority
+                return (self.priority - other.priority) >= 8
         return True
 
     def recenterSelfOnOwner(self):
@@ -219,10 +219,7 @@ class ReflectorHitbox(Hitbox):
                 other.damage = int(math.floor(other.damage*self.damage_multiplier))
                 print(other.damage)
 
-        if hasattr(other, 'transcendence') and hasattr(other, 'priority'):
-            if self.transcendence+other.transcendence <= 0:
-                return self.priority - other.priority
-        return True
+        return Hitbox.compareTo(self, other)
 
     def onCollision(self, other):
         Hitbox.onCollision(self, other)
@@ -251,7 +248,4 @@ class PerfectShieldHitbox(ReflectorHitbox):
             if hasattr(other, 'damage'):
                 self.priority -= other.damage
                 other.damage = int(math.floor(other.damage*self.damage_multiplier))
-        if hasattr(other, 'transcendence') and hasattr(other, 'priority'):
-            if self.transcendence+other.transcendence <= 0:
-                return self.priority - other.priority
-        return True
+        return Hitbox.compareTo(self, other)

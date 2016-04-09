@@ -19,7 +19,7 @@ class SplatArticle(article.AnimatedArticle):
     # Override the onCollision of the hitbox
     def onCollision(self, other):
         othersClasses = list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]
-        if 'AbstractFighter' in othersClasses or 'Platform' in othersClasses:
+        if ('AbstractFighter' in othersClasses or 'Platform' in othersClasses) and self.owner != other:
             self.hitbox.kill()
             self.kill()
         #TODO check for verticality of platform landing
@@ -221,16 +221,12 @@ class ForwardSpecial(action.Action):
 
         self.frame += 1
 
-
 class ShineArticle(article.AnimatedArticle):
     def __init__(self, owner):
         article.AnimatedArticle.__init__(self, owner.article_path+'/hitboxie_shine.png', owner, [0,0], imageWidth=92,length=8)
-        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)
-        self.hitbox.article = self
             
     def update(self):
         self.rect.center = self.owner.sprite.boundingRect.center
-        self.hitbox.rect.center = self.rect.center #update adjusts to the actor
         if self.frame == 0:
             self.getImageAtIndex(0)
         elif self.frame == 2:
@@ -243,7 +239,6 @@ class ShineArticle(article.AnimatedArticle):
             self.frame = 2
         else:
             self.frame += 1
-        
             
 class DownSpecial(action.Action):
     def __init__(self):
@@ -251,12 +246,14 @@ class DownSpecial(action.Action):
     
     def setUp(self, actor):
         self.article = ShineArticle(actor)
-        self.damageHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 6, 9, 0.1, 330, 1.5, hitbox.HitboxLock())
-        self.reflectorHitbox = hitbox.ReflectorHitbox([0,0], [80,80], actor, hitbox.HitboxLock(), 1.3, 1.1,100)
+        self.damageHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 6, 9, 0.1, 330, 1.5, hitbox.HitboxLock(), 1, 1, 2)
+        self.reflectorHitbox = hitbox.ReflectorHitbox([0,0], [80,80], actor, hitbox.HitboxLock(), 1.3, 1.1,100, 0)
         return action.Action.setUp(self, actor)           
     
     def tearDown(self, actor, newAction):
         self.article.kill()
+        self.damageHitbox.kill()
+        self.reflectorHitbox.kill()
         actor.mask = None
         return action.Action.tearDown(self, actor, newAction)
     
@@ -1656,7 +1653,7 @@ class LedgeGrab(baseActions.LedgeGrab):
 
 class LedgeGetup(baseActions.LedgeGetup):
     def __init__(self):
-        baseActions.LedgeGetup.__init__(self)
+        baseActions.LedgeGetup.__init__(self,27)
 
     def setUp(self,actor):
         baseActions.LedgeGetup.setUp(self,actor)
@@ -1667,12 +1664,12 @@ class LedgeGetup(baseActions.LedgeGetup):
     def update(self,actor):
         if self.frame == 0:
             actor.changeSprite("getup",0)
-        if (self.frame >= 0) & (self.frame <= 6):
+        if (self.frame >= 0) and (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
             if self.frame > 2:
                 actor.change_y = -19
             actor.change_x = 0
-        if (self.frame >= 8) & (self.frame <= 14):
+        if (self.frame >= 8) and (self.frame <= 14):
             actor.change_y = 0
             actor.change_x = 11.5*actor.facing
             if (self.frame % 2 == 0):
@@ -1681,6 +1678,93 @@ class LedgeGetup(baseActions.LedgeGetup):
             if (self.frame % 3 == 2):
                 actor.changeSpriteImage(self.frame//3+6)
             actor.change_x = actor.var['maxGroundSpeed']*actor.facing
+        baseActions.LedgeGetup.update(self, actor)
+
+class LedgeAttack(baseActions.LedgeGetup):
+    def __init__(self):
+        baseActions.LedgeGetup.__init__(self,35)
+
+    def setUp(self,actor):
+        baseActions.LedgeGetup.setUp(self, actor)
+        self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,8,0.2,20,1,hitbox.HitboxLock())
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,0,1,1.5)
+
+    def tearDown(self,actor,other):
+        self.dashHitbox.kill()
+        self.chainHitbox.kill()
+        actor.change_x = 0
+        actor.preferred_xspeed = 0
+
+    def update(self, actor):
+        if self.frame == 0:
+            actor.changeSprite("getup",0)
+        if (self.frame >= 0) and (self.frame <= 6):
+            actor.changeSpriteImage(self.frame)
+            if self.frame > 2:
+                actor.change_y = -19
+            actor.change_x = 0
+        if (self.frame >= 8) and (self.frame <= 14):
+            actor.change_y = 0
+            actor.change_x = 11.5*actor.facing
+            if (self.frame % 2 == 0):
+                actor.changeSpriteImage(self.frame//2+4)
+        if self.frame == 15:
+            actor.change_x = actor.var['maxGroundSpeed']*actor.facing
+            actor.preferred_xspeed = actor.var['maxGroundSpeed']*actor.facing
+        if self.frame >= 15 and self.frame <= 22:
+            actor.changeSprite("nair", (self.frame-15)%16)
+        if self.frame%2 == 0 and self.frame > 22:
+            actor.changeSprite("nair", (self.frame//2-11)%16)
+        self.dashHitbox.update()
+        self.chainHitbox.update()
+        if self.frame == 17:
+            actor.active_hitboxes.add(self.chainHitbox)
+        if self.frame == 21:
+            self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
+        if self.frame == 25:
+            self.chainHitbox.kill()
+            actor.active_hitboxes.add(self.dashHitbox)
+        if self.frame == 29:
+            self.dashHitbox.kill()
+            actor.preferred_xspeed = 0
+        baseActions.LedgeGetup.update(self, actor)
+
+class LedgeRoll(baseActions.LedgeGetup):
+    def __init__(self):
+        baseActions.LedgeGetup.__init__(self, 49)
+
+    def setUp(self, actor):
+        baseActions.LedgeGetup.setUp(self, actor)
+
+    def tearDown(self, actor, nextAction):
+        actor.change_x = 0
+        if actor.invulnerable > 0:
+            actor.invulnerable = 0
+        actor.mask = None
+
+    def update(self, actor):
+        if self.frame == 0:
+            actor.invulnerable = 43
+            actor.createMask([255,255,255], 32, True, 24)
+            actor.changeSprite("getup",0)
+        if (self.frame >= 0) and (self.frame <= 6):
+            actor.changeSpriteImage(self.frame)
+            if self.frame > 2:
+                actor.change_y = -19
+            actor.change_x = 0
+        if (self.frame >= 8) and (self.frame <= 14):
+            actor.change_y = 0
+            actor.change_x = 11.5*actor.facing
+            if (self.frame % 2 == 0):
+                actor.changeSpriteImage(self.frame//2+4)
+        if self.frame == 15:
+            actor.change_x = actor.var['maxGroundSpeed']*actor.facing
+        if self.frame == 17:
+            actor.changeSprite("land", 1)
+            actor.preferred_xspeed = 0
+        if self.frame == 39:
+            actor.changeSprite("land", 0)
+            actor.flip()
         baseActions.LedgeGetup.update(self, actor)
 
 ########################################################

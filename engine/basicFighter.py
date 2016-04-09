@@ -170,6 +170,12 @@ class BasicFighter():
         
     def doLedgeGetup(self):
         self.changeAction(self.actions.LedgeGetup())
+
+    def doLedgeAttack(self):
+        self.changeAction(self.actions.LedgeAttack())
+
+    def doLedgeRoll(self):
+        self.changeAction(self.actions.LedgeRoll())
         
     def doGetTrumped(self):
         print("trumped")

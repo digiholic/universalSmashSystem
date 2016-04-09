@@ -838,8 +838,8 @@ class LedgeGrab(action.Action):
 @ai-move-stop
 """
 class LedgeGetup(action.Action):
-    def __init__(self):
-        action.Action.__init__(self, 27)
+    def __init__(self, length):
+        action.Action.__init__(self, length)
     
     def update(self,actor):
         if self.frame >= self.lastFrame:
@@ -973,7 +973,13 @@ def shieldState(actor):
 def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     actor.setSpeed(0, actor.getFacingDirection())
-    if actor.bufferContains('jump', 8):
+    if actor.bufferContains('shield', 8):
+        actor.ledgeLock = True
+        actor.doLedgeRoll()
+    elif actor.bufferContains('attack', 8):
+        actor.ledgeLock = True
+        actor.doLedgeAttack()
+    elif actor.bufferContains('jump', 8):
         actor.ledgeLock = True
         actor.doJump()
     elif actor.bufferContains(key):
