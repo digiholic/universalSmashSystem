@@ -835,6 +835,50 @@ class NeutralAir(action.Action):
             actor.changeAction(Fall())
         self.frame += 1
 
+class BackAir(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 48)
+        
+    def setUp(self, actor):
+        actor.changeSprite('bair')
+        self.sweetspotHitbox = hitbox.DamageHitbox([-14,0], [64,46], actor, 14, 10, 0.2, 180, 1, hitbox.HitboxLock())
+        
+    def tearDown(self, actor, newAction):
+        self.sweetspotHitbox.kill()
+    
+    def stateTransitions(self, actor):
+        if self.frame >= 24 and self.frame < 40:
+            baseActions.airControl(actor)
+        elif self.frame >= 40:
+            baseActions.airState(actor)
+    
+    def update(self, actor):
+        if self.frame == 0:
+            actor.changeSpriteImage(0)
+        elif self.frame == 2:
+            actor.changeSpriteImage(1)
+        elif self.frame == 4:
+            actor.changeSpriteImage(2)
+            actor.change_x = 0
+        elif self.frame == 6:
+            actor.changeSpriteImage(3)
+        elif self.frame == 14:
+            actor.changeSpriteImage(4)
+        elif self.frame == 16:
+            actor.changeSpriteImage(5)
+            actor.active_hitboxes.add(self.sweetspotHitbox)
+            actor.change_x = 10 * actor.facing
+        elif self.frame == 18:
+            self.sweetspotHitbox.kill()
+            actor.changeSpriteImage(6)
+        elif self.frame == 38:
+            actor.changeSpriteImage(7)
+        elif self.frame >= 40:
+            actor.changeSprite('jump')
+        elif self.frame == self.lastFrame:
+            actor.doFall()
+        self.frame += 1
+        
 """
 @ai-move-down
 @ai-move-stop
