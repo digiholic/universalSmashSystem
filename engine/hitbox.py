@@ -205,19 +205,17 @@ class ReflectorHitbox(Hitbox):
         self.angle = angle
 
     def compareTo(self, other):
-        if other.article != None and other.article.owner != self.owner:
+        if other.article != None and other.article.owner != self.owner and hasattr(other.article, 'tags') and 'projectile' in other.article.tags:
             print("Reflected!")
-            if hasattr(other.article, 'owner'):
-                other.owner = self.owner
-                other.article.owner = self.owner
-            if hasattr(other.article, 'tags') and 'projectile' in other.article.tags:
+            if hasattr(other.article, 'changeOwner'):
+                other.article.changeOwner(self.owner)
+            if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
                 article_direction = math.atan2(other.article.change_y, other.article.change_x)*180/math.pi
                 article_speed = math.hypot(other.article.change_x, other.article.change_y)
                 (other.article.change_x, other.article.change_y) = abstractFighter.getXYFromDM(article_speed*self.velocity_multiplier, 2*self.angle-article_direction)
             if hasattr(other, 'damage'):
                 self.priority -= other.damage
                 other.damage = int(math.floor(other.damage*self.damage_multiplier))
-                print(other.damage)
 
         return Hitbox.compareTo(self, other)
 
@@ -235,12 +233,11 @@ class PerfectShieldHitbox(ReflectorHitbox):
         ReflectorHitbox.__init__(self,center,size,owner,hitbox_lock,1,1,9999,0)
 
     def compareTo(self, other):
-        if other.article != None and other.article.owner != self.owner:
+        if other.article != None and other.article.owner != self.owner and hasattr(other.article, 'tags') and 'projectile' in other.article.tags:
             print("Perfect shield!")
-            if hasattr(other.article, 'owner'):
-                other.owner = self.owner
-                other.article.owner = self.owner
-            if hasattr(other.article, 'tags') and 'projectile' in other.article.tags:
+            if hasattr(other.article, 'changeOwner'):
+                other.article.changeOwner(self.owner)
+            if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
                 self_direction = abstractFighter.getDirectionBetweenPoints(self.rect.center, other.article.rect.center)
                 article_direction = math.atan2(other.article.change_y, other.article.change_x)*180/math.pi
                 article_speed = math.hypot(other.article.change_x, other.article.change_y)

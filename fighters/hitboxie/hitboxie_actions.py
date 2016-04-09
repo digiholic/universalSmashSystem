@@ -15,11 +15,15 @@ class SplatArticle(article.AnimatedArticle):
         self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)
         self.hitbox.article = self
         self.tags = ['projectile']
+
+    def changeOwner(self, newOwner):
+        self.owner = newOwner
+        self.hitbox.owner = newOwner
             
     # Override the onCollision of the hitbox
     def onCollision(self, other):
         othersClasses = list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]
-        if ('AbstractFighter' in othersClasses or 'Platform' in othersClasses) and self.owner != other:
+        if ('AbstractFighter' in othersClasses or 'Platform' in othersClasses):
             self.hitbox.kill()
             self.kill()
         #TODO check for verticality of platform landing
@@ -29,6 +33,7 @@ class SplatArticle(article.AnimatedArticle):
         self.rect.y += self.change_y
         self.change_y += 0.5
         self.hitbox.rect.center = self.rect.center #update adjusts to the actor
+        self.hitbox.owner = self.owner
         self.frame += 1
             
         if self.frame > 120:
