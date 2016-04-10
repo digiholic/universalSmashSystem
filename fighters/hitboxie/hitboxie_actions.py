@@ -854,6 +854,7 @@ class BackAir(action.Action):
             baseActions.airState(actor)
     
     def update(self, actor):
+        actor.landingLag = 18
         if self.frame == 0:
             actor.changeSpriteImage(0)
         elif self.frame == 2:
@@ -879,7 +880,62 @@ class BackAir(action.Action):
         elif self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
+
+class ForwardAir(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 54)
         
+    def setUp(self, actor):
+        actor.changeSprite('fair')
+        sharedLock = hitbox.HitboxLock()
+        self.sourSpotHitbox = hitbox.DamageHitbox([-20,-2], [40,50], actor, 16, 8, 0.2, 50, 1, sharedLock)
+        self.sweetSpotHitbox = hitbox.DamageHitbox([23,35], [46,16], actor, 16, 12, 0.2, 270, 1, sharedLock)
+        
+    def tearDown(self, actor, newAction):
+        self.sourSpotHitbox.kill()
+        self.sweetSpotHitbox.kill()
+    
+    def stateTransitions(self, actor):
+        baseActions.airControl(actor)
+    
+    def update(self, actor):
+        actor.landingLag = 38
+        self.sourSpotHitbox.update()
+        self.sweetSpotHitbox.update()
+        if self.frame == 0:
+            actor.changeSpriteImage(0)
+        elif self.frame == 3:
+            actor.changeSpriteImage(1)
+        elif self.frame == 6:
+            actor.changeSpriteImage(2)
+        elif self.frame == 9:
+            actor.changeSpriteImage(3)
+        elif self.frame == 18:
+            actor.changeSpriteImage(4)
+        elif self.frame == 21:
+            actor.changeSpriteImage(5)
+            actor.active_hitboxes.add(self.sourSpotHitbox)
+        elif self.frame == 24:
+            actor.changeSpriteImage(6)
+            self.sourSpotHitbox.x_offset = 20
+        elif self.frame == 27:
+            actor.changeSpriteImage(7)
+            actor.active_hitboxes.add(self.sweetSpotHitbox)
+        elif self.frame == 30:
+            actor.changeSpriteImage(8)
+            self.sweetSpotHitbox.kill()
+        elif self.frame == 33:
+            actor.changeSpriteImage(9)
+            self.sourSpotHitbox.kill()
+        elif self.frame == 36:
+            actor.changeSpriteImage(10)
+        elif self.frame == 39:
+            actor.changeSpriteImage(11)
+        elif self.frame == 42:
+            actor.changeSprite('jump')
+        elif self.frame == self.lastFrame:
+            actor.doFall()
+        self.frame += 1
 """
 @ai-move-down
 @ai-move-stop

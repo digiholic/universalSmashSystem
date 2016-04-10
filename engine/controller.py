@@ -133,9 +133,9 @@ class PadBindings():
         axisTuple = self.axisBindings.get(axis) 
         if axisTuple:
             #if the value is above deadzone
-            if value > 0.1:
+            if value > 0.2750:
                 return axisTuple[1]
-            elif value < -0.1:
+            elif value < -0.2750:
                 return axisTuple[0]
             else:
                 return 0

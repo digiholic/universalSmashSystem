@@ -195,7 +195,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def doAirAttack(self):
         (forward, backward) = self.getForwardBackwardKeys()
         if (self.keysContain(forward)):
-            pass
+            self.changeAction(self.actions.ForwardAir())
         elif (self.keysContain(backward)):
             self.changeAction(self.actions.BackAir())
         elif(self.keysContain('up')):
