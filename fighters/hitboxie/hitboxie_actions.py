@@ -147,7 +147,7 @@ class ForwardSpecial(action.Action):
                     elif other.grounded:
                         other.dealDamage(self.damage)
                         (actorDirect,_) = self.owner.getDirectionMagnitude()
-                        other.doTrip(35, other.getForwardWithOffset(actorDirect))
+                        other.doTrip(55, other.getForwardWithOffset(actorDirect))
                     else:
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
@@ -167,7 +167,7 @@ class ForwardSpecial(action.Action):
         actor.changeSpriteImage(self.spriteImage%16)
         if self.frame <= self.lastFrame-2:
             self.spriteImage += 1
-            if self.frame <= 1:
+            if self.frame <= 24:
                 actor.preferred_xspeed = 0
                 actor.change_x = 0
                 actor.preferred_yspeed = 2
@@ -182,9 +182,9 @@ class ForwardSpecial(action.Action):
                 self.chainHitbox.update()
                 actor.active_hitboxes.add(self.chainHitbox)
                 (key, invkey) = actor.getForwardBackwardKeys()
-                if self.frame == 2:
+                if self.frame == 25:
                     actor.setSpeed(actor.var['runSpeed'], actor.getForwardWithOffset(0))
-                    actor.change_y = -8
+                    actor.change_y = -12
                 if self.spriteImage%6 == 0:
                     self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
                 if actor.keysContain(invkey):
@@ -214,10 +214,10 @@ class ForwardSpecial(action.Action):
             self.chainHitbox.kill()
             if self.frame >= self.lastFrame:
                 if actor.grounded:
-                    actor.landingLag = 15
+                    actor.landingLag = 35
                     actor.doLand()
                 else:
-                    actor.landingLag = 15
+                    actor.landingLag = 35
                     actor.doFall()
 
         self.frame += 1
@@ -248,7 +248,7 @@ class DownSpecial(action.Action):
     def setUp(self, actor):
         self.article = ShineArticle(actor)
         self.damageHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 6, 9, 0.1, 330, 1.5, hitbox.HitboxLock(), 1, 1, 2)
-        self.reflectorHitbox = hitbox.ReflectorHitbox([0,0], [92,92], actor, hitbox.HitboxLock(), 1.3, 1.1,100, 0)
+        self.reflectorHitbox = hitbox.ReflectorHitbox([0,0], [92,92], actor, hitbox.HitboxLock(), 1.3, 1.1, 100, 0)
         return action.Action.setUp(self, actor)           
     
     def tearDown(self, actor, newAction):
