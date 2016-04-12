@@ -241,7 +241,7 @@ class DownSpecial(action.Action):
     def setUp(self, actor):
         self.article = ShineArticle(actor)
         self.damageHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 6, 9, 0.1, 330, 1.5, hitbox.HitboxLock(), 1, 1, 2)
-        self.reflectorHitbox = hitbox.ReflectorHitbox([0,0], [92,92], actor, hitbox.HitboxLock(), 1.3, 1.1, 100, 0)
+        self.reflectorHitbox = hitbox.ReflectorHitbox([0,0], [92,92], actor, hitbox.HitboxLock(), 1.3, 1.1, 100, 90)
         return action.Action.setUp(self, actor)           
     
     def tearDown(self, actor, newAction):

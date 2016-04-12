@@ -344,42 +344,6 @@ class MovingPlatform(Platform):
         
         self.xdist = max(1,self.rightPoint[0] - self.leftPoint[0])
         self.ydist = max(1,self.rightPoint[1] - self.leftPoint[1])
-
-"""         
-class MovingPlatform(Platform):
-    def __init__(self, leftPoint, rightPoint, minHeight, maxHeight, moveSpeed = 1, grabbable = (False,False), solid = False):
-        Platform.__init__(self, leftPoint, rightPoint, grabbable)
-        self.solid = solid
-        self.minHeight = minHeight
-        self.maxHeight = maxHeight
-        self.rising = False
-        self.height = leftPoint[1]
-        self.speed = moveSpeed
-        
-    def update(self):
-        if self.rising:
-            self.height -= self.speed
-            self.change_y = self.speed
-        else:
-            self.height += self.speed
-            self.change_y = self.speed
-        if self.height < self.minHeight:
-            self.rising = False
-            self.height = self.minHeight
-            self.change_y = 0
-        if self.height > self.maxHeight:
-            self.rising = True
-            self.height = self.maxHeight
-            self.change_y = 0
-        
-        self.leftPoint[1] = self.height
-        self.rightPoint[1] = self.height
-        
-        self.xdist = max(1,self.rightPoint[0] - self.leftPoint[0])
-        self.ydist = max(1,self.rightPoint[1] - self.leftPoint[1])
-
-        self.rect = pygame.Rect([self.leftPoint[0],min(self.leftPoint[1],self.rightPoint[1])], [self.xdist,self.ydist])
-"""   
   
 """
 Ledge object. This is what the fighter interacts with.

@@ -144,12 +144,12 @@ class AutolinkHitbox(DamageHitbox):
                 else:
                     if self.article is None:
                         velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
-                        angle = math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
+                        angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
                         self.owner.hitstop = math.floor(self.damage / 4 + 2)
                         other.applyKnockback(self.damage, velocity*self.velocity_multiplier, 0, angle, 0, self.hitstun)
                     elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
                         velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
-                        angle = math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
+                        angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
                         other.applyKnockback(self.damage, velocity*self.velocity_multiplier, 0, angle, 0, self.hitstun)
 
         if self.article and hasattr(self.article, 'onCollision'):
@@ -173,14 +173,21 @@ class FunnelHitbox(DamageHitbox):
                     if self.article is None:
                         self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
                 else:
-                    x_diff = self.rect.centerx - other.rect.centerx
-                    y_diff = self.rect.centery - other.rect.centery
-                    x_vel = self.knockback*math.cos(trajectory*math.pi/180)+self.x_draw*x_diff
-                    y_vel = self.knockback*math.sin(trajectory*math.pi/180)+self.y_draw*y_diff
-                    velocity = math.hypot(x_vel,y_vel)
-                    direction = math.atan2(y_vel,x_vel)*180/math.pi
-                    self.owner.hitstop = math.floor(self.damage / 4 + 2)
-                    other.applyKnockback(self.damage, velocity, 0, angle, 0, self.hitstun)
+                    if self.article is None:
+                        x_diff = self.rect.centerx - other.rect.centerx
+                        y_diff = self.rect.centery - other.rect.centery
+                        (x_vel, y_vel) = abstractFighter.getXYFromDM(trajectory, self.knockback)
+                        x_vel += self.x_draw*x_diff
+                        y_vel += self.y_draw*y_diff
+                        self.owner.hitstop = math.floor(self.damage / 4 + 2)
+                        other.applyKnockback(self.damage, math.hypot(x_vel,y_vel), 0, math.atan2(-y_vel,x_vel)*180.0/math.pi, 0, self.hitstun)
+                    else:
+                        x_diff = self.article.rect.centerx - other.rect.centerx
+                        y_diff = self.article.rect.centery - other.rect.centery
+                        (x_vel, y_vel) = abstractFighter.getXYFromDM(trajectory, self.knockback)
+                        x_vel += self.x_draw*x_diff
+                        y_vel += self.y_draw*y_diff
+                        other.applyKnockback(self.damage, math.hypot(x_vel,y_vel), 0, math.atan2(-y_vel,x_vel)*180.0/math.pi, 0, self.hitstun)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(other)
@@ -207,7 +214,7 @@ class GrabHitbox(Hitbox):
         self.recenterSelfOnOwner()
 
 class ReflectorHitbox(Hitbox):
-    def __init__(self, center, size, owner, hitbox_lock, damage_multiplier, velocity_multiplier, hp, angle=0, transcendence=2):
+    def __init__(self, center, size, owner, hitbox_lock, damage_multiplier, velocity_multiplier, hp, angle=90, transcendence=2):
         Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,hp)
         self.damage_multiplier = damage_multiplier
         self.velocity_multiplier = velocity_multiplier
@@ -218,9 +225,13 @@ class ReflectorHitbox(Hitbox):
             if hasattr(other.article, 'changeOwner'):
                 other.article.changeOwner(self.owner)
             if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
-                article_direction = math.atan2(other.article.change_y, other.article.change_x)*180/math.pi
-                article_speed = math.hypot(other.article.change_x, other.article.change_y)
-                (other.article.change_x, other.article.change_y) = abstractFighter.getXYFromDM(article_speed*self.velocity_multiplier, 2*self.angle-article_direction)
+                v_other = [other.article.change_x, other.article.change_y]
+                v_self = abstractFighter.getXYFromDM(self.angle, 1.0)
+                print(v_self)
+                dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
+                normsqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
+                projection = [v_self[0]*dot/normsqr, v_self[1]*dot/normsqr]
+                (other.article.change_x, other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), self.velocity_multiplier*(2*projection[1]-v_other[1]))
             if hasattr(other, 'damage'):
                 self.priority -= other.damage
                 other.damage = int(math.floor(other.damage*self.damage_multiplier))
@@ -238,17 +249,20 @@ class ReflectorHitbox(Hitbox):
 
 class PerfectShieldHitbox(ReflectorHitbox):
     def __init__(self, center, size, owner, hitbox_lock):
-        ReflectorHitbox.__init__(self,center,size,owner,hitbox_lock,1,1,9999,0)
+        ReflectorHitbox.__init__(self,center,size,owner,hitbox_lock,1,1,9999,0, -5)
 
     def compareTo(self, other):
         if other.article != None and other.article.owner != self.owner and hasattr(other.article, 'tags') and 'reflectable' in other.article.tags:
             if hasattr(other.article, 'changeOwner'):
                 other.article.changeOwner(self.owner)
             if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
-                self_direction = abstractFighter.getDirectionBetweenPoints(self.rect.center, other.article.rect.center)
-                article_direction = math.atan2(other.article.change_y, other.article.change_x)*180/math.pi
-                article_speed = math.hypot(other.article.change_x, other.article.change_y)
-                (other.article.change_x, other.article.change_y) = abstractFighter.getXYFromDM(article_speed, 2*self_direction-article_direction)
+                v_other = [other.article.change_x, other.article.change_y]
+                v_self = abstractFighter.getXYFromDM(abstractFighter.getDirectionBetweenPoints(self.rect.center, other.article.rect.center)+90, 1.0)
+                dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
+                normsqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
+                projection = [v_self[0]*dot/normsqr, v_self[1]*dot/normsqr]
+                (other.article.change_x, other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), self.velocity_multiplier*(2*projection[1]-v_other[1]))
+
             if hasattr(other, 'damage'):
                 self.priority -= other.damage
                 other.damage = int(math.floor(other.damage*self.damage_multiplier))

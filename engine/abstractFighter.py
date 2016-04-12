@@ -562,7 +562,6 @@ class AbstractFighter():
             self.shieldIntegrity -= damage
             if damage > 1:
                 self.doShieldStun(math.floor(damage/2)+2)
-                self.change_x -= 0.02*(damage+10)*self.facing #Slight pushback
         elif self.shieldIntegrity <= 0:
             self.change_y -= 15
             self.invincible = 20
