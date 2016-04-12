@@ -120,7 +120,8 @@ class GamepadController():
         return self.padBindings.getKeysForAction(action)
     
 class PadBindings():
-    def __init__(self,joystick,axisBindings,buttonBindings):
+    def __init__(self,joyName,joystick,axisBindings,buttonBindings):
+        self.name = joyName
         self.joystick = joystick
         #Each axis is bound to a tuple of what a negative value is, and what a positive value is.
         #So, in this hard-coded example, axis 0 is left when negative, right when positive.
@@ -156,4 +157,3 @@ class PadBindings():
             if neg == action:
                 listOfBindings.append('Axis ' + str(axis) + ' Negative')
         return listOfBindings
-    

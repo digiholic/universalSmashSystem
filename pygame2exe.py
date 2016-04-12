@@ -73,6 +73,7 @@ class BuildExe:
         #Extra/excludes python modules
         self.extra_modules = ['engine','fighters','menu','stages','builder']
         self.exclude_modules = []
+
         
         #DLL Excludes
         self.exclude_dll = ['Tkconstants', 'Tkinter']

@@ -37,7 +37,7 @@ class AbstractFighter():
         self.hitTagged = None
         
         #Initialize engine variables
-        self.keyBindings = settingsManager.getSetting('controls_' + str(playerNum))
+        self.keyBindings = settingsManager.getControls(playerNum)
         self.keyBindings.loadFighter(self)
         self.keyBindings.flushInputs()
         
