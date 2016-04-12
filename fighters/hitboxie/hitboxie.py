@@ -19,6 +19,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'jumpHeight': 12,
                 'airJumpHeight': 14,
                 'heavyLandLag': 4,
+                'fastfallMultiplier': 2
                 }
         abstractFighter.AbstractFighter.__init__(self,
                                  playerNum,
@@ -191,6 +192,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
 
     def doDashAttack(self):
         self.changeAction(self.actions.DashAttack())
+
+    def doDashGrab(self):
+        self.changeAction(self.actions.DashGrab())
     
     def doAirAttack(self):
         (forward, backward) = self.getForwardBackwardKeys()

@@ -113,6 +113,8 @@ class CPUplayer(controller.Controller):
         return targetPoints[targetDistances.index(min(targetDistances))]
 
     def update(self):
+        if self.fighter is None:
+            return
         if self.mode == 'duckling': #Follow the player
             distance = self.getPathDistance(self.fighter.rect.center, self.fighter.players[0].rect.center)
             prevDistance = self.getPathDistance(self.fighter.ecb.yBar.rect.center, self.fighter.players[0].sprite.boundingRect.center)

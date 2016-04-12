@@ -317,7 +317,7 @@ class Trip(action.Action):
         print("direction:", self.direction)
 
     def setUp(self, actor):
-        actor.invincible = self.lastFrame
+        actor.invincible = self.lastFrame if self.lastFrame <= 5 else 5
 
     def update(self, actor):
         if actor.grounded is False:
@@ -822,7 +822,9 @@ class LedgeGrab(action.Action):
 
     def setUp(self, actor):
         actor.createMask([255,255,255], settingsManager.getSetting('ledgeInvincibilityTime'), True, 12)
-        if actor.invulnerable > -30:
+        if actor.invulnerable < 0:
+            actor.invulnerable *= -1
+        if actor.invulnerable >= settingsManager.getSetting('ledgeInvincibilityTime'):
             actor.invulnerable = settingsManager.getSetting('ledgeInvincibilityTime')
         
     def tearDown(self,actor,newAction):
@@ -846,7 +848,7 @@ class LedgeGetup(action.Action):
     
     def update(self,actor):
         if self.frame >= self.lastFrame:
-            actor.doStop()
+            actor.doIdle()
         self.frame += 1
 
 ########################################################
@@ -891,8 +893,7 @@ def airState(actor):
         actor.doAirJump()
     elif actor.keysContain('down'):
         actor.platformPhase = 1
-        actor.calc_grav()
-        actor.calc_grav()
+        actor.calc_grav(actor.var['fastfallMultiplier'])
 
 def tumbleState(actor):
     airControl(actor)
@@ -906,12 +907,13 @@ def tumbleState(actor):
         actor.doAirJump()
     elif actor.keysContain('down'):
         actor.platformPhase = 1
-        actor.calc_grav()
-        actor.calc_grav()
+        actor.calc_grav(actor.var['fastfallMultiplier'])
             
 def moveState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
-    if actor.bufferContains('attack', 8):
+    if actor.keysContain('shield') and actor.bufferContains('attack', 8):
+        actor.doGroundGrab()
+    elif actor.bufferContains('attack', 8):
         actor.doGroundAttack()
     elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
@@ -928,7 +930,9 @@ def moveState(actor, direction):
 
 def dashState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
-    if actor.bufferContains('attack', 8):
+    if actor.keysContain('shield') and actor.bufferContains('attack', 8):
+        actor.doDashGrab()
+    elif actor.bufferContains('attack', 8):
         actor.doDashAttack()
     elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
@@ -945,7 +949,9 @@ def dashState(actor, direction):
 
 def runState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
-    if actor.bufferContains('attack', 8):
+    if actor.keysContain('shield') and actor.bufferContains('attack', 8):
+        actor.doDashGrab()
+    elif actor.bufferContains('attack', 8):
         actor.doDashAttack()
     elif actor.bufferContains('special', 8):
         actor.doGroundSpecial()
