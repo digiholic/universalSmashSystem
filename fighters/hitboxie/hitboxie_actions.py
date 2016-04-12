@@ -815,7 +815,8 @@ class BackAir(action.Action):
             baseActions.airState(actor)
     
     def update(self, actor):
-        actor.landingLag = 14
+        actor.landingLag = 18
+        self.sweetspotHitbox.update()
         if self.frame == 0:
             actor.changeSpriteImage(0)
         elif self.frame == 2:

@@ -401,7 +401,7 @@ class GamepadMenu(SubMenu):
         SubMenu.update(self, screen)
         
         for i,action in enumerate(self.actionColumn):
-            padControls = self.controllerList[self.currentController][1]
+            padControls = settingsManager.getSetting(self.controllerList[self.currentController][0]) 
             self.keyColumn[i].changeText('---')
             if padControls:
                 k = padControls.getKeysForAction(action.text)
@@ -494,9 +494,11 @@ class GamepadMenu(SubMenu):
                     selectedSubOption += 1
                     ready = False
                     if selectedSubOption >= len(self.actionColumn):
-                        newPadBindings = engine.controller.PadBindings(joystick.get_id(),newAxisBinding,newButtonBinding)
+                        name = self.controllerList[self.currentController][0]
+                        newPadBindings = engine.controller.PadBindings(name,joystick.get_id(),newAxisBinding,newButtonBinding)
                         newController = engine.controller.GamepadController(newPadBindings)
-                        settingsManager.getSetting().setting['controls_0'] = newController
+                        settingsManager.getSetting().setting[name] = newController
+                        settingsManager.saveSettings(settingsManager.getSetting().setting)
                         return 0
                         
             self.parent.bg.update(screen)
