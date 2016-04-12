@@ -167,13 +167,13 @@ class ForwardSpecial(action.Action):
         actor.changeSpriteImage(self.spriteImage%16)
         if self.frame <= self.lastFrame-2:
             self.spriteImage += 1
-            if self.frame <= 24:
+            if self.frame <= 16:
                 actor.preferred_xspeed = 0
                 actor.change_x = 0
                 actor.preferred_yspeed = 2
                 if actor.keysContain('shield'):
                     actor.doShield()
-                elif actor.keysContain('special') and self.lastFrame < 240:
+                elif actor.keysContain('special') and self.frame == 16 and self.lastFrame < 240:
                     self.lastFrame += 1
                     self.frame -= 1
             else: #Actually launch forwards
@@ -182,7 +182,7 @@ class ForwardSpecial(action.Action):
                 self.chainHitbox.update()
                 actor.active_hitboxes.add(self.chainHitbox)
                 (key, invkey) = actor.getForwardBackwardKeys()
-                if self.frame == 25:
+                if self.frame == 17:
                     actor.setSpeed(actor.var['runSpeed'], actor.getForwardWithOffset(0))
                     actor.change_y = -12
                 if self.spriteImage%6 == 0:
