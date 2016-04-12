@@ -117,7 +117,7 @@ class NeutralAirSpecial(action.Action):
 """
 class ForwardSpecial(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 64)
+        action.Action.__init__(self, 160)
         self.spriteImage = 0
 
     def setUp(self, actor):
