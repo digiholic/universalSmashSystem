@@ -573,6 +573,7 @@ class AbstractFighter():
                 self.change_x -= 0.02*(damage+10)*self.facing #Slight pushback
         elif self.shieldIntegrity <= 0:
             self.change_y -= 15
+            self.invincible = 20
             self.doStunned(200)
     
 ########################################################

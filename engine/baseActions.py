@@ -316,6 +316,9 @@ class Trip(action.Action):
         self.direction = direction
         print("direction:", self.direction)
 
+    def setUp(self, actor):
+        actor.invincible = self.lastFrame
+
     def update(self, actor):
         if actor.grounded is False:
             actor.doHitStun(self.lastFrame-self.frame, self.direction,0)
