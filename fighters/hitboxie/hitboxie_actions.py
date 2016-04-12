@@ -126,7 +126,7 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
         actor.changeSprite("nair",0)
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 2, 1, hitbox.HitboxLock(), 0, 0, 1, 1, -1, -7)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 1, 1, hitbox.HitboxLock(), 0, 0, 1, 1, -1, -7)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
     
@@ -136,7 +136,7 @@ class ForwardSpecial(action.Action):
     
     class sideSpecialHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
-            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 5, 2, .2, 300, 1, hitbox.HitboxLock(), 1, 6, 0, 0)
+            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 6, 2, .2, 300, 1, hitbox.HitboxLock(), 1, 10, 0, 0)
 
         def onCollision(self, other):
             hitbox.Hitbox.onCollision(self, other)
@@ -204,9 +204,9 @@ class ForwardSpecial(action.Action):
                 
         else:
             if self.frame == self.lastFrame-1:
-                self.flingHitbox.damage += int(float(self.numFrames)/float(16))
-                self.flingHitbox.priority += int(float(self.numFrames)/float(16))
-                self.flingHitbox.baseKnockback += float(self.numFrames)/float(16)
+                self.flingHitbox.damage += int(float(self.numFrames)/float(24))
+                self.flingHitbox.priority += int(float(self.numFrames)/float(24))
+                self.flingHitbox.baseKnockback += float(self.numFrames)/float(24)
                 self.flingHitbox.update()
                 actor.active_hitboxes.add(self.flingHitbox)
             else:
