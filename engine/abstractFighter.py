@@ -506,10 +506,14 @@ class AbstractFighter():
         self.change_y = y
         
     def rotateSprite(self,direction):
+        oldCenter = self.sprite.boundingRect.center
         self.sprite.rotate(-1 * (90 - direction)) 
+        self.sprite.boundingRect.center = oldCenter
             
     def unRotate(self):
+        oldCenter = self.sprite.boundingRect.center
         self.sprite.rotate()
+        self.sprite.boundingRect.center = oldCenter
         
     def die(self,respawn = True):
         self.damage = 0
@@ -768,6 +772,12 @@ class AbstractFighter():
         self.ecb.normalize()
         dxLeft = -self.ecb.previousECB[1].rect.left+other.rect.right+other.change_x
         dxRight = self.ecb.previousECB[1].rect.right-other.rect.left-other.change_x
+        dyUp = -self.ecb.previousECB[0].rect.top+other.rect.bottom+other.change_y
+        dyDown = self.ecb.previousECB[0].rect.bottom-other.rect.top-other.change_y
+
+        if min(dxLeft, dxRight) > min(dyUp, dyDown):
+            return
+
         if self.ecb.xBar.rect.centerx < other.rect.centerx and dxLeft >= dxRight and other.solid:
             self.rect.right = other.rect.left+self.rect.right-self.ecb.xBar.rect.right
             if self.change_x > other.change_x:
@@ -779,8 +789,14 @@ class AbstractFighter():
 
     def Yeject(self, other):
         self.ecb.normalize()
+        dxLeft = -self.ecb.previousECB[1].rect.left+other.rect.right+other.change_x
+        dxRight = self.ecb.previousECB[1].rect.right-other.rect.left-other.change_x
         dyUp = -self.ecb.previousECB[0].rect.top+other.rect.bottom+other.change_y
-        dyDown = -self.ecb.previousECB[0].rect.bottom-other.rect.top-other.change_y
+        dyDown = self.ecb.previousECB[0].rect.bottom-other.rect.top-other.change_y
+
+        if min(dxLeft, dxRight) < min(dyUp, dyDown):
+            return
+
         if self.ecb.yBar.rect.centery < other.rect.centery and dyUp >= dyDown and other.solid:
             self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.yBar.rect.bottom
             if self.change_y > other.change_y - self.var['gravity']:
@@ -918,8 +934,8 @@ class ECB():
     def __init__(self,actor):
         self.actor = actor
         
-        self.yBar = spriteManager.RectSprite(pygame.Rect(0,0,5,self.actor.sprite.boundingRect.height), pygame.Color('#ECB134'))
-        self.xBar = spriteManager.RectSprite(pygame.Rect(0,0,self.actor.sprite.boundingRect.width,5), pygame.Color('#ECB134'))
+        self.yBar = spriteManager.RectSprite(pygame.Rect(0,0,1,self.actor.sprite.boundingRect.height), pygame.Color('#ECB134'))
+        self.xBar = spriteManager.RectSprite(pygame.Rect(0,0,self.actor.sprite.boundingRect.width,1), pygame.Color('#ECB134'))
         
         self.yBar.rect.center = self.actor.sprite.boundingRect.center
         self.xBar.rect.center = self.actor.sprite.boundingRect.center
