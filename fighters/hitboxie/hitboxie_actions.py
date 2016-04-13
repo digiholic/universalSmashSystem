@@ -1732,6 +1732,7 @@ class LedgeGetup(baseActions.LedgeGetup):
         baseActions.LedgeGetup.setUp(self,actor)
 
     def tearDown(self,actor,other):
+        actor.preferred_xspeed = 0
         actor.change_x = 0
 
     def update(self,actor):
@@ -1811,6 +1812,7 @@ class LedgeRoll(baseActions.LedgeGetup):
 
     def tearDown(self, actor, nextAction):
         actor.change_x = 0
+        actor.preferred_xspeed = 0
         if actor.invulnerable > 0:
             actor.invulnerable = 0
         actor.mask = None
