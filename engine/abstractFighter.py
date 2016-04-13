@@ -506,14 +506,10 @@ class AbstractFighter():
         self.change_y = y
         
     def rotateSprite(self,direction):
-        oldCenter = self.sprite.boundingRect.center
         self.sprite.rotate(-1 * (90 - direction)) 
-        self.sprite.boundingRect.center = oldCenter
             
     def unRotate(self):
-        oldCenter = self.sprite.boundingRect.center
         self.sprite.rotate()
-        self.sprite.boundingRect.center = oldCenter
         
     def die(self,respawn = True):
         self.damage = 0
@@ -711,7 +707,7 @@ class AbstractFighter():
         rect = self.sprite.draw(screen,offset,scale)
         
         if self.mask: self.mask.draw(screen,offset,scale)
-        #self.ecb.draw(screen,offset,scale)
+        self.ecb.draw(screen,offset,scale)
         return rect
         
     """
@@ -934,8 +930,8 @@ class ECB():
     def __init__(self,actor):
         self.actor = actor
         
-        self.yBar = spriteManager.RectSprite(pygame.Rect(0,0,1,self.actor.sprite.boundingRect.height), pygame.Color('#ECB134'))
-        self.xBar = spriteManager.RectSprite(pygame.Rect(0,0,self.actor.sprite.boundingRect.width,1), pygame.Color('#ECB134'))
+        self.yBar = spriteManager.RectSprite(pygame.Rect(0,0,5,self.actor.sprite.boundingRect.height), pygame.Color('#ECB134'))
+        self.xBar = spriteManager.RectSprite(pygame.Rect(0,0,self.actor.sprite.boundingRect.width,5), pygame.Color('#ECB134'))
         
         self.yBar.rect.center = self.actor.sprite.boundingRect.center
         self.xBar.rect.center = self.actor.sprite.boundingRect.center

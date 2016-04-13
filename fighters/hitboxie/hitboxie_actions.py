@@ -910,7 +910,7 @@ class ForwardAir(action.Action):
 """
 class DownAir(action.Action):
     def __init__(self):
-        action.Action.__init__(self,30)
+        action.Action.__init__(self,39)
         self.bottom = 0
 
     def setUp(self, actor):
@@ -927,7 +927,6 @@ class DownAir(action.Action):
         baseActions.airControl(actor)
 
     def tearDown(self, actor, nextAction):
-        actor.rect.y += self.bottom
         self.downHitbox.kill()
         self.leftDiagonalHitbox.kill()
         self.rightDiagonalHitbox.kill()
@@ -964,11 +963,11 @@ class DownAir(action.Action):
             actor.active_hitboxes.add(self.rightDiagonalHitbox)
             actor.active_hitboxes.add(self.leftSourSpot)
             actor.active_hitboxes.add(self.rightSourSpot)
-        elif self.frame == self.lastFrame and actor.keysContain('attack'):
+        elif self.frame == self.lastFrame-9 and actor.keysContain('attack'):
             self.frame -= 2
         elif self.frame < self.lastFrame:
             pass
-        elif self.frame < self.lastFrame + 3:
+        elif self.frame < self.lastFrame-6:
             self.bottom = 14
             self.downHitbox.kill()
             self.leftDiagonalHitbox.kill()
@@ -976,10 +975,10 @@ class DownAir(action.Action):
             self.leftSourSpot.kill()
             self.rightSourSpot.kill()
             actor.changeSpriteImage(3)
-        elif self.frame < self.lastFrame + 6:
+        elif self.frame < self.lastFrame + 3:
             self.bottom = 0
             actor.changeSpriteImage(2)
-        elif self.frame < self.lastFrame + 9:
+        elif self.frame < self.lastFrame:
             actor.changeSpriteImage(1)
         else: 
             actor.changeSpriteImage(0)

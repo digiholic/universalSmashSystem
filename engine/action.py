@@ -11,9 +11,9 @@ class Action():
         
         #These determine the size and shape of the fighter's ECB
         #Keep these at 0 to make it fit the sprite
-        self.ecbCenter = (0,0)
-        self.ecbSize = (0,0)
-        self.ecbOffset = (0,0)
+        self.ecbCenter = [0,0]
+        self.ecbSize = [0,0]
+        self.ecbOffset = [0,0]
         
     
     # The update skeleton function. You must implement it for every action or you will get
