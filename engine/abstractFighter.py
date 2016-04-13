@@ -212,6 +212,7 @@ class AbstractFighter():
         if self.grounded: self.jumps = self.var['jumps']
 
     def checkForGround(self):
+        self.ecb.normalize()
         self.grounded = False
         self.ecb.yBar.rect.y += 2 if self.change_y+2 < 2 else self.change_y+2
         groundBlock = pygame.sprite.Group()

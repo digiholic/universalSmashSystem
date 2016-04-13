@@ -927,6 +927,7 @@ class DownAir(action.Action):
         baseActions.airControl(actor)
 
     def tearDown(self, actor, nextAction):
+        actor.rect.bottom += self.bottom
         self.downHitbox.kill()
         self.leftDiagonalHitbox.kill()
         self.rightDiagonalHitbox.kill()

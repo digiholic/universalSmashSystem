@@ -94,7 +94,7 @@ class SpriteHandler(Sprite):
             print("Error loading sprite ", self.currentSheet, " Loading default")
             self.image = self.imageLibrary[self.flip][self.startingImage][0]
         
-        self.rect = self.image.get_rect(center=self.rect.center)
+        self.rect = self.image.get_rect(midtop=self.rect.midtop)
         self.boundingRect = self.getBoundingBox()
         return self.image
     
