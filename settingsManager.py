@@ -4,6 +4,7 @@ import re
 import os
 import imp
 import engine.controller
+import engine.cpuPlayer
 try:
     from configparser import SafeConfigParser
 except ImportError:
@@ -461,3 +462,4 @@ def test():
     
 
 if __name__  == '__main__': test()
+

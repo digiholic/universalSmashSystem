@@ -105,11 +105,6 @@ class NeutralAirSpecial(action.Action):
             actor.doFall()
         self.frame += 1
 
-"""
-@ai-move-forward
-@ai-move-stop
-@ai-move-up
-"""
 class ForwardSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self, 160)
@@ -255,6 +250,8 @@ class DownSpecial(action.Action):
         return action.Action.stateTransitions(self, actor)
     
     def update(self, actor):
+        self.damageHitbox.update()
+        self.reflectorHitbox.update()
         if self.frame == 0:
             actor.change_y = 0
             actor.preferred_yspeed = 2
@@ -387,8 +384,10 @@ class NeutralAttack(action.Action):
         if self.frame < 4:
             actor.changeSpriteImage(self.frame)
         elif self.frame == 4:
+            self.jabHitbox.update()
             actor.active_hitboxes.add(self.jabHitbox)
         elif self.frame >= 5 and self.frame <= 8:
+            self.jabHitbox.update()
             actor.changeSpriteImage(9)
         elif self.frame > 8:
             self.jabHitbox.kill()
@@ -483,26 +482,32 @@ class UpSmash(action.Action):
         elif self.frame == 18:
             actor.mask = None
             actor.changeSpriteImage(5)
+            self.popupHBox.update()
             actor.active_hitboxes.add(self.popupHBox)
         elif self.frame == 21:
             actor.changeSpriteImage(6)
             self.popupHBox.kill()
+            self.weakHBoxL.update()
             actor.active_hitboxes.add(self.weakHBoxL)
         elif self.frame == 24:
             actor.changeSpriteImage(7)
             self.weakHBoxL.kill()
+            self.weakHBoxR.update()
             actor.active_hitboxes.add(self.weakHBoxR)
         elif self.frame == 27:
             actor.changeSpriteImage(8)
             self.weakHBoxR.kill()
+            self.weakHBoxL.update()
             actor.active_hitboxes.add(self.weakHBoxL)
         elif self.frame == 30:
             actor.changeSpriteImage(9)
             self.weakHBoxL.kill()
+            self.weakHBoxR.update()
             actor.active_hitboxes.add(self.weakHBoxR)
         elif self.frame == 33:
             actor.changeSpriteImage(10)
             self.weakHBoxR.kill()
+            self.uSmashHitbox.update()
             actor.active_hitboxes.add(self.uSmashHitbox)
         elif self.frame == self.lastFrame:
             self.uSmashHitbox.kill()
@@ -510,9 +515,6 @@ class UpSmash(action.Action):
         
         self.frame += 1 
        
-"""
-@ai-move-forward
-""" 
 class DashAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,32)
@@ -583,6 +585,8 @@ class DownAttack(action.Action):
             actor.changeSpriteImage(self.frame//2)
         elif self.frame == 13:
             actor.changeSpriteImage(7)
+            self.dsmashHitbox1.update()
+            self.dsmashHitbox2.update()
             actor.active_hitboxes.add(self.dsmashHitbox1)
             actor.active_hitboxes.add(self.dsmashHitbox2)
             #create hitbox
@@ -683,6 +687,7 @@ class ForwardAttack(action.Action):
             actor.changeSpriteImage(self.frame//2)
         elif self.frame == 14:
             actor.changeSpriteImage(7)
+            self.fSmashHitbox.update()
             actor.active_hitboxes.add(self.fSmashHitbox)
         elif self.frame == 16:
             actor.changeSpriteImage(8)
@@ -737,6 +742,7 @@ class ForwardSmash(action.Action):
             actor.changeSpriteImage(6)
         elif self.frame == 21:
             actor.changeSpriteImage(7)
+            self.fSmashHitbox.update()
             actor.active_hitboxes.add(self.fSmashHitbox)
         elif self.frame == 36:
             actor.changeSpriteImage(8)
@@ -748,11 +754,6 @@ class ForwardSmash(action.Action):
         
         self.frame += 1 
 
-"""
-@ai-move-down
-@ai-move-forward
-@ai-move-backward
-"""
 class NeutralAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 34)
@@ -792,11 +793,6 @@ class NeutralAir(action.Action):
             actor.changeAction(Fall())
         self.frame += 1
 
-"""
-@ai-move-down
-@ai-move-forward
-@ai-move-backward
-"""
 class BackAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 40)
@@ -835,21 +831,17 @@ class BackAir(action.Action):
         elif self.frame == 14:
             self.sweetspotHitbox.kill()
             actor.changeSpriteImage(6)
-        elif self.frame == 30:
+        elif self.frame == 28:
             actor.changeSpriteImage(7)
-        elif self.frame >= 32:
+        elif self.frame >= 30:
             actor.changeSprite('jump')
         elif self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
 
-"""
-@ai-move-down
-@ai-move-forward
-"""
 class ForwardAir(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 51)
+        action.Action.__init__(self, 46)
         
     def setUp(self, actor):
         actor.changeSprite('fair')
@@ -865,7 +857,7 @@ class ForwardAir(action.Action):
         baseActions.airControl(actor)
     
     def update(self, actor):
-        actor.landingLag = 38
+        actor.landingLag = 28
         self.sourSpotHitbox.update()
         self.sweetSpotHitbox.update()
         if self.frame == 0:
@@ -902,12 +894,7 @@ class ForwardAir(action.Action):
         elif self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
-"""
-@ai-move-down
-@ai-move-stop
-@ai-move-forward
-@ai-move-backward
-"""
+
 class DownAir(action.Action):
     def __init__(self):
         action.Action.__init__(self,39)
@@ -935,7 +922,6 @@ class DownAir(action.Action):
         self.rightSourSpot.kill()
         
     def update(self, actor):
-        actor.landingLag = 26
         actor.preferred_xspeed = 0
         self.downHitbox.update()
         self.leftDiagonalHitbox.update()
@@ -943,6 +929,7 @@ class DownAir(action.Action):
         self.leftSourSpot.update()
         self.rightSourSpot.update()
         if self.frame < 3:
+            actor.landingLag = 26
             actor.changeSpriteImage(0)
             actor.change_y = 0
         elif self.frame < 6:
@@ -966,7 +953,7 @@ class DownAir(action.Action):
             actor.active_hitboxes.add(self.rightSourSpot)
         elif self.frame == self.lastFrame-9 and actor.keysContain('attack'):
             self.frame -= 2
-        elif self.frame < self.lastFrame:
+        elif self.frame < self.lastFrame-9:
             pass
         elif self.frame < self.lastFrame-6:
             self.bottom = 14
@@ -976,7 +963,7 @@ class DownAir(action.Action):
             self.leftSourSpot.kill()
             self.rightSourSpot.kill()
             actor.changeSpriteImage(3)
-        elif self.frame < self.lastFrame + 3:
+        elif self.frame < self.lastFrame - 3:
             self.bottom = 0
             actor.changeSpriteImage(2)
         elif self.frame < self.lastFrame:
@@ -986,11 +973,7 @@ class DownAir(action.Action):
             actor.landingLag = 16
             actor.changeAction(Fall())
         self.frame += 1
-"""
-@ai-move-forward
-@ai-move-backward
-@ai-move-down
-"""
+
 class UpAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 28)
@@ -1032,12 +1015,13 @@ class UpAir(action.Action):
             actor.changeSpriteImage(4)
             self.sourspot.kill()
         elif self.frame == self.lastFrame:
+            actor.landingLag = 16
             actor.doFall()
         self.frame += 1
 
 class GroundGrab(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 36)
+        action.Action.__init__(self, 33)
 
     def setUp(self, actor):
         self.grabHitbox = hitbox.GrabHitbox([30,0], [30,30], actor, hitbox.HitboxLock(), 30)
@@ -1053,9 +1037,10 @@ class GroundGrab(action.Action):
             actor.changeSpriteImage(1)
         elif self.frame == 6:
             actor.changeSpriteImage(2)
+            self.grabHitbox.update()
+            actor.active_hitboxes.add(self.grabHitbox)
         elif self.frame == 9:
             actor.changeSpriteImage(3)
-            actor.active_hitboxes.add(self.grabHitbox)
         elif self.frame == 12:
             actor.changeSpriteImage(4)
         elif self.frame == 15:
@@ -1063,9 +1048,9 @@ class GroundGrab(action.Action):
             self.grabHitbox.kill()
         elif self.frame == 20:
             actor.changeSpriteImage(2)
-        elif self.frame == 25:
+        elif self.frame == 24:
             actor.changeSpriteImage(1)
-        elif self.frame == 30:
+        elif self.frame == 28:
             actor.changeSpriteImage(0)
         if self.frame == self.lastFrame:
             actor.doIdle()
@@ -1073,7 +1058,7 @@ class GroundGrab(action.Action):
 
 class DashGrab(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 40)
+        action.Action.__init__(self, 38)
 
     def setUp(self, actor):
         self.grabHitbox = hitbox.GrabHitbox([40,0], [50,30], actor, hitbox.HitboxLock(), 30)
@@ -1089,9 +1074,10 @@ class DashGrab(action.Action):
             actor.changeSpriteImage(1)
         elif self.frame == 7:
             actor.changeSpriteImage(2)
+            self.grabHitbox.update()
+            actor.active_hitboxes.add(self.grabHitbox)
         elif self.frame == 10:
             actor.changeSpriteImage(3)
-            actor.active_hitboxes.add(self.grabHitbox)
         elif self.frame == 14:
             actor.changeSpriteImage(4)
         elif self.frame == 17:
@@ -1099,9 +1085,9 @@ class DashGrab(action.Action):
             self.grabHitbox.kill()
         elif self.frame == 23:
             actor.changeSpriteImage(2)
-        elif self.frame == 29:
+        elif self.frame == 28:
             actor.changeSpriteImage(1)
-        elif self.frame == 34:
+        elif self.frame == 33:
             actor.changeSpriteImage(0)
         if self.frame == self.lastFrame:
             actor.doIdle()
@@ -1187,9 +1173,6 @@ class DownThrow(baseActions.BaseGrabbing):
             actor.doIdle()
         self.frame += 1
 
-"""
-@ai-move-up
-"""
 class UpThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self, 100)
@@ -1331,9 +1314,6 @@ class NeutralAction(baseActions.NeutralAction):
             actor.changeSprite("idle")
             self.frame += 1
 
-"""
-@ai-move-stop
-"""
 class Grabbing(baseActions.Grabbing):
     def __init__(self):
         baseActions.Grabbing.__init__(self,1)

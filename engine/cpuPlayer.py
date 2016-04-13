@@ -1,7 +1,7 @@
-import engine.baseActions as baseActions
 import engine.controller as controller
 import pygame
 import math
+import pprint
 
 class CPUplayer(controller.Controller):
     def __init__(self,bindings):
@@ -60,7 +60,7 @@ class CPUplayer(controller.Controller):
     def getPathDistance(self, startPoint, endPoint):
         nodes = [startPoint, endPoint]
         solid_list = []
-        for platform in self.gameState.platform_list:
+        for platform in self.fighter.gameState.platform_list:
             if platform.solid:
                 solid_list += [platform.rect]
                 nodes += [[platform.rect.right+self.fighter.sprite.boundingRect.width/2.0, platform.rect.top-self.fighter.sprite.boundingRect.height/2.0], 
@@ -98,42 +98,45 @@ class CPUplayer(controller.Controller):
         else: return dists[1]
 
     def ducklingTargeting(self):
-        opposingPlayers = filter(lambda k: k != self.fighter, self.players)
-        opposingDists = map(lambda x: self.getPathDistance(self.fighter.rect.center, x.fighter.rect.center), opposingPlayers)
+        opposingPlayers = filter(lambda k: k != self.fighter, self.fighter.players)
+        opposingDists = map(lambda x: self.getPathDistance(self.fighter.rect.center, x.rect.center), opposingPlayers)
         return opposingPlayers[opposingDists.index(min(opposingDists))].rect.center
 
     def ledgeTargeting(self):
-        ledgePoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], self.gameState.platform_ledges)
+        ledgePoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], self.fighter.gameState.platform_ledges)
         ledgeDistances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), ledgePoints)
         return ledgePoints[ledgeDistances.index(min(ledgeDistances))]
 
     def platformTargeting(self):
-        targetPoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.platform_list)+map(lambda x: [x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.gameState.platform_list)
+        targetPoints = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.fighter.gameState.platform_list)+map(lambda x: [x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.fighter.gameState.platform_list)
         targetDistances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), targetPoints)
         return targetPoints[targetDistances.index(min(targetDistances))]
 
     def update(self):
-        if self.fighter is None:
+        constructList = []
+        import engine.baseActions as baseActions
+        if self.fighter is None or not hasattr(self.fighter, 'players') or self.fighter.players is None:
+            print("Can't find!")
             return
         if self.mode == 'duckling': #Follow the player
-            distance = self.getPathDistance(self.fighter.rect.center, self.fighter.players[0].rect.center)
+            distance = self.getPathDistance(self.fighter.rect.center, self.ducklingTargeting())
             prevDistance = self.getPathDistance(self.fighter.ecb.yBar.rect.center, self.fighter.players[0].sprite.boundingRect.center)
             #We offset by one so that simply running away doesn't trigger catchup behavior
-            dx, dy = self.getDistanceTo(self.fighter.players[0])
+            (dx, dy) = self.getDistanceTo(self.fighter.players[0])
             if dx < 0:
-                if not isinstance(self.fighter.current_action, baseActions.LedgeGrab) or 'left' not in self.keysHeld:
-                    if 'right' not in self.keysHeld:
-                        self.keysToPass.add('left')
+                if not isinstance(self.fighter.current_action, baseActions.LedgeGrab):
+                    constructList += ['left']
             if dx > 0:
-                if not isinstance(self.fighter.current_action, baseActions.LedgeGrab) or 'right' not in self.keysHeld:
-                    if 'left' not in self.keysHeld:
-                        self.keysToPass.add('right')
+                if not isinstance(self.fighter.current_action, baseActions.LedgeGrab):
+                    constructList += ['right']
             if dy < 0 and self.jump_last_frame > 8 and distance-prevDistance>0:
-                self.keysToPass.add('jump')
+                constructList += ['jump']
                 self.jump_last_frame = 0
             else:
                 self.jump_last_frame += 1
             if dy > 0 and self.fighter.grounded and not isinstance(self.fighter.current_action, baseActions.Crouch):
-                self.keysToPass.add('down')
-
-import engine.baseActions as baseActions
+                constructList += ['down']
+        for key in filter(lambda x: x not in constructList, self.keysHeld):
+            self.keysToRelease += [key]
+        for key in filter(lambda x: x not in self.keysHeld, constructList):
+            self.keysToPass += [key]

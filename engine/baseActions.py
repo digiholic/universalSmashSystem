@@ -4,10 +4,6 @@ import pygame
 import math
 import settingsManager
 
-"""
-@ai-move-forward
-@ai-move-backward
-"""
 class Move(action.Action):
     def __init__(self,length):
         action.Action.__init__(self,length) 
@@ -37,10 +33,6 @@ class Move(action.Action):
     def stateTransitions(self,actor):
         moveState(actor,self.direction)
 
-"""
-@ai-move-forward
-@ai-move-backward
-"""
 class Dash(action.Action):
     def __init__(self,length): 
         action.Action.__init__(self,length)
@@ -68,11 +60,7 @@ class Dash(action.Action):
     
     def stateTransitions(self,actor):
         dashState(actor,self.direction)
-        
-"""
-@ai-move-forward
-@ai-move-backward
-"""
+
 class Run(action.Action):
     def __init__(self,length):
         action.Action.__init__(self,length)
@@ -143,11 +131,6 @@ class NeutralAction(action.Action):
             actor.doFall()
         neutralState(actor)
 
-"""
-@ai-move-stop
-@ai-move-forward
-@ai-move-backward
-"""
 class Crouch(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
@@ -212,11 +195,6 @@ class Grabbing(BaseGrabbing):
             actor.doFall()
         grabbingState(actor)
         
-"""
-@ai-move-forward
-@ai-move-backward
-@ai-move-down
-"""
 class HitStun(action.Action):
     def __init__(self,hitstun,direction,hitstop):
         action.Action.__init__(self, hitstun)
@@ -276,9 +254,6 @@ class HitStun(action.Action):
 
         self.frame += 1
 
-"""
-@ai-move-stop
-"""
 class TryTech(HitStun):
     def __init__(self, hitstun, direction, hitstop):
         HitStun.__init__(self, hitstun, direction, hitstop)
@@ -362,11 +337,7 @@ class Jump(action.Action):
                 actor.change_x = -actor.var['maxAirSpeed']
             
         self.frame += 1
-        
-"""
-@ai-move-up
-@ai-move-stop
-"""
+
 class AirJump(action.Action):
     def __init__(self,length,jumpFrame):
         action.Action.__init__(self, length)
@@ -392,11 +363,6 @@ class AirJump(action.Action):
                     actor.change_x = actor.facing * actor.var['maxAirSpeed']    
         self.frame += 1
         
-"""
-@ai-move-down
-@ai-move-forward
-@ai-move-backward
-"""
 class Fall(action.Action):
     def __init__(self):
         action.Action.__init__(self, 1)
@@ -409,11 +375,6 @@ class Fall(action.Action):
         actor.preferred_yspeed=actor.var['maxFallSpeed']
         actor.grounded = False
 
-"""
-@ai-move-down
-@ai-move-forward
-@ai-move-backward
-"""
 class Helpless(action.Action):
     def __init__(self):
         action.Action.__init__(self, 1)
@@ -472,9 +433,6 @@ class HelplessLand(action.Action):
             actor.preferred_xspeed = 0
         self.frame += 1
 
-"""
-@ai-move-down
-"""
 class PlatformDrop(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
@@ -572,9 +530,6 @@ class Stunned(action.Action):
             actor.doIdle()
         self.frame += 1
 
-"""
-@ai-move-stop
-"""
 class Trapped(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
@@ -620,10 +575,6 @@ class Release(action.Action):
             actor.doIdle()
         self.frame += 1
         
-"""
-@ai-move-forward
-@ai-move-stop
-"""
 class ForwardRoll(action.Action):
     def __init__(self):
         action.Action.__init__(self, 46)
@@ -652,11 +603,7 @@ class ForwardRoll(action.Action):
             else:
                 actor.doIdle()
         self.frame += 1
-        
-"""
-@ai-move-backward
-@ai-move-stop
-"""
+
 class BackwardRoll(action.Action):
     def __init__(self):
         action.Action.__init__(self, 50)
@@ -685,9 +632,6 @@ class BackwardRoll(action.Action):
                 actor.doIdle()
         self.frame += 1
         
-"""
-@ai-move-stop
-"""
 class SpotDodge(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)
@@ -723,13 +667,6 @@ class SpotDodge(action.Action):
                 actor.doIdle()
         self.frame += 1
         
-"""
-@ai-move-forward
-@ai-move-backward
-@ai-move-up
-@ai-move-down
-@ai-move-stop
-"""
 class AirDodge(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)
@@ -808,13 +745,6 @@ class TechDodge(AirDodge):
                     actor.change_y *= 0.25
         airControl(actor)
         
-"""
-@ai-move-stop
-@ai-move-forward
-@ai-move-backward
-@ai-move-up
-@ai-move-down
-"""
 class LedgeGrab(action.Action):
     def __init__(self,ledge):
         action.Action.__init__(self, 1)
@@ -837,11 +767,6 @@ class LedgeGrab(action.Action):
         actor.jumps = actor.var['jumps']
         actor.setSpeed(0, actor.getFacingDirection())
 
-"""
-@ai-move-forward
-@ai-move-up
-@ai-move-stop
-"""
 class LedgeGetup(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
@@ -939,7 +864,7 @@ def dashState(actor, direction):
     elif actor.bufferContains('jump', 8):
         actor.doJump()
     elif actor.keysContain('down', 0.5):
-        actor.doCrouch()
+        actor.doStop()
     elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
         actor.doStop()
     elif actor.preferred_xspeed < 0 and not actor.keysContain('left',1) and actor.keysContain('right',1):
@@ -958,7 +883,7 @@ def runState(actor, direction):
     elif actor.bufferContains('jump', 8):
         actor.doJump()
     elif actor.keysContain('down', 0.5):
-        actor.doCrouch()
+        actor.doStop()
     elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
         actor.doStop()
     elif actor.preferred_xspeed < 0 and not actor.keysContain('left',1) and actor.keysContain('right',1):
@@ -968,15 +893,15 @@ def runState(actor, direction):
             
 def shieldState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
-    if actor.bufferContains('attack'):
+    if actor.bufferContains('attack', 8):
         actor.doGroundGrab()
-    elif actor.bufferContains('jump'):
+    elif actor.bufferContains('jump', 8):
         actor.doJump()
-    elif actor.bufferContains(key):
+    elif actor.bufferContains(key, 8):
         actor.doForwardRoll()
-    elif actor.bufferContains(invkey):
+    elif actor.bufferContains(invkey, 8):
         actor.doBackwardRoll()
-    elif actor.bufferContains('down'):
+    elif actor.bufferContains('down', 8):
         actor.doSpotDodge()
 
 def ledgeState(actor):
@@ -1028,7 +953,7 @@ def tripState(actor, direction):
         actor.doGetup(direction)
     elif actor.bufferContains(key, 8):
         actor.doForwardRoll()
-    elif actor.bufferContains(key, 8):
+    elif actor.bufferContains(invkey, 8):
         actor.doBackwardRoll()
     elif actor.bufferContains('down', 8):
         actor.doSpotDodge()
