@@ -8,6 +8,7 @@ class CPUplayer(controller.Controller):
         controller.Controller.__init__(self,bindings)
         self.mode = 'duckling'
         self.jump_last_frame = 0
+        self.type = 'CPU'
         
     def getDistanceTo(self,target):
         sx,sy = self.fighter.rect.center

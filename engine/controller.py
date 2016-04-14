@@ -7,6 +7,7 @@ class Controller():
         self.keysToRelease = []
         self.keysHeld = []
         self.keyBindings = bindings
+        self.type = 'Keyboard'
     
     def loadFighter(self,fighter):
         self.fighter = fighter
@@ -56,6 +57,7 @@ class GamepadController():
         self.keysToRelease = []
         self.keysHeld = []
         self.padBindings = padBindings
+        self.type = 'Gamepad'
     
     def loadFighter(self,fighter):
         self.fighter = fighter
