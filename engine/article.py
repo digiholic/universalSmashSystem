@@ -1,5 +1,6 @@
 import pygame
 import spriteManager
+import math
 
 """
 Articles are generated sprites that have their own behavior. For example, projectiles, shields,
@@ -11,6 +12,7 @@ origin - where the article starts. This sets the center of the article, not the 
 length - if this article has logic or animation, you can set this to be used in the update() method,
          just like a fighter's action.
 """
+import settingsManager
 class Article(spriteManager.ImageSprite):
     def __init__(self, spritePath, owner, origin, length=1):
         spriteManager.ImageSprite.__init__(self,spritePath)
@@ -28,7 +30,7 @@ class Article(spriteManager.ImageSprite):
         self.hitbox.owner = newOwner
         
 class AnimatedArticle(spriteManager.SheetSprite):
-    def __init__(self,sprite, owner, origin, imageWidth, length=1):
+    def __init__(self, sprite, owner, origin, imageWidth, length=1):
         spriteManager.SheetSprite.__init__(self, pygame.image.load(sprite), imageWidth)
         self.rect.center = origin
         self.owner = owner
@@ -39,7 +41,7 @@ class AnimatedArticle(spriteManager.SheetSprite):
     def update(self):
         self.getImageAtIndex(self.frame)
         self.frame += 1
-        if self.frame == self.length: self.kill()
+        if self.frame == self.lastFrame: self.kill()
     
     def changeOwner(self, newOwner):
         self.owner = newOwner
@@ -71,3 +73,16 @@ class ShieldArticle(Article):
         blitSprite = pygame.transform.smoothscale(self.image, (w,h)) # Scale down the image
         
         screen.blit(blitSprite,blitRect)
+
+class LandingArticle(AnimatedArticle):
+    def __init__(self,owner):
+        width, height = (86, 22) #to edit these easier if (when) we change the sprite
+        scaledWidth = owner.rect.width
+        #self.scaleRatio = float(scaledWidth) / float(width)
+        self.scaleRatio = 1
+        scaledHeight = math.floor(height * self.scaleRatio)
+        AnimatedArticle.__init__(self, settingsManager.createPath('sprites/halfcirclepuff.png'), owner, owner.rect.midbottom, 86, 6)
+        self.rect.y -= scaledHeight / 2
+        
+    def draw(self, screen, offset, scale):
+        return AnimatedArticle.draw(self, screen, offset, scale * self.scaleRatio)

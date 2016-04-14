@@ -1,5 +1,6 @@
 import engine.action as action
 import engine.hitbox as hitbox
+import engine.article as article
 import pygame
 import math
 import settingsManager
@@ -247,7 +248,15 @@ class HitStun(action.Action):
             else:
                 actor.hitstopVibration = (0,3)
             actor.hitstopPos = actor.rect.center
-            
+        if self.frame % 15 == 10 and self.frame < self.lastFrame:
+            if abs(actor.change_x) > 8 or abs(actor.change_y) > 8:
+                art = article.AnimatedArticle(settingsManager.createPath('sprites/circlepuff.png'),actor,actor.rect.center,86,6)
+                art.angle = actor.sprite.angle
+                if actor.hitTagged and hasattr(actor.hitTagged, 'playerNum'):
+                    for image in art.imageList:
+                        art.recolor(image, [255,255,255], pygame.Color(settingsManager.getSetting('playerColor' + str(actor.hitTagged.playerNum))))
+                actor.articles.add(art)
+                    
         if self.frame == self.lastFrame:
             actor.unRotate()
             #Tumbling continues indefinetely, but can be cancelled out of
@@ -403,6 +412,9 @@ class Land(action.Action):
             blocks = map(lambda x: x.solid, blocks)
             if not any(blocks):
                 actor.doPlatformDrop()
+        if self.frame == 1:
+            #actor.articles.add(article.LandingArticle(actor)) #this looks awful don't try it
+            pass
         if self.frame >= self.lastFrame:
             actor.landingLag = 6
             actor.doIdle()
