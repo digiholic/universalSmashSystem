@@ -17,6 +17,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'airControl': 0.6,
                 'jumps': 1,
                 'jumpHeight': 12,
+                'shortHopHeight': 8,
                 'airJumpHeight': 14,
                 'heavyLandLag': 4,
                 'fastfallMultiplier': 2,

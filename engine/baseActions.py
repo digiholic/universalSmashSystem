@@ -269,12 +269,12 @@ class HitStun(action.Action):
                 actor.doIdle()
             elif self.frame >= self.lastFrame: #Firm landing during tumble
                 actor.landingLag = actor.var['heavyLandLag']
-                actor.doLand()
+                actor.elasticity = 0
             elif actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during hitstun
                 actor.landingLag = actor.var['heavyLandLag']
-                actor.doLand()
+                actor.elasticity = 0
             else: #Firm landing during hitstun
-                actor.change_y = -0.4*actor.change_y
+                actor.elasticity = actor.var['hitstunElasticity']/2
         elif self.frame >= self.lastFrame:
             tumbleState(actor)
             actor.elasticity = actor.var['hitstunElasticity']/2
@@ -326,8 +326,31 @@ class TryTech(HitStun):
             print('Ground tech!')
             actor.unRotate()
             actor.doTrip(-175, direct)
-        elif self.frame == 20:
-            actor.elasticity = actor.var['hitstunElasticity']
+        elif self.frame >= 20:
+            if actor.grounded and self.frame > 2:
+                print(actor.change_y)
+                if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during tumble
+                    actor.elasticity = actor.var['hitstunElasticity']/2
+                elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun
+                    actor.elasticity = actor.var['hitstunElasticity']
+                elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
+                    actor.elasticity = 0
+                    actor.doTrip(self.lastFrame-self.frame, direct)
+                elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
+                    actor.doIdle()
+                elif self.frame >= self.lastFrame: #Firm landing during tumble
+                    actor.landingLag = actor.var['heavyLandLag']
+                    actor.elasticity = 0
+                elif actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during hitstun
+                    actor.landingLag = actor.var['heavyLandLag']
+                    actor.elasticity = 0
+                else: #Firm landing during hitstun
+                    actor.elasticity = actor.var['hitstunElasticity']/2
+            elif self.frame >= self.lastFrame:
+                tumbleState(actor)
+                actor.elasticity = actor.var['hitstunElasticity']/2
+            else:
+                actor.elasticity = actor.var['hitstunElasticity']
 
     def update(self, actor):
         if self.frame >= 40:
@@ -378,7 +401,7 @@ class Jump(action.Action):
             actor.grounded = False
             if actor.keysContain('jump'):
                 actor.change_y = -actor.var['jumpHeight']
-            else: actor.change_y = -actor.var['jumpHeight']/1.5
+            else: actor.change_y = -actor.var['shortHopHeight']
             ##TODO Add in shorthop height as an attribute
             if actor.change_x > actor.var['maxAirSpeed']:
                 actor.change_x = actor.var['maxAirSpeed']
