@@ -157,7 +157,7 @@ class RunStop(action.Action):
             actor.doFall()
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.bufferContains(key,self.frame):
-            print("run run")
+            print("run")
             actor.doRun(actor.getFacingDirection())
         if actor.bufferContains(invkey,self.frame):
             print("run pivot")

@@ -1331,18 +1331,18 @@ class Pivot(baseActions.Pivot):
 
 class RunPivot(baseActions.RunPivot):
     def __init__(self):
-        baseActions.RunPivot.__init__(self,10)
+        baseActions.RunPivot.__init__(self,15)
         
     def update(self,actor):
         if self.frame == 0:
             actor.changeSprite("pivot",4)
-        elif self.frame == 2:
+        elif self.frame == 3:
             actor.changeSpriteImage(3)
-        elif self.frame == 4:
-            actor.changeSpriteImage(2)
         elif self.frame == 6:
+            actor.changeSpriteImage(2)
+        elif self.frame == 9:
             actor.changeSpriteImage(1)
-        elif self.frame == 8:
+        elif self.frame == 12:
             actor.changeSpriteImage(0)
         baseActions.RunPivot.update(self, actor)
         
@@ -1389,14 +1389,14 @@ class Stop(baseActions.Stop):
 
 class RunStop(baseActions.RunStop):
     def __init__(self):
-        baseActions.RunStop.__init__(self, 9)
+        baseActions.RunStop.__init__(self, 12)
     
     def update(self, actor):
         if self.frame == 0:
             actor.changeSprite("pivot",0)
-        elif self.frame == 3:
+        elif self.frame == 4:
             actor.changeSpriteImage(1)
-        elif self.frame == 6:
+        elif self.frame == 8:
             actor.changeSpriteImage(2)
         elif self.frame == self.lastFrame:
             if actor.bufferContains('jump',8):
