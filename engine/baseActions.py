@@ -327,7 +327,7 @@ class TryTech(HitStun):
             actor.unRotate()
             actor.doTrip(-175, direct)
         elif self.frame >= 20:
-            if actor.grounded and self.frame > 2:
+            if actor.grounded:
                 print(actor.change_y)
                 if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during tumble
                     actor.elasticity = actor.var['hitstunElasticity']/2
@@ -364,7 +364,7 @@ class Trip(action.Action):
         print("direction:", self.direction)
 
     def setUp(self, actor):
-        actor.invincible = self.lastFrame if self.lastFrame <= 5 else 5
+        actor.invincible = 5
 
     def update(self, actor):
         if actor.grounded is False:
@@ -469,7 +469,7 @@ class Land(action.Action):
             self.lastFrame = actor.landingLag
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
-                self.lastFrame = self.lastFrame / 2
+                self.lastFrame = self.lastFrame // 2
         if actor.keysContain('down'):
             blocks = actor.checkForGround()
             if blocks:   
@@ -496,14 +496,14 @@ class HelplessLand(action.Action):
             self.lastFrame = actor.landingLag
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
-                self.lastFrame = self.lastFrame / 2
+                self.lastFrame = self.lastFrame // 2
         if actor.keysContain('down'):
             blocks = actor.checkForGround()
             if blocks:
                 blocks = map(lambda x: x.solid, blocks)
                 if not any(blocks):
                     actor.doPlatformDrop()
-        if self.frame == self.lastFrame:
+        if self.frame >= self.lastFrame:
             actor.landingLag = 6
             actor.doIdle()
             actor.platformPhase = 0
@@ -515,7 +515,7 @@ class PlatformDrop(action.Action):
         action.Action.__init__(self, length)
     
     def update(self,actor):
-        actor.preferred_yspeed=actor.var['maxFallSpeed']
+        actor.preferred_yspeed = actor.var['maxFallSpeed']
         if self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
@@ -667,7 +667,7 @@ class ForwardRoll(action.Action):
         if actor.grounded is False:
             actor.doFall()
         if self.frame == 1:
-            actor.change_x = actor.facing * 10
+            actor.change_x = actor.facing * actor.var['dodgeSpeed']
         elif self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255], 22, True, 24)
             actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
@@ -696,7 +696,7 @@ class BackwardRoll(action.Action):
         if actor.grounded is False:
             actor.doFall()
         if self.frame == 1:
-            actor.change_x = actor.facing * -10
+            actor.change_x = actor.facing * -actor.var['dodgeSpeed']
         elif self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255], 22, True, 24)
             actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
@@ -754,8 +754,8 @@ class AirDodge(action.Action):
         actor.landingLag = 24
         if settingsManager.getSetting('airDodgeType') == 'directional':
             self.move_vec = actor.getSmoothedInput()
-            actor.change_x = self.move_vec[0]*10
-            actor.change_y = self.move_vec[1]*10
+            actor.change_x = self.move_vec[0]*actor.var['dodgeSpeed']
+            actor.change_y = self.move_vec[1]*actor.var['dodgeSpeed']
         
     def tearDown(self,actor,other):
         if settingsManager.getSetting('airDodgeType') == 'directional':
@@ -797,29 +797,12 @@ class TechDodge(AirDodge):
         AirDodge.__init__(self)
 
     def stateTransitions(self, actor):
-        (direct,_) = actor.getDirectionMagnitude()
-
-        (direct,mag) = actor.getDirectionMagnitude()
+        (direct) = actor.getDirectionMagnitude()
         if self.frame < 20 and actor.grounded:
             print('Ground tech!')
             actor.unRotate()
             actor.doTrip(-175, direct)
-        elif self.frame < 20:
-            actor.ecb.xBar.rect.x += actor.change_x
-            actor.ecb.yBar.rect.y += actor.change_y
-            block_x_hit_list = actor.getXCollisionsWith(actor.gameState.platform_list)
-            block_y_hit_list = actor.getYCollisionsWith(actor.gameState.platform_list)
-            actor.ecb.xBar.rect.x -= actor.change_x
-            actor.ecb.yBar.rect.y -= actor.change_y
-            for block in block_x_hit_list:
-                if block.solid:
-                    print('Wall tech!')
-                    actor.change_x *= 0.25
-            for block in block_y_hit_list:
-                if block.solid:
-                    print('Ceiling tech!')
-                    actor.change_y *= 0.25
-        airControl(actor)
+        AirDodge.stateTransitions(self, actor)
         
 class LedgeGrab(action.Action):
     def __init__(self,ledge):

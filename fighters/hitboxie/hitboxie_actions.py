@@ -1798,12 +1798,12 @@ class LedgeGetup(baseActions.LedgeGetup):
 
 class LedgeAttack(baseActions.LedgeGetup):
     def __init__(self):
-        baseActions.LedgeGetup.__init__(self,35)
+        baseActions.LedgeGetup.__init__(self,36)
 
     def setUp(self,actor):
         baseActions.LedgeGetup.setUp(self, actor)
-        self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,3,8,0.2,20,1,hitbox.HitboxLock())
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,3,1,hitbox.HitboxLock(),0,0,1,1.5)
+        self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,8,0.2,20,1,hitbox.HitboxLock())
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,0,1,1.5)
 
     def tearDown(self,actor,other):
         self.dashHitbox.kill()
@@ -1838,9 +1838,11 @@ class LedgeAttack(baseActions.LedgeGetup):
         if self.frame == 21:
             self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
         if self.frame == 25:
+            self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
+        if self.frame == 29:
             self.chainHitbox.kill()
             actor.active_hitboxes.add(self.dashHitbox)
-        if self.frame == 29:
+        if self.frame == 33:
             self.dashHitbox.kill()
             actor.preferred_xspeed = 0
         baseActions.LedgeGetup.update(self, actor)
@@ -1875,7 +1877,7 @@ class LedgeRoll(baseActions.LedgeGetup):
             if (self.frame % 2 == 0):
                 actor.changeSpriteImage(self.frame//2+4)
         if self.frame == 15:
-            actor.change_x = actor.var['maxGroundSpeed']*actor.facing
+            actor.change_x = actor.var['dodgeSpeed']*actor.facing
         if self.frame == 17:
             actor.changeSprite("land", 1)
             actor.flip()

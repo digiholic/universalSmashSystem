@@ -12,6 +12,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'runSpeed': 9,
                 'maxAirSpeed': 6,
                 'crawlSpeed': 3,
+                'dodgeSpeed': 10,
                 'friction': 0.2,
                 'staticGrip': 0.1,
                 'airControl': 0.6,
