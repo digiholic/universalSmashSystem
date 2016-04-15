@@ -1133,7 +1133,7 @@ class Pummel(baseActions.BaseGrabbing):
             actor.changeSpriteImage(10)
         elif self.frame > 10:
             if not (self.frame) > 14:
-                actor.changeSpriteImage(self.frame - 3)
+                actor.changeSpriteImage(self.frame)
         if self.frame == self.lastFrame:
             actor.doGrabbing()
         self.frame += 1
