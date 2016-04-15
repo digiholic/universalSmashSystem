@@ -277,9 +277,9 @@ class HitStun(action.Action):
                 actor.change_y = -0.4*actor.change_y
         elif self.frame >= self.lastFrame:
             tumbleState(actor)
-            actor.elasticity = 0
-        else:
             actor.elasticity = actor.var['hitstunElasticity']/2
+        else:
+            actor.elasticity = actor.var['hitstunElasticity']
         
     def tearDown(self, actor, newAction):
         actor.unRotate()
