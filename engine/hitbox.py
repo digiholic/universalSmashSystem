@@ -232,7 +232,10 @@ class ReflectorHitbox(Hitbox):
                 normsqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
                 projection = [v_self[0]*dot/normsqr, v_self[1]*dot/normsqr]
                 (other.article.change_x, other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), self.velocity_multiplier*(2*projection[1]-v_other[1]))
-            if hasattr(other, 'damage'):
+            if hasattr(other, 'damage') and hasattr(other, 'shield_multiplier'):
+                self.priority -= other.damage*other.shield_multiplier
+                other.damage = int(math.floor(other.damage*self.damage_multiplier))
+            elif hasattr(other, 'damage'):
                 self.priority -= other.damage
                 other.damage = int(math.floor(other.damage*self.damage_multiplier))
         
