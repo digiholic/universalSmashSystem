@@ -1328,6 +1328,27 @@ class Pivot(baseActions.Pivot):
     def tearDown(self,actor,newAction):
         if isinstance(newAction, Move):
             newAction.accel = False
+
+class RunPivot(baseActions.RunPivot):
+    def __init__(self):
+        baseActions.RunPivot.__init__(self,10)
+        
+    def update(self,actor):
+        if self.frame == 0:
+            actor.changeSprite("pivot",4)
+        elif self.frame == 2:
+            actor.changeSpriteImage(3)
+        elif self.frame == 4:
+            actor.changeSpriteImage(2)
+        elif self.frame == 6:
+            actor.changeSpriteImage(1)
+        elif self.frame == 8:
+            actor.changeSpriteImage(0)
+        baseActions.RunPivot.update(self, actor)
+        
+    def tearDown(self,actor,newAction):
+        if isinstance(newAction, Move):
+            newAction.accel = False
         
 class NeutralAction(baseActions.NeutralAction):
     def __init__(self):
@@ -1365,6 +1386,23 @@ class Stop(baseActions.Stop):
                 actor.doJump()
             else: actor.doIdle()
         baseActions.Stop.update(self, actor)
+
+class RunStop(baseActions.RunStop):
+    def __init__(self):
+        baseActions.RunStop.__init__(self, 9)
+    
+    def update(self, actor):
+        if self.frame == 0:
+            actor.changeSprite("pivot",0)
+        elif self.frame == 3:
+            actor.changeSpriteImage(1)
+        elif self.frame == 6:
+            actor.changeSpriteImage(2)
+        elif self.frame == self.lastFrame:
+            if actor.bufferContains('jump',8):
+                actor.doJump()
+            else: actor.doIdle()
+        baseActions.RunStop.update(self, actor)
 
 class Crouch(baseActions.Crouch):
     def __init__(self):

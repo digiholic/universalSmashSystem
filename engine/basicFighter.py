@@ -74,6 +74,12 @@ class BasicFighter():
     
     def doStop(self):
         self.changeAction(self.actions.NeutralAction())
+
+    def doRunPivot(self):
+        self.changeAction(self.actions.RunPivot())
+
+    def doRunStop(self):
+        self.changeAction(self.actions.RunStop())
     
     def doLand(self):
         self.changeAction(self.actions.Land())

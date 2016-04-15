@@ -66,6 +66,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def doStop(self):
         if self.grounded:
             self.changeAction(self.actions.Stop())
+
+    def doRunStop(self):
+        if self.grounded:
+            self.changeAction(self.actions.RunStop())
             
     def doGroundMove(self,direction):
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
@@ -86,6 +90,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
         newAction = self.actions.Pivot()
         self.flip()
         self.changeAction(newAction)
+
+    def doRunPivot(self):
+        self.flip()
+        self.changeAction(self.actions.RunPivot())
     
     def doJump(self):
         self.changeAction(self.actions.Jump())

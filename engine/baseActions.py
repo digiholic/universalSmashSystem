@@ -45,7 +45,7 @@ class Dash(action.Action):
 
     def update(self, actor):
         if self.frame == 0:
-            actor.preferred_xspeed = actor.var['runSpeed']*self.direction
+            actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
             actor.preferred_yspeed = actor.var['maxFallSpeed']
         if actor.grounded is False:
             actor.doFall()
@@ -71,6 +71,8 @@ class Run(action.Action):
         else: self.direction = -1
             
     def update(self, actor):
+        if self.frame == 0:
+            actor.preferred_xspeed = math.copysign(actor.var['runSpeed'], actor.preferred_xspeed)
         if actor.grounded is False:
             actor.doFall()
         actor.accel(actor.var['staticGrip'])
@@ -88,6 +90,7 @@ class Pivot(action.Action):
     def update(self,actor):
         if actor.grounded is False:
             actor.doFall()
+        actor.accel(actor.var['staticGrip'])
         if self.frame != self.lastFrame:
             self.frame += 1
             actor.preferred_xspeed = 0
@@ -112,6 +115,7 @@ class Stop(action.Action):
     def stateTransitions(self, actor):
         if actor.grounded is False:
             actor.doFall()
+        actor.accel(actor.var['staticGrip'])
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.bufferContains(key,self.frame):
             print("run")
@@ -119,6 +123,46 @@ class Stop(action.Action):
         if actor.bufferContains(invkey,self.frame):
             print("pivot")
             actor.doPivot()
+
+class RunPivot(action.Action):
+    def __init__(self,length):
+        action.Action.__init__(self, length)
+        
+    def update(self,actor):
+        if actor.grounded is False:
+            actor.doFall()
+        if self.frame != self.lastFrame:
+            self.frame += 1
+            actor.preferred_xspeed = 0
+        if self.frame == self.lastFrame:
+            (key, _) = actor.getForwardBackwardKeys()
+            if actor.keysContain(key):
+                if actor.facing == 1:
+                    actor.doGroundMove(0)
+                else:
+                    actor.doGroundMove(180)
+            else:
+                actor.doIdle()
+
+class RunStop(action.Action):
+    def __init__(self,length):
+        action.Action.__init__(self, length)
+        
+    def update(self, actor):
+        actor.preferred_xspeed = 0
+        self.frame += 1
+        
+    def stateTransitions(self, actor):
+        if actor.grounded is False:
+            actor.doFall()
+        (key,invkey) = actor.getForwardBackwardKeys()
+        if actor.bufferContains(key,self.frame):
+            print("run run")
+            actor.doRun(actor.getFacingDirection())
+        if actor.bufferContains(invkey,self.frame):
+            print("run pivot")
+            actor.doRunPivot()
+
                 
 class NeutralAction(action.Action):
     def __init__(self,length):
@@ -892,13 +936,13 @@ def runState(actor, direction):
     elif actor.bufferContains('jump', 8):
         actor.doJump()
     elif actor.keysContain('down', 0.5):
-        actor.doStop()
+        actor.doRunStop()
     elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
-        actor.doStop()
+        actor.doRunStop()
     elif actor.preferred_xspeed < 0 and not actor.keysContain('left',1) and actor.keysContain('right',1):
-        actor.doStop()
+        actor.doRunStop()
     elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
-        actor.doStop()
+        actor.doRunStop()
             
 def shieldState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
