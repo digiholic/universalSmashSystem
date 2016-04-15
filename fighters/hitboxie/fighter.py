@@ -1,4 +1,4 @@
-import main
+import settingsManager
 import spriteManager
 import os
 
@@ -61,7 +61,7 @@ This method returns an instance of the fighter.
 """
 def getFighter(playerNum,colorNum):
     #The file that contains your implementation of abstractFighter
-    fight = main.importFromURI(__file__,'hitboxie.py')
+    fight = settingsManager.importFromURI(__file__,'hitboxie.py')
     #The sprites directory
     directory = os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites")
     #The prefix that indicates the sprites to be used for this character/costume
