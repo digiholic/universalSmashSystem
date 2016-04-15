@@ -172,11 +172,12 @@ class CrouchGetup(action.Action):
             actor.doIdle()
         elif actor.bufferContains('down') and self.frame > 0:
             blocks = actor.checkForGround()
-            #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda x:x.solid,blocks)
-            #If none of the ground is solid
-            if not any(blocks):
-                actor.doPlatformDrop()
+            if blocks:
+                #Turn it into a list of true/false if the block is solid
+                blocks = map(lambda x:x.solid,blocks)
+                #If none of the ground is solid
+                if not any(blocks):
+                    actor.doPlatformDrop()
         self.frame += 1
 
 class BaseGrabbing(action.Action):
@@ -203,6 +204,7 @@ class HitStun(action.Action):
         self.hitstop = hitstop
 
     def setUp(self, actor):
+        actor.elasticity = actor.var['hitstunElasticity']
         actor.preferred_xspeed = 0
         actor.preferred_yspeed = actor.var['maxFallSpeed']
 
@@ -212,11 +214,12 @@ class HitStun(action.Action):
             actor.doTryTech(self.lastFrame-self.frame, self.direction, self.hitstop)
         elif actor.grounded and self.frame > 2:
             print(actor.change_y)
-            if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2: #Hard landing during tumble
-                actor.change_y = -0.4*actor.change_y
-            elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']/2:
-                actor.change_y = -0.8*actor.change_y #Hard landing during hitstun
+            if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during tumble
+                actor.elasticity = actor.var['hitstunElasticity']/2
+            elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun
+                actor.elasticity = actor.var['hitstunElasticity']
             elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
+                actor.elasticity = 0
                 actor.doTrip(self.lastFrame-self.frame, direct)
             elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
                 actor.doIdle()
@@ -230,9 +233,13 @@ class HitStun(action.Action):
                 actor.change_y = -0.4*actor.change_y
         elif self.frame >= self.lastFrame:
             tumbleState(actor)
+            actor.elasticity = 0
+        else:
+            actor.elasticity = actor.var['hitstunElasticity']/2
         
     def tearDown(self, actor, newAction):
         actor.unRotate()
+        actor.elasticity = 0
         
     def update(self,actor):
         if self.frame == 0:
@@ -269,25 +276,14 @@ class TryTech(HitStun):
 
     def stateTransitions(self, actor):
         (direct,mag) = actor.getDirectionMagnitude()
+        if self.frame == 0:
+            actor.elasticity = 0
         if self.frame < 20 and actor.grounded:
             print('Ground tech!')
             actor.unRotate()
             actor.doTrip(-175, direct)
-        elif self.frame < 20:
-            actor.ecb.xBar.rect.x += actor.change_x
-            actor.ecb.yBar.rect.y += actor.change_y
-            block_x_hit_list = actor.getXCollisionsWith(actor.gameState.platform_list)
-            block_y_hit_list = actor.getYCollisionsWith(actor.gameState.platform_list)
-            actor.ecb.xBar.rect.x -= actor.change_x
-            actor.ecb.yBar.rect.y -= actor.change_y
-            for block in block_x_hit_list:
-                if block.solid:
-                    print('Wall tech!')
-                    actor.change_x *= 0.25
-            for block in block_y_hit_list:
-                if block.solid:
-                    print('Ceiling tech!')
-                    actor.change_y *= 0.25
+        elif self.frame == 20:
+            actor.elasticity = actor.var['hitstunElasticity']
 
     def update(self, actor):
         if self.frame >= 40:
@@ -409,9 +405,10 @@ class Land(action.Action):
                 self.lastFrame = self.lastFrame / 2
         if actor.keysContain('down'):
             blocks = actor.checkForGround()
-            blocks = map(lambda x: x.solid, blocks)
-            if not any(blocks):
-                actor.doPlatformDrop()
+            if blocks:   
+                blocks = map(lambda x: x.solid, blocks)
+                if not any(blocks):
+                    actor.doPlatformDrop()
         if self.frame == 1:
             #actor.articles.add(article.LandingArticle(actor)) #this looks awful don't try it
             pass
@@ -435,9 +432,10 @@ class HelplessLand(action.Action):
                 self.lastFrame = self.lastFrame / 2
         if actor.keysContain('down'):
             blocks = actor.checkForGround()
-            blocks = map(lambda x: x.solid, blocks)
-            if not any(blocks):
-                actor.doPlatformDrop()
+            if blocks:
+                blocks = map(lambda x: x.solid, blocks)
+                if not any(blocks):
+                    actor.doPlatformDrop()
         if self.frame == self.lastFrame:
             actor.landingLag = 6
             actor.doIdle()
@@ -660,11 +658,10 @@ class SpotDodge(action.Action):
             actor.doFall()
         elif actor.bufferContains('down') and self.frame > 0:
             blocks = actor.checkForGround()
-            #Turn it into a list of true/false if the block is solid
-            blocks = map(lambda x:x.solid,blocks)
-            #If none of the ground is solid
-            if not any(blocks):
-                actor.doPlatformDrop()
+            if blocks:
+                blocks = map(lambda x:x.solid,blocks)
+                if not any(blocks):
+                    actor.doPlatformDrop()
         if self.frame == 1:
             actor.change_x = 0
         elif self.frame == self.startInvulnFrame:
@@ -944,9 +941,9 @@ def grabbingState(actor):
     # If they did, release them
     if not actor.isGrabbing():
         actor.doRelease()
-    elif actor.bufferContains('shield', 8):
+    elif actor.bufferContains('shield'):
         actor.doRelease()
-    elif actor.bufferContains('attack', 8):
+    elif actor.bufferContains('attack'):
         actor.doPummel()
     elif actor.bufferContains(key, 8):
         actor.doThrow()

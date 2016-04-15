@@ -19,7 +19,8 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'jumpHeight': 12,
                 'airJumpHeight': 14,
                 'heavyLandLag': 4,
-                'fastfallMultiplier': 2
+                'fastfallMultiplier': 2,
+                'hitstunElasticity': .8
                 }
         abstractFighter.AbstractFighter.__init__(self,
                                  playerNum,

@@ -19,46 +19,8 @@ class CPUplayer(controller.Controller):
         self.update()
         controller.Controller.passInputs(self)
 
-    def segmentIntersects(self, startPoint, endPoint, rect):
-        if startPoint[0]==endPoint[0] and startPoint[1]==endPoint[1]: #Degenerate
-            return rect.collidepoint(startPoint)
-        elif startPoint[0]==endPoint[0]: #Vertical
-            if rect.left > startPoint[0] or rect.right < startPoint[0]:
-                return False
-            if (startPoint[1] < rect.top and endPoint[1] < rect.top) or (startPoint[1] > rect.bottom and endPoint[1] > rect.bottom):
-                return False
-            return True
-        elif startPoint[1]==endPoint[1]: #Horizontal
-            if rect.top > startPoint[1] or rect.bottom < startPoint[1]:
-                return False
-            if (startPoint[0] < rect.left and endPoint[0] < rect.left) or (startPoint[0] > rect.right and endPoint[0] > rect.right):
-                return False
-            return True
-        else:
-            t_left = (rect.left-startPoint[0])/(endPoint[0]-startPoint[0])
-            t_right = (rect.right-startPoint[0])/(endPoint[0]-startPoint[0])
-            t_top = (rect.top-startPoint[1])/(endPoint[1]-startPoint[1])
-            t_bottom = (rect.bottom-startPoint[1])/(endPoint[1]-startPoint[1])
-            if (t_left < 0 and t_right < 0) or (t_left > 1 and t_right > 1):
-                return False
-            if (t_top < 0 and t_bottom < 0) or (t_top > 1 and t_bottom > 1):
-                return False
-            if (t_top > t_left and t_bottom > t_left and t_top > t_right and t_bottom > t_right):
-                return False
-            if (t_top < t_left and t_bottom < t_left and t_top < t_right and t_bottom < t_right):
-                return False
-            return True
-
-    def pathRectIntersects(self, startPoint, endPoint, solid_list, width, height):
-        startRect = pygame.Rect(startPoint[0]-width/2.0+2, startPoint[1]-height/2.0, width-4, height-1)
-        endRect = pygame.Rect(endPoint[0]-width/2.0+2, endPoint[1]-height/2.0, width-4, height-1)
-        if any(map(lambda f: self.segmentIntersects(startRect.topleft, endRect.topleft, f), solid_list)): return True
-        if any(map(lambda f: self.segmentIntersects(startRect.topright, endRect.topright, f), solid_list)): return True
-        if any(map(lambda f: self.segmentIntersects(startRect.bottomleft, endRect.bottomleft, f), solid_list)): return True
-        if any(map(lambda f: self.segmentIntersects(startRect.bottomright, endRect.bottomright, f), solid_list)): return True
-        return False
-
     def getPathDistance(self, startPoint, endPoint):
+        import engine.abstractFighter as abstractFighter
         nodes = [startPoint, endPoint]
         solid_list = []
         for platform in self.fighter.gameState.platform_list:
@@ -85,7 +47,12 @@ class CPUplayer(controller.Controller):
             for node in range(0,len(nodes)):
                 if node in closedSet:
                     continue
-                if not self.pathRectIntersects(nodes[current], nodes[node], solid_list, self.fighter.sprite.boundingRect.width, self.fighter.sprite.boundingRect.height):
+                current_x_ecb = pygame.Rect(nodes[current][0]-self.fighter.ecb.xBar.rect.width//2, nodes[current][1]-self.fighter.ecb.xBar.rect.height//2, self.fighter.ecb.xBar.rect.width, self.fighter.ecb.xBar.rect.height)
+                current_y_ecb = pygame.Rect(nodes[current][0]-self.fighter.ecb.yBar.rect.width//2, nodes[current][1]-self.fighter.ecb.yBar.rect.height//2, self.fighter.ecb.yBar.rect.width, self.fighter.ecb.yBar.rect.height)
+                next_x_ecb = pygame.Rect(nodes[node][0]-self.fighter.ecb.xBar.rect.width//2, nodes[node][1]-self.fighter.ecb.xBar.rect.height//2, self.fighter.ecb.xBar.rect.width, self.fighter.ecb.xBar.rect.height)
+                next_y_ecb = pygame.Rect(nodes[node][0]-self.fighter.ecb.yBar.rect.width//2, nodes[node][1]-self.fighter.ecb.yBar.rect.height//2, self.fighter.ecb.yBar.rect.width, self.fighter.ecb.yBar.rect.height)
+
+                if not (abstractFighter.pathRectIntersects(current_x_ecb, next_x_ecb, solid_list) <= 1 or abstractFighter.pathRectIntersects(current_y_ecb, next_y_ecb, solid_list) <= 1):
                     tentativeDist = dists[current] + math.sqrt((nodes[current][0]-nodes[node][0])**2+(nodes[current][1]-nodes[node][1])**2)
                     if node not in openSet:
                         openSet.add(node)

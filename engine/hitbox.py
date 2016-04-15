@@ -110,11 +110,13 @@ class SakuraiAngleHitbox(DamageHitbox):
                     b = float(self.baseKnockback)
                     totalKB = (((((p/10) + (p*d)/20) * (200/(w*self.weight_influence+100))*1.4) + 5) * s) + b
 
-                    # Calculate the resulting angle
-                    knockbackRatio = totalKB/self.baseKnockback
-                    xVal = math.sqrt(knockbackRatio**2+1)/math.sqrt(2)
-                    yVal = math.sqrt(knockbackRatio**2-1)/math.sqrt(2)
-                    angle = math.atan2(yVal*math.sin(float(self.trajectory)/180*math.pi),xVal*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
+                    angle = 0
+                    if (self.baseKnockback > 0):
+                        # Calculate the resulting angle
+                        knockbackRatio = totalKB/self.baseKnockback
+                        xVal = math.sqrt(knockbackRatio**2+1)/math.sqrt(2)
+                        yVal = math.sqrt(knockbackRatio**2-1)/math.sqrt(2)
+                        angle = math.atan2(yVal*math.sin(float(self.trajectory)/180*math.pi),xVal*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
 
                     if self.article is None:
                         self.owner.hitstop = math.floor(self.damage / 4 + 2)
@@ -230,7 +232,8 @@ class ReflectorHitbox(Hitbox):
                 print(v_self)
                 dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
                 normsqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
-                projection = [v_self[0]*dot/normsqr, v_self[1]*dot/normsqr]
+                ratio = 1 if normsqr == 0 else dot/normsqr
+                projection = [v_self[0]*ratio, v_self[1]*ratio]
                 (other.article.change_x, other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), self.velocity_multiplier*(2*projection[1]-v_other[1]))
             if hasattr(other, 'damage') and hasattr(other, 'shield_multiplier'):
                 self.priority -= other.damage*other.shield_multiplier
@@ -263,7 +266,8 @@ class PerfectShieldHitbox(ReflectorHitbox):
                 v_self = abstractFighter.getXYFromDM(abstractFighter.getDirectionBetweenPoints(self.rect.center, other.article.rect.center)+90, 1.0)
                 dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
                 normsqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
-                projection = [v_self[0]*dot/normsqr, v_self[1]*dot/normsqr]
+                ratio = 1 if normsqr == 0 else dot/normsqr
+                projection = [v_self[0]*ratio, v_self[1]*ratio]
                 (other.article.change_x, other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), self.velocity_multiplier*(2*projection[1]-v_other[1]))
 
             if hasattr(other, 'damage'):

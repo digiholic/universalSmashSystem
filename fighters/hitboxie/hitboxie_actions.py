@@ -683,20 +683,18 @@ class ForwardAttack(action.Action):
         actor.doIdle()
     
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,8,2.0,0.3,40,1,hitbox.HitboxLock())
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,2.0,0.2,40,1,hitbox.HitboxLock())
             
     def update(self,actor):
         if self.frame == 0:
             actor.preferred_xspeed = 0
             actor.changeSprite("fsmash",0)
-        elif self.frame <= 10:
+        elif self.frame <= 12:
             actor.changeSpriteImage(self.frame//2)
-        elif self.frame == 12:
-            actor.changeSpriteImage(6)
-            self.fSmashHitbox.update()
-            actor.active_hitboxes.add(self.fSmashHitbox)
         elif self.frame == 14:
             actor.changeSpriteImage(7)
+            self.fSmashHitbox.update()
+            actor.active_hitboxes.add(self.fSmashHitbox)
         elif self.frame == 16:
             actor.changeSpriteImage(8)
             self.fSmashHitbox.kill()
@@ -1145,7 +1143,7 @@ class ForwardThrow(baseActions.BaseGrabbing):
         baseActions.BaseGrabbing.__init__(self,20)
 
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,12.0,0.20,40,1,hitbox.HitboxLock())
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,11,12.0,0.20,40,1,hitbox.HitboxLock())
 
     def tearDown(self, actor, other):
         self.fSmashHitbox.kill()
@@ -1156,13 +1154,11 @@ class ForwardThrow(baseActions.BaseGrabbing):
         if self.frame == 0:
             actor.preferred_xspeed = 0
             actor.changeSprite("fsmash",0)
-        elif self.frame <= 10:
+        elif self.frame <= 12:
             actor.changeSpriteImage(self.frame//2)
-        elif self.frame == 12:
-            actor.changeSpriteImage(6)
-            actor.active_hitboxes.add(self.fSmashHitbox)
         elif self.frame == 14:
             actor.changeSpriteImage(7)
+            actor.active_hitboxes.add(self.fSmashHitbox)
         elif self.frame == 16:
             actor.changeSpriteImage(8)
             self.fSmashHitbox.kill()
