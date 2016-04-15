@@ -9,13 +9,11 @@ from builder import *
 from fighters import *
 from menu import *
 from stages import *
+import menu.mainMenu
 
 
 def main(debug = False):
-    
-    settingsManager = importFromURI("__file__",'settingsManager.py')
-    menu = importFromURI("__file__",'menu/menu.py')
-    menu.Menu()
+    menu.mainMenu.Menu()
     
 def importFromURI(filePath, uri, absl=False, suffix=""):
     if not absl:

@@ -3,15 +3,12 @@ import spriteManager
 import os
 import imp
 import pygame
-import menu
 import battle
 import sys
 import stages.true_arena as stage
 import engine.cpuPlayer as cpuPlayer
-try:
-    import sss
-except ImportError:
-    from menu import sss
+import sss
+    
 import musicManager
 class CSSScreen():
     def __init__(self,rules=None):

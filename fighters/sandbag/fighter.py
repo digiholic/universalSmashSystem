@@ -1,7 +1,6 @@
 import engine.abstractFighter as abstractFighter
 import spriteManager
 import os
-import main
 import settingsManager
 
 class Fighter(abstractFighter.AbstractFighter):
@@ -30,7 +29,7 @@ class Fighter(abstractFighter.AbstractFighter):
                                  "Sandbag", #Name
                                  var) #jumps, jump height, air jump height
         
-        self.actions = main.importFromURI(__file__,'sandbag_actions.py')
+        self.actions = settingsManager.importFromURI(__file__,'sandbag_actions.py')
         
         self.keyBindings = settingsManager.Keybindings({})
         self.current_action = self.actions.NeutralAction()
