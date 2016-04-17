@@ -12,7 +12,7 @@ class SplatArticle(article.AnimatedArticle):
         self.direction = direction
         self.change_x = self.direction*24
         self.change_y = 0
-        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 6, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)
+        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 3, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)
         self.hitbox.article = self
         self.tags = ['reflectable']
 
