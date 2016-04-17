@@ -710,7 +710,7 @@ class AbstractFighter():
         rect = self.sprite.draw(screen,offset,scale)
         
         if self.mask: self.mask.draw(screen,offset,scale)
-        self.ecb.draw(screen,offset,scale)
+        if settingsManager.getSetting('showECB'): self.ecb.draw(screen,offset,scale)
         return rect
         
     """

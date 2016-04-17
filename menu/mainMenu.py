@@ -144,7 +144,35 @@ class StartScreen(SubMenu):
             pygame.display.flip()
         
         return self.status
-            
+
+"""
+class UpdateChecker(SubMenu):
+    def __init__(self,parent):
+        SubMenu.__init__(self, parent)
+        self.menuText = [spriteManager.TextSprite('Cancel','full Pack 2025',24,[255,255,255])]
+        self.statusText = spriteManager.TextSprite('Checking','rexlia rg',16,[255,255,255])
+        
+        self.menuText[0].rect.bottom = self.parent.settings['windowSize'][1] - 64
+        self.menuText[0].rect.centerx = self.parent.settings['windowSize'][0] / 2
+        
+        self.statusText.rect.centerx = self.parent.settings['windowSize'][0] / 2
+        self.statusText.rect.centery = self.parent.settings['windowSize'][0] / 2
+        
+        self.selectedOption = 0
+        self.updater = updater.Updater()
+    
+    def update(self, screen):
+        if not self.updater.done:
+            self.statusText.changeText(self.updater.update())
+        else:
+            self.menuText[0].changeText('Okay')
+        SubMenu.update(self, screen)
+        self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
+    
+    def confirmOption(self, optionNum):
+        MainMenu(self.parent)
+"""
+    
 class MainMenu(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self,parent)
