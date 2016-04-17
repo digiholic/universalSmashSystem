@@ -141,6 +141,7 @@ class Settings():
         self.setting['showHurtboxes']     = getBoolean(self.parser,'graphics','displayHurtboxes')
         self.setting['showSpriteArea']    = getBoolean(self.parser,'graphics','displaySpriteArea')
         self.setting['showPlatformLines'] = getBoolean(self.parser, 'graphics', 'displayPlatformLines')
+        self.setting['showECB']           = getBoolean(self.parser, 'graphics', "displayECB")
         
         self.setting['playerColor0'] = getString(self.parser, 'playerColors', 'player0')
         self.setting['playerColor1'] = getString(self.parser, 'playerColors', 'player1')
