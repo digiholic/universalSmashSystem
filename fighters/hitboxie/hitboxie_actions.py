@@ -50,10 +50,10 @@ class SplatArticle(article.AnimatedArticle):
 
 class NeutralGroundSpecial(action.Action):
     def __init__(self):
-        action.Action.__init__(self,40)
+        action.Action.__init__(self,36)
                 
     def setUp(self, actor):
-        self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (32 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
+        self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (24 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
         actor.preferred_xspeed = 0
         actor.changeSprite("nspecial",0)
         
@@ -64,22 +64,28 @@ class NeutralGroundSpecial(action.Action):
         pass
                
     def update(self, actor):
-        actor.changeSpriteImage(math.floor(self.frame//4))
-        if self.frame == 24:
+        if self.frame <= 14:
+            actor.changeSpriteImage(self.frame//2)
+        elif self.frame <= 26:
+            actor.changeSpriteImage((self.frame+14)//4)
+        if self.frame == 12:
             self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
             actor.articles.add(self.projectile)
             actor.active_hitboxes.add(self.projectile.hitbox)
             print(actor.active_hitboxes)
+        if self.frame == 26:
+            if actor.keysContain('special'):
+                actor.changeAction(NeutralGroundSpecial())
         if self.frame == self.lastFrame:
             actor.doIdle()
         self.frame += 1
 
 class NeutralAirSpecial(action.Action):
     def __init__(self):
-        action.Action.__init__(self,40)
+        action.Action.__init__(self,36)
                 
     def setUp(self, actor):
-        self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (32 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
+        self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (24 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
         actor.changeSprite("nspecial",0)
 
     def stateTransitions(self, actor):
@@ -89,17 +95,21 @@ class NeutralAirSpecial(action.Action):
         baseActions.airControl(actor)
         
     def tearDown(self, actor, new):
-        actor.landingLag = 12
+        actor.landingLag = 8
                
     def update(self, actor):
-        actor.landingLag = 16
-        actor.changeSpriteImage(math.floor(self.frame//4))
-        if self.frame == 24:
+        actor.landingLag = 13
+        if self.frame <= 14:
+            actor.changeSpriteImage(self.frame//2)
+        elif self.frame <= 26:
+            actor.changeSpriteImage((self.frame+14)//4)
+        if self.frame == 12:
             self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
             actor.articles.add(self.projectile)
             actor.active_hitboxes.add(self.projectile.hitbox)
             print(actor.active_hitboxes)
-            if actor.bufferContains('special', 8):
+        if self.frame == 20:
+            if actor.keysContain('special'):
                 actor.changeAction(NeutralAirSpecial())
         if self.frame == self.lastFrame:
             actor.doFall()
@@ -107,7 +117,7 @@ class NeutralAirSpecial(action.Action):
 
 class ForwardSpecial(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 160)
+        action.Action.__init__(self, 100)
         self.spriteImage = 0
 
     def setUp(self, actor):
