@@ -746,7 +746,7 @@ class AbstractFighter():
     """
     def getCollisionsWith(self,spriteGroup):
         self.sprite.updatePosition(self.rect)
-        collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect)
+        collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(self.ecb.previousECB.rect))
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
 
     def eject(self, other):
