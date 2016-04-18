@@ -516,6 +516,8 @@ class AbstractFighter():
         
         if respawn:
             self.rect.midbottom = self.gameState.spawnLocations[self.playerNum]
+            self.ecb.normalize()
+            self.ecb.store()
             self.createMask([255,255,255], 120, True, 12)
             self.invulnerable = 120
         
