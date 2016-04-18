@@ -107,6 +107,12 @@ class AbstractFighter():
                 self.rect.x += x
                 self.rect.y += y
                 self.hitstopVibration = (-x,-y)
+
+            #Smash directional influence AKA hitstun shuffling
+            di_vec = self.getSmoothedInput()
+            self.rect.x += di_vec[0]
+            self.rect.y += di_vec[1]
+
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
             block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
             for block in block_hit_list:
@@ -206,12 +212,11 @@ class AbstractFighter():
     def checkForGround(self):
         self.ecb.normalize()
         self.grounded = False
-        self.ecb.currentECB.rect.y += 2 if self.change_y+2 < 2 else self.change_y+2
+        self.ecb.currentECB.rect.y += self.change_y+2
         groundBlock = pygame.sprite.Group()
         block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
-        self.ecb.currentECB.rect.y -= 2 if self.change_y+2 < 2 else self.change_y+2
-        while len(block_hit_list) > 0:
-            block = block_hit_list.pop()
+        self.ecb.currentECB.rect.y -= self.change_y+2
+        for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
                 if self.ecb.previousECB.rect.bottom <= block.rect.top-block.change_y:
                     self.grounded = True
@@ -449,7 +454,7 @@ class AbstractFighter():
         b = float(kb)
 
         # Thank you, ssbwiki!
-        totalKB = (((((p/10) + (p*d)/20) * (200/(w*weight_influence+100))*1.4) + 5) * s) + b
+        totalKB = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*weight_influence+100))*1.4) + 5) * s) + b
         
         if damage < self.flinch_damage_threshold or totalKB < self.flinch_knockback_threshold:
             self.dealDamage(math.floor(damage*self.armor_damage_multiplier))
@@ -475,9 +480,8 @@ class AbstractFighter():
 
         if hitstun_frames > 0.5:
             print(totalKB)
-            self.doHitStun(hitstun_frames,trajectory,math.floor(damage // 4 + 2))
+            self.doHitStun(hitstun_frames,trajectory,math.floor((damage // 4 + 2)*hitstun_multiplier))
         
-
         print(totalKB*DI_multiplier, trajectory)
         self.dealDamage(damage)
         
@@ -516,6 +520,7 @@ class AbstractFighter():
         
         if respawn:
             self.rect.midbottom = self.gameState.spawnLocations[self.playerNum]
+            self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
             self.ecb.store()
             self.createMask([255,255,255], 120, True, 12)
@@ -750,15 +755,24 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
         collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(self.ecb.previousECB.rect))
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
+        #return filter(lambda r: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, q.rect)))
 
     def eject(self, other):
         self.ecb.normalize()
-        dxLeft = -self.ecb.previousECB.rect.left+other.rect.right+other.change_x
-        dxRight = self.ecb.previousECB.rect.right-other.rect.left-other.change_x
-        dyUp = -self.ecb.previousECB.rect.top+other.rect.bottom+other.change_y
-        dyDown = self.ecb.previousECB.rect.bottom-other.rect.top-other.change_y
+        checkRect = other.rect.copy()
+        checkRect.centerx -= other.change_x
+        checkRect.centery -= other.change_y
+        t = pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, checkRect)
+
+        dxLeft = -self.ecb.previousECB.rect.left-t*(self.ecb.currentECB.rect.left-self.ecb.previousECB.rect.left)+checkRect.right
+        dxRight = self.ecb.previousECB.rect.right+t*(self.ecb.currentECB.rect.right-self.ecb.previousECB.rect.right)-checkRect.left
+        dyUp = -self.ecb.previousECB.rect.top-t*(self.ecb.currentECB.rect.top-self.ecb.previousECB.rect.top)+checkRect.bottom
+        dyDown = self.ecb.previousECB.rect.bottom+t*(self.ecb.currentECB.rect.bottom-self.ecb.previousECB.rect.bottom)-checkRect.top
+
+        dx = min(max(0, dxRight), max(0, dxLeft))
+        dy = min(max(0, dyUp), max(0, dyDown))
         
-        if min(dxLeft, dxRight) < min(dyUp, dyDown):
+        if dx <= dy:
             if dxLeft >= dxRight and other.solid:
                 self.rect.right = other.rect.left+self.rect.right-self.ecb.currentECB.rect.right
                 if self.change_x > other.change_x:
@@ -767,12 +781,12 @@ class AbstractFighter():
                 self.rect.left = other.rect.right+self.rect.left-self.ecb.currentECB.rect.left
                 if self.change_x < other.change_x:
                     self.change_x = -self.elasticity*self.change_x + other.change_x
-        else:
+        if dy <= dx:
             if dyUp >= dyDown and other.solid:
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
                 if self.change_y > other.change_y - self.var['gravity']:
                     self.change_y = -self.elasticity*self.change_y + other.change_y - self.var['gravity']
-            elif self.ecb.currentECB.rect.bottom >= other.rect.top-other.change_y and dyUp >= dyDown:
+            elif dyDown <= 0 and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
                 self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.currentECB.rect.bottom)
                 if self.change_y > other.change_y - self.var['gravity']:
                     self.change_y = -self.elasticity*self.change_y + other.change_y - self.var['gravity']
@@ -818,8 +832,8 @@ def segmentIntersects(startPoint, endPoint, rect):
             return 999
         if (startPoint[1] < rect.top and endPoint[1] < rect.top) or (startPoint[1] > rect.bottom and endPoint[1] > rect.bottom):
             return 999
-        t_top = (rect.top-startPoint[1])/(endPoint[1]-startPoint[1])
-        t_bottom = (rect.bottom-startPoint[1])/(endPoint[1]-startPoint[1])
+        t_top = (rect.top-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
+        t_bottom = (rect.bottom-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
         if (t_top < 0):
             return t_bottom
         elif (t_bottom < 0):
@@ -831,19 +845,19 @@ def segmentIntersects(startPoint, endPoint, rect):
             return 999
         if (startPoint[0] < rect.left and endPoint[0] < rect.left) or (startPoint[0] > rect.right and endPoint[0] > rect.right):
             return 999
-        t_left = (rect.left-startPoint[0])/(endPoint[0]-startPoint[0])
-        t_right = (rect.right-startPoint[0])/(endPoint[0]-startPoint[0])
+        t_left = (rect.left-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
+        t_right = (rect.right-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
         if (t_left < 0):
             return t_right
-        elif (t_right < 0):
+        elif (t_right <= 0):
             return t_left
         else: 
             return min(t_left, t_right)
     else:
-        t_left = (rect.left-startPoint[0])/(endPoint[0]-startPoint[0])
-        t_right = (rect.right-startPoint[0])/(endPoint[0]-startPoint[0])
-        t_top = (rect.top-startPoint[1])/(endPoint[1]-startPoint[1])
-        t_bottom = (rect.bottom-startPoint[1])/(endPoint[1]-startPoint[1])
+        t_left = (rect.left-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
+        t_right = (rect.right-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
+        t_top = (rect.top-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
+        t_bottom = (rect.bottom-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
         if (t_left < 0 and t_right < 0) or (t_left > 1 and t_right > 1):
             return 999
         if (t_top < 0 and t_bottom < 0) or (t_top > 1 and t_bottom > 1):
@@ -854,11 +868,18 @@ def segmentIntersects(startPoint, endPoint, rect):
             return 999
         return max(min(t_left, t_right), min(t_top, t_bottom))
 
-def pathRectIntersects(startRect, endRect, solid_list):
-    return min(min(map(lambda f: self.segmentIntersects(startRect.topleft, endRect.topleft, f), solid_list)), 
-               min(map(lambda f: self.segmentIntersects(startRect.topright, endRect.topright, f), solid_list)), 
-               min(map(lambda f: self.segmentIntersects(startRect.bottomleft, endRect.bottomleft, f), solid_list)),
-               min(map(lambda f: self.segmentIntersects(startRect.bottomright, endRect.bottomright, f), solid_list)))
+def pathRectIntersects(startRect, endRect, rect):
+    if startRect.colliderect(rect):
+        return 0
+    test = min(segmentIntersects(startRect.topleft, endRect.topleft, rect), 
+               segmentIntersects(startRect.topright, endRect.topright, rect),
+               segmentIntersects(startRect.bottomleft, endRect.bottomleft, rect),
+               segmentIntersects(startRect.bottomright, endRect.bottomright, rect))
+    if test <= 1:
+        return test
+    if endRect.colliderect(rect):
+        return 1
+    return 999
         
 ########################################################
 #                  INPUT BUFFER                        #

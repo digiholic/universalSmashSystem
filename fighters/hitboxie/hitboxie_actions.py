@@ -783,10 +783,10 @@ class NeutralAir(action.Action):
         self.nairHitbox = hitbox.SakuraiAngleHitbox([0,0],[72,72],actor,10,4,0.1,40,1,hitbox.HitboxLock(),1,1,1,0)
     
     def stateTransitions(self, actor):
-        if actor.keysContain('down'):
-            if actor.change_y >= 0:
-                actor.change_y = max(math.floor(actor.var['maxFallSpeed'] / 2), actor.change_y)
         baseActions.airControl(actor)
+        if actor.keysContain('down'):
+            actor.platformPhase = 1
+            actor.calc_grav(actor.var['fastfallMultiplier'])
     
     def tearDown(self,actor,other):
         self.nairHitbox.kill()

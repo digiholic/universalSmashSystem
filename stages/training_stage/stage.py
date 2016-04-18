@@ -35,9 +35,9 @@ class TrainingStage(stage.Stage):
                               ]
         
         self.spawnLocations = [[192 * 1,self.size.bottom-65],
-                               [192 * 4,self.size.bottom-33],
-                               [192 * 2,self.size.bottom-33],
-                               [192 * 3,self.size.bottom-33],
+                               [192 * 4,self.size.bottom-65],
+                               [192 * 2,self.size.bottom-65],
+                               [192 * 3,self.size.bottom-65],
                                ]
         
         backdrop = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","training_stage_bg.png"))
