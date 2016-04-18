@@ -754,8 +754,7 @@ class AbstractFighter():
     def getCollisionsWith(self,spriteGroup):
         self.sprite.updatePosition(self.rect)
         collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(self.ecb.previousECB.rect))
-        return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
-        #return filter(lambda r: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, q.rect)))
+        return filter(lambda r: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, q.rect)))
 
     def eject(self, other):
         self.ecb.normalize()
