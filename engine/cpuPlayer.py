@@ -47,12 +47,10 @@ class CPUplayer(controller.Controller):
             for node in range(0,len(nodes)):
                 if node in closedSet:
                     continue
-                current_x_ecb = pygame.Rect(nodes[current][0]-self.fighter.ecb.xBar.rect.width//2, nodes[current][1]-self.fighter.ecb.xBar.rect.height//2, self.fighter.ecb.xBar.rect.width, self.fighter.ecb.xBar.rect.height)
-                current_y_ecb = pygame.Rect(nodes[current][0]-self.fighter.ecb.yBar.rect.width//2, nodes[current][1]-self.fighter.ecb.yBar.rect.height//2, self.fighter.ecb.yBar.rect.width, self.fighter.ecb.yBar.rect.height)
-                next_x_ecb = pygame.Rect(nodes[node][0]-self.fighter.ecb.xBar.rect.width//2, nodes[node][1]-self.fighter.ecb.xBar.rect.height//2, self.fighter.ecb.xBar.rect.width, self.fighter.ecb.xBar.rect.height)
-                next_y_ecb = pygame.Rect(nodes[node][0]-self.fighter.ecb.yBar.rect.width//2, nodes[node][1]-self.fighter.ecb.yBar.rect.height//2, self.fighter.ecb.yBar.rect.width, self.fighter.ecb.yBar.rect.height)
+                current_ecb = pygame.Rect(nodes[current][0]-self.fighter.ecb.currentECB.rect.width//2, nodes[current][1]-self.fighter.ecb.currentECB.rect.height//2, self.fighter.ecb.currentECB.rect.width, self.fighter.ecb.currentECB.rect.height)
+                next_ecb = pygame.Rect(nodes[node][0]-self.fighter.ecb.currentECB.rect.width//2, nodes[node][1]-self.fighter.ecb.currentECB.rect.height//2, self.fighter.ecb.currentECB.rect.width, self.fighter.ecb.currentECB.rect.height)
 
-                if not (abstractFighter.pathRectIntersects(current_x_ecb, next_x_ecb, solid_list) <= 1 or abstractFighter.pathRectIntersects(current_y_ecb, next_y_ecb, solid_list) <= 1):
+                if not abstractFighter.pathRectIntersects(current_ecb, next_ecb, solid_list) <= 1:
                     tentativeDist = dists[current] + math.sqrt((nodes[current][0]-nodes[node][0])**2+(nodes[current][1]-nodes[node][1])**2)
                     if node not in openSet:
                         openSet.add(node)
@@ -88,7 +86,7 @@ class CPUplayer(controller.Controller):
             return
         if self.mode == 'duckling': #Follow the player
             distance = self.getPathDistance(self.fighter.rect.center, self.ducklingTargeting())
-            prevDistance = self.getPathDistance(self.fighter.ecb.yBar.rect.center, self.fighter.players[0].sprite.boundingRect.center)
+            prevDistance = self.getPathDistance(self.fighter.ecb.currentECB.rect.center, self.fighter.players[0].sprite.boundingRect.center)
             #We offset by one so that simply running away doesn't trigger catchup behavior
             (dx, dy) = self.getDistanceTo(self.fighter.players[0])
             if dx < 0:

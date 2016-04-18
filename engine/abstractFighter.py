@@ -108,16 +108,11 @@ class AbstractFighter():
                 self.rect.y += y
                 self.hitstopVibration = (-x,-y)
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
-            block_x_hit_list = self.getXCollisionsWith(self.gameState.platform_list)
-            block_y_hit_list = self.getYCollisionsWith(self.gameState.platform_list)
-            for block in block_x_hit_list:
+            block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+            for block in block_hit_list:
                 if block.solid or (self.platformPhase <= 0):
                     self.platformPhase = 0
-                    self.Xeject(block)
-            for block in block_y_hit_list:
-                if block.solid or (self.platformPhase <= 0):
-                    self.platformPhase = 0
-                    self.Yeject(block)
+                    self.eject(block)
 
             self.sprite.updatePosition(self.rect)
 
@@ -172,16 +167,11 @@ class AbstractFighter():
             self.rect.x += block.change_x
         
         self.ecb.normalize()
-        block_x_hit_list = self.getXCollisionsWith(self.gameState.platform_list)
-        block_y_hit_list = self.getYCollisionsWith(self.gameState.platform_list)
-        for block in block_x_hit_list:
+        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+        for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
                 self.platformPhase = 0
-                self.Xeject(block)
-        for block in block_y_hit_list:
-            if block.solid or (self.platformPhase <= 0):
-                self.platformPhase = 0
-                self.Yeject(block)
+                self.eject(block)
 
         self.sprite.updatePosition(self.rect)
 
@@ -216,14 +206,14 @@ class AbstractFighter():
     def checkForGround(self):
         self.ecb.normalize()
         self.grounded = False
-        self.ecb.yBar.rect.y += 2 if self.change_y+2 < 2 else self.change_y+2
+        self.ecb.currentECB.rect.y += 2 if self.change_y+2 < 2 else self.change_y+2
         groundBlock = pygame.sprite.Group()
-        block_hit_list = self.getYCollisionsWith(self.gameState.platform_list)
-        self.ecb.yBar.rect.y -= 2 if self.change_y+2 < 2 else self.change_y+2
+        block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
+        self.ecb.currentECB.rect.y -= 2 if self.change_y+2 < 2 else self.change_y+2
         while len(block_hit_list) > 0:
             block = block_hit_list.pop()
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB[0].rect.bottom <= block.rect.top-block.change_y:
+                if self.ecb.previousECB.rect.bottom <= block.rect.top-block.change_y:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -756,60 +746,38 @@ class AbstractFighter():
     """
     def getCollisionsWith(self,spriteGroup):
         self.sprite.updatePosition(self.rect)
-        collideSprite = spriteManager.RectSprite(self.sprite.boundingRect)
+        collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect)
         return pygame.sprite.spritecollide(collideSprite, spriteGroup, False)
 
-    def getXCollisionsWith(self,spriteGroup):
-        self.sprite.updatePosition(self.rect)
-        unionSprite = spriteManager.RectSprite(self.ecb.xBar.rect.union(self.ecb.previousECB[1].rect))
-        return pygame.sprite.spritecollide(unionSprite, spriteGroup, False)
-
-    def getYCollisionsWith(self,spriteGroup):
-        self.sprite.updatePosition(self.rect)
-        unionSprite = spriteManager.RectSprite(self.ecb.yBar.rect.union(self.ecb.previousECB[0].rect))
-        return pygame.sprite.spritecollide(unionSprite, spriteGroup, False)
-
-    def Xeject(self, other):
+    def eject(self, other):
         self.ecb.normalize()
-        dxLeft = -self.ecb.previousECB[1].rect.left+other.rect.right+other.change_x
-        dxRight = self.ecb.previousECB[1].rect.right-other.rect.left-other.change_x
-        dyUp = -self.ecb.previousECB[0].rect.top+other.rect.bottom+other.change_y
-        dyDown = self.ecb.previousECB[0].rect.bottom-other.rect.top-other.change_y
-
-        if min(dxLeft, dxRight) > min(dyUp, dyDown):
-            return
-
-        if self.ecb.xBar.rect.centerx < other.rect.centerx and dxLeft >= dxRight and other.solid:
-            self.rect.right = other.rect.left+self.rect.right-self.ecb.xBar.rect.right
-            if self.change_x > other.change_x:
-                self.change_x = -self.elasticity*self.change_x + other.change_x
-        elif self.ecb.xBar.rect.centerx > other.rect.centerx and dxRight >= dxLeft and other.solid:
-            self.rect.left = other.rect.right+self.rect.left-self.ecb.xBar.rect.left
-            if self.change_x < other.change_x:
-                self.change_x = -self.elasticity*self.change_x + other.change_x
-
-    def Yeject(self, other):
-        self.ecb.normalize()
-        dxLeft = -self.ecb.previousECB[1].rect.left+other.rect.right+other.change_x
-        dxRight = self.ecb.previousECB[1].rect.right-other.rect.left-other.change_x
-        dyUp = -self.ecb.previousECB[0].rect.top+other.rect.bottom+other.change_y
-        dyDown = self.ecb.previousECB[0].rect.bottom-other.rect.top-other.change_y
-
+        dxLeft = -self.ecb.previousECB.rect.left+other.rect.right+other.change_x
+        dxRight = self.ecb.previousECB.rect.right-other.rect.left-other.change_x
+        dyUp = -self.ecb.previousECB.rect.top+other.rect.bottom+other.change_y
+        dyDown = self.ecb.previousECB.rect.bottom-other.rect.top-other.change_y
+        
         if min(dxLeft, dxRight) < min(dyUp, dyDown):
-            return
-
-        if self.ecb.yBar.rect.centery < other.rect.centery and dyUp >= dyDown and other.solid:
-            self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.yBar.rect.bottom
-            if self.change_y > other.change_y - self.var['gravity']:
-                self.change_y = -self.elasticity*self.change_y + other.change_y - self.var['gravity']
-        elif self.ecb.yBar.rect.bottom >= other.rect.top-other.change_y and self.ecb.previousECB[0].rect.bottom <= other.rect.top-other.change_y:
-            self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.yBar.rect.bottom)
-            if self.change_y > other.change_y - self.var['gravity']:
-                self.change_y = -self.elasticity*self.change_y + other.change_y - self.var['gravity']
-        elif self.ecb.yBar.rect.centery > other.rect.centery and dyDown >= dyUp and other.solid:
-            self.rect.top = other.rect.bottom+self.rect.top-self.ecb.yBar.rect.top
-            if self.change_y < other.change_y - self.var['gravity']:
-                self.change_y = -self.elasticity*self.change_y + other.change_y - self.var['gravity']
+            if dxLeft >= dxRight and other.solid:
+                self.rect.right = other.rect.left+self.rect.right-self.ecb.currentECB.rect.right
+                if self.change_x > other.change_x:
+                    self.change_x = -self.elasticity*self.change_x + other.change_x
+            elif dxRight >= dxLeft and other.solid:
+                self.rect.left = other.rect.right+self.rect.left-self.ecb.currentECB.rect.left
+                if self.change_x < other.change_x:
+                    self.change_x = -self.elasticity*self.change_x + other.change_x
+        else:
+            if dyUp >= dyDown and other.solid:
+                self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
+                if self.change_y > other.change_y - self.var['gravity']:
+                    self.change_y = -self.elasticity*self.change_y + other.change_y - self.var['gravity']
+            elif self.ecb.currentECB.rect.bottom >= other.rect.top-other.change_y and dyUp >= dyDown:
+                self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.currentECB.rect.bottom)
+                if self.change_y > other.change_y - self.var['gravity']:
+                    self.change_y = -self.elasticity*self.change_y + other.change_y - self.var['gravity']
+            elif dyDown >= dyUp and other.solid:
+                self.rect.top = other.rect.bottom+self.rect.top-self.ecb.currentECB.rect.top
+                if self.change_y < other.change_y - self.var['gravity']:
+                    self.change_y = -self.elasticity*self.change_y + other.change_y - self.var['gravity']
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
@@ -987,15 +955,11 @@ it's coming from.
 class ECB():
     def __init__(self,actor):
         self.actor = actor
-        
-        self.yBar = spriteManager.RectSprite(pygame.Rect(0,0,5,self.actor.sprite.boundingRect.height), pygame.Color('#ECB134'))
-        self.xBar = spriteManager.RectSprite(pygame.Rect(0,0,self.actor.sprite.boundingRect.width,5), pygame.Color('#ECB134'))
-        
-        self.yBar.rect.center = self.actor.sprite.boundingRect.center
-        self.xBar.rect.center = self.actor.sprite.boundingRect.center
-        
-        self.previousECB = [spriteManager.RectSprite(self.yBar.rect,pygame.Color('#EA6F1C')),
-                            spriteManager.RectSprite(self.xBar.rect,pygame.Color('#EA6F1C'))]
+
+        self.currentECB = spriteManager.RectSprite(self.actor.sprite.boundingRect.copy(), pygame.Color('#ECB134'))
+        self.currentECB.rect.center = self.actor.sprite.boundingRect.center
+
+        self.previousECB = spriteManager.RectSprite(self.currentECB.rect.copy(), pygame.Color('#EA6F1C'))
         
     """
     Resize the ECB. Give it a height, width, and center point.
@@ -1015,49 +979,34 @@ class ECB():
     This one moves the ECB without resizing it.
     """
     def move(self,newCenter):
-        self.yBar.rect.center = newCenter
-        self.xBar.rect.center = newCenter
+        self.currentECB.rect.center = newCenter
     
     """
     This stores the previous location of the ECB
     """
     def store(self):
-        self.previousECB = [spriteManager.RectSprite(self.yBar.rect,pygame.Color('#EA6F1C')),
-                            spriteManager.RectSprite(self.xBar.rect,pygame.Color('#EA6F1C'))
-                            ]
+        self.previousECB = spriteManager.RectSprite(self.currentECB.rect,pygame.Color('#EA6F1C'))
     
     """
     Set the ECB's height and width to the sprite's, and centers it
     """
     def normalize(self):
-        """
-        self.yBar.rect = pygame.Rect(0,0,5,self.actor.sprite.boundingRect.height)
-        self.xBar.rect = pygame.Rect(0,0,self.actor.sprite.boundingRect.width,5)
-        
-        self.yBar.rect.center = self.actor.sprite.boundingRect.center
-        self.xBar.rect.center = self.actor.sprite.boundingRect.center
-        """
-        
         center = (self.actor.sprite.boundingRect.centerx + self.actor.current_action.ecbCenter[0],self.actor.sprite.boundingRect.centery + self.actor.current_action.ecbCenter[1])
         sizes = self.actor.current_action.ecbSize
         offsets = self.actor.current_action.ecbOffset
         
         
         if sizes[0] == 0: 
-            self.xBar.rect.width = self.actor.sprite.boundingRect.width
+            self.currentECB.rect.width = self.actor.sprite.boundingRect.width
         else:
-            self.xBar.rect.width = sizes[0]
+            self.currentECB.rect.width = sizes[0]
         if sizes[1] == 0: 
-            self.yBar.rect.height = self.actor.sprite.boundingRect.height
+            self.currentECB.rect.height = self.actor.sprite.boundingRect.height
         else:
-            self.yBar.rect.height = sizes[1]
+            self.currentECB.rect.height = sizes[1]
         
-        self.yBar.rect.center = center
-        self.xBar.rect.center = center
+        self.currentECB.rect.center = center
         
     def draw(self,screen,offset,scale):
-        self.yBar.draw(screen,self.actor.gameState.stageToScreen(self.yBar.rect),scale)
-        self.xBar.draw(screen,self.actor.gameState.stageToScreen(self.xBar.rect),scale)
-        
-        self.previousECB[0].draw(screen,self.actor.gameState.stageToScreen(self.previousECB[0].rect),scale)
-        self.previousECB[1].draw(screen,self.actor.gameState.stageToScreen(self.previousECB[1].rect),scale)
+        self.currentECB.draw(screen,self.actor.gameState.stageToScreen(self.currentECB.rect),scale)
+        self.previousECB.draw(screen,self.actor.gameState.stageToScreen(self.previousECB.rect),scale)
