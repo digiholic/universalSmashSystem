@@ -422,7 +422,7 @@ class AbstractFighter():
     for things like poison, non-knockback attacks, etc.
     """ 
     def dealDamage(self, damage):
-        self.damage += damage
+        self.damage += int(math.floor(damage))
         if self.damage >= 999:
             self.damage = 999
     
@@ -457,7 +457,7 @@ class AbstractFighter():
         totalKB = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*weight_influence+100))*1.4) + 5) * s) + b
         
         if damage < self.flinch_damage_threshold or totalKB < self.flinch_knockback_threshold:
-            self.dealDamage(math.floor(damage*self.armor_damage_multiplier))
+            self.dealDamage(damage*self.armor_damage_multiplier)
             return 0
 
         di_vec = self.getSmoothedInput()
@@ -475,12 +475,12 @@ class AbstractFighter():
         if self.no_flinch_hits > 0:
             if hitstun_frames > 0:
                 self.no_flinch_hits -= 1
-            self.dealDamage(math.floor(damage*self.armor_damage_multiplier))
+            self.dealDamage(damage*self.armor_damage_multiplier)
             return 0
 
         if hitstun_frames > 0.5:
             print(totalKB)
-            self.doHitStun(hitstun_frames,trajectory,math.floor((damage // 4 + 2)*hitstun_multiplier))
+            self.doHitStun(hitstun_frames,trajectory,math.floor((damage / 4.0 + 2)*hitstun_multiplier))
         
         print(totalKB*DI_multiplier, trajectory)
         self.dealDamage(damage)
@@ -622,7 +622,7 @@ class AbstractFighter():
     A wrapper for the InputBuffer.contains function, since this will be called a lot.
     For a full description of the arguments, see the entry in InputBuffer.
     """
-    def bufferContains(self,key, distanceBack = 0, state=1.0, andReleased=False, notReleased=False):
+    def bufferContains(self,key, distanceBack = 0, state=1.0, andReleased=False, notReleased=True):
         return self.inputBuffer.contains(key, distanceBack, state, andReleased, notReleased)
 
 
@@ -672,7 +672,7 @@ class AbstractFighter():
     """
     def checkSmash(self,direction):
         #TODO different for buttons than joysticks
-        if self.inputBuffer.contains(direction, 4, 1.0, notReleased=True, threshold=True):
+        if self.inputBuffer.contains(direction, 4, 1.0, threshold=True):
             return True
         return False
     
@@ -917,7 +917,7 @@ class InputBuffer():
                   frame, but I can't think of a situation that would be useful in.
     notReleased - Check if the button was pressed in the given distance, and is still being held.
     """
-    def contains(self, key, distanceBack = 0, state=1.0, andReleased=False, notReleased=False, threshold=False):
+    def contains(self, key, distanceBack = 0, state=1.0, andReleased=False, notReleased=True, threshold=False):
         if state == 1.0: notState = 0.0
         else: notState = 1.0
         js = [] #If the key shows up multiple times, we might need to check all of them.

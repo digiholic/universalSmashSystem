@@ -69,7 +69,7 @@ class DamageHitbox(Hitbox):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
                     if self.article is None:
-                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
+                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4.0 + 2)
                 else:
                     if self.article is None:
                         self.owner.hitstop = math.floor(self.damage / 4 + 2)
@@ -101,7 +101,7 @@ class SakuraiAngleHitbox(DamageHitbox):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
                     if self.article is None:
-                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
+                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4.0 + 2)
                 else:
                     p = float(other.damage)
                     d = float(self.damage)
@@ -119,7 +119,7 @@ class SakuraiAngleHitbox(DamageHitbox):
                         angle = math.atan2(yVal*math.sin(float(self.trajectory)/180*math.pi),xVal*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
 
                     if self.article is None:
-                        self.owner.hitstop = math.floor(self.damage / 4 + 2)
+                        self.owner.hitstop = math.floor(self.damage / 4.0 + 2)
                     other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, angle, self.weight_influence, self.hitstun)
 
         if self.article and hasattr(self.article, 'onCollision'):
@@ -142,12 +142,12 @@ class AutolinkHitbox(DamageHitbox):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
                     if self.article is None:
-                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
+                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4.0 + 2)
                 else:
                     if self.article is None:
                         velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
                         angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
-                        self.owner.hitstop = math.floor(self.damage / 4 + 2)
+                        self.owner.hitstop = math.floor(self.damage / 4.0 + 2)
                         other.applyKnockback(self.damage, velocity*self.velocity_multiplier, 0, angle, 0, self.hitstun)
                     elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
                         velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
@@ -173,7 +173,7 @@ class FunnelHitbox(DamageHitbox):
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
                     if self.article is None:
-                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4 + 2)
+                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4.0 + 2)
                 else:
                     if self.article is None:
                         x_diff = self.rect.centerx - other.rect.centerx
@@ -181,7 +181,7 @@ class FunnelHitbox(DamageHitbox):
                         (x_vel, y_vel) = abstractFighter.getXYFromDM(self.trajectory, self.baseKnockback)
                         x_vel += self.x_draw*x_diff
                         y_vel += self.y_draw*y_diff
-                        self.owner.hitstop = math.floor(self.damage / 4 + 2)
+                        self.owner.hitstop = math.floor(self.damage / 4.0 + 2)
                         other.applyKnockback(self.damage, math.hypot(x_vel,y_vel), 0, math.atan2(-y_vel,x_vel)*180.0/math.pi, 0, self.hitstun)
                     else:
                         x_diff = self.article.rect.centerx - other.rect.centerx
@@ -237,10 +237,10 @@ class ReflectorHitbox(Hitbox):
                 (other.article.change_x, other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), self.velocity_multiplier*(2*projection[1]-v_other[1]))
             if hasattr(other, 'damage') and hasattr(other, 'shield_multiplier'):
                 self.priority -= other.damage*other.shield_multiplier
-                other.damage = int(math.floor(other.damage*self.damage_multiplier))
+                other.damage *= other.damage*self.damage_multiplier
             elif hasattr(other, 'damage'):
                 self.priority -= other.damage
-                other.damage = int(math.floor(other.damage*self.damage_multiplier))
+                other.damage *= other.damage*self.damage_multiplier
         
         return Hitbox.compareTo(self, other)
 

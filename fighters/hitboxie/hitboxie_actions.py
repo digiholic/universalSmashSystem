@@ -90,8 +90,8 @@ class NeutralAirSpecial(action.Action):
 
     def stateTransitions(self, actor):
         if actor.keysContain('down'):
-            if actor.change_y >= 0:
-                actor.change_y = actor.var['maxFallSpeed']
+            actor.platformPhase = 1
+            actor.calc_grav(actor.var['fastfallMultiplier'])
         baseActions.airControl(actor)
         
     def tearDown(self, actor, new):
@@ -983,7 +983,7 @@ class DownAir(action.Action):
             actor.active_hitboxes.add(self.leftSourSpot)
             actor.active_hitboxes.add(self.rightSourSpot)
         elif self.frame == self.lastFrame-9 and actor.keysContain('attack'):
-            self.frame -= 2
+            self.frame -= 1
         elif self.frame < self.lastFrame-9:
             pass
         elif self.frame < self.lastFrame-6:
@@ -1480,8 +1480,6 @@ class Jump(baseActions.Jump):
             actor.changeSpriteImage(3)
         elif self.frame == 5:
             actor.changeSprite("jump")
-        elif self.frame == self.lastFrame:
-            actor.doFall()
         baseActions.Jump.update(self, actor)
         
 
@@ -1500,8 +1498,8 @@ class AirJump(baseActions.AirJump):
             actor.changeSpriteImage(3)
         elif self.frame == 6:
             actor.changeSpriteImage(4)
-        elif self.frame == self.lastFrame:
-            actor.doFall()
+        elif self.frame == 8:
+            actor.changeSpriteImage(0)
         baseActions.AirJump.update(self, actor)
             
 class Fall(baseActions.Fall):

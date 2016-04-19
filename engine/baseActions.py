@@ -214,7 +214,7 @@ class CrouchGetup(action.Action):
             actor.doFall()
         elif self.frame >= self.lastFrame:
             actor.doIdle()
-        elif actor.bufferContains('down') and self.frame > 0:
+        elif actor.bufferContains('down'):
             blocks = actor.checkForGround()
             if blocks:
                 #Turn it into a list of true/false if the block is solid
@@ -407,8 +407,12 @@ class Jump(action.Action):
                 actor.change_x = actor.var['maxAirSpeed']
             elif actor.change_x < -actor.var['maxAirSpeed']:
                 actor.change_x = -actor.var['maxAirSpeed']
-            
-        self.frame += 1
+            if not actor.keysContain('jump'):
+                actor.doFall()
+        if self.frame < self.lastFrame:
+            self.frame += 1
+        if self.frame == self.lastFrame and not actor.keysContain('jump'):
+            actor.doFall()
 
 class AirJump(action.Action):
     def __init__(self,length,jumpFrame):
@@ -417,6 +421,9 @@ class AirJump(action.Action):
 
     def setUp(self, actor):
         actor.jumps -= 1
+
+    def stateTransitions(self, actor):
+        airControl(actor)
         
     def update(self,actor):
         if self.frame < self.jumpFrame:
@@ -433,7 +440,10 @@ class AirJump(action.Action):
                 if actor.facing == -1:
                     actor.flip()
                     actor.change_x = actor.facing * actor.var['maxAirSpeed']    
-        self.frame += 1
+        if self.frame < self.lastFrame:
+            self.frame += 1
+        if self.frame == self.lastFrame and not actor.keysContain('jump'):
+            actor.doFall()
         
 class Fall(action.Action):
     def __init__(self):
@@ -470,7 +480,7 @@ class Land(action.Action):
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame // 2
-        if actor.keysContain('down'):
+        if actor.bufferContains('down', 8):
             blocks = actor.checkForGround()
             if blocks:   
                 blocks = map(lambda x: x.solid, blocks)
@@ -497,7 +507,7 @@ class HelplessLand(action.Action):
             if actor.bufferContains('shield', 20):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame // 2
-        if actor.keysContain('down'):
+        if actor.bufferContains('down', 8):
             blocks = actor.checkForGround()
             if blocks:
                 blocks = map(lambda x: x.solid, blocks)
@@ -675,7 +685,7 @@ class ForwardRoll(action.Action):
             actor.flip()
             actor.change_x = 0
         elif self.frame == self.lastFrame:
-            if actor.keysContain('shield'):
+            if actor.bufferContains('shield', 8):
                 actor.doShield()
             else:
                 actor.doIdle()
@@ -703,7 +713,7 @@ class BackwardRoll(action.Action):
         elif self.frame == self.endInvulnFrame:
             actor.change_x = 0
         elif self.frame == self.lastFrame:
-            if actor.keysContain('shield'):
+            if actor.bufferContains('shield', 8):
                 actor.doShield()
             else:
                 actor.doIdle()
@@ -737,7 +747,7 @@ class SpotDodge(action.Action):
         elif self.frame == self.endInvulnFrame:
             pass
         elif self.frame == self.lastFrame:
-            if actor.keysContain('shield'):
+            if actor.bufferContains('shield', 8):
                 actor.doShield()
             else:
                 actor.doIdle()
@@ -848,7 +858,7 @@ def neutralState(actor):
         actor.doGroundSpecial()
     elif actor.bufferContains('jump', 8):
         actor.doJump()
-    elif actor.keysContain('down',0.5):
+    elif actor.keysContain('down', 0.5):
         actor.doCrouch()
     elif actor.keysContain(invkey):
         actor.doGroundMove(actor.getForwardWithOffset(180))
@@ -873,7 +883,7 @@ def airState(actor):
         actor.doAirAttack()
     elif actor.bufferContains('special', 8):
         actor.doAirSpecial()
-    elif actor.bufferContains('jump') and actor.jumps > 0:
+    elif actor.bufferContains('jump', 8) and actor.jumps > 0:
         actor.doAirJump()
     elif actor.keysContain('down'):
         actor.platformPhase = 1
@@ -991,9 +1001,9 @@ def grabbingState(actor):
     # If they did, release them
     if not actor.isGrabbing():
         actor.doRelease()
-    elif actor.bufferContains('shield'):
+    elif actor.bufferContains('shield', 8):
         actor.doRelease()
-    elif actor.bufferContains('attack'):
+    elif actor.bufferContains('attack', 8):
         actor.doPummel()
     elif actor.bufferContains(key, 8):
         actor.doThrow()
