@@ -163,10 +163,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
             self.changeAction(self.actions.ForwardThrow())
         elif self.keysContain(invkey):
             self.changeAction(self.actions.BackThrow())
-        elif self.keysContain('up'):
-            self.changeAction(self.actions.UpThrow())
         elif self.keysContain('down'):
             self.changeAction(self.actions.DownThrow())
+        elif self.keysContain('up'):
+            self.changeAction(self.actions.UpThrow())
         else: # How did we get here? 
             self.changeAction(self.actions.ForwardThrow())
         
@@ -186,18 +186,18 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 self.changeAction(self.actions.ForwardSmash())
             else:
                 self.changeAction(self.actions.ForwardAttack())
-        elif self.keysContain('up'):
-            if self.checkSmash('up'):
-                print("SMASH!")
-                self.changeAction(self.actions.UpSmash())
-            else:
-                self.changeAction(self.actions.UpAttack())
         elif self.keysContain('down'):
             if self.checkSmash('down'):
                 print("SMASH!")
                 self.changeAction(self.actions.DownSmash())
             else:
                 self.changeAction(self.actions.DownAttack())
+        elif self.keysContain('up'):
+            if self.checkSmash('up'):
+                print("SMASH!")
+                self.changeAction(self.actions.UpSmash())
+            else:
+                self.changeAction(self.actions.UpAttack())
         else:
             self.changeAction(self.actions.NeutralAttack())
 
@@ -213,10 +213,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
             self.changeAction(self.actions.ForwardAir())
         elif (self.keysContain(backward)):
             self.changeAction(self.actions.BackAir())
-        elif(self.keysContain('up')):
-            self.changeAction(self.actions.UpAir())
         elif (self.keysContain('down')):
             self.changeAction(self.actions.DownAir())
+        elif(self.keysContain('up')):
+            self.changeAction(self.actions.UpAir())
         else: self.changeAction(self.actions.NeutralAir())
 
     def doGetupAttack(self, direction):
@@ -231,10 +231,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
             self.flip()
             if self.sideSpecialUses > 0:
                 self.changeAction(self.actions.ForwardSpecial())
-        elif (self.keysContain('up')):
-            self.changeAction(self.actions.UpSpecial())
         elif (self.keysContain('down')):
             self.changeAction(self.actions.DownSpecial())
+        elif (self.keysContain('up')):
+            self.changeAction(self.actions.UpSpecial())
         else: 
             self.changeAction(self.actions.NeutralGroundSpecial())
 
@@ -247,10 +247,10 @@ class Hitboxie(abstractFighter.AbstractFighter):
             self.flip()
             if self.sideSpecialUses > 0:
                 self.changeAction(self.actions.ForwardSpecial())
-        elif (self.keysContain('up')):
-            self.changeAction(self.actions.UpSpecial())
         elif (self.keysContain('down')):
             self.changeAction(self.actions.DownSpecial())
+        elif (self.keysContain('up')):
+            self.changeAction(self.actions.UpSpecial())
         else: 
             self.changeAction(self.actions.NeutralAirSpecial())
 
