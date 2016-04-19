@@ -160,7 +160,7 @@ class AutolinkHitbox(DamageHitbox):
 class FunnelHitbox(DamageHitbox):
     def __init__(self,center,size,owner,damage,knockback,trajectory,
                 hitstun,hitbox_lock,x_draw=0.1,y_draw=0.1,
-                shield_multiplier=1,velocity_multiplier=1,transcendence=0,priority_diff=0):
+                shield_multiplier=1,transcendence=0,priority_diff=0):
         DamageHitbox.__init__(self,center,size,owner,damage,knockback,0,trajectory,hitstun,hitbox_lock,0,shield_multiplier,
                 transcendence,priority_diff)
         self.x_draw=x_draw
@@ -178,7 +178,7 @@ class FunnelHitbox(DamageHitbox):
                     if self.article is None:
                         x_diff = self.rect.centerx - other.rect.centerx
                         y_diff = self.rect.centery - other.rect.centery
-                        (x_vel, y_vel) = abstractFighter.getXYFromDM(trajectory, self.knockback)
+                        (x_vel, y_vel) = abstractFighter.getXYFromDM(self.trajectory, self.baseKnockback)
                         x_vel += self.x_draw*x_diff
                         y_vel += self.y_draw*y_diff
                         self.owner.hitstop = math.floor(self.damage / 4 + 2)
@@ -186,7 +186,7 @@ class FunnelHitbox(DamageHitbox):
                     else:
                         x_diff = self.article.rect.centerx - other.rect.centerx
                         y_diff = self.article.rect.centery - other.rect.centery
-                        (x_vel, y_vel) = abstractFighter.getXYFromDM(trajectory, self.knockback)
+                        (x_vel, y_vel) = abstractFighter.getXYFromDM(self.trajectory, self.baseKnockback)
                         x_vel += self.x_draw*x_diff
                         y_vel += self.y_draw*y_diff
                         other.applyKnockback(self.damage, math.hypot(x_vel,y_vel), 0, math.atan2(-y_vel,x_vel)*180.0/math.pi, 0, self.hitstun)

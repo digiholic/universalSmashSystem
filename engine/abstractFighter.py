@@ -110,8 +110,8 @@ class AbstractFighter():
 
             #Smash directional influence AKA hitstun shuffling
             di_vec = self.getSmoothedInput()
-            self.rect.x += di_vec[0]
-            self.rect.y += di_vec[1]
+            self.rect.x += di_vec[0]*0.5
+            self.rect.y += di_vec[1]*0.5
 
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
             block_hit_list = self.getCollisionsWith(self.gameState.platform_list)

@@ -220,7 +220,7 @@ class Hitboxie(abstractFighter.AbstractFighter):
         else: self.changeAction(self.actions.NeutralAir())
 
     def doGetupAttack(self, direction):
-        self.changeAction(self.actions.NeutralAttack())
+        self.changeAction(self.actions.GetupAttack())
     
     def doGroundSpecial(self):
         (forward, backward) = self.getForwardBackwardKeys()

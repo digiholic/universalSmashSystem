@@ -873,7 +873,7 @@ def airState(actor):
         actor.doAirAttack()
     elif actor.bufferContains('special', 8):
         actor.doAirSpecial()
-    elif actor.bufferContains('jump', 8) and actor.jumps > 0:
+    elif actor.bufferContains('jump') and actor.jumps > 0:
         actor.doAirJump()
     elif actor.keysContain('down'):
         actor.platformPhase = 1
