@@ -7,6 +7,7 @@ import engine.article as article
 import hitbox
 import math
 import weakref
+import pprint
 
 class AbstractFighter():
     
@@ -617,38 +618,86 @@ class AbstractFighter():
         k = self.keyBindings.get('axis ' + str(axis) + sign)
         self.inputBuffer.append((k,value)) # This should hopefully append something along the line of ('left',0.8)
         self.keysHeld[k] = value
-    
-    """
-    A wrapper for the InputBuffer.contains function, since this will be called a lot.
-    For a full description of the arguments, see the entry in InputBuffer.
-    """
-    def bufferContains(self,key, distanceBack = 0, state=1.0, andReleased=False, notReleased=True):
-        return self.inputBuffer.contains(key, distanceBack, state, andReleased, notReleased)
 
+    """
+    Various wrappers for the InputBuffer function, each one corresponding to a kind of input. 
+    """
 
-    def getSmoothedInput(self):
+    #A key press
+    def keyBuffered(self, key, distanceBack = 0, state = 0.1):
+        return any(map(lambda k: key in k and k[key] >= state, self.inputBuffer.getLastNFrames(distanceBack)))
+
+    #A key tap (press, then release)
+    def keyTapped(self, key, distanceBack = 8, state = 0.1):
+        downFrames = map(lambda k: key in k and k[key] >= state, self.inputBuffer.getLastNFrames(distanceBack))
+        upFrames = map(lambda k: key in k and k[key] < state, self.inputBuffer.getLastNFrames(distanceBack))
+        if not any(downFrames) or not any(upFrames):
+            return False
+        firstDownFrame = reduce(lambda j, k: j if j != None else (k if downFrames[k] else None), range(len(downFrames)), None)
+        lastUpFrame = reduce(lambda j, k: k if upFrames[k] else j, range(len(upFrames)), None)
+        return firstDownFrame <= lastUpFrame
+
+    #A key press which hasn't been released yet
+    def keyHeld(self, key, distanceBack = 8, state = 0.1):
+        downFrames = map(lambda k: key in k and k[key] >= state, self.inputBuffer.getLastNFrames(distanceBack))
+        upFrames = map(lambda k: key in k and k[key] < state, self.inputBuffer.getLastNFrames(distanceBack))
+        if not any(downFrames):
+            return False
+        if any(downFrames) and not any(upFrames):
+            return True
+        firstDownFrame = reduce(lambda j, k: j if j != None else (k if downFrames[k] else None), range(len(downFrames)), None)
+        lastUpFrame = reduce(lambda j, k: k if upFrames[k] else j, range(len(upFrames)), None)
+        return firstDownFrame > lastUpFrame
+
+    #A key release
+    def keyUp(self, key, distanceBack = 8, state = 0.1):
+        return any(map(lambda k: key in k and k[key] < state, self.inputBuffer.getLastNFrames(distanceBack)))
+
+    #A key reinput (release, then press)
+    def keyReinput(self, key, distanceBack = 8, state = 0.1):
+        upFrames = map(lambda k: key in k and k[key] < state, self.inputBuffer.getLastNFrames(distanceBack))
+        downFrames = map(lambda k: key in k and k[key] >= state, self.inputBuffer.getLastNFrames(distanceBack))
+        if not any(downFrames) or not any(downFrames):
+            return False
+        firstUpFrame = reduce(lambda j, k: j if j != None else (k if upFrames[k] else None), range(len(upFrames)), None)
+        lastDownFrame = reduce(lambda j, k: k if downFrames[k] else j, range(len(downFrames)), None)
+        return firstUpFrame <= lastDownFrame
+
+    #A key release which hasn't been pressed yet
+    def keyIdle(self, key, distanceBack = 8, state = 0.1):
+        upFrames = map(lambda k: key in k and k[key] < state, self.inputBuffer.getLastNFrames(distanceBack))
+        downFrames = map(lambda k: key in k and k[key] >= state, self.inputBuffer.getLastNFrames(distanceBack))
+        if not any(upFrames):
+            return False
+        if any(upFrames) and not any(downFrames):
+            return True
+        firstUpFrame = reduce(lambda j, k: j if j != None else (k if upFrames[k] else None), range(len(upFrames)), None)
+        lastDownFrame = reduce(lambda j, k: k if downFrames[k] else j, range(len(downFrames)), None)
+        return firstUpFrame > lastDownFrame
+
+    #Analog directional input
+    def getSmoothedInput(self, distanceBack = 64):
         #TODO If this is a gamepad, simply return its analog input
-        holdBuffer = reversed(self.inputBuffer.getLastNFrames(64))
+        holdBuffer = reversed(self.inputBuffer.getLastNFrames(distanceBack))
         smoothedX = 0.0
         smoothedY = 0.0
         for frameInput in holdBuffer:
             workingX = 0.0
             workingY = 0.0
-            xSmooth = 0.95
-            ySmooth = 0.95
-            for key in frameInput:
-                if key[0] == 'left': workingX -= key[1]
-                if key[0] == 'right': workingX += key[1]
-                if key[0] == 'up': workingY -= key[1]
-                if key[0] == 'down': workingY += key[1]
+            xSmooth = 0.9
+            ySmooth = 0.9
+            if 'left' in frameInput: workingX -= frameInput['left']
+            if 'right' in frameInput: workingX += frameInput['right']
+            if 'up' in frameInput: workingY -= frameInput['up']
+            if 'down' in frameInput: workingY += frameInput['down']
             if (workingX > 0 and smoothedX > 0) or (workingX < 0 and smoothedX < 0):
-                xSmooth = 0.99
+                xSmooth = 0.98
             elif (workingX < 0 and smoothedX > 0) or (workingX > 0 and smoothedX < 0):
-                xSmooth = 0.8
+                xSmooth = 0.6
             if (workingY < 0 and smoothedY < 0) or (workingY > 0 and smoothedY > 0):
-                ySmooth = 0.99
+                ySmooth = 0.98
             elif (workingY < 0 and smoothedY > 0) or (workingY > 0 and smoothedY < 0):
-                ySmooth = 0.8
+                ySmooth = 0.6
             magnitude = math.sqrt(workingX**2 + workingY**2)
             if magnitude > 1:
                 workingX /= magnitude
@@ -672,17 +721,15 @@ class AbstractFighter():
     """
     def checkSmash(self,direction):
         #TODO different for buttons than joysticks
-        if self.inputBuffer.contains(direction, 4, 1.0, threshold=True):
-            return True
-        return False
+        return self.keyBuffered(direction, 4, 1.0)
     
     """
     This checks for keys that are currently being held, whether or not they've actually been pressed recently.
     This is used, for example, to transition from a landing state into a running one. Using the InputBuffer
     would mean that you'd either need to iterate over the WHOLE buffer and look for one less release than press,
     or limit yourself to having to press the button before landing, whether you were moving in the air or not.
-    If you are looking for a button PRESS, use bufferContains. If you are looking for IF A KEY IS STILL BEING HELD,
-    this is your function.
+    If you are looking for a button PRESS, use one of the input methods provided. If you are looking for IF A KEY 
+    IS STILL BEING HELD, this is your function.
     """
     def keysContain(self,key,threshold=0.1):
         if key in self.keysHeld:
@@ -827,26 +874,26 @@ def segmentIntersects(startPoint, endPoint, rect):
         else:
             return 999
     elif startPoint[0]==endPoint[0]: #Vertical
-        if rect.left > startPoint[0] or rect.right < startPoint[0]:
+        if rect.left > startPoint[0] or rect.right <= startPoint[0]:
             return 999
-        if (startPoint[1] < rect.top and endPoint[1] < rect.top) or (startPoint[1] > rect.bottom and endPoint[1] > rect.bottom):
+        if (startPoint[1] < rect.top and endPoint[1] < rect.top) or (startPoint[1] >= rect.bottom and endPoint[1] >= rect.bottom):
             return 999
         t_top = (rect.top-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
         t_bottom = (rect.bottom-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
-        if (t_top < 0):
+        if (t_top <= 0):
             return t_bottom
-        elif (t_bottom < 0):
+        elif (t_bottom <= 0):
             return t_top
         else: 
             return min(t_top, t_bottom)
     elif startPoint[1]==endPoint[1]: #Horizontal
-        if rect.top > startPoint[1] or rect.bottom < startPoint[1]:
+        if rect.top > startPoint[1] or rect.bottom <= startPoint[1]:
             return 999
-        if (startPoint[0] < rect.left and endPoint[0] < rect.left) or (startPoint[0] > rect.right and endPoint[0] > rect.right):
+        if (startPoint[0] < rect.left and endPoint[0] < rect.left) or (startPoint[0] >= rect.right and endPoint[0] >= rect.right):
             return 999
         t_left = (rect.left-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
         t_right = (rect.right-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
-        if (t_left < 0):
+        if (t_left <= 0):
             return t_right
         elif (t_right <= 0):
             return t_left
@@ -857,13 +904,13 @@ def segmentIntersects(startPoint, endPoint, rect):
         t_right = (rect.right-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
         t_top = (rect.top-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
         t_bottom = (rect.bottom-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
-        if (t_left < 0 and t_right < 0) or (t_left > 1 and t_right > 1):
+        if (t_left <= 0 and t_right <= 0) or (t_left >= 1 and t_right >= 1):
             return 999
-        if (t_top < 0 and t_bottom < 0) or (t_top > 1 and t_bottom > 1):
+        if (t_top <= 0 and t_bottom <= 0) or (t_top >= 1 and t_bottom >= 1):
             return 999
-        if (t_top > t_left and t_bottom > t_left and t_top > t_right and t_bottom > t_right):
+        if (t_top >= t_left and t_bottom >= t_left and t_top >= t_right and t_bottom >= t_right):
             return 999
-        if (t_top < t_left and t_bottom < t_left and t_top < t_right and t_bottom < t_right):
+        if (t_top <= t_left and t_bottom <= t_left and t_top <= t_right and t_bottom <= t_right):
             return 999
         return max(min(t_left, t_right), min(t_top, t_bottom))
 
@@ -901,51 +948,9 @@ class InputBuffer():
     Pushes the buttons for the frame into the buffer, then extends the index by one.
     """
     def push(self):
-        self.buffer.append(self.workingBuff)
+        self.buffer.append(dict(self.workingBuff))
         self.workingBuff = []
         self.lastIndex += 1
-     
-    """
-    The big function. This checks if the buffer contains a key, with a lot of configurability.
-    
-    key - the key to look for
-    distance-Back - how many frames to look back, if set to 0, will check only the current frame.
-    state - Whether to check for a press (True) or release (False). Set this flag to False if you want
-            to look for when a button was released.
-    andReleased - Check if the button was pressed AND released in the given distance. Technically, this can also
-                  be used with state=False to check for a button that was released then pressed again in the time
-                  frame, but I can't think of a situation that would be useful in.
-    notReleased - Check if the button was pressed in the given distance, and is still being held.
-    """
-    def contains(self, key, distanceBack = 0, state=1.0, andReleased=False, notReleased=True, threshold=False):
-        if state == 1.0: notState = 0.0
-        else: notState = 1.0
-        js = [] #If the key shows up multiple times, we might need to check all of them.
-        if distanceBack > self.lastIndex: distanceBack = self.lastIndex #So we don't check farther back than we have data for
-        for i in range(self.lastIndex,(self.lastIndex - distanceBack - 1), -1):
-            #first, check if the key exists in the distance.
-            buff = self.buffer[i]
-            for k,s in buff:
-                if k == key:
-                    if (threshold and s >= state) or (not threshold and s == state):
-                        js.append(i)
-                        if not (andReleased or notReleased): return True #If we don't care whether it was released or not, we can return True now.
-        
-        #If it's not in there, return false.
-        if len(js) == 0: return False
-        #Note, if, for some stupid reason, both andReleased and notReleased are set, it will prioritize andReleased
-        for j in js:
-            for i in range(j,self.lastIndex+1):
-                buff = self.buffer[i]
-                if (key,notState) in buff: #If we encounter the inversion of the key we're looking for
-                    if andReleased: return True #If we're looking for a release, we found it
-                    if notReleased: return False #If we're looking for a held, we didn't get it
-        #If we go through the buffer up to the key press and we don't find its inversion...
-        if andReleased: return False
-        if notReleased: return True
-        #... do the opposite of above.
-        
-        return False #This statement should never be reached. If you do, enjoy your boolean.
                 
     """
     Get a sub-buffer of N frames

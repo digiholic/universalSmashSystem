@@ -144,11 +144,14 @@ class ForwardSpecial(action.Action):
                 if other.lockHitbox(self):
                     if other.shield:
                         other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
+                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4.0 + 2)
                     elif other.grounded:
+                        self.owner.hitstop = math.floor(self.damage / 4 + 2)
                         other.dealDamage(self.damage)
                         (actorDirect,_) = self.owner.getDirectionMagnitude()
                         other.doTrip(55, other.getForwardWithOffset(actorDirect))
                     else:
+                        self.owner.hitstop = math.floor(self.damage / 4 + 2)
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
     def stateTransitions(self, actor):
@@ -1391,7 +1394,7 @@ class Stop(baseActions.Stop):
         elif self.frame == 6:
             actor.changeSpriteImage(2)
         elif self.frame == self.lastFrame:
-            if actor.bufferContains('jump',8):
+            if actor.keyHeld('jump'):
                 actor.doJump()
             else: actor.doIdle()
         baseActions.Stop.update(self, actor)
@@ -1408,7 +1411,7 @@ class RunStop(baseActions.RunStop):
         elif self.frame == 8:
             actor.changeSpriteImage(2)
         elif self.frame == self.lastFrame:
-            if actor.bufferContains('jump',8):
+            if actor.keyHeld('jump'):
                 actor.doJump()
             else: actor.doIdle()
         baseActions.RunStop.update(self, actor)
