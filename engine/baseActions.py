@@ -34,9 +34,9 @@ class Move(action.Action):
     def stateTransitions(self,actor):
         moveState(actor,self.direction)
         (key,invkey) = actor.getForwardBackwardKeys()
-        if self.frame > 0 and actor.keyBuffered(invkey, 0):
+        if self.frame > 0 and actor.keyBuffered(invkey, 0, state = 1):
             actor.doDash(-1*actor.getFacingDirection())
-        elif self.frame > 0 and actor.keyBuffered(key, 0):
+        elif self.frame > 0 and actor.keyBuffered(key, 0, state = 1):
             actor.doDash(actor.getFacingDirection())
 
 class Dash(action.Action):
