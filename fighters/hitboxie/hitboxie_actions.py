@@ -289,7 +289,7 @@ class DownSpecial(action.Action):
     
 class UpSpecial(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 60)
+        action.Action.__init__(self, 70)
         self.angle = 90
         
     def setUp(self, actor):
@@ -307,18 +307,17 @@ class UpSpecial(action.Action):
         return action.Action.tearDown(self,actor,newAction)
     
     def stateTransitions(self,actor):
-        if self.frame < 15:
+        if self.frame < 19:
             actor.gravityEnabled = False
-        if self.frame > 15:
+        if self.frame > 19:
             baseActions.grabLedges(actor)
         if self.frame >= 45:
             actor.gravityEnabled = True
             baseActions.airControl(actor)
     
     def update(self,actor):
-        #The angle changing code
-        print(actor.change_x)
-        if self.frame <= 15:
+        actor.landingLag = 20
+        if self.frame <= 19:
             actor.unRotate()
             actor.change_x = 0
             actor.change_y = 0
@@ -335,7 +334,7 @@ class UpSpecial(action.Action):
             actor.changeSpriteImage(8)
         if self.frame == 11:
             actor.changeSpriteImage(9)
-        if self.frame == 15:
+        if self.frame == 19:
             self.launchHitbox.trajectory = self.angle
             self.flyingHitbox.trajectory = self.angle
             actor.active_hitboxes.add(self.launchHitbox)
@@ -345,12 +344,12 @@ class UpSpecial(action.Action):
             actor.change_x = direction[0] * 20
             actor.preferred_xspeed = actor.var['maxAirSpeed'] * direction[0]
             actor.change_y = direction[1] * 20
-        if self.frame == 16:
+        if self.frame == 20:
             self.launchHitbox.kill()
             actor.active_hitboxes.add(self.flyingHitbox)
         if self.frame == 45:
             self.flyingHitbox.kill()
-        if self.frame > 15:
+        if self.frame > 20:
             if self.frame % 2 == 0:
                 actor.changeSpriteImage((self.frame - 15) // 2)
             self.flyingHitbox.update()
