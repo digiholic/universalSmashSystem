@@ -29,10 +29,15 @@ class Move(action.Action):
                 actor.flip()
         
         self.frame += 1
-        if self.frame > self.lastFrame: self.frame = 0
+        if self.frame > self.lastFrame: self.frame = 1
         
     def stateTransitions(self,actor):
         moveState(actor,self.direction)
+        (key,invkey) = actor.getForwardBackwardKeys()
+        if self.frame > 0 and actor.keyBuffered(invkey, 0):
+            actor.doDash(-1*actor.getFacingDirection())
+        elif self.frame > 0 and actor.keyBuffered(key, 0):
+            actor.doDash(actor.getFacingDirection())
 
 class Dash(action.Action):
     def __init__(self,length): 
@@ -86,6 +91,13 @@ class Run(action.Action):
 class Pivot(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
+
+    def tearDown(self, actor, nextAction):
+        actor.flip()
+
+    def stateTransitions(self, actor):
+        if actor.keyHeld('jump', self.frame):
+            actor.doGroundJump()
         
     def update(self,actor):
         if actor.grounded is False:
@@ -97,10 +109,16 @@ class Pivot(action.Action):
         if self.frame == self.lastFrame:
             (key, _) = actor.getForwardBackwardKeys()
             if actor.keysContain(key):
-                if actor.facing == 1:
-                    actor.doGroundMove(0)
+                if actor.checkSmash(key):
+                    if actor.facing == 1:
+                        actor.doDash(0)
+                    else:
+                        actor.doDash(180)
                 else:
-                    actor.doGroundMove(180)
+                    if actor.facing == 1:
+                        actor.doGroundMove(0)
+                    else:
+                        actor.doGroundMove(180)
             else:
                 actor.doIdle()
           
@@ -127,6 +145,13 @@ class Stop(action.Action):
 class RunPivot(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
+
+    def tearDown(self, actor, nextAction):
+        actor.flip()
+        
+    def stateTransitions(self, actor):
+        if actor.keyHeld('jump', self.frame):
+            actor.doGroundJump()
         
     def update(self,actor):
         if actor.grounded is False:
@@ -138,9 +163,9 @@ class RunPivot(action.Action):
             (key, _) = actor.getForwardBackwardKeys()
             if actor.keysContain(key):
                 if actor.facing == 1:
-                    actor.doGroundMove(0)
+                    actor.doDash(0)
                 else:
-                    actor.doGroundMove(180)
+                    actor.doDash(180)
             else:
                 actor.doIdle()
 
@@ -397,10 +422,8 @@ class Jump(action.Action):
         self.jumpFrame = jumpFrame
 
     def stateTransitions(self, actor):
-        if self.frame <= self.jumpFrame:
-            groundJumpState(actor)
-        else:
-            airJumpState(actor)
+        if self.frame > self.jumpFrame:
+            jumpState(actor)
         
     def update(self,actor):
         if self.frame == self.jumpFrame:
@@ -429,7 +452,7 @@ class AirJump(action.Action):
         actor.jumps -= 1
 
     def stateTransitions(self, actor):
-        airJumpState(actor)
+        jumpState(actor)
 
     def tearDown(self, actor, nextAction):
         actor.preferred_yspeed = actor.var['maxFallSpeed']
@@ -678,6 +701,7 @@ class ForwardRoll(action.Action):
         self.endInvulnFrame = 34
 
     def tearDown(self, actor, nextAction):
+        actor.preferred_xspeed = 0
         if actor.invulnerable > 0:
             actor.invulnerable = 0
         actor.mask = None
@@ -707,6 +731,7 @@ class BackwardRoll(action.Action):
         self.endInvulnFrame = 34
 
     def tearDown(self, actor, nextAction):
+        actor.preferred_xspeed = 0
         if actor.invulnerable > 0:
             actor.invulnerable = 0
         actor.mask = None
@@ -735,6 +760,7 @@ class SpotDodge(action.Action):
         self.endInvulnFrame = 20
 
     def tearDown(self, actor, nextAction):
+        actor.preferred_xspeed = 0
         if actor.invulnerable > 0:
             actor.invulnerable = 0
         actor.mask = None
@@ -878,6 +904,14 @@ def neutralState(actor):
         actor.doGroundMove(actor.getForwardWithOffset(0))
 
 def crouchState(actor):
+    (key,invkey) = actor.getForwardBackwardKeys()
+    if actor.keyHeld('shield'):
+        if actor.keysContain(invkey):
+            actor.doBackwardRoll()
+        elif actor.keysContain(key):
+            actor.doForwardRoll()
+        else:
+            actor.doSpotDodge()
     if actor.keyHeld('attack'):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
@@ -939,7 +973,10 @@ def dashState(actor, direction):
     if actor.keysContain('shield') and actor.keyHeld('attack'):
         actor.doDashGrab()
     elif actor.keyHeld('attack'):
-        actor.doDashAttack()
+        if actor.checkSmash(key):
+            actor.doGroundAttack()
+        else:
+            actor.doDashAttack()
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
     elif actor.keyHeld('jump'):
@@ -972,15 +1009,7 @@ def runState(actor, direction):
     elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
         actor.doRunStop()
 
-def groundJumpState(actor):
-    if actor.keyHeld('shield'):
-        actor.doAirDodge()
-    elif actor.keyHeld('attack'):
-        actor.doGroundAttack()
-    elif actor.keyHeld('special'):
-        actor.doGroundSpecial()
-
-def airJumpState(actor):
+def jumpState(actor):
     airControl(actor)
     if actor.keyHeld('shield'):
         actor.doAirDodge()
