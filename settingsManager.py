@@ -4,7 +4,6 @@ import re
 import os
 import imp
 import engine.controller
-import engine.cpuPlayer
 try:
     from configparser import SafeConfigParser
 except ImportError:
@@ -84,7 +83,7 @@ def getControls(playerNum):
     controls = None
     
     controlType = settings.setting['controlType_'+str(playerNum)]  
-    if not  controlType == 'Keyobard':
+    if not controlType == 'Keyobard':
         try:
             controls = settings.setting[controlType]
         except:
@@ -295,6 +294,7 @@ def saveSettings(settings):
     parser.set('graphics','displayHurtboxes',str(settings['showHurtboxes']))
     parser.set('graphics','displaySpriteArea',str(settings['showSpriteArea']))
     parser.set('graphics','displayPlatformLines',str(settings['showPlatformLines']))
+    parser.set('graphics','displayECB',str(settings['showECB']))
     
     parser.add_section('playerColors')
     parser.set('playerColors','Player0',str(settings['playerColor0']))

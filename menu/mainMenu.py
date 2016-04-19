@@ -56,9 +56,9 @@ class SubMenu():
         self.clock = pygame.time.Clock()
         self.screen = screen
         
-        controls = []
+        self.controls = []
         for i in range(0,4):
-            controls.append(settingsManager.getControls(i))
+            self.controls.append(settingsManager.getControls(i))
         
         while self.status == 0:
             for event in pygame.event.get():
@@ -66,7 +66,7 @@ class SubMenu():
                     self.status = -1
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE: #Hitting escape always counts as a back button
                     self.status = 1
-                for control in controls:
+                for control in self.controls:
                     k = control.getInputs(event,False,False)
                     if k == 'up':
                         self.selectedOption = (self.selectedOption - 1) % len(self.menuText)
@@ -196,6 +196,9 @@ class MainMenu(SubMenu):
             status = RulesMenu(self.parent).executeMenu(self.screen)
         elif optionNum == 1: #settings menu
             status = OptionsMenu(self.parent).executeMenu(self.screen)
+            self.controls = []
+            for i in range(0,4):
+                self.controls.append(settingsManager.getControls(i))
         elif optionNum == 2: #module manager
             status = ModulesMenu(self.parent).executeMenu(self.screen)
         elif optionNum == 3: #quit
@@ -226,6 +229,9 @@ class OptionsMenu(SubMenu):
         SubMenu.confirmOption(self, optionNum)
         if optionNum == 0: #controls
             status = ControlsMenu(self.parent).executeMenu(self.screen)
+            self.controls = []
+            for i in range(0,4):
+                self.controls.append(settingsManager.getControls(i))
         elif optionNum == 1: #graphics
             status = GraphicsMenu(self.parent).executeMenu(self.screen)
         elif optionNum == 2: #sound
@@ -325,9 +331,16 @@ class ControlsMenu(SubMenu):
     def confirmOption(self, optionNum):
         SubMenu.confirmOption(self, optionNum)
         if optionNum == 0:
-            status = 0
+            status = PlayerControlsMenu(self.parent).executeMenu(self.screen)
+            self.controls = []
+            for i in range(0,4):
+                self.controls.append(settingsManager.getControls(i))
+        
         elif optionNum == 1:
             status = GamepadMenu(self.parent).executeMenu(self.screen)
+            self.controls = []
+            for i in range(0,4):
+                self.controls.append(settingsManager.getControls(i))
         elif optionNum == 2:
             self.status = 1
             return
@@ -402,6 +415,9 @@ class GamepadMenu(SubMenu):
         SubMenu.confirmOption(self, optionNum)    
         if optionNum == 0:
             status = self.bindControls(self.screen,settingsManager.getSetting().getGamepadByName(self.controllerList[self.currentController][0]))
+            self.controls = []
+            for i in range(0,4):
+                self.controls.append(settingsManager.getControls(i))
         elif optionNum == 1:
             self.status = 1
             return
@@ -541,7 +557,181 @@ class GamepadMenu(SubMenu):
             
             self.clock.tick(60)    
             pygame.display.update()
-   
+
+class PlayerControlsMenu(SubMenu):
+    def __init__(self,parent):
+        SubMenu.__init__(self, parent)
+        
+        self.menuText = [spriteManager.TextSprite('Player 1','rexlia rg',18,[255,255,255]),
+                         spriteManager.TextSprite('Exit','full Pack 2025',20,[255,255,255])]
+        
+        self.actionColumn = [spriteManager.TextSprite('left','rexlia rg',16,[55,55,55]),
+                             spriteManager.TextSprite('right','rexlia rg',16,[55,55,55]),
+                             spriteManager.TextSprite('up','rexlia rg',16,[55,55,55]),
+                             spriteManager.TextSprite('down','rexlia rg',16,[55,55,55]),
+                             spriteManager.TextSprite('attack','rexlia rg',16,[55,55,55]),
+                             spriteManager.TextSprite('special','rexlia rg',16,[55,55,55]),
+                             spriteManager.TextSprite('jump','rexlia rg',16,[55,55,55]),
+                             spriteManager.TextSprite('shield','rexlia rg',16,[55,55,55]),
+                             ]
+        
+        self.keyColumn = [spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+                          ]
+        
+        self.statusText = spriteManager.TextSprite('','rexlia rg',16,[255,255,255])
+        
+        self.playerNum = 0
+        
+        for i in range(0,len(self.actionColumn)):
+            self.actionColumn[i].rect.left = self.parent.settings['windowSize'][0] / 4
+            self.keyColumn[i].rect.right = (self.parent.settings['windowSize'][0] / 4) * 3
+            self.actionColumn[i].rect.centery = 76 + 16*i
+            self.keyColumn[i].rect.centery = 76 + 16*i
+            
+        self.menuText[0].rect.midtop = (self.parent.settings['windowSize'][0] / 2,20)
+        self.menuText[-1].rect.midbottom = (self.parent.settings['windowSize'][0] / 2,self.parent.settings['windowSize'][1] - 20)
+        
+        self.statusText.rect.midtop = self.menuText[0].rect.midbottom
+        self.selectedOption = 0
+    
+    def confirmOption(self, optionNum):
+        SubMenu.confirmOption(self, optionNum)    
+        if optionNum == 0:
+            status = self.bindControls(self.screen)
+            self.controls = []
+            for i in range(0,4):
+                self.controls.append(settingsManager.getControls(i))
+        elif optionNum == 1:
+            self.status = 1
+            return
+        if status == -1: self.status = -1
+        
+    def incrementOption(self, optionNum, direction):
+        SubMenu.incrementOption(self, optionNum, direction)
+        if optionNum == 0:
+            self.playerNum += direction
+            self.playerNum = self.playerNum % 4
+    
+    def update(self, screen):
+        SubMenu.update(self, screen)
+        
+        for i,action in enumerate(self.actionColumn):
+            keyControls = settingsManager.getSetting('controls_'+str(self.playerNum)) 
+            self.keyColumn[i].changeText('---')
+            if keyControls:
+                k = keyControls.getKeysForAction(action.text)
+                if k:
+                    self.keyColumn[i].changeText(str(k))
+                
+        for m in self.actionColumn:
+            m.draw(screen,m.rect.topleft,1.0)
+            m.changeColor([55,55,55])
+        for m in self.keyColumn:
+            m.draw(screen,m.rect.topleft,1.0)
+            m.changeColor([55,55,55])
+        
+        self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
+        self.menuText[0].changeText('Player '+str(self.playerNum+1))
+        
+        
+    def executeMenu(self, screen):
+        return SubMenu.executeMenu(self, screen)
+            
+    def bindControls(self,screen):
+        keyIdMap = {}
+        for name, value in vars(pygame.constants).items():
+            if name.startswith("K_"):
+                keyIdMap[value] = name
+        
+        self.statusText.changeText('To use a gamepad, press a button on that gamepad now')        
+        selectedSubOption = 0
+        
+        newKeybinding = {}
+        
+        heldKeys = []
+        workingKeys = []
+        
+        status = 0
+        ready = False
+        while status == 0:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return -1
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    self.statusText.changeText('')
+                    return 0
+                elif event.type == pygame.KEYDOWN:
+                    value = (self.actionColumn[selectedSubOption].text, event.key)
+                    if value not in workingKeys:
+                        workingKeys.append(value)
+                    heldKeys.append(event.key)
+                elif event.type == pygame.KEYUP:
+                    if event.key in heldKeys:
+                        heldKeys.remove(event.key)
+                        if not heldKeys:
+                            ready = True
+                elif event.type == pygame.JOYBUTTONDOWN:
+                    joystick = pygame.joystick.Joystick(event.joy)
+                    
+                    name = joystick.get_name()
+                    settings = settingsManager.getSetting().setting
+                    
+                    if settingsManager.getSetting().loadGamepad(name):
+                        settings['controlType_'+str(self.playerNum)] = name
+                    
+                    settingsManager.saveSettings(settings)
+                    self.statusText.changeText('')
+                    return 0
+                
+                if ready:
+                    buttonList = []
+                    for action,key in workingKeys:
+                        newKeybinding[key] = action
+                        buttonList.append(keyIdMap[key])
+                    workingKeys = []
+                     
+                    self.keyColumn[selectedSubOption].changeText(str(buttonList))
+                    selectedSubOption += 1
+                    ready = False
+                    
+                    if selectedSubOption >= len(self.actionColumn):
+                        newController = engine.controller.Controller(newKeybinding)
+                        settingsManager.getSetting().setting['controls_'+str(self.playerNum)] = newController
+                        settingsManager.getSetting().setting['controlType_'+str(self.playerNum)] = 'Keyboard'
+                        settingsManager.saveSettings(settingsManager.getSetting().setting)
+                        self.statusText.changeText('')
+                        return 0
+                        
+            self.parent.bg.update(screen)
+            self.parent.bg.draw(screen,(0,0),1.0)
+            
+            for m in self.menuText:
+                m.draw(screen,m.rect.topleft,1.0)
+                m.changeColor([55,55,55])
+            for m in self.actionColumn:
+                m.draw(screen,m.rect.topleft,1.0)
+                m.changeColor([255,255,255])
+            for m in self.keyColumn:
+                m.draw(screen,m.rect.topleft,1.0)
+                m.changeColor([255,255,255])
+            
+            self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
+        
+            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
+            self.actionColumn[selectedSubOption].changeColor(rgb)
+            self.keyColumn[selectedSubOption].changeColor(rgb)
+            
+            self.clock.tick(60)    
+            pygame.display.update()
+
+"""               
 class PlayerControlsMenu(SubMenu):
     def __init__(self, parent):
         SubMenu.__init__(self, parent)
@@ -558,7 +748,8 @@ class PlayerControlsMenu(SubMenu):
     
     def executeMenu(self, screen):
         return SubMenu.executeMenu(self, screen)
-    
+"""
+ 
 class GraphicsMenu(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self,parent)
