@@ -11,6 +11,7 @@ import sys
 import css
 import spriteManager
 import battle
+import updater
 
 def main():
     Menu()
@@ -145,45 +146,73 @@ class StartScreen(SubMenu):
         
         return self.status
 
-"""
-class UpdateChecker(SubMenu):
+class UpdateMenu(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self, parent)
-        self.menuText = [spriteManager.TextSprite('Cancel','full Pack 2025',24,[255,255,255])]
-        self.statusText = spriteManager.TextSprite('Checking','rexlia rg',16,[255,255,255])
+        self.menuText = [spriteManager.TextSprite('Check','full Pack 2025',24,[255,255,255]),
+                         spriteManager.TextSprite('Cancel','full Pack 2025',24,[255,255,255])]
         
-        self.menuText[0].rect.bottom = self.parent.settings['windowSize'][1] - 64
-        self.menuText[0].rect.centerx = self.parent.settings['windowSize'][0] / 2
+        self.statusText = spriteManager.TextSprite('','rexlia rg',24,[255,255,255])
         
-        self.statusText.rect.centerx = self.parent.settings['windowSize'][0] / 2
-        self.statusText.rect.centery = self.parent.settings['windowSize'][0] / 2
+        self.menuText[0].rect.centerx = self.parent.settings['windowSize'][0] / 3
+        self.menuText[1].rect.centerx = (self.parent.settings['windowSize'][0] / 3)*2
+        self.menuText[0].rect.centery = self.parent.settings['windowSize'][1] - 100
+        self.menuText[1].rect.centery = self.parent.settings['windowSize'][1] - 100
         
+        self.changeList = None
+        self.checkedList = False
         self.selectedOption = 0
-        self.updater = updater.Updater()
+        
+    def executeMenu(self, screen):
+        SubMenu.executeMenu(self, screen)
     
+    def incrementOption(self,option,direction):
+        if self.selectedOption == 0:
+            self.selectedOption = 1
+        elif self.selectedOption == 1:
+            self.selectedOption = 0
+            
+    def confirmOption(self,optionNum):
+        if optionNum == 0:
+            if self.checkedList ==  False:
+                self.changedList = updater.getChangedList()
+                self.checkedList = True
+                
+                if self.changedList == False: #this is different than using not changedlist
+                    self.statusText.changeText('Unable to update. Please try again later')
+                    self.statusText.rect.left = 0
+                    self.checkedList = False
+                elif not self.changedList:
+                    self.statusText.changeText('No update available.')
+                    self.statusText.rect.left = 0
+                    self.checkedList = False
+                else:
+                    self.statusText.changeText('Update available. Game will close when update is completed.')
+                    self.statusText.rect.left = 0
+                    self.menuText[0].changeText('Update')
+            else:
+                updater.downloadUpdates(self.changedList)
+                sys.exit()
+                
+        elif optionNum == 1:
+            self.status = 1
+        
     def update(self, screen):
-        if not self.updater.done:
-            self.statusText.changeText(self.updater.update())
-        else:
-            self.menuText[0].changeText('Okay')
         SubMenu.update(self, screen)
         self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
-    
-    def confirmOption(self, optionNum):
-        MainMenu(self.parent)
-"""
-    
+        
 class MainMenu(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self,parent)
         self.menuText = [spriteManager.TextSprite('TUSSLE','full Pack 2025',24,[255,255,255]),
                          spriteManager.TextSprite('Settings','full Pack 2025',24,[255,255,255]),
                          spriteManager.TextSprite('Modules','full Pack 2025',24,[255,255,255]),
+                         spriteManager.TextSprite('Update','full Pack 2025',24,[255,255,255]),
                          spriteManager.TextSprite('Quit','full Pack 2025',24,[255,255,255])]
         
         for i in range(0,len(self.menuText)):
             self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
-            self.menuText[i].rect.centery = 100 + i*100
+            self.menuText[i].rect.centery = 80 + i*80
                 
         self.selectedOption = 0
     
@@ -201,7 +230,9 @@ class MainMenu(SubMenu):
                 self.controls.append(settingsManager.getControls(i))
         elif optionNum == 2: #module manager
             status = ModulesMenu(self.parent).executeMenu(self.screen)
-        elif optionNum == 3: #quit
+        elif optionNum == 3: #updates
+            status = UpdateMenu(self.parent).executeMenu(self.screen)
+        elif optionNum == 4: #quit
             self.status = 1
             return
         if status == -1: self.status = -1

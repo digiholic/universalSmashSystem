@@ -271,12 +271,9 @@ class MaskSprite(ImageSprite):
             return None
 
 class TextSprite(ImageSprite):
-    def __init__(self,text,font="monospace",size=12,color=[0,0,0]):
+    def __init__(self,text,font="rexlia rg",size=12,color=[0,0,0]):
         Sprite.__init__(self)
-        try:
-            self.font = pygame.font.Font(settingsManager.createPath(font+".ttf"),size)
-        except Exception as e: #default to rexlia
-            self.font = pygame.font.Font(settingsManager.createPath("rexlia rg.ttf"),size)
+        self.font = pygame.font.Font(settingsManager.createPath(font+".ttf"),size)
             
         self.image = self.font.render(text,False,color).convert_alpha()
         self.rect = self.image.get_rect()

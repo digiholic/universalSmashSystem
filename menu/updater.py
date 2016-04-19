@@ -5,7 +5,6 @@ import os
 import sys
 import filecmp
 import settingsManager
-import githash
 
 from cStringIO import StringIO
 
@@ -28,57 +27,6 @@ def files(path):
 def getDirectories(path):
     return [os.path.join(path,x) for x in next(os.walk(path))[1] if x.startswith('.') == False]
 
-class Updater():
-    def __init__(self):
-        self.changedList = []
-        self.base_url = 'https://api.github.com/repos/digiholic/universalSmashSystem/contents/'
-        self.upcomingDirs = ['']
-        self.currentDirectory = None
-        self.json_content = None
-        self.done = False
-    
-    def buildNextList(self):
-        if self.currentDirectory:
-            self.upcomingDirs.remove(self.currentDirectory)
-        
-        if self.upcomingDirs:    
-            self.currentDirectory = self.upcomingDirs[0]
-            r = requests.get(self.base_url+self.currentDirectory)
-            self.json_content = json.loads(r.content)
-            
-            if isinstance(self.json_content, dict) and self.json_content.has_key('documentation_url'):
-                return -1
-            return 1
-        return 0
-    
-    def update(self):
-        if not self.json_content:
-            status = self.buildNextList()
-            if status == -1:
-                self.done = True
-                return 'API Access error. Too many connections within 60 minutes. Please wait and try again or update manually.'
-            if status == 0:
-                self.done = True
-                return 'Completed'
-            
-        obj = self.json_content[0]    
-        if obj["type"] == "dir":
-            self.upcomingDirs.append(self.currentDirectory+'/'+str(obj['name']))
-        else:
-            filepath = os.path.join(settingsManager.createPath(self.currentDirectory),obj['name'])
-            try:
-                with open(filepath,'r') as f:
-                    filesha = githash(f.read())
-            except:
-                #We don't have a local copy of the file
-                filesha = ''
-            if not filesha == obj['sha']: 
-                self.changedList.append(self.currentDirectory+'/'+str(obj['name']))
-        
-        self.json_content.remove(obj)
-        return obj['name']
-        
-
 def getChangedList():
     changedList = []
     
@@ -91,8 +39,7 @@ def getChangedList():
         r = requests.get(base_url+directory)
         json_content = json.loads(r.content)
         if isinstance(json_content, dict) and json_content.has_key('documentation_url'):
-            print('API Access error. Too many connections within 60 minutes. Please wait and try again or update manually.')
-            return []
+            return False
         
         for obj in json_content:
             if obj["type"] == "dir":
@@ -115,6 +62,9 @@ def getChangedList():
   
     
 def downloadUpdates(changedList):
+    if not changedList:
+        return
+    
     base_url = 'https://raw.githubusercontent.com/digiholic/universalSmashSystem/master/'
     base_dir = settingsManager.createPath('')
     
