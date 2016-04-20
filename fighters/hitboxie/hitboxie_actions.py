@@ -1215,9 +1215,13 @@ class UpThrow(baseActions.BaseGrabbing):
 
     def setUp(self, actor):
         actor.changeSprite("land",3)
+        actor.flinch_knockback_threshold = 10000
+        actor.flinch_damage_threshold = 10000
 
     def tearDown(self, actor, nextAction):
         baseActions.BaseGrabbing.tearDown(self, actor, nextAction)
+        actor.flinch_knockback_threshold = 0
+        actor.flinch_damage_threshold = 0
 
     def update(self, actor):
         baseActions.BaseGrabbing.update(self, actor)

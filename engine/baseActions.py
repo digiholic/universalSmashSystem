@@ -1069,9 +1069,9 @@ def grabbingState(actor):
     # If they did, release them
     if not actor.isGrabbing():
         actor.doRelease()
-    elif actor.keyHeld('shield'):
+    elif actor.keyHeld('shield', 0):
         actor.doRelease()
-    elif actor.keyHeld('attack'):
+    elif actor.keyHeld('attack', 0):
         actor.doPummel()
     elif actor.keyHeld(key):
         actor.doThrow()
