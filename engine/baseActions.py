@@ -422,7 +422,9 @@ class Jump(action.Action):
         self.jumpFrame = jumpFrame
 
     def stateTransitions(self, actor):
-        if self.frame > self.jumpFrame:
+        if actor.keyHeld('attack') and actor.checkSmash('up'):
+            actor.doGroundAttack()
+        elif self.frame > self.jumpFrame:
             jumpState(actor)
         
     def update(self,actor):
