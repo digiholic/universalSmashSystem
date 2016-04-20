@@ -210,9 +210,17 @@ class Crouch(action.Action):
         self.direction = actor.getForwardWithOffset(0)
 
     def stateTransitions(self, actor):
+        crouchState(actor)
         if actor.grounded is False:
             actor.doFall()
-        crouchState(actor)
+        if self.frame > 0 and actor.keyBuffered('down', 0, state = 1):
+            blocks = actor.checkForGround()
+            if blocks:
+                #Turn it into a list of true/false if the block is solid
+                blocks = map(lambda x:x.solid,blocks)
+                #If none of the ground is solid
+                if not any(blocks):
+                    actor.doPlatformDrop()
 
     def update(self, actor):
         if actor.grounded is False:
