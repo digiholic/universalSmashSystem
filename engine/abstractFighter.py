@@ -82,7 +82,6 @@ class AbstractFighter():
         self.damage = 0
         self.landingLag = 6
         self.platformPhase = 0
-        self.gravityEnabled = True
         
         self.change_x = 0
         self.change_y = 0
@@ -159,8 +158,7 @@ class AbstractFighter():
         self.ecb.normalize()
 
         # Gravity
-        if self.gravityEnabled:
-            self.calc_grav()
+        self.calc_grav()
         
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
@@ -874,9 +872,9 @@ def segmentIntersects(startPoint, endPoint, rect):
         else:
             return 999
     elif startPoint[0]==endPoint[0]: #Vertical
-        if rect.left > startPoint[0] or rect.right <= startPoint[0]:
+        if rect.left > startPoint[0] or rect.right < startPoint[0]:
             return 999
-        if (startPoint[1] < rect.top and endPoint[1] < rect.top) or (startPoint[1] >= rect.bottom and endPoint[1] >= rect.bottom):
+        if (startPoint[1] < rect.top and endPoint[1] < rect.top) or (startPoint[1] > rect.bottom and endPoint[1] > rect.bottom):
             return 999
         t_top = (rect.top-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
         t_bottom = (rect.bottom-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
@@ -887,9 +885,9 @@ def segmentIntersects(startPoint, endPoint, rect):
         else: 
             return min(t_top, t_bottom)
     elif startPoint[1]==endPoint[1]: #Horizontal
-        if rect.top > startPoint[1] or rect.bottom <= startPoint[1]:
+        if rect.top > startPoint[1] or rect.bottom < startPoint[1]:
             return 999
-        if (startPoint[0] < rect.left and endPoint[0] < rect.left) or (startPoint[0] >= rect.right and endPoint[0] >= rect.right):
+        if (startPoint[0] < rect.left and endPoint[0] < rect.left) or (startPoint[0] > rect.right and endPoint[0] > rect.right):
             return 999
         t_left = (rect.left-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
         t_right = (rect.right-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
@@ -904,9 +902,9 @@ def segmentIntersects(startPoint, endPoint, rect):
         t_right = (rect.right-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
         t_top = (rect.top-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
         t_bottom = (rect.bottom-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
-        if (t_left < 0 and t_right <= 0) or (t_left > 1 and t_right >= 1):
+        if (t_left < 0 and t_right <= 0) or (t_left >= 1 and t_right > 1):
             return 999
-        if (t_top < 0 and t_bottom <= 0) or (t_top > 1 and t_bottom >= 1):
+        if (t_top < 0 and t_bottom <= 0) or (t_top >= 1 and t_bottom > 1):
             return 999
         if (t_top > t_left and t_bottom > t_left and t_top > t_right and t_bottom > t_right):
             return 999

@@ -146,12 +146,12 @@ class ForwardSpecial(action.Action):
                         other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
                         self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4.0 + 2)
                     elif other.grounded:
-                        self.owner.hitstop = math.floor(self.damage / 4 + 2)
-                        other.dealDamage(self.damage)
-                        (actorDirect,_) = self.owner.getDirectionMagnitude()
-                        other.doTrip(55, other.getForwardWithOffset(actorDirect))
+                        self.owner.hitstop = math.floor(self.damage / 4.0 + 2)
+                        other.applyKnockback(self.damage, 0, 0, 0, 1, 1)
+                        (otherDirect,_) = other.getDirectionMagnitude()
+                        other.doTrip(55, other.getForwardWithOffset(otherDirect))
                     else:
-                        self.owner.hitstop = math.floor(self.damage / 4 + 2)
+                        self.owner.hitstop = math.floor(self.damage / 4.0 + 2)
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
     def stateTransitions(self, actor):
@@ -253,6 +253,7 @@ class DownSpecial(action.Action):
         return action.Action.setUp(self, actor)           
     
     def tearDown(self, actor, newAction):
+        actor.preferred_yspeed = actor.var['maxFallSpeed']
         self.article.kill()
         self.damageHitbox.kill()
         self.reflectorHitbox.kill()
@@ -306,20 +307,22 @@ class UpSpecial(action.Action):
         self.launchHitbox.kill()
         self.flyingHitbox.kill()
         actor.unRotate()
-        actor.gravityEnabled = True
+        actor.preferred_yspeed = actor.var['maxFallSpeed']
         return action.Action.tearDown(self,actor,newAction)
     
     def stateTransitions(self,actor):
         if self.frame < 19:
-            actor.gravityEnabled = False
+            actor.preferred_yspeed = 0
         if self.frame > 19:
             baseActions.grabLedges(actor)
         if self.frame >= 45:
-            actor.gravityEnabled = True
+            actor.preferred_yspeed = actor.var['maxFallSpeed']
             baseActions.airControl(actor)
     
     def update(self,actor):
         actor.landingLag = 20
+        if actor.grounded:
+            actor.accel(actor.var['staticGrip'])
         if self.frame <= 19:
             actor.unRotate()
             actor.change_x = 0
@@ -343,7 +346,7 @@ class UpSpecial(action.Action):
             actor.active_hitboxes.add(self.launchHitbox)
             actor.changeSprite('airjump')
             self.ecbSize = [92, 92]
-            actor.gravityEnabled = True
+            actor.preferred_yspeed = actor.var['maxFallSpeed']
             actor.change_x = direction[0] * 20
             actor.preferred_xspeed = actor.var['maxAirSpeed'] * direction[0]
             actor.change_y = direction[1] * 20
@@ -407,7 +410,7 @@ class NeutralAttack(action.Action):
             actor.changeSpriteImage(10)
         elif self.frame > 10:
             self.jabHitbox.kill()
-            if not (self.frame) > 14:
+            if not self.frame > 14:
                 actor.changeSpriteImage(self.frame)
         if self.frame == self.lastFrame:
             actor.doIdle()
@@ -465,11 +468,13 @@ class UpSmash(action.Action):
         self.uSmashHitbox = hitbox.DamageHitbox([0,-80],[120,120],actor,8,2.0,.25,80,1,hitbox.HitboxLock())
     
     def tearDown(self, actor, newAction):
+        self.popupHBox.kill()
+        self.weakHBoxL.kill()
+        self.weakHBoxR.kill()
         self.uSmashHitbox.kill()
         
     def update(self,actor):
-        if self.frame >= 2 and self.frame <= 7 and not actor.keysContain('attack') and self.chargeLevel > 0:
-            self.frame = 8
+        if self.frame == 8 and not actor.keysContain('attack') and self.chargeLevel > 0:
             actor.mask = None
             
         if self.frame == 0:
@@ -484,16 +489,14 @@ class UpSmash(action.Action):
         elif self.frame == 6:
             actor.changeSpriteImage(3)
         elif self.frame == 8:
-            if actor.keysContain('attack') and self.chargeLevel <= 8:
+            if actor.keysContain('attack') and self.chargeLevel <= 30:
                 print("charging...")
                 self.chargeLevel += 1
-                if self.chargeLevel % 3 != 0:
-                    self.uSmashHitbox.damage += 1
-                if self.chargeLevel % 4 == 0:
-                    self.weakHBoxL.damage += 1
-                    self.weakHBoxR.damage += 1
-                self.uSmashHitbox.baseKnockback += 0.2
-                self.frame = 4
+                self.uSmashHitbox.damage += .1
+                self.weakHBoxL.damage += .027
+                self.weakHBoxR.damage += .027
+                self.uSmashHitbox.baseKnockback += 0.02
+                self.frame -= 1
         elif self.frame == 10:
             actor.changeSpriteImage(4)
         elif self.frame == 12:
@@ -629,27 +632,24 @@ class DownAttack(action.Action):
 
 class DownSmash(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 54)
+        action.Action.__init__(self, 52)
         self.chargeLevel = 0
 
     def setUp(self, actor):
         actor.preferred_xspeed = 0
         actor.changeSprite("dsmash", 0)
         hitbox_lock = hitbox.HitboxLock()
-        self.spikeBox1 = hitbox.FunnelHitbox([0, 26], [90, 40], actor, 2, 2, 270, 1, hitbox.HitboxLock(), 0.05, 0)
-        self.spikeBox2 = hitbox.FunnelHitbox([0, 26], [90, 40], actor, 2, 2, 270, 1, hitbox.HitboxLock(), 0.05, 0)
+        self.spikeBox = hitbox.FunnelHitbox([0, 26], [90, 40], actor, 1, 2, 270, 2, hitbox.HitboxLock(), 0.05, 0)
         self.dsmashHitbox1 = hitbox.DamageHitbox([23,26],[46,40],actor,8,8,0.3,20,1,hitbox_lock)
         self.dsmashHitbox2 = hitbox.DamageHitbox([-23,26],[46,40],actor,8,8,0.3,160,1,hitbox_lock)
 
     def tearDown(self, actor, nextAction):
-        self.spikeBox1.kill()
-        self.spikeBox2.kill()
+        self.spikeBox.kill()
         self.dsmashHitbox1.kill()
         self.dsmashHitbox2.kill()
 
     def update(self, actor):
-        if self.frame <= 6 and not actor.keysContain('attack'):
-            self.frame = 7
+        if self.frame == 6 and not actor.keysContain('attack') and self.chargeLevel > 0:
             actor.mask = None
         if self.frame == 0: 
             if actor.keysContain('attack') and self.chargeLevel == 0:
@@ -657,22 +657,23 @@ class DownSmash(action.Action):
             actor.changeSpriteImage(0)
         elif self.frame == 6:
             actor.changeSpriteImage(0)
-            if actor.keysContain('attack') and self.chargeLevel <= 5:
+            if actor.keysContain('attack') and self.chargeLevel <= 30:
                 print("charging...")
                 self.chargeLevel += 1
-                self.dsmashHitbox1.damage += 1
-                self.dsmashHitbox2.damage += 1
-                self.frame = 0
+                self.dsmashHitbox1.damage += .146
+                self.dsmashHitbox2.damage += .146
+                self.frame -= 1
         elif self.frame > 6 and self.frame < self.lastFrame:
             actor.changeSpriteImage((self.frame//2-3)%6)
             if self.frame == 14:
-                actor.active_hitboxes.add(self.spikeBox1)
-            elif self.frame == 18:
-                self.spikeBox1.kill()
+                actor.active_hitboxes.add(self.spikeBox)
+                actor.mask = None
+            elif self.frame == 20:
+                self.spikeBox.hitbox_lock = hitbox.HitboxLock()
             elif self.frame == 26:
-                actor.active_hitboxes.add(self.spikeBox2)
-            elif self.frame == 30:
-                self.spikeBox2.kill()
+                self.spikeBox.hitbox_lock = hitbox.HitboxLock()
+            elif self.frame == 32:
+                self.spikeBox.hitbox_lock = hitbox.HitboxLock()
             elif self.frame == 38:
                 actor.active_hitboxes.add(self.dsmashHitbox1)
                 actor.active_hitboxes.add(self.dsmashHitbox2)
@@ -729,10 +730,8 @@ class ForwardSmash(action.Action):
         self.fSmashHitbox.kill()
             
     def update(self,actor):
-        if self.frame >= 2 and self.frame <= 6 and not actor.keysContain('attack') and self.chargeLevel > 0:
-            self.frame = 9
+        if self.frame == 6 and not actor.keysContain('attack') and self.chargeLevel > 0:
             actor.mask = None
-            
         if self.frame == 0:
             actor.preferred_xspeed = 0
             actor.changeSprite("fsmash",0)
@@ -743,12 +742,12 @@ class ForwardSmash(action.Action):
         elif self.frame == 4:
             actor.changeSpriteImage(2)
         elif self.frame == 6:
-            if actor.keysContain('attack') and self.chargeLevel <= 5:
+            if actor.keysContain('attack') and self.chargeLevel <= 30:
                 print("charging...")
                 self.chargeLevel += 1
-                self.fSmashHitbox.damage += 1
-                self.fSmashHitbox.baseKnockback += 0.05
-                self.frame = 2
+                self.fSmashHitbox.damage += .213
+                self.fSmashHitbox.baseKnockback += 0.02
+                self.frame -= 1
         elif self.frame == 8:
             actor.changeSpriteImage(3)
         elif self.frame == 10:
@@ -1342,7 +1341,7 @@ class Pivot(baseActions.Pivot):
         baseActions.Pivot.update(self, actor)
         
     def tearDown(self,actor,newAction):
-        if isinstance(newAction, Move):
+        if isinstance(newAction, Move) or isinstance(newAction, Dash):
             newAction.accel = False
 
 class RunPivot(baseActions.RunPivot):
@@ -1363,7 +1362,7 @@ class RunPivot(baseActions.RunPivot):
         baseActions.RunPivot.update(self, actor)
         
     def tearDown(self,actor,newAction):
-        if isinstance(newAction, Move):
+        if isinstance(newAction, Dash):
             newAction.accel = False
         
 class NeutralAction(baseActions.NeutralAction):
@@ -1474,7 +1473,7 @@ class TryTech(baseActions.TryTech):
              
 class Jump(baseActions.Jump):
     def __init__(self):
-        baseActions.Jump.__init__(self,7,6)
+        baseActions.Jump.__init__(self,8,5)
         
     def update(self,actor):
         if self.frame == 0:
@@ -1492,7 +1491,7 @@ class Jump(baseActions.Jump):
 
 class AirJump(baseActions.AirJump):
     def __init__(self):
-        baseActions.AirJump.__init__(self,8,3)
+        baseActions.AirJump.__init__(self,8,4)
         
     def update(self,actor):
         if self.frame == 0:
