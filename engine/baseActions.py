@@ -896,6 +896,12 @@ class LedgeGrab(action.Action):
 class LedgeGetup(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
+
+    def setUp(self, actor):
+        if actor.facing == 1:
+            actor.rect.left -= actor.rect.width//2
+        else:
+            actor.rect.right += actor.rect.width//2
     
     def update(self,actor):
         if self.frame >= self.lastFrame:
@@ -1068,10 +1074,10 @@ def ledgeState(actor):
     elif actor.keyBuffered(key):
         actor.ledgeLock = True
         actor.doLedgeGetup()
-    elif actor.keysContain(invkey):
+    elif actor.keyBuffered(invkey):
         actor.ledgeLock = True
         actor.doFall()
-    elif actor.keysContain('down'):
+    elif actor.keyBuffered('down'):
         actor.ledgeLock = True
         actor.doFall()
 

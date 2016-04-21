@@ -93,12 +93,9 @@ class NeutralAirSpecial(action.Action):
             actor.platformPhase = 1
             actor.calc_grav(actor.var['fastfallMultiplier'])
         baseActions.airControl(actor)
-        
-    def tearDown(self, actor, new):
-        actor.landingLag = 8
                
     def update(self, actor):
-        actor.landingLag = 13
+        actor.landingLag = 15
         if self.frame <= 14:
             actor.changeSpriteImage(self.frame//2)
         elif self.frame <= 26:
@@ -112,6 +109,7 @@ class NeutralAirSpecial(action.Action):
             if actor.keysContain('special'):
                 actor.changeAction(NeutralAirSpecial())
         if self.frame == self.lastFrame:
+            actor.landingLag = 9
             actor.doFall()
         self.frame += 1
 
@@ -793,10 +791,10 @@ class NeutralAir(action.Action):
         self.nairHitbox.kill()
     
     def update(self,actor):
-        actor.landingLag = 20
         actor.changeSpriteImage(self.subImage % 16)
         self.subImage += 1
         if self.frame == 2:
+            actor.landingLag = 20
             actor.active_hitboxes.add(self.nairHitbox)
         if self.frame > 2:
             self.nairHitbox.update()
@@ -814,8 +812,9 @@ class NeutralAir(action.Action):
             self.nairHitbox.damage = 1
             self.nairHitbox.baseKnockback = 0
             self.nairHitbox.hitstun = 0
-        if self.frame == self.lastFrame:
+        elif self.frame == 30:
             actor.landingLag = 12
+        if self.frame == self.lastFrame:
             actor.changeAction(Fall())
         self.frame += 1
 
@@ -1832,6 +1831,7 @@ class LedgeGetup(baseActions.LedgeGetup):
 
     def setUp(self,actor):
         baseActions.LedgeGetup.setUp(self,actor)
+        actor.invincibility = 24
 
     def tearDown(self,actor,other):
         actor.preferred_xspeed = 0
@@ -1840,6 +1840,7 @@ class LedgeGetup(baseActions.LedgeGetup):
     def update(self,actor):
         if self.frame == 0:
             actor.changeSprite("getup",0)
+            actor.createMask([255,255,255], 24, True, 24)
         if (self.frame >= 0) and (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
             if self.frame > 2:
@@ -1862,6 +1863,8 @@ class LedgeAttack(baseActions.LedgeGetup):
 
     def setUp(self,actor):
         baseActions.LedgeGetup.setUp(self, actor)
+        actor.invincibility = 24
+        actor.createMask([255,255,255], 24, True, 24)
         self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,8,0.2,20,1,hitbox.HitboxLock())
         self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,0,1,1.5)
 

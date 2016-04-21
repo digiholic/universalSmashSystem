@@ -622,7 +622,7 @@ class AbstractFighter():
     """
 
     #A key press
-    def keyBuffered(self, key, distanceBack = 0, state = 0.1):
+    def keyBuffered(self, key, distanceBack = 1, state = 0.1):
         return any(map(lambda k: key in k and k[key] >= state, self.inputBuffer.getLastNFrames(distanceBack)))
 
     #A key tap (press, then release)
@@ -648,7 +648,7 @@ class AbstractFighter():
         return firstDownFrame > lastUpFrame
 
     #A key release
-    def keyUp(self, key, distanceBack = 8, state = 0.1):
+    def keyUp(self, key, distanceBack = 1, state = 0.1):
         return any(map(lambda k: key in k and k[key] < state, self.inputBuffer.getLastNFrames(distanceBack)))
 
     #A key reinput (release, then press)
