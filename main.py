@@ -3,6 +3,8 @@ from __future__ import print_function
 import pygame
 import imp
 import os
+import sys
+import traceback
 from pygame.locals import *
 from engine import *
 from builder import *
@@ -13,6 +15,11 @@ import menu.mainMenu
 
 
 def main(debug = False):
+    try:
+        sys.stderr.write("\n")
+        sys.stderr.flush()
+    except IOError:
+        sys.stderr = open("errors.txt", "w", 0)
     menu.mainMenu.Menu()
     
 def importFromURI(filePath, uri, absl=False, suffix=""):

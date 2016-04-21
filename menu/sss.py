@@ -2,8 +2,6 @@ import sys
 import pygame
 import settingsManager
 import battle
-import stages.true_arena
-import stages.arena
 import spriteManager
 import os
 import musicManager
@@ -98,7 +96,6 @@ class StageScreen():
             if(subdir == '__pycache__'):
                 continue
             stage = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"stage.py"),suffix=str(stagecount))
-            print(stage)
             if (stage == None):
                 raise ValueError("No stages found at " + os.path.join(directory,subdir,"stage.py"))
             stagecount += 1
@@ -133,7 +130,6 @@ class StageGrid():
         #End of stages
         self.stageGrid.append(stageRow) #Put the last row onto the grid
         self.stagesStriked.append(strikingRow)
-        print(self.stageGrid)
         
     def updateSelection(self,delta_x,delta_y):
         x,y = self.selectedStage

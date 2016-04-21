@@ -40,15 +40,6 @@ class Hitbox(spriteManager.RectSprite):
 
     def recenterSelfOnOwner(self):
         self.rect.center = [self.owner.rect.center[0] + self.x_offset*self.owner.facing, self.owner.rect.center[1] + self.y_offset]
-
-    def draw(self, screen, offset, scale):
-        self.image.fill(self.colorValue())
-        spriteManager.RectSprite.draw(self, screen, offset, scale)
-
-    def colorValue(self):
-        return [max(min(self.priority*10,         127), 0  ), 
-                max(min(64+self.transcendence*16, 127), 0  ), 
-                63]
  
 class Hurtbox(spriteManager.RectSprite):
     def __init__(self,owner,rect,color):
@@ -94,11 +85,6 @@ class DamageHitbox(Hitbox):
         Hitbox.update(self)
         self.recenterSelfOnOwner() 
 
-    def colorValue(self):
-        return [max(min(128+self.damage*self.priority+self.knockbackGrowth*200,     255), 128), 
-                max(min(self.baseKnockback*(self.hitstun+self.shield_multiplier)*4, 127), 0  ), 
-                max(min(64-64*math.sin(math.radians(self.trajectory)),              127), 0  )]
-
 class SakuraiAngleHitbox(DamageHitbox):
     def __init__(self,center,size,owner,
                  damage,baseKnockback,knockbackGrowth,trajectory,
@@ -139,11 +125,6 @@ class SakuraiAngleHitbox(DamageHitbox):
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(other)
 
-    def colorValue(self):
-        return [max(min(128+self.damage*self.priority+self.knockbackGrowth*200,     255), 128), 
-                max(min(self.baseKnockback*(self.hitstun+self.shield_multiplier)*4, 127), 0  ), 
-                max(min(64-32*math.sin(math.radians(self.trajectory)),              127), 0  )]
-
 class AutolinkHitbox(DamageHitbox):
     def __init__(self,center,size,owner,damage,
                 hitstun,hitbox_lock,x_bias=0,y_bias=0,shield_multiplier=1,
@@ -175,11 +156,6 @@ class AutolinkHitbox(DamageHitbox):
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(other)
-
-    def colorValue(self):
-        return [max(min(128+self.damage*self.priority*2,                                     255), 128), 
-                max(min(10*self.velocity_multiplier*(self.hitstun+self.shield_multiplier)*4, 127), 0  ), 
-                max(min(16*math.hypot(self.x_bias, self.y_bias),                             127), 0  )]
 
 class FunnelHitbox(DamageHitbox):
     def __init__(self,center,size,owner,damage,knockback,trajectory,
@@ -222,11 +198,6 @@ class FunnelHitbox(DamageHitbox):
         Hitbox.update(self)
         self.recenterSelfOnOwner()
 
-    def colorValue(self):
-        return [max(min(128+self.damage*self.priority+self.x_draw*200,              255), 128), 
-                max(min(self.baseKnockback*(self.hitstun+self.shield_multiplier)*4, 127), 0  ), 
-                max(min(500*self.y_draw,                                            127), 0  )]
-
 class GrabHitbox(Hitbox):
     def __init__(self,center,size,owner,hitbox_lock, height=0, transcendence=-1, priority=0):
         Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,priority)
@@ -243,11 +214,6 @@ class GrabHitbox(Hitbox):
     def update(self):
         Hitbox.update(self)
         self.recenterSelfOnOwner()
-
-    def colorValue(self):
-        return [max(min(128+self.priority*10,     255), 128), 
-                max(min(64+self.transcendence*16, 127), 0  ), 
-                255]
 
 class ReflectorHitbox(Hitbox):
     def __init__(self, center, size, owner, hitbox_lock, damage_multiplier, velocity_multiplier, hp, angle=90, transcendence=2):
@@ -287,14 +253,9 @@ class ReflectorHitbox(Hitbox):
         Hitbox.update(self)
         self.recenterSelfOnOwner()
 
-    def colorValue(self):
-        return [max(min(self.priority*self.damage_multiplier,      127), 0  ), 
-                max(min(128+60*self.velocity_multiplier,           255), 128), 
-                max(min(192-32*math.sin(math.radians(self.angle)), 255), 128)]
-
 class PerfectShieldHitbox(ReflectorHitbox):
     def __init__(self, center, size, owner, hitbox_lock):
-        ReflectorHitbox.__init__(self,center,size,owner,hitbox_lock,1,1,99999,0, -5)
+        ReflectorHitbox.__init__(self,center,size,owner,hitbox_lock,1,1,9999,0, -5)
 
     def compareTo(self, other):
         if other.article != None and other.article.owner != self.owner and hasattr(other.article, 'tags') and 'reflectable' in other.article.tags:
@@ -313,8 +274,3 @@ class PerfectShieldHitbox(ReflectorHitbox):
                 self.priority -= other.damage
                 other.damage = int(math.floor(other.damage*self.damage_multiplier))
         return Hitbox.compareTo(self, other)
-
-    def colorValue(self):
-        return [max(min(self.priority*.01, 127), 0  ), 
-                192, 
-                192]

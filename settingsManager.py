@@ -2,6 +2,7 @@ from __future__ import print_function
 import pygame.constants
 import re
 import os
+import sys
 import imp
 import engine.controller
 try:
@@ -121,27 +122,37 @@ class Settings():
         
         
         self.parser = SafeConfigParser()
-        self.parser.read(os.path.join(os.path.join(os.path.dirname(__file__).replace('main.exe','').replace('main.exe',''),'settings'),'settings.ini'))
+        if getattr(sys, 'frozen', False):
+            # The application is frozen
+            self.datadir = os.path.dirname(sys.executable)
+        else:
+            # The application is not frozen
+            # Change this bit to match where you store your data files:
+            self.datadir = os.path.dirname(__file__)
+            
+        self.parser.read(os.path.join(os.path.join(self.datadir.replace('main.exe','').replace('main.exe',''),'settings'),'settings.ini'))
         
-        self.setting = {}
+        self.setting = dict()
         
         # Getting the window information
         
         self.setting['windowName']    = getString(self.parser,'window','windowName')
-        self.setting['windowSize']    = getNumber(self.parser, 'window', 'windowSize',True)
-        self.setting['windowWidth']   = self.setting['windowSize'][0]
-        self.setting['windowHeight']  = self.setting['windowSize'][1]
+        #self.setting['windowSize']    = getNumber(self.parser, 'window', 'windowSize',True)
+        #self.setting['windowWidth']   = self.setting['windowSize'][0]
+        #self.setting['windowHeight']  = self.setting['windowSize'][1]
+        self.setting['windowWidth']   = getNumber(self.parser, 'window', 'windowWidth')
+        self.setting['windowHeight']  = getNumber(self.parser, 'window', 'windowHeight')
         self.setting['frameCap']      = getNumber(self.parser, 'window', 'frameCap')
-        
-        self.setting['musicVolume']       = float(getNumber(self.parser, 'sound', 'musicVolume')) / 100
-        self.setting['sfxVolume']         = float(getNumber(self.parser, 'sound', 'sfxVolume')) / 100
-        
+        self.setting['windowSize']    = [self.setting['windowWidth'], self.setting['windowHeight']]
+
+        self.setting['musicVolume']       = getNumber(self.parser, 'sound', 'musicVolume') / 100.0
+        self.setting['sfxVolume']         = getNumber(self.parser, 'sound', 'sfxVolume') / 100.0
         self.setting['showHitboxes']      = getBoolean(self.parser, 'graphics', 'displayHitboxes')
         self.setting['showHurtboxes']     = getBoolean(self.parser,'graphics','displayHurtboxes')
         self.setting['showSpriteArea']    = getBoolean(self.parser,'graphics','displaySpriteArea')
         self.setting['showPlatformLines'] = getBoolean(self.parser, 'graphics', 'displayPlatformLines')
         self.setting['showECB']           = getBoolean(self.parser, 'graphics', "displayECB")
-        
+
         self.setting['playerColor0'] = getString(self.parser, 'playerColors', 'player0')
         self.setting['playerColor1'] = getString(self.parser, 'playerColors', 'player1')
         self.setting['playerColor2'] = getString(self.parser, 'playerColors', 'player2')
@@ -153,7 +164,7 @@ class Settings():
         
         
         presets = []
-        for f in os.listdir(os.path.join(os.path.dirname(__file__).replace('main.exe','').replace('main.exe',''),'settings/rules')):
+        for f in os.listdir(os.path.join(self.datadir.replace('main.exe','').replace('main.exe',''),'settings/rules')):
             fname, ext = os.path.splitext(f)
             if ext == '.ini':
                 presets.append(fname)
@@ -167,7 +178,7 @@ class Settings():
         
     def loadGameSettings(self,preset_suf):
         preset_parser = SafeConfigParser()
-        preset_parser.read(os.path.join(os.path.join(os.path.dirname(__file__).replace('main.exe','').replace('main.exe',''),'settings/rules',),preset_suf+'.ini'))
+        preset_parser.read(os.path.join(os.path.join(self.datadir.replace('main.exe','').replace('main.exe',''),'settings/rules',),preset_suf+'.ini'))
         
         preset = 'preset_' + preset_suf
         self.setting['current_preset'] = preset_suf
@@ -222,7 +233,7 @@ class Settings():
     def loadGamepad(self,controllerName):
         pygame.joystick.init()
         controllerParser = SafeConfigParser()
-        controllerParser.read(os.path.join(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings'),'gamepads.ini'))
+        controllerParser.read(os.path.join(os.path.join(self.datadir.replace('main.exe',''),'settings'),'gamepads.ini'))
         if controllerParser.has_section(controllerName):
             joystick = None
             for pad in range(pygame.joystick.get_count()):
@@ -251,7 +262,7 @@ class Settings():
     
     def getGamepadList(self,store=False):
         controllerParser = SafeConfigParser()
-        controllerParser.read(os.path.join(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings'),'gamepads.ini'))
+        controllerParser.read(os.path.join(os.path.join(self.datadir.replace('main.exe',''),'settings'),'gamepads.ini'))
         controllerList = []
         
         for control in controllerParser.sections():
@@ -313,7 +324,7 @@ def saveSettings(settings):
             parser.set(sect,'controlType',settings['controlType_'+str(i)])
             parser.set(sect,keyIdMap[key],str(settings[sect].keyBindings[key]))
             
-    with open(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
+    with open(os.path.join(settings.datadir.replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
         parser.write(configfile)
 
     saveGamepad(settings)
@@ -333,7 +344,7 @@ def saveGamepad(settings):
         for key,value in gamepad.padBindings.buttonBindings.iteritems():
             parser.set(controllerName,'b'+str(key),str(value))
             
-    with open(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings','gamepads.ini'), 'w') as configfile:
+    with open(os.path.join(settings.datadir.replace('main.exe',''),'settings','gamepads.ini'), 'w') as configfile:
         parser.write(configfile)
 
         
@@ -361,7 +372,7 @@ def savePreset(settings, preset):
     parser.set(preset,'freeDodgeSpecialFall',settings['freeDodgeSpecialFall'])
     parser.set(preset,'enableWavedash',settings['enableWavedash'])
     
-    parser.write(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'settings.ini'))
+    parser.write(os.path.join(settings.datadir.replace('main.exe',''),'settings.ini'))
     
 """
 The SFXLibrary object contains a dict of all sound effects that are being used.

@@ -540,7 +540,7 @@ class DashAttack(action.Action):
         action.Action.__init__(self,32)
 
     def setUp(self, actor):
-        self.speed = actor.change_x
+        actor.preferred_xspeed = actor.change_x
         actor.changeSprite("nair")
 
         self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,8,0.2,20,1,hitbox.HitboxLock())
@@ -555,8 +555,6 @@ class DashAttack(action.Action):
         actor.preferred_xspeed = 0
 
     def update(self,actor):
-        if self.frame == 0:
-            actor.preferred_xspeed = self.speed
         if self.frame%2 == 0 and self.frame <= 8:
             actor.changeSpriteImage(self.frame//2)
         elif self.frame <= 24:
@@ -577,8 +575,8 @@ class DashAttack(action.Action):
             self.chainHitbox.kill()
             actor.active_hitboxes.add(self.dashHitbox)
         if self.frame == 24:
-            actor.preferred_xspeed = 0
             self.dashHitbox.kill()
+            actor.preferred_xspeed = 0
 
         if self.frame == self.lastFrame:
             actor.doIdle()
@@ -677,7 +675,6 @@ class DownSmash(action.Action):
             elif self.frame == 32:
                 self.spikeBox.hitbox_lock = hitbox.HitboxLock()
             elif self.frame == 38:
-                self.spikeBox.kill()
                 actor.active_hitboxes.add(self.dsmashHitbox1)
                 actor.active_hitboxes.add(self.dsmashHitbox2)
             elif self.frame == 42:
