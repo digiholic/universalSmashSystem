@@ -81,8 +81,7 @@ class Run(action.Action):
         else: self.direction = -1
 
     def tearDown(self, actor, nextAction):
-        if not isinstance(nextAction, Run):
-            actor.preferred_xspeed = 0
+        actor.preferred_xspeed = 0
             
     def update(self, actor):
         if self.frame == 0:
@@ -455,9 +454,10 @@ class Jump(action.Action):
                 actor.change_x = actor.var['maxAirSpeed']
             elif actor.change_x < -actor.var['maxAirSpeed']:
                 actor.change_x = -actor.var['maxAirSpeed']
-        if self.frame >= self.lastFrame:
+        if self.frame < self.lastFrame:
+            self.frame += 1
+        if self.frame == self.lastFrame and not actor.keysContain('jump'):
             actor.doFall()
-        self.frame += 1
 
 class AirJump(action.Action):
     def __init__(self,length,jumpFrame):
@@ -486,9 +486,10 @@ class AirJump(action.Action):
                 if actor.facing == -1:
                     actor.flip()
                     actor.change_x = actor.facing * actor.var['maxAirSpeed']    
-        if self.frame >= self.lastFrame:
+        if self.frame < self.lastFrame:
+            self.frame += 1
+        if self.frame == self.lastFrame and not actor.keysContain('jump'):
             actor.doFall()
-        self.frame += 1
         
 class Fall(action.Action):
     def __init__(self):
