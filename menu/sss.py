@@ -2,8 +2,11 @@ import sys
 import pygame
 import settingsManager
 import battle
+import stages.treehouse
+import stages.arena_moving_platform
 import stages.true_arena
 import stages.arena
+import stages.training_stage
 import spriteManager
 import os
 import musicManager
