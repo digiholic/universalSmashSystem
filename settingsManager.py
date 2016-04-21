@@ -55,6 +55,8 @@ def importFromURI(filePath, uri, absl=False, suffix=""):
     mname, ext = os.path.splitext(fname)
     
     no_ext = os.path.join(path, mname)
+
+    print ((mname + suffix), no_ext + '.py')
     
     if os.path.exists(no_ext + '.py'):
         try:

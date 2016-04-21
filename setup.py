@@ -3,7 +3,7 @@ import sys
 
 # Dependencies are automatically detected, but it might need
 # fine tuning.
-buildOptions = dict(packages = ['numpy', 'pygame', 'requests'], excludes = [], include_files = ['rexlia rg.ttf', 'full Pack 2025.ttf', 'settings', 'sprites/', 'music/', 'fighters/', 'stages/'])
+buildOptions = dict(packages = ['numpy', 'pygame', 'requests'], excludes = [], include_files = ['rexlia rg.ttf', 'full Pack 2025.ttf', 'settings', 'sprites/', 'music/', 'sfx/', 'fighters/', 'stages/'])
 
 base = None
 if sys.platform == "win32":
