@@ -100,6 +100,9 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def doJump(self):
         self.changeAction(self.actions.Jump())
 
+    def doGroundJump(self):
+        self.changeAction(self.actions.Jump())
+
     def doAirJump(self):
         self.changeAction(self.actions.AirJump())
 
