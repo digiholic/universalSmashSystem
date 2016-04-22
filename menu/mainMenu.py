@@ -163,6 +163,8 @@ class UpdateMenu(SubMenu):
         self.checkedList = False
         self.selectedOption = 0
         
+        self.updateThread = updater.UpdateThread(self)
+        
     def executeMenu(self, screen):
         SubMenu.executeMenu(self, screen)
     
@@ -171,9 +173,13 @@ class UpdateMenu(SubMenu):
             self.selectedOption = 1
         elif self.selectedOption == 1:
             self.selectedOption = 0
-            
+    
     def confirmOption(self,optionNum):
-        if optionNum == 0:
+        if optionNum == 0 and not self.updateThread.running:
+            if not self.checkedList:
+                self.updateThread.start()
+                self.menuText[0].changeColor([55,55,55])
+            """
             if self.checkedList ==  False:
                 self.changedList = updater.getChangedList()
                 self.checkedList = True
@@ -190,17 +196,39 @@ class UpdateMenu(SubMenu):
                     self.statusText.changeText('Update available. Game will close when update is completed.')
                     self.statusText.rect.left = 0
                     self.menuText[0].changeText('Update')
+            
             else:
                 updater.downloadUpdates(self.changedList)
                 sys.exit()
+                """
                 
         elif optionNum == 1:
+            self.updateThread
             self.status = 1
         
     def update(self, screen):
         SubMenu.update(self, screen)
+        if self.updateThread.running:
+            if self.selectedOption == 0:
+                self.selectedOption = 1
+                self.menuText[0].changeColor([55,55,55])
+                
+        if self.checkedList:
+            if self.changedList == False:
+                self.statusText.changeText('Unable to update. Please try again later')
+                self.recenterStatus()
+            elif not self.changeList:
+                self.statusText.changeText('No update available')
+                self.recenterStatus()
+            else:
+                self.statusText.changeText('Update is available')
+                self.recenterStatus()
+            
         self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
-        
+     
+    def recenterStatus(self):
+        self.statusText.rect.centerx = self.parent.settings['windowSize'][0] / 2
+           
 class MainMenu(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self,parent)
