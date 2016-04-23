@@ -296,7 +296,7 @@ class HitStun(action.Action):
 
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
-        if actor.keyHeld('shield') and self.frame < self.lastFrame:
+        if actor.keyBuffered('shield', 1) and self.frame < self.lastFrame:
             actor.doTryTech(self.lastFrame-self.frame, self.direction, self.hitstop)
         elif actor.grounded and self.frame > 2:
             print(actor.change_y)
