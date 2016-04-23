@@ -273,7 +273,7 @@ class MaskSprite(ImageSprite):
 class TextSprite(ImageSprite):
     def __init__(self,text,font="rexlia rg",size=12,color=[0,0,0]):
         Sprite.__init__(self)
-        #print(settingsManager.createPath(font+".ttf"))
+        print(settingsManager.createPath(font+".ttf"))
         self.font = pygame.font.Font(settingsManager.createPath(font+".ttf"),size)
             
         self.image = self.font.render(text,False,color).convert_alpha()
