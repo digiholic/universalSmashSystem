@@ -105,7 +105,7 @@ class Pivot(action.Action):
 
     def stateTransitions(self, actor):
         if actor.keyHeld('jump', self.frame):
-            actor.doGroundJump()
+            actor.doJump()
         
     def update(self,actor):
         if actor.grounded is False:
@@ -159,7 +159,7 @@ class RunPivot(action.Action):
         
     def stateTransitions(self, actor):
         if actor.keyHeld('jump', self.frame):
-            actor.doGroundJump()
+            actor.doJump()
         
     def update(self,actor):
         if actor.grounded is False:
@@ -439,7 +439,7 @@ class Jump(action.Action):
         self.jumpFrame = jumpFrame
 
     def stateTransitions(self, actor):
-        if actor.keyHeld('attack') and actor.checkSmash('up'):
+        if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jumpFrame:
             actor.doGroundAttack()
         elif self.frame > self.jumpFrame+2:
             jumpState(actor)

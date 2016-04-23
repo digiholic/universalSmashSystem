@@ -291,9 +291,6 @@ class AbstractFighter():
     
     def doPlatformDrop(self):
         self.changeAction(baseActions.PlatformDrop())
-        
-    def doGroundJump(self):
-        self.changeAction(baseActions.Jump())
     
     def doAirJump(self):
         self.changeAction(baseActions.AirJump())
