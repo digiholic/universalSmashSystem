@@ -232,7 +232,7 @@ class UpdateMenu(SubMenu):
         if self.checkedList:
             if self.changedList == False:
                 self.statusText.changeText('Unable to update. Please try again later')
-            elif not self.changeList:
+            elif self.changeList == []:
                 self.statusText.changeText('No update available')
             else:
                 self.statusText.changeText('Update is available')

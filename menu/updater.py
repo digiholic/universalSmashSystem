@@ -6,11 +6,9 @@ import settingsManager
 import threading
 import sys
 
-def githash(data,size=-1):
-    if size == -1:
-        size = len(data)
+def githash(data):
     s = hashlib.sha1()
-    s.update("blob %u\0" % size)
+    s.update("blob %u\0" % len(data))
     s.update(data)
     return s.hexdigest()
 
