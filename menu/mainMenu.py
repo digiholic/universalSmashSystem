@@ -95,7 +95,7 @@ class SubMenu():
 class StartScreen(SubMenu):
     def __init__(self,parent):
         SubMenu.__init__(self,parent)
-        self.logo = spriteManager.ImageSprite(settingsManager.createPath('sprites/logo-wip.png'))
+        self.logo = spriteManager.ImageSprite(settingsManager.createPath('sprites/logo.png'))
         
         self.start = spriteManager.TextSprite('PRESS START','full Pack 2025',18)
         self.start.rect.midbottom = (settingsManager.getSetting('windowSize')[0] / 2, 360)
@@ -103,7 +103,8 @@ class StartScreen(SubMenu):
         self.alphaRad = 0
         
         #self.rgb = [89,56,255]
-        self.hsv = [random.randint(0,100)/100,0.8,1.0]
+        self.hsv = [random.randint(0,100)/100.0,0.8,1.0]
+        print(self.hsv)
         
     def update(self,screen):
         self.hsv[0] += .001
@@ -145,61 +146,6 @@ class StartScreen(SubMenu):
             pygame.display.flip()
         
         return self.status
-
-class UpdateMenu(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self, parent)
-        self.menuText = [spriteManager.TextSprite('Check','full Pack 2025',24,[255,255,255]),
-                         spriteManager.TextSprite('Cancel','full Pack 2025',24,[255,255,255])]
-        
-        self.statusText = spriteManager.TextSprite('','rexlia rg',24,[255,255,255])
-        
-        self.menuText[0].rect.centerx = self.parent.settings['windowSize'][0] / 3
-        self.menuText[1].rect.centerx = (self.parent.settings['windowSize'][0] / 3)*2
-        self.menuText[0].rect.centery = self.parent.settings['windowSize'][1] - 100
-        self.menuText[1].rect.centery = self.parent.settings['windowSize'][1] - 100
-        
-        self.changeList = None
-        self.checkedList = False
-        self.selectedOption = 0
-        
-    def executeMenu(self, screen):
-        SubMenu.executeMenu(self, screen)
-    
-    def incrementOption(self,option,direction):
-        if self.selectedOption == 0:
-            self.selectedOption = 1
-        elif self.selectedOption == 1:
-            self.selectedOption = 0
-            
-    def confirmOption(self,optionNum):
-        if optionNum == 0:
-            if self.checkedList ==  False:
-                self.changedList = updater.getChangedList()
-                self.checkedList = True
-                
-                if self.changedList == False: #this is different than using not changedlist
-                    self.statusText.changeText('Unable to update. Please try again later')
-                    self.statusText.rect.left = 0
-                    self.checkedList = False
-                elif not self.changedList:
-                    self.statusText.changeText('No update available.')
-                    self.statusText.rect.left = 0
-                    self.checkedList = False
-                else:
-                    self.statusText.changeText('Update available. Game will close when update is completed.')
-                    self.statusText.rect.left = 0
-                    self.menuText[0].changeText('Update')
-            else:
-                updater.downloadUpdates(self.changedList)
-                sys.exit()
-                
-        elif optionNum == 1:
-            self.status = 1
-        
-    def update(self, screen):
-        SubMenu.update(self, screen)
-        self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
         
 class MainMenu(SubMenu):
     def __init__(self,parent):
@@ -207,12 +153,12 @@ class MainMenu(SubMenu):
         self.menuText = [spriteManager.TextSprite('TUSSLE','full Pack 2025',24,[255,255,255]),
                          spriteManager.TextSprite('Settings','full Pack 2025',24,[255,255,255]),
                          spriteManager.TextSprite('Modules','full Pack 2025',24,[255,255,255]),
-                         spriteManager.TextSprite('Update','full Pack 2025',24,[255,255,255]),
+                         #spriteManager.TextSprite('Update','full Pack 2025',24,[255,255,255]),
                          spriteManager.TextSprite('Quit','full Pack 2025',24,[255,255,255])]
         
         for i in range(0,len(self.menuText)):
             self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
-            self.menuText[i].rect.centery = 80 + i*80
+            self.menuText[i].rect.centery = 100 + i*100
                 
         self.selectedOption = 0
     
@@ -231,7 +177,9 @@ class MainMenu(SubMenu):
         elif optionNum == 2: #module manager
             status = ModulesMenu(self.parent).executeMenu(self.screen)
         elif optionNum == 3: #updates
-            status = UpdateMenu(self.parent).executeMenu(self.screen)
+            #status = UpdateMenu(self.parent).executeMenu(self.screen)
+            self.status = 1
+            return
         elif optionNum == 4: #quit
             self.status = 1
             return
@@ -1343,5 +1291,86 @@ class RebindIndividual(SubMenu):
 
         return self.status
 
+
+"""
+class UpdateMenu(SubMenu):
+    def __init__(self,parent):
+        SubMenu.__init__(self, parent)
+        self.menuText = [spriteManager.TextSprite('Check','full Pack 2025',24,[255,255,255]),
+                         spriteManager.TextSprite('Cancel','full Pack 2025',24,[255,255,255])]
+        
+        self.statusText = spriteManager.TextSprite('','rexlia rg',24,[255,255,255])
+        
+        self.menuText[0].rect.centerx = self.parent.settings['windowSize'][0] / 3
+        self.menuText[1].rect.centerx = (self.parent.settings['windowSize'][0] / 3)*2
+        self.menuText[0].rect.centery = self.parent.settings['windowSize'][1] - 100
+        self.menuText[1].rect.centery = self.parent.settings['windowSize'][1] - 100
+        
+        self.changeList = None
+        self.checkedList = False
+        self.confirmEnabled = True
+        
+        self.selectedOption = 0
+        
+        self.updateThread = updater.UpdateThread(self)
+        
+    def executeMenu(self, screen):
+        SubMenu.executeMenu(self, screen)
+    
+    def incrementOption(self,option,direction):
+        if self.selectedOption == 0:
+            self.selectedOption = 1
+        elif self.selectedOption == 1:
+            self.selectedOption = 0
+    
+    def confirmOption(self,optionNum):
+        if optionNum == 0 and not self.updateThread.running:
+            if not self.checkedList:
+                self.updateThread.start()
+                self.confirmEnabled = False
+                self.menuText[0].changeColor([55,55,55])
+            else:
+                if self.changeList:
+                    self.updateThread.start()
+           
+        elif optionNum == 1:
+            self.updateThread
+            self.status = 1
+        
+    def update(self, screen):
+        self.parent.bg.update(screen)
+        self.parent.bg.draw(screen,(0,0),1.0)
+        
+        if not self.confirmEnabled:
+            self.menuText[0].changeColor([55,55,55])
+            if self.selectedOption == 0:
+                self.selectedOption = 1
+        
+        for m in self.menuText:
+            m.draw(screen,m.rect.topleft,1.0)
+            m.changeColor([255,255,255])
+        
+        rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
+        self.menuText[self.selectedOption].changeColor(rgb)    
+        
+        if self.checkedList:
+            if self.changedList == False:
+                self.statusText.changeText('Unable to update. Please try again later')
+            elif self.changeList == []:
+                self.statusText.changeText('No update available')
+            else:
+                self.statusText.changeText('Update is available')
+                self.updateThread.mode = 1
+                self.confirmEnabled = True
+                self.menuText[0].changeText('Update')
+                self.menuText[0].changeColor(rgb)
+                self.selectedOption = 0
+                
+            self.recenterStatus()
+        self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
+     
+    def recenterStatus(self):
+        self.statusText.rect.centerx = self.parent.settings['windowSize'][0] / 2
+"""
 
 if __name__  == '__main__': main()
