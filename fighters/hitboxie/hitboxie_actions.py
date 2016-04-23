@@ -171,6 +171,8 @@ class ForwardSpecial(action.Action):
             if self.frame <= 16:
                 actor.preferred_xspeed = 0
                 actor.change_x = 0
+                if actor.change_y > 2:
+                    actor.change_y = 2
                 actor.preferred_yspeed = 2
                 if actor.keysContain('special') and self.frame == 16 and self.lastFrame < 240:
                     self.lastFrame += 1
@@ -266,6 +268,8 @@ class DownSpecial(action.Action):
         self.reflectorHitbox.update()
         if self.frame == 0:
             actor.change_y = 0
+            if actor.change_y > 2:
+                actor.change_y = 2
             actor.preferred_yspeed = 2
             actor.changeSprite('getup',12)
             actor.articles.add(self.article)
@@ -310,6 +314,7 @@ class UpSpecial(action.Action):
     
     def stateTransitions(self,actor):
         if self.frame < 19:
+            actor.change_y = 0
             actor.preferred_yspeed = 0
         if self.frame > 19:
             baseActions.grabLedges(actor)
