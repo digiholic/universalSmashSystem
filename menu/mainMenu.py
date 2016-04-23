@@ -161,6 +161,8 @@ class UpdateMenu(SubMenu):
         
         self.changeList = None
         self.checkedList = False
+        self.confirmEnabled = True
+        
         self.selectedOption = 0
         
         self.updateThread = updater.UpdateThread(self)
@@ -178,7 +180,12 @@ class UpdateMenu(SubMenu):
         if optionNum == 0 and not self.updateThread.running:
             if not self.checkedList:
                 self.updateThread.start()
+                self.confirmEnabled = False
                 self.menuText[0].changeColor([55,55,55])
+            else:
+                if self.changeList:
+                    self.updateThread.run()
+                    
             """
             if self.checkedList ==  False:
                 self.changedList = updater.getChangedList()
@@ -207,23 +214,35 @@ class UpdateMenu(SubMenu):
             self.status = 1
         
     def update(self, screen):
-        SubMenu.update(self, screen)
-        if self.updateThread.running:
+        self.parent.bg.update(screen)
+        self.parent.bg.draw(screen,(0,0),1.0)
+        
+        if not self.confirmEnabled:
+            self.menuText[0].changeColor([55,55,55])
             if self.selectedOption == 0:
                 self.selectedOption = 1
-                self.menuText[0].changeColor([55,55,55])
-                
+        
+        for m in self.menuText:
+            m.draw(screen,m.rect.topleft,1.0)
+            m.changeColor([255,255,255])
+        
+        rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
+        self.menuText[self.selectedOption].changeColor(rgb)    
+        
         if self.checkedList:
             if self.changedList == False:
                 self.statusText.changeText('Unable to update. Please try again later')
-                self.recenterStatus()
             elif not self.changeList:
                 self.statusText.changeText('No update available')
-                self.recenterStatus()
             else:
                 self.statusText.changeText('Update is available')
-                self.recenterStatus()
-            
+                self.updateThread.mode = 1
+                self.confirmEnabled = True
+                self.menuText[0].changeText('Update')
+                self.menuText[0].changeColor(rgb)
+                self.selectedOption = 0
+                
+            self.recenterStatus()
         self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
      
     def recenterStatus(self):

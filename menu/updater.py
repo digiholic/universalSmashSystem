@@ -4,6 +4,7 @@ import hashlib
 import os
 import settingsManager
 import threading
+import sys
 
 def githash(data,size=-1):
     if size == -1:
@@ -27,15 +28,27 @@ class UpdateThread(threading.Thread):
         threading.Thread.__init__(self)
         self.menu = menu
         self.running = False
+        self.mode = 0
         
     def run(self):
         print("starting thread")
         self.running = True
-        changedList = self.getChangedList()
+        if self.mode == 0:
+            changedList = self.getChangedList()
+            
+            if self.menu:
+                self.menu.changedList = changedList
+                self.menu.checkedList = True
         
-        if self.menu:
-            self.menu.changedList = changedList
-            self.menu.checkedList = True
+        if self.mode == 1:
+            if self.menu:
+                self.menu.statusText.changeText('Downloading. Game will close when finished')
+                self.menu.recenterStatus()
+            
+            self.downloadUpdates(self.changedList)    
+            
+            sys.exit()
+            
         print("stopping thread")
         self.running = False
     
@@ -67,11 +80,15 @@ class UpdateThread(threading.Thread):
                     except:
                         #We don't have a local copy of the file
                         filesha = ''
+                    print(filepath)
+                    print(filesha)
+                    print(obj['sha'])
                     if not filesha == obj['sha']: 
                         changedList.append(directory+'/'+str(obj['name']))
             
             upcomingDirs.remove(directory)
         
+        print(changedList)
         return changedList
 
     def downloadUpdates(self,changedList):
