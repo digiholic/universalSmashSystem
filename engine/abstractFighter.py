@@ -469,7 +469,7 @@ class AbstractFighter():
         DI_multiplier = 1+dot*.12
         trajectory += cross*15
 
-        hitstun_frames = math.floor((totalKB+1)*1.5*hitstun_multiplier) #Tweak this constant
+        hitstun_frames = math.floor((totalKB+1)*5*hitstun_multiplier) #Tweak this constant
 
         if self.no_flinch_hits > 0:
             if hitstun_frames > 0:
@@ -479,7 +479,7 @@ class AbstractFighter():
 
         if hitstun_frames > 0.5:
             print(totalKB)
-            self.doHitStun(hitstun_frames,trajectory,math.floor((damage / 4.0 + 2)*hitstun_multiplier))
+            self.doHitStun(hitstun_frames,trajectory,math.floor((damage / 4.0 + 2)/hitstun_multiplier))
         
         print(totalKB*DI_multiplier, trajectory)
         self.dealDamage(damage)
