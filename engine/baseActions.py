@@ -299,22 +299,25 @@ class HitStun(action.Action):
         if actor.keyBuffered('shield', 1) and self.frame < self.lastFrame:
             actor.doTryTech(self.lastFrame-self.frame, self.direction, self.hitstop)
         elif actor.grounded and self.frame > 2:
-            print(actor.change_y)
             if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during tumble
                 actor.elasticity = actor.var['hitstunElasticity']/2
             elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun
                 actor.elasticity = actor.var['hitstunElasticity']
             elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
                 actor.elasticity = 0
+                actor.doLand()
                 actor.doTrip(self.lastFrame-self.frame, direct)
             elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
-                actor.doIdle()
+                actor.landingLag = self.lastFrame-self.frame+actor.var['heavyLandLag']//2
+                actor.elasticity = 0
+                actor.doLand()
             elif self.frame >= self.lastFrame: #Firm landing during tumble
                 actor.landingLag = actor.var['heavyLandLag']
                 actor.elasticity = 0
-            elif actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during hitstun
-                actor.landingLag = actor.var['heavyLandLag']
-                actor.elasticity = 0
+                actor.doLand()
+            elif actor.change_y < actor.var['maxFallSpeed']//2: #Soft landing during hitstun
+                actor.landingLag = actor.var['heavyLandLag']+self.lastFrame-self.frame
+                actor.elasticity = actor.var['hitstunElasticity']/2
             else: #Firm landing during hitstun
                 actor.elasticity = actor.var['hitstunElasticity']/2
         elif self.frame >= self.lastFrame:
@@ -370,7 +373,6 @@ class TryTech(HitStun):
             actor.doTrip(-175, direct)
         elif self.frame >= 20:
             if actor.grounded:
-                print(actor.change_y)
                 if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during tumble
                     actor.elasticity = actor.var['hitstunElasticity']/2
                 elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun
@@ -379,13 +381,17 @@ class TryTech(HitStun):
                     actor.elasticity = 0
                     actor.doTrip(self.lastFrame-self.frame, direct)
                 elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
-                    actor.doIdle()
+                    actor.landingLag = self.lastFrame-self.frame+actor.var['heavyLandLag']//2
+                    actor.elasticity = 0
+                    actor.doLand()
                 elif self.frame >= self.lastFrame: #Firm landing during tumble
                     actor.landingLag = actor.var['heavyLandLag']
                     actor.elasticity = 0
-                elif actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during hitstun
-                    actor.landingLag = actor.var['heavyLandLag']
+                    actor.doLand()
+                elif actor.change_y < actor.var['maxFallSpeed']//2: #Soft landing during hitstun
+                    actor.landingLag = actor.var['heavyLandLag']+self.lastFrame-self.frame
                     actor.elasticity = 0
+                    actor.doLand()
                 else: #Firm landing during hitstun
                     actor.elasticity = actor.var['hitstunElasticity']/2
             elif self.frame >= self.lastFrame:
@@ -473,6 +479,7 @@ class AirJump(action.Action):
         
     def update(self,actor):
         if self.frame < self.jumpFrame:
+            actor.change_y = 0
             actor.preferred_yspeed = 0
         if self.frame == self.jumpFrame:
             actor.grounded = False
