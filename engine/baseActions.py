@@ -298,29 +298,33 @@ class HitStun(action.Action):
         (direct,_) = actor.getDirectionMagnitude()
         if actor.keyBuffered('shield', 1) and self.frame < self.lastFrame:
             actor.doTryTech(self.lastFrame-self.frame, self.direction, self.hitstop)
-        elif actor.grounded and self.frame > 2:
-            if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during tumble
-                actor.elasticity = actor.var['hitstunElasticity']/2
+        if self.frame > 2:
+            if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']:#Hard landing during tumble
+                actor.ground_elasticity = actor.var['hitstunElasticity']/2
             elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun
-                actor.elasticity = actor.var['hitstunElasticity']
+                actor.ground_elasticity = actor.var['hitstunElasticity']
             elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
-                actor.elasticity = 0
-                actor.doLand()
-                actor.doTrip(self.lastFrame-self.frame, direct)
+                actor.ground_elasticity = 0
+                if actor.grounded:
+                    actor.doTrip(self.lastFrame-self.frame, direct)
             elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
                 actor.landingLag = self.lastFrame-self.frame+actor.var['heavyLandLag']//2
-                actor.elasticity = 0
-                actor.doLand()
+                actor.ground_elasticity = 0
+                if actor.grounded:
+                    actor.doLand()
             elif self.frame >= self.lastFrame: #Firm landing during tumble
                 actor.landingLag = actor.var['heavyLandLag']
-                actor.elasticity = 0
-                actor.doLand()
+                actor.ground_elasticity = 0
+                if actor.grounded:
+                    actor.doLand()
             elif actor.change_y < actor.var['maxFallSpeed']//2: #Soft landing during hitstun
                 actor.landingLag = actor.var['heavyLandLag']+self.lastFrame-self.frame
-                actor.elasticity = actor.var['hitstunElasticity']/2
+                actor.ground_elasticity = 0
+                if actor.grounded:
+                    actor.doLand()
             else: #Firm landing during hitstun
-                actor.elasticity = actor.var['hitstunElasticity']/2
-        elif self.frame >= self.lastFrame:
+                actor.ground_elasticity = actor.var['hitstunElasticity']/2
+        if self.frame >= self.lastFrame:
             tumbleState(actor)
             actor.elasticity = actor.var['hitstunElasticity']/2
         else:
@@ -329,6 +333,7 @@ class HitStun(action.Action):
     def tearDown(self, actor, newAction):
         actor.unRotate()
         actor.elasticity = 0
+        actor.ground_elasticity = 0
         
     def update(self,actor):
         if self.frame == 0:
@@ -371,30 +376,33 @@ class TryTech(HitStun):
             print('Ground tech!')
             actor.unRotate()
             actor.doTrip(-175, direct)
-        elif self.frame >= 20:
-            if actor.grounded:
-                if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during tumble
-                    actor.elasticity = actor.var['hitstunElasticity']/2
-                elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun
-                    actor.elasticity = actor.var['hitstunElasticity']
-                elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
-                    actor.elasticity = 0
+        if self.frame >= 20:
+            if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']:#Hard landing during tumble
+                actor.ground_elasticity = actor.var['hitstunElasticity']/2
+            elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun
+                actor.ground_elasticity = actor.var['hitstunElasticity']
+            elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
+                actor.ground_elasticity = 0
+                if actor.grounded:
                     actor.doTrip(self.lastFrame-self.frame, direct)
-                elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
-                    actor.landingLag = self.lastFrame-self.frame+actor.var['heavyLandLag']//2
-                    actor.elasticity = 0
+            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
+                actor.landingLag = self.lastFrame-self.frame+actor.var['heavyLandLag']//2
+                actor.ground_elasticity = 0
+                if actor.grounded:
                     actor.doLand()
-                elif self.frame >= self.lastFrame: #Firm landing during tumble
-                    actor.landingLag = actor.var['heavyLandLag']
-                    actor.elasticity = 0
+            elif self.frame >= self.lastFrame: #Firm landing during tumble
+                actor.landingLag = actor.var['heavyLandLag']
+                actor.ground_elasticity = 0
+                if actor.grounded:
                     actor.doLand()
-                elif actor.change_y < actor.var['maxFallSpeed']//2: #Soft landing during hitstun
-                    actor.landingLag = actor.var['heavyLandLag']+self.lastFrame-self.frame
-                    actor.elasticity = 0
+            elif actor.change_y < actor.var['maxFallSpeed']//2: #Soft landing during hitstun
+                actor.landingLag = actor.var['heavyLandLag']+self.lastFrame-self.frame
+                actor.ground_elasticity = 0
+                if actor.grounded:
                     actor.doLand()
-                else: #Firm landing during hitstun
-                    actor.elasticity = actor.var['hitstunElasticity']/2
-            elif self.frame >= self.lastFrame:
+            else: #Firm landing during hitstun
+                actor.ground_elasticity = actor.var['hitstunElasticity']/2
+            if self.frame >= self.lastFrame:
                 tumbleState(actor)
                 actor.elasticity = actor.var['hitstunElasticity']/2
             else:
@@ -415,6 +423,8 @@ class Trip(action.Action):
         actor.invincible = 5
 
     def update(self, actor):
+        if actor.grounded and actor.change_y < 0:
+            actor.change_y = 0
         if actor.grounded is False:
             actor.doHitStun(self.lastFrame-self.frame, self.direction,0)
         if self.frame >= self.lastFrame + 180: #You aren't up yet?
@@ -532,6 +542,8 @@ class Land(action.Action):
         actor.preferred_xspeed = 0
 
     def update(self,actor):
+        if actor.grounded and actor.change_y < 0:
+            actor.change_y = 0
         if self.frame == 0:
             self.lastFrame = actor.landingLag
             if actor.keyHeld('shield', 1):
@@ -558,6 +570,8 @@ class HelplessLand(action.Action):
         action.Action.__init__(self, 6)
 
     def update(self,actor):
+        if actor.grounded and actor.change_y < 0:
+            actor.change_y = 0
         if self.frame == 0:
             actor.preferred_yspeed = actor.var['maxFallSpeed']
             self.lastFrame = actor.landingLag

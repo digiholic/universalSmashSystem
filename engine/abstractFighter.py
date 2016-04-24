@@ -32,6 +32,7 @@ class AbstractFighter():
         self.invulnerable = 0
 
         self.elasticity = 0
+        self.ground_elasticity = 0
         
         # dataLog holds information for the post-game results screen
         self.dataLog = None
@@ -111,7 +112,8 @@ class AbstractFighter():
             #Smash directional influence AKA hitstun shuffling
             di_vec = self.getSmoothedInput()
             self.rect.x += di_vec[0]*0.5
-            self.rect.y += di_vec[1]*0.5
+            if not self.grounded:
+                self.rect.y += di_vec[1]*0.5
 
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
             block_hit_list = self.getCollisionsWith(self.gameState.platform_list)
@@ -469,7 +471,8 @@ class AbstractFighter():
         DI_multiplier = 1+dot*.12
         trajectory += cross*15
 
-        hitstun_frames = math.floor((totalKB+1)*5*hitstun_multiplier) #Tweak this constant
+        hitstun_frames = math.floor((totalKB+1)*3*hitstun_multiplier) #Tweak this constant
+        print(hitstun_frames)
 
         if self.no_flinch_hits > 0:
             if hitstun_frames > 0:
@@ -481,7 +484,6 @@ class AbstractFighter():
             print(totalKB)
             self.doHitStun(hitstun_frames,trajectory,math.floor((damage / 4.0 + 2)/hitstun_multiplier))
         
-        print(totalKB*DI_multiplier, trajectory)
         self.dealDamage(damage)
         
         self.setSpeed(totalKB*DI_multiplier, trajectory)
@@ -708,8 +710,6 @@ class AbstractFighter():
         if finalMagnitude > 1:
             smoothedX /= finalMagnitude
             smoothedY /= finalMagnitude
-        print('Smoothed:')
-        print (smoothedX, smoothedY)
         return [smoothedX, smoothedY]
         
     
@@ -829,11 +829,11 @@ class AbstractFighter():
             if dyUp >= dyDown and other.solid:
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
                 if self.change_y > other.change_y - self.var['gravity']:
-                    self.change_y = -self.elasticity*self.change_y + other.change_y - self.var['gravity']
+                    self.change_y = -self.ground_elasticity*self.change_y + other.change_y - self.var['gravity']
             elif dyDown <= 0 and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
                 self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.currentECB.rect.bottom)
                 if self.change_y > other.change_y - self.var['gravity']:
-                    self.change_y = -self.elasticity*self.change_y + other.change_y - self.var['gravity']
+                    self.change_y = -self.ground_elasticity*self.change_y + other.change_y - self.var['gravity']
             elif dyDown >= dyUp and other.solid:
                 self.rect.top = other.rect.bottom+self.rect.top-self.ecb.currentECB.rect.top
                 if self.change_y < other.change_y - self.var['gravity']:

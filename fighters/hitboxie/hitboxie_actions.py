@@ -450,13 +450,12 @@ class UpAttack(action.Action):
             actor.doFall()
         if self.frame == 4:
             actor.active_hitboxes.add(self.sweetHitbox)
-        elif self.frame == 6:
-            actor.active_hitboxes.add(self.tangyHitbox)
         elif self.frame == 8:
             self.sweetHitbox.kill()
-            actor.active_hitboxes.add(self.sourHitbox)
+            actor.active_hitboxes.add(self.tangyHitbox)
         elif self.frame == 12:
             self.tangyHitbox.kill()
+            actor.active_hitboxes.add(self.sourHitbox)
         elif self.frame == 16:
             self.sourHitbox.kill()
         if self.frame == self.lastFrame:
