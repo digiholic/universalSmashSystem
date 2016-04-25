@@ -221,7 +221,7 @@ class Crouch(action.Action):
         crouchState(actor)
         if actor.grounded is False:
             actor.doFall()
-        if self.frame > 0 and actor.keyBuffered('down', 0, state = 1):
+        if self.frame > 0 and actor.keyBuffered('down', 1, state = 1):
             blocks = actor.checkForGround()
             if blocks:
                 #Turn it into a list of true/false if the block is solid
@@ -798,7 +798,7 @@ class SpotDodge(action.Action):
     def update(self,actor):
         if actor.grounded is False:
             actor.doFall()
-        elif actor.keyBuffered('down', 0) and self.frame > 0:
+        elif actor.keyBuffered('down', 1) and self.frame > 0:
             blocks = actor.checkForGround()
             if blocks:
                 blocks = map(lambda x:x.solid,blocks)

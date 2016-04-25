@@ -604,19 +604,20 @@ class DownAttack(action.Action):
     def tearDown(self,actor,other):
         self.dsmashHitbox1.kill()
         self.dsmashHitbox2.kill()
+        print(self.frame)
 
     def onClank(self,actor):
         actor.doIdle()
         
     def update(self,actor):
+        self.dsmashHitbox1.update()
+        self.dsmashHitbox2.update()
         if not actor.grounded:
             actor.doFall()
         if self.frame <= 10:
             actor.changeSpriteImage(self.frame//2)
         elif self.frame == 11:
             actor.changeSpriteImage(6)
-            self.dsmashHitbox1.update()
-            self.dsmashHitbox2.update()
             actor.active_hitboxes.add(self.dsmashHitbox1)
             actor.active_hitboxes.add(self.dsmashHitbox2)
         elif self.frame == 12:
@@ -659,6 +660,9 @@ class DownSmash(action.Action):
         self.dsmashHitbox2.kill()
 
     def update(self, actor):
+        self.spikeBox.update()
+        self.dsmashHitbox1.update()
+        self.dsmashHitbox2.update()
         if not actor.grounded:
             actor.doFall()
         if self.frame == 6 and not actor.keysContain('attack') and self.chargeLevel > 0:
