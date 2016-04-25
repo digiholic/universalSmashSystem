@@ -807,8 +807,8 @@ class AbstractFighter():
     def eject(self, other):
         self.ecb.normalize()
         checkRect = other.rect.copy()
-        #checkRect.centerx -= other.change_x
-        #checkRect.centery -= other.change_y
+        checkRect.centerx -= other.change_x
+        checkRect.centery -= other.change_y
         t = pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, checkRect)
 
         dxLeft = -self.ecb.previousECB.rect.left-t*(self.ecb.currentECB.rect.left-self.ecb.previousECB.rect.left)+checkRect.right
@@ -833,7 +833,7 @@ class AbstractFighter():
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
                 if self.change_y >= other.change_y + self.var['gravity']:
                     self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-            elif dyDown <= self.var['gravity'] and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
+            elif dyDown <= 0 and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
                 self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.currentECB.rect.bottom)
                 if self.change_y >= other.change_y + self.var['gravity']:
                     self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
