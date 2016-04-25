@@ -423,8 +423,6 @@ class Trip(action.Action):
         actor.invincible = 5
 
     def update(self, actor):
-        if actor.grounded and actor.change_y < 0:
-            actor.change_y = 0
         if actor.grounded is False:
             actor.doHitStun(self.lastFrame-self.frame, self.direction,0)
         if self.frame >= self.lastFrame + 180: #You aren't up yet?
@@ -542,8 +540,6 @@ class Land(action.Action):
         actor.preferred_xspeed = 0
 
     def update(self,actor):
-        if actor.grounded and actor.change_y < 0:
-            actor.change_y = 0
         if self.frame == 0:
             self.lastFrame = actor.landingLag
             if actor.keyHeld('shield', 1):
@@ -570,8 +566,6 @@ class HelplessLand(action.Action):
         action.Action.__init__(self, 6)
 
     def update(self,actor):
-        if actor.grounded and actor.change_y < 0:
-            actor.change_y = 0
         if self.frame == 0:
             actor.preferred_yspeed = actor.var['maxFallSpeed']
             self.lastFrame = actor.landingLag
