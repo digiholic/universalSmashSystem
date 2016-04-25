@@ -421,6 +421,7 @@ class Trip(action.Action):
 
     def setUp(self, actor):
         actor.invincible = 5
+        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
     def update(self, actor):
         if actor.grounded is False:
@@ -536,11 +537,15 @@ class Land(action.Action):
     def __init__(self):
         action.Action.__init__(self, 6)
 
+    def setUp(self, actor):
+        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+
     def tearDown(self, actor, nextAction):
         actor.preferred_xspeed = 0
 
     def update(self,actor):
         if self.frame == 0:
+            actor.preferred_yspeed = actor.var['maxFallSpeed']
             self.lastFrame = actor.landingLag
             if actor.keyHeld('shield', 1):
                 print("l-cancel")
@@ -565,8 +570,12 @@ class HelplessLand(action.Action):
     def __init__(self):
         action.Action.__init__(self, 6)
 
+    def setUp(self, actor):
+        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+
     def update(self,actor):
         if self.frame == 0:
+            actor.change_y = 0
             actor.preferred_yspeed = actor.var['maxFallSpeed']
             self.lastFrame = actor.landingLag
             if actor.keyHeld('shield', 20):
