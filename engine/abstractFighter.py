@@ -228,7 +228,7 @@ class AbstractFighter():
         self.grounded = False
         self.ecb.currentECB.rect.y += self.change_y+2
         groundBlock = pygame.sprite.Group()
-        block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
+        block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
         self.ecb.currentECB.rect.y -= self.change_y+2
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
@@ -856,7 +856,7 @@ class AbstractFighter():
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
                 if self.change_y >= other.change_y + self.var['gravity']:
                     self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-            elif dyDown <= 4 and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
+            elif dyDown <= self.ecb.currentECB.rect.bottom-newPrev.bottom and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
                 self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.currentECB.rect.bottom)
                 if self.change_y >= other.change_y + self.var['gravity']:
                     self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
@@ -889,11 +889,14 @@ class AbstractFighter():
                 if self.change_x < other.change_x:
                     self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
         if dy <= dx:
+            print (dyDown)
+            print (dyUp)
+            print (" ")
             if dyUp >= dyDown and other.solid:
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
                 if self.change_y >= other.change_y + self.var['gravity']:
                     self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-            elif dyDown <= 0 and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
+            elif dyDown <= self.ecb.currentECB.rect.bottom-self.ecb.previousECB.rect.bottom and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
                 self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.currentECB.rect.bottom)
                 if self.change_y >= other.change_y + self.var['gravity']:
                     self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
