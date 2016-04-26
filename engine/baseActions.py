@@ -252,13 +252,10 @@ class CrouchGetup(action.Action):
     def __init__(self,length):
         action.Action.__init__(self, length)
 
-    def update(self, actor):
-        actor.preferred_xspeed = 0
+    def stateTransitions(self, actor):
         if actor.grounded is False:
             actor.doFall()
-        elif self.frame >= self.lastFrame:
-            actor.doIdle()
-        elif actor.keyHeld('down'):
+        elif actor.keyBuffered('down', 1, state = 1):
             blocks = actor.checkForGround()
             if blocks:
                 #Turn it into a list of true/false if the block is solid
@@ -266,7 +263,12 @@ class CrouchGetup(action.Action):
                 #If none of the ground is solid
                 if not any(blocks):
                     actor.doPlatformDrop()
+
+    def update(self, actor):
+        actor.preferred_xspeed = 0
         self.frame += 1
+        if self.frame >= self.lastFrame:
+            actor.doIdle()
 
 class BaseGrabbing(action.Action):
     def __init__(self,length):
@@ -446,6 +448,10 @@ class Jump(action.Action):
 
     def stateTransitions(self, actor):
         if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jumpFrame:
+            print("Jump cancelled into up smash")
+            actor.doGroundAttack()
+        elif actor.keyHeld('special') and actor.checkSmash('up') and self.frame < self.jumpFrame:
+            print("Jump cancelled into up special")
             actor.doGroundAttack()
         elif self.frame > self.jumpFrame+2:
             jumpState(actor)
@@ -586,10 +592,22 @@ class HelplessLand(action.Action):
         self.frame += 1
 
 class PlatformDrop(action.Action):
-    def __init__(self, length):
+    def __init__(self, length, phaseFrame, phaseLength):
         action.Action.__init__(self, length)
+        self.phaseFrame = phaseFrame
+        self.phaseLength = phaseLength
+
+    def stateTransitions(self, actor):
+        if actor.keyHeld('attack') and actor.checkSmash('down') and self.frame < self.phaseFrame:
+            print("Platform drop cancelled into down smash")
+            actor.doGroundAttack()
+        elif actor.keyHeld('special') and actor.checkSmash('down') and self.frame < self.phaseFrame:
+            print("Platform drop cancelled into down special")
+            actor.doGroundSpecial()
     
     def update(self,actor):
+        if self.frame == self.phaseFrame:
+            actor.platformPhase = self.phaseLength
         if self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
@@ -1011,6 +1029,7 @@ def dashState(actor, direction):
         actor.doDashGrab()
     elif actor.keyHeld('attack'):
         if actor.checkSmash(key):
+            print("Dash cancelled into forward smash")
             actor.doGroundAttack()
         else:
             actor.doDashAttack()

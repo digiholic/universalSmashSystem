@@ -1685,15 +1685,14 @@ class GetupAttack(action.Action):
 
 class PlatformDrop(baseActions.PlatformDrop):
     def __init__(self):
-        baseActions.PlatformDrop.__init__(self, 12)
+        baseActions.PlatformDrop.__init__(self, 12, 6, 9)
     
     def stateTransitions(self, actor):
-        if self.frame > 5:
+        baseActions.PlatformDrop.stateTransitions(self, actor)
+        if self.frame > self.phaseFrame:
             baseActions.airControl(actor)
         
     def update(self,actor):
-        if self.frame == 0:
-            actor.platformPhase = 15
         if self.frame == 2:
             actor.changeSprite("airjump",4)
             actor.change_y = 3
