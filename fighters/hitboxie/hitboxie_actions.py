@@ -381,7 +381,9 @@ class NeutralAttack(action.Action):
         actor.doIdle()
     
     def stateTransitions(self, actor):
-        if self.frame == self.lastFrame:
+        if not actor.grounded:
+            actor.doFall()
+        elif self.frame == self.lastFrame:
             if actor.keysContain('attack') and not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('up') and not actor.keysContain('down'):
                 self.jabHitbox.hitbox_lock = hitbox.HitboxLock()
                 self.frame = 0
@@ -399,8 +401,6 @@ class NeutralAttack(action.Action):
             hitbox.DamageHitbox.onCollision(self, other)
             
     def update(self, actor):
-        if not actor.grounded:
-            actor.doFall()
         if self.frame < 4:
             actor.changeSpriteImage(self.frame)
         elif self.frame == 4:
@@ -440,21 +440,24 @@ class UpAttack(action.Action):
         self.tangyHitbox.kill()
         self.sourHitbox.kill()
 
+    def stateTransitions(self, actor):
+        if not actor.grounded:
+            actor.doFall()
+
     def update(self, actor):
         actor.changeSpriteImage(self.frame//4)
         self.sweetHitbox.update()
         self.tangyHitbox.update()
         self.sourHitbox.update()
-        if not actor.grounded:
-            actor.doFall()
         if self.frame == 4:
             actor.active_hitboxes.add(self.sweetHitbox)
-        elif self.frame == 8:
-            self.sweetHitbox.kill()
+        elif self.frame == 6:
             actor.active_hitboxes.add(self.tangyHitbox)
+        elif self.frame == 8:
+            actor.active_hitboxes.add(self.sourHitbox)
+            self.sweetHitbox.kill()
         elif self.frame == 12:
             self.tangyHitbox.kill()
-            actor.active_hitboxes.add(self.sourHitbox)
         elif self.frame == 16:
             self.sourHitbox.kill()
         if self.frame == self.lastFrame:
@@ -477,10 +480,12 @@ class UpSmash(action.Action):
         self.weakHBoxL.kill()
         self.weakHBoxR.kill()
         self.uSmashHitbox.kill()
-        
-    def update(self,actor):
+
+    def stateTransitions(self, actor):
         if not actor.grounded:
             actor.doFall()
+        
+    def update(self,actor):
         if self.frame == 8 and not actor.keysContain('attack') and self.chargeLevel > 0:
             actor.mask = None
             
@@ -560,9 +565,11 @@ class DashAttack(action.Action):
         self.dashHitbox.kill()
         self.chainHitbox.kill()
 
-    def update(self,actor):
+    def stateTransitions(self, actor):
         if not actor.grounded:
             actor.doFall()
+
+    def update(self,actor):
         if self.frame%2 == 0 and self.frame <= 8:
             actor.changeSpriteImage(self.frame//2)
         elif self.frame <= 24:
@@ -607,12 +614,14 @@ class DownAttack(action.Action):
 
     def onClank(self,actor):
         actor.doIdle()
+
+    def stateTransitions(self, actor):
+        if not actor.grounded:
+            actor.doFall()
         
     def update(self,actor):
         self.dsmashHitbox1.update()
         self.dsmashHitbox2.update()
-        if not actor.grounded:
-            actor.doFall()
         if self.frame <= 10:
             actor.changeSpriteImage(self.frame//2)
         elif self.frame == 11:
@@ -658,12 +667,14 @@ class DownSmash(action.Action):
         self.dsmashHitbox1.kill()
         self.dsmashHitbox2.kill()
 
+    def stateTransitions(self, actor):
+        if not actor.grounded:
+            actor.doFall()
+
     def update(self, actor):
         self.spikeBox.update()
         self.dsmashHitbox1.update()
         self.dsmashHitbox2.update()
-        if not actor.grounded:
-            actor.doFall()
         if self.frame == 6 and not actor.keysContain('attack') and self.chargeLevel > 0:
             actor.mask = None
         if self.frame == 0: 
@@ -712,10 +723,12 @@ class ForwardAttack(action.Action):
     
     def setUp(self,actor):
         self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,2.0,0.2,40,1,hitbox.HitboxLock())
-            
-    def update(self,actor):
+
+    def stateTransitions(self, actor):
         if self.frame < 14 and not actor.grounded:
             actor.doFall()
+            
+    def update(self,actor):
         if self.frame == 0:
             actor.preferred_xspeed = 0
             actor.changeSprite("fsmash",0)
@@ -745,10 +758,12 @@ class ForwardSmash(action.Action):
 
     def tearDown(self,actor,nextAction):
         self.fSmashHitbox.kill()
-            
-    def update(self,actor):
+
+    def stateTransitions(self, actor):
         if self.frame < 18 and not actor.grounded:
             actor.doFall()
+            
+    def update(self,actor):
         if self.frame == 6 and not actor.keysContain('attack') and self.chargeLevel > 0:
             actor.mask = None
         if self.frame == 0:
@@ -1082,6 +1097,10 @@ class GroundGrab(action.Action):
     def tearDown(self, actor, other):
         self.grabHitbox.kill()
 
+    def stateTransitions(self, actor):
+        if not actor.grounded:
+            actor.doFall()
+
     def update(self,actor):
         actor.preferred_xspeed = 0
         if self.frame == 0:
@@ -1118,6 +1137,10 @@ class DashGrab(action.Action):
 
     def tearDown(self, actor, other):
         self.grabHitbox.kill()
+
+    def stateTransitions(self, actor):
+        if not actor.grounded:
+            actor.doFall()
 
     def update(self,actor):
         actor.preferred_xspeed = 0
@@ -1615,7 +1638,8 @@ class GetupAttack(action.Action):
     def setUp(self, actor):
         actor.preferred_xspeed = 0
         actor.changeSprite("nair")
-
+        self.ecbCenter = [0,7]
+        self.ecbSize = [64, 78]
         self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,5,0.1,20,1,hitbox.HitboxLock())
         self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,0,1,1.5)
 
@@ -1626,6 +1650,10 @@ class GetupAttack(action.Action):
         self.dashHitbox.kill()
         self.chainHitbox.kill()
         actor.preferred_xspeed = 0
+
+    def stateTransitions(self, actor):
+        if not actor.grounded:
+            actor.doFall()
 
     def update(self,actor):
         if self.frame%2 == 0 and self.frame <= 12:
