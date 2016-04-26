@@ -492,6 +492,13 @@ class AbstractFighter():
         self.setSpeed(totalKB*DI_multiplier, trajectory)
 
         return math.floor(totalKB*DI_multiplier)
+
+    def applyPushback(self, kb, trajectory, hitlag):
+        self.hitstop = math.floor(hitlag)
+        (x, y) = getXYFromDM(trajectory, kb)
+        self.change_x += x
+        if not self.grounded:
+            self.change_y += y
     
     """
     Set the actor's speed. Instead of modifying the change_x and change_y values manually,
@@ -565,7 +572,7 @@ class AbstractFighter():
         if self.shieldIntegrity > 0:
             self.shieldIntegrity -= damage
             if damage > 1:
-                self.doShieldStun(math.floor(damage/2)+2)
+                self.doShieldStun(math.floor(damage+2))
         elif self.shieldIntegrity <= 0:
             self.change_y -= 15
             self.invincible = 20

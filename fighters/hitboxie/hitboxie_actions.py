@@ -140,16 +140,15 @@ class ForwardSpecial(action.Action):
             hitbox.Hitbox.onCollision(self, other)
             if 'AbstractFighter' in list(map(lambda x:x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
                 if other.lockHitbox(self):
+                    if self.article is None:
+                        self.owner.applyPushback(self.baseKnockback/2.0, self.trajectory+180, self.damage / 4.0 + 2.0)
                     if other.shield:
                         other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
-                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4.0 + 2)
                     elif other.grounded:
-                        self.owner.hitstop = math.floor(self.damage / 4.0 + 2)
                         other.applyKnockback(self.damage, 0, 0, 0, 1, 1)
                         (otherDirect,_) = other.getDirectionMagnitude()
                         other.doTrip(55, other.getForwardWithOffset(otherDirect))
                     else:
-                        self.owner.hitstop = math.floor(self.damage / 4.0 + 2)
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
     def stateTransitions(self, actor):
