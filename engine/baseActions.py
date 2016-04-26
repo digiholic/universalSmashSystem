@@ -398,6 +398,7 @@ class TryTech(HitStun):
                 actor.ground_elasticity = 0
             else: #Firm landing during hitstun
                 actor.ground_elasticity = actor.var['hitstunElasticity']/2
+
     def update(self, actor):
         if self.frame >= 40:
             actor.doHitStun(self.lastFrame-self.frame, self.direction,0)
@@ -892,10 +893,7 @@ class LedgeGrab(action.Action):
 
     def setUp(self, actor):
         actor.createMask([255,255,255], settingsManager.getSetting('ledgeInvincibilityTime'), True, 12)
-        if actor.invulnerable < 0:
-            actor.invulnerable *= -1
-        if actor.invulnerable >= settingsManager.getSetting('ledgeInvincibilityTime'):
-            actor.invulnerable = settingsManager.getSetting('ledgeInvincibilityTime')
+        actor.invulnerable = settingsManager.getSetting('ledgeInvincibilityTime')
         
     def tearDown(self,actor,newAction):
         self.ledge.fighterLeaves(actor)

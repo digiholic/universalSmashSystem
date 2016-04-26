@@ -485,7 +485,7 @@ class AbstractFighter():
 
         if hitstun_frames > 0.5:
             print(totalKB)
-            self.doHitStun(hitstun_frames,trajectory,math.floor((damage / 4.0 + 2)/hitstun_multiplier))
+            self.doHitStun(hitstun_frames,trajectory,math.floor(damage / 4.0 + 2))
         
         self.dealDamage(damage)
         
