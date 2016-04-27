@@ -15,7 +15,7 @@ if sys.platform == "win32":
     base_b = "Win32GUI"
 
 executables = [
-    Executable('main.py', base = base_b, targetName = 'main.exe'),
+    Executable('main.py', base = base_b, targetName = 'main.exe', icon='tussle.ico'),
     Executable('updater.py', 'console', targetName = 'updater.exe')
 ]
 

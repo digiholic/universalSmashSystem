@@ -138,7 +138,7 @@ class Settings():
             # The application is not frozen
             # Change this bit to match where you store your data files:
             self.datadir = os.path.dirname(__file__)
-            
+        
         self.parser.read(os.path.join(os.path.join(self.datadir.replace('main.exe','').replace('main.exe',''),'settings'),'settings.ini'))
         
         self.setting = dict()
@@ -333,7 +333,7 @@ def saveSettings(settings):
             parser.set(sect,'controlType',settings['controlType_'+str(i)])
             parser.set(sect,keyIdMap[key],str(settings[sect].keyBindings[key]))
             
-    with open(os.path.join(settings.datadir.replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
+    with open(os.path.join(getSetting().datadir.replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
         parser.write(configfile)
 
     saveGamepad(settings)
@@ -353,7 +353,7 @@ def saveGamepad(settings):
         for key,value in gamepad.padBindings.buttonBindings.iteritems():
             parser.set(controllerName,'b'+str(key),str(value))
             
-    with open(os.path.join(settings.datadir.replace('main.exe',''),'settings','gamepads.ini'), 'w') as configfile:
+    with open(os.path.join(getSetting().datadir.replace('main.exe',''),'settings','gamepads.ini'), 'w') as configfile:
         parser.write(configfile)
 
         
