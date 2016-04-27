@@ -66,13 +66,11 @@ class DamageHitbox(Hitbox):
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
         if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
             if other.lockHitbox(self):
+                if self.article is None:
+                    self.owner.applyPushback(self.baseKnockback/2.0, self.trajectory+180, self.damage / 4.0 + 2.0)
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
-                    if self.article is None:
-                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4.0 + 2)
                 else:
-                    if self.article is None:
-                        self.owner.hitstop = math.floor(self.damage / 4 + 2)
                     other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
         
         if self.article and hasattr(self.article, 'onCollision'):
@@ -98,10 +96,10 @@ class SakuraiAngleHitbox(DamageHitbox):
         Hitbox.onCollision(self, other)
         if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
             if other.lockHitbox(self):
+                if self.article is None:
+                    self.owner.applyPushback(self.baseKnockback/2.0, self.trajectory+180, self.damage / 4.0 + 2.0)
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
-                    if self.article is None:
-                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4.0 + 2)
                 else:
                     p = float(other.damage)
                     d = float(self.damage)
@@ -117,9 +115,6 @@ class SakuraiAngleHitbox(DamageHitbox):
                         xVal = math.sqrt(knockbackRatio**2+1)/math.sqrt(2)
                         yVal = math.sqrt(knockbackRatio**2-1)/math.sqrt(2)
                         angle = math.atan2(yVal*math.sin(float(self.trajectory)/180*math.pi),xVal*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
-
-                    if self.article is None:
-                        self.owner.hitstop = math.floor(self.damage / 4.0 + 2)
                     other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, angle, self.weight_influence, self.hitstun)
 
         if self.article and hasattr(self.article, 'onCollision'):
@@ -139,15 +134,14 @@ class AutolinkHitbox(DamageHitbox):
         Hitbox.onCollision(self, other)
         if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
             if other.lockHitbox(self):
+                if self.article is None:
+                    self.owner.applyPushback(self.baseKnockback/2.0, self.trajectory+180, self.damage / 4.0 + 2.0)
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
-                    if self.article is None:
-                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4.0 + 2)
                 else:
                     if self.article is None:
                         velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
                         angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
-                        self.owner.hitstop = math.floor(self.damage / 4.0 + 2)
                         other.applyKnockback(self.damage, velocity*self.velocity_multiplier, 0, angle, 0, self.hitstun)
                     elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
                         velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
@@ -170,10 +164,10 @@ class FunnelHitbox(DamageHitbox):
         Hitbox.onCollision(self, other)
         if 'AbstractFighter' in list(map(lambda x:x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
             if other.lockHitbox(self):
+                if self.article is None:
+                    self.owner.applyPushback(self.baseKnockback/2.0, self.trajectory+180, self.damage / 4.0 + 2.0)
                 if other.shield:
                     other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
-                    if self.article is None:
-                        self.owner.hitstop = math.floor(self.damage*self.shield_multiplier*3.0/4.0 + 2)
                 else:
                     if self.article is None:
                         x_diff = self.rect.centerx - other.rect.centerx
@@ -181,7 +175,6 @@ class FunnelHitbox(DamageHitbox):
                         (x_vel, y_vel) = abstractFighter.getXYFromDM(self.trajectory, self.baseKnockback)
                         x_vel += self.x_draw*x_diff
                         y_vel += self.y_draw*y_diff
-                        self.owner.hitstop = math.floor(self.damage / 4.0 + 2)
                         other.applyKnockback(self.damage, math.hypot(x_vel,y_vel), 0, math.atan2(-y_vel,x_vel)*180.0/math.pi, 0, self.hitstun)
                     else:
                         x_diff = self.article.rect.centerx - other.rect.centerx
@@ -241,6 +234,10 @@ class ReflectorHitbox(Hitbox):
             elif hasattr(other, 'damage'):
                 self.priority -= other.damage
                 other.damage *= other.damage*self.damage_multiplier
+            if self.priority < 0:
+                self.change_y -= 15
+                self.invincible = 20
+                self.doStunned(200)
         
         return Hitbox.compareTo(self, other)
 
@@ -255,7 +252,7 @@ class ReflectorHitbox(Hitbox):
 
 class PerfectShieldHitbox(ReflectorHitbox):
     def __init__(self, center, size, owner, hitbox_lock):
-        ReflectorHitbox.__init__(self,center,size,owner,hitbox_lock,1,1,9999,0, -5)
+        ReflectorHitbox.__init__(self,center,size,owner,hitbox_lock,1,1,9999,0,-5)
 
     def compareTo(self, other):
         if other.article != None and other.article.owner != self.owner and hasattr(other.article, 'tags') and 'reflectable' in other.article.tags:
