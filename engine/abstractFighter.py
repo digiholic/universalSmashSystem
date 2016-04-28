@@ -889,9 +889,6 @@ class AbstractFighter():
                 if self.change_x < other.change_x:
                     self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
         if dy <= dx:
-            print (dyDown)
-            print (dyUp)
-            print (" ")
             if dyUp >= dyDown and other.solid:
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
                 if self.change_y >= other.change_y + self.var['gravity']:

@@ -282,6 +282,12 @@ class Grabbing(BaseGrabbing):
     def __init__(self,length):
         BaseGrabbing.__init__(self, length)
 
+    def setUp(self, actor):
+        actor.grabbing.flinch_damage_threshold = 9999
+
+    def tearDown(self, actor, newAction):
+        actor.grabbing.flinch_damage_threshold = 0
+
     def stateTransitions(self, actor):
         if actor.grounded is False:
             actor.doFall()
@@ -315,14 +321,16 @@ class HitStun(action.Action):
             elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
                 actor.ground_elasticity = 0
                 if actor.grounded:
-                    actor.doTrip(self.lastFrame-self.frame, direct)
-            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
-                actor.landingLag = self.lastFrame-self.frame+actor.var['heavyLandLag']//2
+                    actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
+            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during tumble
                 actor.ground_elasticity = 0
+                if actor.grounded: 
+                    actor.doTrip(self.lastFrame-self.frame//2, direct)
             elif self.frame >= self.lastFrame: #Firm landing during tumble
-                actor.landingLag = actor.var['heavyLandLag']
                 actor.ground_elasticity = 0
-            elif actor.change_y < actor.var['maxFallSpeed']//2: #Soft landing during hitstun
+                if actor.grounded: 
+                    actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
+            elif actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during hitstun
                 actor.landingLag = actor.var['heavyLandLag']+self.lastFrame-self.frame
                 actor.ground_elasticity = 0
             else: #Firm landing during hitstun
@@ -368,13 +376,14 @@ class TryTech(HitStun):
 
     def stateTransitions(self, actor):
         (direct,mag) = actor.getDirectionMagnitude()
-        if self.frame == 0:
+        if self.frame > 5 and self.frame < 20:
             actor.elasticity = 0
-        if self.frame < 20 and actor.grounded:
-            print('Ground tech!')
-            actor.unRotate()
-            actor.doTrip(-175, direct)
-        if self.frame >= 20:
+            actor.ground_elasticity = 0
+            if actor.grounded:
+                print('Ground tech!')
+                actor.unRotate()
+                actor.doTrip(0, direct)
+        else:
             if self.frame >= self.lastFrame:
                 tumbleState(actor)
                 actor.elasticity = actor.var['hitstunElasticity']/2
@@ -388,14 +397,16 @@ class TryTech(HitStun):
             elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
                 actor.ground_elasticity = 0
                 if actor.grounded:
-                    actor.doTrip(self.lastFrame-self.frame, direct)
-            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2: #Soft landing during tumble
-                actor.landingLag = self.lastFrame-self.frame+actor.var['heavyLandLag']//2
+                    actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
+            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during tumble
                 actor.ground_elasticity = 0
+                if actor.grounded: 
+                    actor.doTrip(self.lastFrame-self.frame//2, direct)
             elif self.frame >= self.lastFrame: #Firm landing during tumble
-                actor.landingLag = actor.var['heavyLandLag']
                 actor.ground_elasticity = 0
-            elif actor.change_y < actor.var['maxFallSpeed']//2: #Soft landing during hitstun
+                if actor.grounded: 
+                    actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
+            elif actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during hitstun
                 actor.landingLag = actor.var['heavyLandLag']+self.lastFrame-self.frame
                 actor.ground_elasticity = 0
             else: #Firm landing during hitstun
@@ -413,7 +424,10 @@ class Trip(action.Action):
         print("direction:", self.direction)
 
     def setUp(self, actor):
-        actor.invincible = 5
+        if self.lastFrame > 5:
+            actor.invincible = 5
+        else:
+            actor.invincible = self.lastFrame
         actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
     def update(self, actor):
@@ -478,7 +492,14 @@ class AirJump(action.Action):
         #TODO: Change to add the number of buffer frames
 
     def stateTransitions(self, actor):
-        jumpState(actor)
+        if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jumpFrame:
+            print("Jump cancelled into up aerial")
+            actor.doGroundAttack()
+        elif actor.keyHeld('special') and actor.checkSmash('up') and self.frame < self.jumpFrame:
+            print("Jump cancelled into up special")
+            actor.doGroundAttack()
+        else: 
+            jumpState(actor)
 
     def tearDown(self, actor, nextAction):
         actor.preferred_yspeed = actor.var['maxFallSpeed']
@@ -547,7 +568,7 @@ class Land(action.Action):
             if actor.keyHeld('shield', 1):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame // 2
-        if actor.keyHeld('down'):
+        if actor.keyHeld('down') and self.frame*2 > self.lastFrame:
             blocks = actor.checkForGround()
             if blocks:   
                 blocks = map(lambda x: x.solid, blocks)
@@ -585,7 +606,7 @@ class HelplessLand(action.Action):
                 if not any(blocks):
                     actor.doPlatformDrop()
         if self.frame >= self.lastFrame:
-            actor.landingLag = 6
+            actor.landingLag = actor.var['heavyLandLag']
             actor.doIdle()
             actor.platformPhase = 0
             actor.preferred_xspeed = 0
@@ -901,7 +922,7 @@ class TechDodge(AirDodge):
         if self.frame < 20 and actor.grounded:
             print('Ground tech!')
             actor.unRotate()
-            actor.doTrip(-175, direct)
+            actor.doTrip(0, direct)
         AirDodge.stateTransitions(self, actor)
         
 class LedgeGrab(action.Action):
