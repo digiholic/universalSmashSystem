@@ -830,7 +830,6 @@ class ModulesMenu(SubMenu):
         SubMenu.update(self, screen)
         self.statusText.draw(screen,self.statusText.rect.topleft,1.0)
         
-        
     def confirmOption(self, optionNum):
         self.status = 1
         SubMenu.confirmOption(self, optionNum)
@@ -913,7 +912,6 @@ class GameSettingsMenu(SubMenu):
         self.presets = self.settings['presetLists']
         
         self.current_preset = self.presets.index(self.settings['current_preset'])
-        print(self.current_preset)
         self.selectionSlice = (0,10)
         
         self.selectedOption = 0
