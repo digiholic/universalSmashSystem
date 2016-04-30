@@ -33,7 +33,7 @@ class Hitbox(spriteManager.RectSprite):
         return
 
     def compareTo(self, other):
-        if (hasattr(other, 'transcendence') and hasattr(other, 'priority')) and not isinstance(other, ReflectorHitbox):
+        if (hasattr(other, 'transcendence') and hasattr(other, 'priority')) and (not isinstance(other, ReflectorHitbox) or isinstance(other, PerfectShieldHitbox)):
             if self.transcendence+other.transcendence <= 0:
                 return (self.priority - other.priority) >= 8
         return True

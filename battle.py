@@ -28,10 +28,8 @@ class Battle():
         
         self.rules = rules
         self.players = players
-        self.nullLock = hitbox.HitboxLock()
         self.controllers = []
         for player in players:
-            player.hitboxLock.add(self.nullLock)
             self.controllers.append(player.keyBindings)
             
         self.stage = stage
@@ -197,7 +195,7 @@ class Battle():
             for hbox in hitbox_hits:
                 #first, check for clanks
                 hitbox_clank = hitbox_hits[hbox]
-                hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner)]
+                hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner) and isinstance(x, hitbox.DamageHitbox)]
                 if hitbox_clank: print(hitbox_clank)
                 for other in hitbox_clank:
                     print('Other hitbox: '+str(other))
@@ -205,12 +203,12 @@ class Battle():
                         if hasattr(hbox.owner,'current_action') and hbox.article == None:
                             hbox.owner.current_action.onClank(hbox.owner)
                         print("CLANK!")
-                        hbox.hitbox_lock = self.nullLock
+                        other.owner.lockHitbox(hbox)
                     if not other.compareTo(hbox):
-                        if hasattr(other.owner,'current_action') and hbox.article == None:
+                        if hasattr(other.owner,'current_action') and other.article == None:
                             other.owner.current_action.onClank(other.owner)
                         print("CLANK!")
-                        other.hitbox_lock = self.nullLock
+                        hbox.owner.lockHitbox(other)
             for hbox in hurtbox_hits:
                 #then, hurtbox collisions
                 hitbox_collisions = hurtbox_hits[hbox]
