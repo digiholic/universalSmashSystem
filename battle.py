@@ -200,12 +200,12 @@ class Battle():
                 for other in hitbox_clank:
                     print('Other hitbox: '+str(other))
                     if not hbox.compareTo(other):
-                        if hasattr(hbox.owner,'current_action') and hbox.article == None and isinstance(hbox, hitbox.DamageHitbox):
+                        if hasattr(hbox.owner,'current_action') and hbox.article == None and isinstance(other, hitbox.DamageHitbox):
                             hbox.owner.current_action.onClank(hbox.owner)
                         print("CLANK!")
                         other.owner.lockHitbox(hbox)
                     if not other.compareTo(hbox):
-                        if hasattr(other.owner,'current_action') and other.article == None and isinstance(other, hitbox.DamageHitbox):
+                        if hasattr(other.owner,'current_action') and other.article == None and isinstance(hbox, hitbox.DamageHitbox):
                             other.owner.current_action.onClank(other.owner)
                         print("CLANK!")
                         hbox.owner.lockHitbox(other)
