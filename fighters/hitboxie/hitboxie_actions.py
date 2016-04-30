@@ -124,9 +124,11 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
         actor.changeSprite("nair",0)
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 1, 1, hitbox.HitboxLock(), 0, 0, 1, 1, -1, -7)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 1, 1, hitbox.HitboxLock(), 0, -1.5, 1, 1, -1, -7)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
+        self.ecbCenter = [0, 0]
+        self.ecbSize = [64, 64]
     
     def onClank(self,actor):
         actor.landingLag = 30
@@ -159,7 +161,7 @@ class ForwardSpecial(action.Action):
         self.chainHitbox.kill()
         self.flingHitbox.kill()
         actor.flinch_knockback_threshold = 0
-        self.preferred_xspeed = 0
+        actor.preferred_xspeed = 0
 
     def update(self, actor):
         if actor.grounded:
@@ -393,7 +395,7 @@ class NeutralAttack(action.Action):
     # Since this hitbox if specifically for this attack, we can hard code in the values.
     class outwardHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
-            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 2, 8, 0.02, 0, 1, hitbox.HitboxLock())
+            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 3, 8, 0.02, 0, 1, hitbox.HitboxLock())
             
         def onCollision(self,other):
             hitbox.Hitbox.onCollision(self, other)
@@ -449,6 +451,16 @@ class UpAttack(action.Action):
         self.sweetHitbox.update()
         self.tangyHitbox.update()
         self.sourHitbox.update()
+        if self.frame < 4:
+            #Temporary upper invincibility
+            self.ecbCenter = [0, 16]
+            self.ecbSize = [0, 32]
+        elif self.frame < 8:
+            self.ecbCenter = [0, 24]
+            self.ecbSize = [0, 32]
+        else:
+            self.ecbCenter = [0, 0]
+            self.ecbSize = [0, 0]
         if self.frame == 4:
             actor.active_hitboxes.add(self.sweetHitbox)
         elif self.frame == 6:
@@ -556,7 +568,7 @@ class DashAttack(action.Action):
         self.ecbCenter = [0,7]
         self.ecbSize = [64, 78]
         self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,8,0.2,20,1,hitbox.HitboxLock())
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,0,1,1.5)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,-1,1,1.5)
 
     def onClank(self,actor):
         actor.doIdle()
@@ -658,7 +670,7 @@ class DownSmash(action.Action):
         actor.preferred_xspeed = 0
         actor.changeSprite("dsmash", 0)
         hitbox_lock = hitbox.HitboxLock()
-        self.spikeBox = hitbox.FunnelHitbox([0, 26], [90, 40], actor, 1, 2, 270, 2, hitbox.HitboxLock(), 0.05, 0)
+        self.spikeBox = hitbox.FunnelHitbox([0, 26], [90, 40], actor, 1, 2, 270, 2, hitbox.HitboxLock(), 0.05, -0.1)
         self.dsmashHitbox1 = hitbox.DamageHitbox([23,26],[46,40],actor,8,8,0.3,20,1,hitbox_lock)
         self.dsmashHitbox2 = hitbox.DamageHitbox([-23,26],[46,40],actor,8,8,0.3,160,1,hitbox_lock)
 
@@ -690,6 +702,7 @@ class DownSmash(action.Action):
                 self.dsmashHitbox2.damage += .146
                 self.frame -= 1
         elif self.frame > 6 and self.frame < self.lastFrame:
+            self.ecbSize = [44, 0]
             actor.changeSpriteImage((self.frame//2-3)%6)
             if self.frame == 14:
                 actor.active_hitboxes.add(self.spikeBox)
@@ -810,6 +823,7 @@ class ForwardSmash(action.Action):
 class NeutralAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 40)
+        self.ecbSize = [64, 64]
     
     def setUp(self, actor):
         actor.preferred_xspeed = 0
@@ -1019,11 +1033,15 @@ class DownAir(action.Action):
             actor.active_hitboxes.add(self.rightDiagonalHitbox)
             actor.active_hitboxes.add(self.leftSourSpot)
             actor.active_hitboxes.add(self.rightSourSpot)
+            self.ecbCenter = [0, -10]
+            self.ecbSize = [0, 107]
         elif self.frame == self.lastFrame-9 and actor.keysContain('attack'):
             self.frame -= 1
         elif self.frame < self.lastFrame-9:
             pass
         elif self.frame < self.lastFrame-6:
+            self.ecbSize = [0, 0]
+            self.ecbCenter = [0, 0]
             self.bottom = 14
             self.downHitbox.kill()
             self.leftDiagonalHitbox.kill()
@@ -1102,6 +1120,7 @@ class GroundGrab(action.Action):
             actor.doFall()
 
     def update(self,actor):
+        self.grabHitbox.update()
         actor.preferred_xspeed = 0
         if self.frame == 0:
             actor.changeSprite("pivot", 0)
@@ -1109,7 +1128,6 @@ class GroundGrab(action.Action):
             actor.changeSpriteImage(1)
         elif self.frame == 6:
             actor.changeSpriteImage(2)
-            self.grabHitbox.update()
             actor.active_hitboxes.add(self.grabHitbox)
         elif self.frame == 9:
             actor.changeSpriteImage(3)
@@ -1143,6 +1161,7 @@ class DashGrab(action.Action):
             actor.doFall()
 
     def update(self,actor):
+        self.grabHitbox.update()
         actor.preferred_xspeed = 0
         if self.frame == 0:
             actor.changeSprite("pivot", 0)
@@ -1150,7 +1169,6 @@ class DashGrab(action.Action):
             actor.changeSpriteImage(1)
         elif self.frame == 7:
             actor.changeSpriteImage(2)
-            self.grabHitbox.update()
             actor.active_hitboxes.add(self.grabHitbox)
         elif self.frame == 10:
             actor.changeSpriteImage(3)
@@ -1180,7 +1198,7 @@ class Pummel(baseActions.BaseGrabbing):
         elif self.frame < 4:
             actor.changeSpriteImage(self.frame)
         elif actor.isGrabbing() and self.frame == 4:
-            actor.grabbing.dealDamage(2)
+            actor.grabbing.dealDamage(3)
         elif self.frame >= 5 and self.frame <= 8:
             actor.changeSpriteImage(9)
         elif self.frame >= 9 and self.frame <= 10:
@@ -1641,7 +1659,7 @@ class GetupAttack(action.Action):
         self.ecbCenter = [0,7]
         self.ecbSize = [64, 78]
         self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,5,0.1,20,1,hitbox.HitboxLock())
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,0,1,1.5)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,-1,1,1.5)
 
     def onClank(self,actor):
         actor.doIdle()
@@ -1914,7 +1932,7 @@ class LedgeAttack(baseActions.LedgeGetup):
         actor.invincibility = 24
         actor.createMask([255,255,255], 24, True, 24)
         self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,8,0.2,20,1,hitbox.HitboxLock())
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,0,1,1.5)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,-1,1,1.5)
 
     def tearDown(self,actor,other):
         self.dashHitbox.kill()

@@ -195,17 +195,17 @@ class Battle():
             for hbox in hitbox_hits:
                 #first, check for clanks
                 hitbox_clank = hitbox_hits[hbox]
-                hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner) and isinstance(x, hitbox.DamageHitbox)]
+                hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner)]
                 if hitbox_clank: print(hitbox_clank)
                 for other in hitbox_clank:
                     print('Other hitbox: '+str(other))
                     if not hbox.compareTo(other):
-                        if hasattr(hbox.owner,'current_action') and hbox.article == None:
+                        if hasattr(hbox.owner,'current_action') and hbox.article == None and isinstance(hbox, hitbox.DamageHitbox):
                             hbox.owner.current_action.onClank(hbox.owner)
                         print("CLANK!")
                         other.owner.lockHitbox(hbox)
                     if not other.compareTo(hbox):
-                        if hasattr(other.owner,'current_action') and other.article == None:
+                        if hasattr(other.owner,'current_action') and other.article == None and isinstance(other, hitbox.DamageHitbox):
                             other.owner.current_action.onClank(other.owner)
                         print("CLANK!")
                         hbox.owner.lockHitbox(other)
