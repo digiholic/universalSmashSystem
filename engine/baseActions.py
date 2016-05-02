@@ -1122,15 +1122,18 @@ def ledgeState(actor):
         actor.doLedgeAttack()
     elif actor.keyHeld('jump'):
         actor.ledgeLock = True
+        actor.invincible = 10
         actor.doJump()
     elif actor.keyBuffered(key):
         actor.ledgeLock = True
         actor.doLedgeGetup()
     elif actor.keyBuffered(invkey):
         actor.ledgeLock = True
+        actor.invincible = 10
         actor.doFall()
     elif actor.keyBuffered('down'):
         actor.ledgeLock = True
+        actor.invincible = 10
         actor.doFall()
 
 def grabbingState(actor):
