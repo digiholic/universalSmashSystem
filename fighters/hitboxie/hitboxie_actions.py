@@ -1909,10 +1909,12 @@ class LedgeGetup(baseActions.LedgeGetup):
             actor.createMask([255,255,255], 24, True, 24)
         if (self.frame >= 0) and (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
+            self.ecbSize = [0, 100]
             if self.frame > 2:
                 actor.change_y = -19
             actor.change_x = 0
         if (self.frame >= 8) and (self.frame <= 14):
+            self.ecbSize = [0, 0]
             actor.change_y = 0
             actor.change_x = 11.5*actor.facing
             if (self.frame % 2 == 0):
@@ -1945,10 +1947,12 @@ class LedgeAttack(baseActions.LedgeGetup):
             actor.changeSprite("getup",0)
         if (self.frame >= 0) and (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
+            self.ecbSize = [0, 100]
             if self.frame > 2:
                 actor.change_y = -19
             actor.change_x = 0
         if (self.frame >= 8) and (self.frame <= 14):
+            self.ecbSize = [0, 0]
             actor.change_y = 0
             actor.change_x = 11.5*actor.facing
             if (self.frame % 2 == 0):
@@ -1997,10 +2001,12 @@ class LedgeRoll(baseActions.LedgeGetup):
             actor.changeSprite("getup",0)
         if (self.frame >= 0) and (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
+            self.ecbSize = [0, 100]
             if self.frame > 2:
                 actor.change_y = -19
             actor.change_x = 0
         if (self.frame >= 8) and (self.frame <= 14):
+            self.ecbSize = [0, 0]
             actor.change_y = 0
             actor.change_x = 11.5*actor.facing
             if (self.frame % 2 == 0):
