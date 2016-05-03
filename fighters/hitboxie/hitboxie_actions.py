@@ -1882,7 +1882,19 @@ class Release(baseActions.Release):
             actor.changeSpriteImage(3)
         elif self.frame == 4:
             actor.changeSpriteImage(2)
+        elif self.frame == 10:
+            actor.changeSpriteImage(3)
+        elif self.frame == 12:
+            actor.changeSpriteImage(4)
         baseActions.Release.update(self, actor)
+
+class Released(baseActions.Released):
+    def __init__(self):
+        baseActions.Released.__init__(self)
+
+    def setUp(self, actor):
+        baseActions.Released.setUp(self, actor)
+        actor.changeSprite("jump")
 
 class LedgeGrab(baseActions.LedgeGrab):
     def __init__(self,ledge):

@@ -138,6 +138,9 @@ class BasicFighter():
     def doRelease(self):
         self.changeAction(self.actions.Release())
 
+    def doReleased(self):
+        self.changeAction(self.actions.Released())
+
     def doGrabbing(self):
         self.changeAction(self.actions.Grabbing())
 

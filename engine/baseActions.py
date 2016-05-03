@@ -276,7 +276,7 @@ class BaseGrabbing(action.Action):
 
     def tearDown(self, actor, newAction):
         if not isinstance(newAction, BaseGrabbing) and actor.isGrabbing():
-            actor.grabbing.doIdle()
+            actor.grabbing.doReleased()
 
 class Grabbing(BaseGrabbing):
     def __init__(self,length):
@@ -382,7 +382,7 @@ class TryTech(HitStun):
             if actor.grounded:
                 print('Ground tech!')
                 actor.unRotate()
-                actor.doTrip(0, direct)
+                actor.doTrip(-175, direct)
         else:
             if self.frame >= self.lastFrame:
                 tumbleState(actor)
@@ -424,10 +424,6 @@ class Trip(action.Action):
         print("direction:", self.direction)
 
     def setUp(self, actor):
-        if self.lastFrame > 5:
-            actor.invincible = 5
-        else:
-            actor.invincible = self.lastFrame
         actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
     def update(self, actor):
@@ -730,7 +726,7 @@ class Trapped(action.Action):
         self.frame += (cross**2)*4
         self.lastPosition = newPosition
         if self.frame >= self.lastFrame:
-            actor.doIdle()
+            actor.doReleased()
         # Throws and other grabber-controlled releases are the grabber's responsibility
         # Also, the grabber should always check to see if the grabbee is still under grab
         self.frame += 1
@@ -751,16 +747,51 @@ class Grabbed(Trapped):
             actor.rect.bottom = actor.grabbedBy.rect.bottom
         actor.rect.centerx = actor.grabbedBy.rect.centerx+actor.grabbedBy.facing*actor.grabbedBy.rect.width/2.0
         Trapped.update(self, actor)
-        
+
 class Release(action.Action):
     def __init__(self):
-        action.Action.__init__(self,5)
+        action.Action.__init__(self, 15)
 
     def update(self, actor):
         if actor.grounded is False:
             actor.doFall()
-        if self.frame == self.lastFrame:
+        if self.frame >= self.lastFrame:
             actor.doIdle()
+        self.frame += 1
+
+class Released(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 15)
+
+    def setUp(self, actor):
+        actor.preferred_xspeed = 0
+        actor.preferred_yspeed = actor.var['maxFallSpeed']
+    
+    def stateTransitions(self,actor):
+        if actor.keysContain('left'):
+            actor.preferred_xspeed = -actor.var['maxAirSpeed']
+        elif actor.keysContain('right'):
+            actor.preferred_xspeed = actor.var['maxAirSpeed']
+    
+        if (actor.change_x < 0) and not actor.keysContain('left'):
+            actor.preferred_xspeed = 0
+        elif (actor.change_x > 0) and not actor.keysContain('right'):
+            actor.preferred_xspeed = 0
+
+        if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:
+            actor.landingLag = actor.var['heavyLandLag']
+
+        if actor.grounded and actor.ground_elasticity == 0:
+            actor.preferred_xspeed = 0
+            actor.preferred_yspeed = actor.var['maxFallSpeed']
+            actor.doTrip(-175, 90)
+
+        grabLedges(actor)
+        
+    def update(self,actor):
+        actor.grounded = False
+        if self.frame >= self.lastFrame:
+            actor.doFall()
         self.frame += 1
         
 class ForwardRoll(action.Action):
@@ -922,7 +953,7 @@ class TechDodge(AirDodge):
         if self.frame < 20 and actor.grounded:
             print('Ground tech!')
             actor.unRotate()
-            actor.doTrip(0, direct)
+            actor.doTrip(-175, direct)
         AirDodge.stateTransitions(self, actor)
         
 class LedgeGrab(action.Action):

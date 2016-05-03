@@ -358,6 +358,9 @@ class AbstractFighter():
     def doRelease(self):
         self.changeAction(baseActions.Release())
 
+    def doReleased(self):
+        self.changeAction(baseActions.Released())
+
     def doPummel(self):
         return None
 
