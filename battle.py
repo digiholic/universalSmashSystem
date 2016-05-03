@@ -209,6 +209,7 @@ class Battle():
                         if other.article == None and hasattr(other.owner,'current_action') and hbox.owner.lockHitbox(other):
                             otherClank = True
                         print("CLANK!")
+                    if (isinstance(hbox, hitbox.DamageHitbox) or isinstance(hbox, hitbox.GrabHitbox)) and (isinstance(other, hitbox.DamageHitbox) or isinstance(other, hitbox.GrabHitbox)):
                         if hboxClank:
                             hbox.owner.hitstop += 6
                             hbox.owner.current_action.onClank(hbox.owner)
