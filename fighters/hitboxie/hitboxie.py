@@ -273,13 +273,3 @@ class Hitboxie(abstractFighter.AbstractFighter):
     def die(self,respawn = True):
         abstractFighter.AbstractFighter.die(self,respawn)
         self.changeAction(self.actions.Fall())
-    
-    def applyKnockback(self,damage,kb,kbg,trajectory,weight_influence=1,hitstun_multiplier=1):
-        abstractFighter.AbstractFighter.applyKnockback(self, damage, kb, kbg, trajectory,weight_influence,hitstun_multiplier)
-        
-########################################################
-#                 ENGINE FUNCTIONS                     #
-########################################################
-
-    def keyPressed(self,key):
-        abstractFighter.AbstractFighter.keyPressed(self,key)

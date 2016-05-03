@@ -32,17 +32,19 @@ class Action():
     
     def onClank(self,actor):
         return
+    
 """
 The Dynamic Action is created by the Builder. It contains most things that an action would
 need, but anything more than that can still be defined as above.
 """
 class DynamicAction(Action):
-    def __init__(self,length,startingFrame=0):
+    def __init__(self,length,var=None,startingFrame=0):
         Action.__init__(self, length, startingFrame)
         self.actionsAtFrame = [[]]
         self.stateTransitionsAtFrame = [[]]
         self.setUpActions = []
         self.tearDownActions = []
+        self.var = var
         
     def update(self,actor):
         for act in self.actionsAtFrame[self.frame]:
