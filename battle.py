@@ -30,6 +30,7 @@ class Battle():
         self.players = players
         self.controllers = []
         for player in players:
+            player.keyBindings.loadFighter(player)
             self.controllers.append(player.keyBindings)
             
         self.stage = stage

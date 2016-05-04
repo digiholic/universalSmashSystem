@@ -6,7 +6,7 @@ import math
 import settingsManager
 
 class Move(action.Action):
-    def __init__(self,length):
+    def __init__(self,length=0):
         action.Action.__init__(self,length) 
         self.direction = -1
         
@@ -42,7 +42,7 @@ class Move(action.Action):
             actor.doDash(actor.getFacingDirection())
 
 class Dash(action.Action):
-    def __init__(self,length): 
+    def __init__(self,length=0): 
         action.Action.__init__(self,length)
         self.pivoted = False
 
@@ -73,7 +73,7 @@ class Dash(action.Action):
         dashState(actor,self.direction)
 
 class Run(action.Action):
-    def __init__(self,length):
+    def __init__(self,length=0):
         action.Action.__init__(self,length)
         
     def setUp(self,actor):
@@ -97,7 +97,7 @@ class Run(action.Action):
         runState(actor,self.direction)
         
 class Pivot(action.Action):
-    def __init__(self,length):
+    def __init__(self,length=0):
         action.Action.__init__(self, length)
 
     def tearDown(self, actor, nextAction):
@@ -131,7 +131,7 @@ class Pivot(action.Action):
                 actor.doIdle()
           
 class Stop(action.Action):
-    def __init__(self,length):
+    def __init__(self,length=0):
         action.Action.__init__(self, length)
         
     def update(self, actor):
@@ -151,7 +151,7 @@ class Stop(action.Action):
             actor.doPivot()
 
 class RunPivot(action.Action):
-    def __init__(self,length):
+    def __init__(self,length=0):
         action.Action.__init__(self, length)
 
     def tearDown(self, actor, nextAction):
@@ -178,7 +178,7 @@ class RunPivot(action.Action):
                 actor.doIdle()
 
 class RunStop(action.Action):
-    def __init__(self,length):
+    def __init__(self,length=0):
         action.Action.__init__(self, length)
         
     def update(self, actor):
@@ -198,7 +198,7 @@ class RunStop(action.Action):
 
                 
 class NeutralAction(action.Action):
-    def __init__(self,length):
+    def __init__(self,length=0):
         action.Action.__init__(self, length)
 
     def update(self, actor):
@@ -249,7 +249,7 @@ class Crouch(action.Action):
         if self.frame > self.lastFrame: self.frame = 0
 
 class CrouchGetup(action.Action):
-    def __init__(self,length):
+    def __init__(self,length=0):
         action.Action.__init__(self, length)
 
     def stateTransitions(self, actor):
@@ -271,7 +271,7 @@ class CrouchGetup(action.Action):
             actor.doIdle()
 
 class BaseGrabbing(action.Action):
-    def __init__(self,length):
+    def __init__(self,length=0):
         action.Action.__init__(self, length)
 
     def tearDown(self, actor, newAction):
@@ -279,7 +279,7 @@ class BaseGrabbing(action.Action):
             actor.grabbing.doReleased()
 
 class Grabbing(BaseGrabbing):
-    def __init__(self,length):
+    def __init__(self,length=0):
         BaseGrabbing.__init__(self, length)
 
     def setUp(self, actor):
@@ -418,7 +418,7 @@ class TryTech(HitStun):
         HitStun.update(self, actor)
 
 class Trip(action.Action):
-    def __init__(self,length,direction):
+    def __init__(self,length=0,direction=0):
         action.Action.__init__(self, length)
         self.direction = direction
         print("direction:", self.direction)
@@ -452,7 +452,7 @@ class Getup(action.Action):
 @ai-move-stop
 """
 class Jump(action.Action):
-    def __init__(self,length,jumpFrame):
+    def __init__(self,length=0,jumpFrame=0):
         action.Action.__init__(self, length)
         self.jumpFrame = jumpFrame
 
@@ -482,7 +482,7 @@ class Jump(action.Action):
             actor.doFall()
 
 class AirJump(action.Action):
-    def __init__(self,length,jumpFrame):
+    def __init__(self,length=0,jumpFrame=0):
         action.Action.__init__(self, length)
         self.jumpFrame = jumpFrame
         #TODO: Change to add the number of buffer frames

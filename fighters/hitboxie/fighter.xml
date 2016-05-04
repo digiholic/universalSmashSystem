@@ -1,9 +1,17 @@
 <fighter>
 	<name>Hitboxie</name>
-	<icon>./franchise_icon.png</icon>
-	<css_icon>./sprites/hitboxie_icon.png</css_icon>
+	<icon>franchise_icon.png</icon>
+	<css_icon>sprites/icon_hitboxie.png</css_icon>
 	<css_portrait></css_portrait>
-
+	
+	<sprite_directory>sprites/</sprite_directory>
+	<sprite_prefix>hitboxie_</sprite_prefix>
+	<sprite_width>92</sprite_width>
+	<default_sprite>idle</default_sprite>
+	<article_path>sprites/articles</article_path>
+	
+	<actions>hitboxie_actions.py</actions>
+	
 	<colorPalette id='0' displayColor='#000000'>
 		
 	</colorPalette>
@@ -39,7 +47,8 @@
 	<stats>
 		<weight>100</weight>
 		<gravity>.5</gravity>
-		<maxFallSpeed>6</maxFallSpeed>
+		<maxFallSpeed>20</maxFallSpeed>
+		<maxGroundSpeed>6</maxGroundSpeed>
 		<runSpeed>9</runSpeed>
 		<maxAirSpeed>6</maxAirSpeed>
 		<crawlSpeed>3</crawlSpeed>
