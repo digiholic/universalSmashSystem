@@ -127,8 +127,8 @@ class ForwardSpecial(action.Action):
         self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 1, 1, hitbox.HitboxLock(), 0, -1.5, 1, 1, -1, -7)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
-        self.ecbCenter = [0, 0]
-        self.ecbSize = [64, 64]
+        self.ecbCenter = [0,7]
+        self.ecbSize = [64, 78]
     
     def onClank(self,actor):
         actor.landingLag = 30
@@ -167,6 +167,9 @@ class ForwardSpecial(action.Action):
         if actor.grounded:
             actor.sideSpecialUses = 1
         actor.changeSpriteImage(self.spriteImage%16)
+        actor.hurtbox.rect.width = 64
+        actor.hurtbox.rect.height = 64
+        actor.hurtbox.rect.center = actor.sprite.boundingRect.center
         if self.frame <= self.lastFrame-2:
             self.spriteImage += 1
             if self.frame <= 16:
@@ -418,6 +421,9 @@ class NeutralAttack(action.Action):
             self.jabHitbox.kill()
             if not self.frame > 14:
                 actor.changeSpriteImage(self.frame)
+        actor.hurtbox.rect.width -= 16
+        actor.hurtbox.rect.height -= 16
+        actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
         if self.frame == self.lastFrame:
             actor.doIdle()
         self.frame += 1
@@ -451,16 +457,6 @@ class UpAttack(action.Action):
         self.sweetHitbox.update()
         self.tangyHitbox.update()
         self.sourHitbox.update()
-        if self.frame < 4:
-            #Temporary upper invincibility
-            self.ecbCenter = [0, 16]
-            self.ecbSize = [0, 32]
-        elif self.frame < 8:
-            self.ecbCenter = [0, 24]
-            self.ecbSize = [0, 32]
-        else:
-            self.ecbCenter = [0, 0]
-            self.ecbSize = [0, 0]
         if self.frame == 4:
             actor.active_hitboxes.add(self.sweetHitbox)
         elif self.frame == 6:
@@ -474,6 +470,9 @@ class UpAttack(action.Action):
             self.sourHitbox.kill()
         if self.frame == self.lastFrame:
             actor.doIdle()
+        if self.frame <= 8:
+            actor.hurtbox.rect.height -= 32
+            actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
         self.frame += 1
 
 class UpSmash(action.Action):
@@ -591,6 +590,9 @@ class DashAttack(action.Action):
 
         self.dashHitbox.update()
         self.chainHitbox.update()
+        actor.hurtbox.rect.width = 64
+        actor.hurtbox.rect.height = 64
+        actor.hurtbox.rect.center = actor.sprite.boundingRect.center
 
         if self.frame == 8:
             actor.active_hitboxes.add(self.chainHitbox)
@@ -702,7 +704,8 @@ class DownSmash(action.Action):
                 self.dsmashHitbox2.damage += .146
                 self.frame -= 1
         elif self.frame > 6 and self.frame < self.lastFrame:
-            self.ecbSize = [44, 0]
+            actor.hurtbox.rect.width = 44
+            actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
             actor.changeSpriteImage((self.frame//2-3)%6)
             if self.frame == 14:
                 actor.active_hitboxes.add(self.spikeBox)
@@ -823,7 +826,8 @@ class ForwardSmash(action.Action):
 class NeutralAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 40)
-        self.ecbSize = [64, 64]
+        self.ecbCenter = [0,7]
+        self.ecbSize = [64, 78]
     
     def setUp(self, actor):
         actor.preferred_xspeed = 0
@@ -842,6 +846,9 @@ class NeutralAir(action.Action):
     
     def update(self,actor):
         actor.changeSpriteImage(self.subImage % 16)
+        actor.hurtbox.rect.width = 64
+        actor.hurtbox.rect.height = 64
+        actor.hurtbox.rect.center = actor.sprite.boundingRect.center
         self.subImage += 1
         if self.frame == 2:
             actor.landingLag = 20
@@ -975,6 +982,9 @@ class ForwardAir(action.Action):
             actor.changeSprite('jump')
         elif self.frame == self.lastFrame:
             actor.doFall()
+        actor.hurtbox.rect.width -= 8
+        actor.hurtbox.rect.height -= 8
+        actor.hurtbox.rect.center = actor.sprite.boundingRect.center
         self.frame += 1
 
 class DownAir(action.Action):
@@ -1033,15 +1043,11 @@ class DownAir(action.Action):
             actor.active_hitboxes.add(self.rightDiagonalHitbox)
             actor.active_hitboxes.add(self.leftSourSpot)
             actor.active_hitboxes.add(self.rightSourSpot)
-            self.ecbCenter = [0, -10]
-            self.ecbSize = [0, 107]
         elif self.frame == self.lastFrame-9 and actor.keysContain('attack'):
             self.frame -= 1
         elif self.frame < self.lastFrame-9:
             pass
         elif self.frame < self.lastFrame-6:
-            self.ecbSize = [0, 0]
-            self.ecbCenter = [0, 0]
             self.bottom = 14
             self.downHitbox.kill()
             self.leftDiagonalHitbox.kill()
@@ -1058,6 +1064,8 @@ class DownAir(action.Action):
             actor.changeSpriteImage(0)
             actor.landingLag = 8
             actor.changeAction(Fall())
+        actor.hurtbox.rect.height -= 16
+        actor.hurtbox.rect.midtop = actor.sprite.boundingRect.midtop
         self.frame += 1
 
 class UpAir(action.Action):
@@ -1206,6 +1214,9 @@ class Pummel(baseActions.BaseGrabbing):
         elif self.frame > 10:
             if not (self.frame) > 14:
                 actor.changeSpriteImage(self.frame)
+        actor.hurtbox.rect.width -= 16
+        actor.hurtbox.rect.height -= 16
+        actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
         if self.frame == self.lastFrame:
             actor.doGrabbing()
         self.frame += 1
@@ -1249,6 +1260,8 @@ class DownThrow(baseActions.BaseGrabbing):
         actor.changeSprite("nair")
         self.bottomHitbox = hitbox.DamageHitbox([10, 40], [30, 30], actor, 1, 3, 0, 260, 1, hitbox.HitboxLock(), 0, 1)
         actor.active_hitboxes.add(self.bottomHitbox)
+        self.ecbCenter = [0,7]
+        self.ecbSize = [64, 78]
 
     def tearDown(self, actor, nextAction):
         self.bottomHitbox.kill()
@@ -1257,6 +1270,9 @@ class DownThrow(baseActions.BaseGrabbing):
     def update(self, actor):
         baseActions.BaseGrabbing.update(self, actor)
         actor.changeSpriteImage(self.frame%16)
+        actor.hurtbox.rect.width = 64
+        actor.hurtbox.rect.height = 64
+        actor.hurtbox.rect.center = actor.sprite.boundingRect.center
         self.bottomHitbox.update()
         if (self.frame%4 == 0):
             self.bottomHitbox.hitbox_lock = hitbox.HitboxLock()
@@ -1866,7 +1882,19 @@ class Release(baseActions.Release):
             actor.changeSpriteImage(3)
         elif self.frame == 4:
             actor.changeSpriteImage(2)
+        elif self.frame == 10:
+            actor.changeSpriteImage(3)
+        elif self.frame == 12:
+            actor.changeSpriteImage(4)
         baseActions.Release.update(self, actor)
+
+class Released(baseActions.Released):
+    def __init__(self):
+        baseActions.Released.__init__(self)
+
+    def setUp(self, actor):
+        baseActions.Released.setUp(self, actor)
+        actor.changeSprite("jump")
 
 class LedgeGrab(baseActions.LedgeGrab):
     def __init__(self,ledge):
@@ -1909,10 +1937,12 @@ class LedgeGetup(baseActions.LedgeGetup):
             actor.createMask([255,255,255], 24, True, 24)
         if (self.frame >= 0) and (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
+            self.ecbSize = [0, 100]
             if self.frame > 2:
                 actor.change_y = -19
             actor.change_x = 0
         if (self.frame >= 8) and (self.frame <= 14):
+            self.ecbSize = [0, 0]
             actor.change_y = 0
             actor.change_x = 11.5*actor.facing
             if (self.frame % 2 == 0):
@@ -1945,10 +1975,12 @@ class LedgeAttack(baseActions.LedgeGetup):
             actor.changeSprite("getup",0)
         if (self.frame >= 0) and (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
+            self.ecbSize = [0, 100]
             if self.frame > 2:
                 actor.change_y = -19
             actor.change_x = 0
         if (self.frame >= 8) and (self.frame <= 14):
+            self.ecbSize = [0, 0]
             actor.change_y = 0
             actor.change_x = 11.5*actor.facing
             if (self.frame % 2 == 0):
@@ -1997,10 +2029,12 @@ class LedgeRoll(baseActions.LedgeGetup):
             actor.changeSprite("getup",0)
         if (self.frame >= 0) and (self.frame <= 6):
             actor.changeSpriteImage(self.frame)
+            self.ecbSize = [0, 100]
             if self.frame > 2:
                 actor.change_y = -19
             actor.change_x = 0
         if (self.frame >= 8) and (self.frame <= 14):
+            self.ecbSize = [0, 0]
             actor.change_y = 0
             actor.change_x = 11.5*actor.facing
             if (self.frame % 2 == 0):

@@ -144,7 +144,7 @@ class AbstractFighter():
                 
         # We set the hurbox to be the Bounding Rect of the sprite.
         # It is done here, so that the hurtbox can be changed by the action.
-        self.hurtbox.rect = self.sprite.boundingRect
+        self.hurtbox.rect = self.sprite.boundingRect.copy()
         
         #Step three, change state and update
         self.current_action.stateTransitions(self)
@@ -357,6 +357,9 @@ class AbstractFighter():
 
     def doRelease(self):
         self.changeAction(baseActions.Release())
+
+    def doReleased(self):
+        self.changeAction(baseActions.Released())
 
     def doPummel(self):
         return None
