@@ -4,7 +4,7 @@ import math
 import settingsManager
 import spriteManager
 import engine.article as article
-import hitbox
+import engine.hitbox as hitbox
 import weakref
 import xml.etree.ElementTree as ElementTree
 import os
@@ -44,7 +44,7 @@ class AbstractFighter():
         for stat in self.xmlData.find('stats'):
             self.var[stat.tag] = float(stat.text)
         
-        self.article_path = self.xmlData.find('article_path')
+        self.article_path = os.path.join(baseDir,self.xmlData.find('article_path').text)
         
         directory = os.path.join(baseDir,self.xmlData.find('sprite_directory').text)
         prefix = self.xmlData.find('sprite_prefix').text
