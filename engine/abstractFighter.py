@@ -979,6 +979,51 @@ def segmentIntersects(startPoint, endPoint, rect):
             return 999
         return max(min(t_left, t_right), min(t_top, t_bottom))
 
+# Returns a 2-entry array representing a range of time when the points and the rect intersect
+# If the range's min is greater than its max, it represents an empty interval
+def projectionIntersects(startPoints, endPoints, rectPoints, vector):
+    startDots = map(lambda x: x[0]*vector[0]+x[1]*vector[1], startPoints)
+    endDots = map(lambda x: x[0]*vector[0]+x[1]*vector[1], endPoints)
+    rectDots = map(lambda x: x[0]*vector[0]+x[1]*vector[1], rectPoints)
+    if min(startDots) == min(endDots):
+        if min(startDots) <= max(rectDots): #.O.|...
+            t_mins = [0, float("inf")]
+        else:                               #...|.O.
+            t_mins = [float("inf"), float("-inf")]
+    elif min(startDots) > min(endDots):
+        if min(startDots) <= max(rectDots): #<<<|...
+            t_mins = [0, float("inf")]
+        else:                               #...|<<<
+            t_mins = [(max(rectDots)-min(startDots)+0.0)/(min(endDots)-min(startDots)), float("inf")]
+    else:
+        if min(startDots) <= max(rectDots): #>>>|...
+            t_mins = [0, (max(rectDots)-min(startDots)+0.0)/(min(endDots)-min(startDots))]
+        else:                               #...|>>>
+            t_mins = [float("inf"), float("-inf")]
+
+    if max(startDots) == max(endDots):
+        if max(startDots) >= min(rectDots): #...|.O.
+            t_maxs = [0, float("inf")]
+        else:                               #.O.|...
+            t_maxs = [float("inf"), float("-inf")]
+    elif max(startDots) < max(endDots):
+        if max(startDots) >= max(rectDots): #...|>>>
+            t_maxs = [0, float("inf")]
+        else:                               #>>>|...
+            t_maxs = [(min(rectDots)-max(startDots)+0.0)/(max(endDots)-max(startDots)), float("inf")]
+    else:
+        if max(startDots) >= min(rectDots): #...|<<<
+            t_maxs = [0, (min(rectDots)-max(startDots)+0.0)/(max(endDots)-max(startDots))]
+        else:                               #<<<|...
+            t_maxs = [float("inf"), float("-inf")]
+
+    if max(endDots)-max(startDots) > min(endDots)-min(startDots) and min(startDots) < max(startDots):
+        t_open = [0, (max(endDots)-max(startDots)-min(endDots)+min(startDots))/(max(startDots)-min(startDots))]
+    else:
+        t_open = [0, float("inf")]
+
+    return [max(t_mins[0], t_maxs[0], t_open[0]), min(t_mins[1], t_maxs[1], t_open[1])]
+
 def pathRectIntersects(startRect, endRect, rect):
     if startRect.colliderect(rect):
         return 0
