@@ -932,53 +932,6 @@ def getDirectionBetweenPoints(p1, p2):
     dy = y1 - y2
     return (180 * math.atan2(dy, dx)) / math.pi 
 
-def segmentIntersects(startPoint, endPoint, rect):
-    if startPoint[0]==endPoint[0] and startPoint[1]==endPoint[1]: #Degenerate
-        if rect.collidepoint(startPoint):
-            return 1
-        else:
-            return 999
-    elif startPoint[0]==endPoint[0]: #Vertical
-        if rect.left > startPoint[0] or rect.right < startPoint[0]:
-            return 999
-        if (startPoint[1] < rect.top and endPoint[1] < rect.top) or (startPoint[1] > rect.bottom and endPoint[1] > rect.bottom):
-            return 999
-        t_top = (rect.top-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
-        t_bottom = (rect.bottom-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
-        if (t_top < 0):
-            return t_bottom
-        elif (t_bottom <= 0):
-            return t_top
-        else: 
-            return min(t_top, t_bottom)
-    elif startPoint[1]==endPoint[1]: #Horizontal
-        if rect.top > startPoint[1] or rect.bottom < startPoint[1]:
-            return 999
-        if (startPoint[0] < rect.left and endPoint[0] < rect.left) or (startPoint[0] > rect.right and endPoint[0] > rect.right):
-            return 999
-        t_left = (rect.left-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
-        t_right = (rect.right-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
-        if (t_left < 0):
-            return t_right
-        elif (t_right <= 0):
-            return t_left
-        else: 
-            return min(t_left, t_right)
-    else:
-        t_left = (rect.left-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
-        t_right = (rect.right-startPoint[0]+0.0)/(endPoint[0]-startPoint[0]+0.0)
-        t_top = (rect.top-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
-        t_bottom = (rect.bottom-startPoint[1]+0.0)/(endPoint[1]-startPoint[1]+0.0)
-        if (t_left < 0 and t_right <= 0) or (t_left >= 1 and t_right > 1):
-            return 999
-        if (t_top < 0 and t_bottom <= 0) or (t_top >= 1 and t_bottom > 1):
-            return 999
-        if (t_top > t_left and t_bottom > t_left and t_top > t_right and t_bottom > t_right):
-            return 999
-        if (t_top < t_left and t_bottom < t_left and t_top < t_right and t_bottom < t_right):
-            return 999
-        return max(min(t_left, t_right), min(t_top, t_bottom))
-
 # Returns a 2-entry array representing a range of time when the points and the rect intersect
 # If the range's min is greater than its max, it represents an empty interval
 def projectionIntersects(startPoints, endPoints, rectPoints, vector):
@@ -1027,15 +980,18 @@ def projectionIntersects(startPoints, endPoints, rectPoints, vector):
 def pathRectIntersects(startRect, endRect, rect):
     if startRect.colliderect(rect):
         return 0
-    test = min(segmentIntersects(startRect.topleft, endRect.topleft, rect), 
-               segmentIntersects(startRect.topright, endRect.topright, rect),
-               segmentIntersects(startRect.bottomleft, endRect.bottomleft, rect),
-               segmentIntersects(startRect.bottomright, endRect.bottomright, rect))
-    if test <= 1:
-        return test
-    if endRect.colliderect(rect):
-        return 1
-    return 999
+    startCorners = [startRect.topleft, startRect.topright, startRect.bottomleft, startRect.bottomright]
+    endCorners = [endRect.topleft, endRect.topright, endRect.bottomleft, endRect.bottomright]
+    rectCorners = [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]
+    horizontalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [1, 0])
+    verticalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [0, 1])
+    totalIntersects = [max(horizontalIntersects[0], verticalIntersects[0]), min(horizontalIntersects[1], verticalIntersects[1])]
+    if totalIntersects[0] > totalIntersects[1]:
+        if endRect.colliderect(rect):
+            return 1
+        return 999
+    else:
+        return totalIntersects[0]
         
 ########################################################
 #                  INPUT BUFFER                        #
