@@ -985,7 +985,7 @@ def pathRectIntersects(startRect, endRect, rect):
     rectCorners = [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]
     horizontalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [1, 0])
     verticalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [0, 1])
-    totalIntersects = [max(horizontalIntersects[0], verticalIntersects[0]), min(horizontalIntersects[1], verticalIntersects[1])]
+    totalIntersects = [max(horizontalIntersects[0], verticalIntersects[0]), min(horizontalIntersects[1], verticalIntersects[1], 1)]
     if totalIntersects[0] > totalIntersects[1]:
         if endRect.colliderect(rect):
             return 1
