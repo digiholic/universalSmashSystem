@@ -313,7 +313,7 @@ class HitStun(action.Action):
             actor.elasticity = actor.var['hitstunElasticity']
             if self.frame > 2:
                 hitstunLanding(actor)
-        if self.frame > 2:
+        if self.frame > 2 or actor.change_y > 0:
             if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']:#Hard landing during tumble
                 actor.ground_elasticity = actor.var['hitstunElasticity']/2
             elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun

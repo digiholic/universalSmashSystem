@@ -115,6 +115,16 @@ class AbstractFighter():
             if not self.grounded:
                 self.rect.y += di_vec[1]*0.5
 
+
+
+            groundBlocks = self.checkForGround()
+    
+            # Move with the platform
+            block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
+            if not block is None:
+                self.rect.x += block.change_x
+                self.rect.y += block.change_y
+            self.ecb.normalize()
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
             block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
             for block in block_hit_list:
