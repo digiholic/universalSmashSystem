@@ -564,12 +564,6 @@ class Land(action.Action):
             if actor.keyHeld('shield', 1):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame // 2
-        if actor.keyHeld('down') and self.frame*2 > self.lastFrame:
-            blocks = actor.checkForGround()
-            if blocks:   
-                blocks = map(lambda x: x.solid, blocks)
-                if not any(blocks):
-                    actor.doPlatformDrop()
         if self.frame == 1:
             #actor.articles.add(article.LandingArticle(actor)) #this looks awful don't try it
             pass
@@ -628,37 +622,30 @@ class PlatformDrop(action.Action):
         if self.frame == self.lastFrame:
             actor.doFall()
         self.frame += 1
-        
-class PreShield(action.Action):
-    def __init__(self):
-        action.Action.__init__(self, 4)
-
-    def setUp(self, actor):
-        self.reflectHitbox = hitbox.PerfectShieldHitbox([0,0], [actor.hurtbox.rect.width+10, actor.hurtbox.rect.height+10], actor, hitbox.HitboxLock())
-
-    def tearDown(self, actor, nextAction):
-        self.reflectHitbox.kill()
-
-    def stateTransitions(self, actor):
-        shieldState(actor)
-
-    def update(self, actor):
-        if self.frame == 0:
-            actor.active_hitboxes.add(self.reflectHitbox)
-        if actor.grounded is False:
-            self.reflectHitbox.kill()
-            actor.doFall()
-        if self.frame == self.lastFrame:
-            self.reflectHitbox.kill()
-            actor.doShield()
-        self.frame += 1
 
 class Shield(action.Action):
     def __init__(self):
         action.Action.__init__(self, 4)
+        self.forward_last = 0
+        self.backward_last = 0
+        self.down_last = 0
    
     def stateTransitions(self, actor):
         shieldState(actor)
+        (key, invkey) = actor.getForwardBackwardKeys()
+        if actor.keyBuffered(key) and self.forward_last > 0:
+            actor.doForwardRoll()
+        elif actor.keyBuffered(invkey) and self.backward_last > 0:
+            actor.doBackwardRoll()
+        elif actor.keyBuffered('down') and self.down_last > 0:
+            actor.doSpotDodge()
+
+        if actor.keyBuffered(key):
+            self.forward_last = 9
+        if actor.keyBuffered(invkey):
+            self.backward_last = 9
+        if actor.keyBuffered('down'):
+            self.down_last = 9
    
     def tearDown(self, actor, newAction):
         if not isinstance(newAction, ShieldStun):
@@ -686,6 +673,9 @@ class Shield(action.Action):
         elif self.frame >= self.lastFrame:
             actor.doIdle()
         else: self.frame += 1
+        if self.forward_last > 0: self.forward_last -= 1
+        if self.backward_last > 0: self.backward_last -= 1
+        if self.down_last > 0: self.down_last -= 1
 
 class ShieldStun(action.Action):
     def __init__(self, length):
@@ -996,7 +986,7 @@ class LedgeGetup(action.Action):
 def neutralState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('shield'):
-        actor.doPreShield()
+        actor.doShield()
     elif actor.keyHeld('attack'):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
@@ -1135,12 +1125,6 @@ def shieldState(actor):
         actor.doGroundGrab()
     elif actor.keyHeld('jump'):
         actor.doJump()
-    elif actor.keyHeld(key):
-        actor.doForwardRoll()
-    elif actor.keyHeld(invkey):
-        actor.doBackwardRoll()
-    elif actor.keyHeld('down'):
-        actor.doSpotDodge()
 
 def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()

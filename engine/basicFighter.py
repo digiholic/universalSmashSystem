@@ -149,9 +149,6 @@ class BasicFighter():
 
     def doThrow(self):
         return None
-
-    def doPreShield(self):
-        self.changeAction(self.actions.PreShield())
    
     def doShield(self):
         self.changeAction(self.actions.Shield())

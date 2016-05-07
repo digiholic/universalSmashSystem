@@ -22,7 +22,8 @@ class Hitboxie(abstractFighter.AbstractFighter):
                 'airJumpHeight': 15,
                 'heavyLandLag': 4,
                 'fastfallMultiplier': 2,
-                'hitstunElasticity': .8
+                'hitstunElasticity': .8,
+                'shieldSize': 1
                 }
         abstractFighter.AbstractFighter.__init__(self,
                                  playerNum,
@@ -102,9 +103,6 @@ class Hitboxie(abstractFighter.AbstractFighter):
 
     def doAirJump(self):
         self.changeAction(self.actions.AirJump())
-
-    def doPreShield(self):
-        self.changeAction(self.actions.PreShield())
                 
     def doShield(self):
         self.changeAction(self.actions.Shield())

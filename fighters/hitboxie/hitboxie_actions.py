@@ -72,7 +72,6 @@ class NeutralGroundSpecial(action.Action):
             self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
             actor.articles.add(self.projectile)
             actor.active_hitboxes.add(self.projectile.hitbox)
-            print(actor.active_hitboxes)
         if self.frame == 26:
             if actor.keysContain('special'):
                 actor.changeAction(NeutralGroundSpecial())
@@ -1739,15 +1738,6 @@ class PlatformDrop(baseActions.PlatformDrop):
         elif self.frame == 10:
             actor.changeSpriteImage(0)
         baseActions.PlatformDrop.update(self, actor)
-        
-class PreShield(baseActions.PreShield):
-    def __init__(self):
-        baseActions.PreShield.__init__(self)
-
-    def update(self, actor):
-        if self.frame == 0:
-            actor.changeSprite("jump")
-        baseActions.PreShield.update(self, actor)
         
 class Shield(baseActions.Shield):
     def __init__(self):

@@ -54,6 +54,7 @@
 		<heavyLandLag>4</heavyLandLag>
 		<fastfallMultiplier>2</fastfallMultiplier>
 		<hitstunElasticity>.8</hitstunElasticity>
+		<shieldSize>1</shieldSize>
 	</stats>
 	
 </fighter>

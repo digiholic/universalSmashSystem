@@ -115,8 +115,6 @@ class AbstractFighter():
             if not self.grounded:
                 self.rect.y += di_vec[1]*0.5
 
-
-
             groundBlocks = self.checkForGround()
     
             # Move with the platform
@@ -376,9 +374,6 @@ class AbstractFighter():
 
     def doThrow(self):
         return None
-
-    def doPreShield(self):
-        self.changeAction(baseActions.PreShield())
    
     def doShield(self):
         self.changeAction(baseActions.Shield())
