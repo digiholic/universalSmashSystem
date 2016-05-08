@@ -159,7 +159,7 @@ class AbstractFighter():
         self.current_action.update(self) #update our action
         
         if self.mask: self.mask = self.mask.update()
-        self.shieldIntegrity += 0.25
+        self.shieldIntegrity += 0.4
         if self.shieldIntegrity > 100: self.shieldIntegrity = 100
         
         for art in self.articles:
@@ -588,6 +588,10 @@ class AbstractFighter():
             self.shieldIntegrity -= damage
             if damage > 1:
                 self.doShieldStun(math.floor(damage+2))
+        else:
+            self.change_y = -15
+            self.invincible = 20
+            self.doStunned(200)
     
 ########################################################
 #                 ENGINE FUNCTIONS                     #

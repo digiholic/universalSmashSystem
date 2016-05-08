@@ -36,7 +36,7 @@ class Hitbox(spriteManager.RectSprite):
             self.rect.center = [self.article.rect.center[0] + self.x_offset, self.article.rect.center[1] + self.y_offset]
 
     def compareTo(self, other):
-        if (hasattr(other, 'transcendence') and hasattr(other, 'priority')) and (not isinstance(other, ReflectorHitbox) or isinstance(other, PerfectShieldHitbox)):
+        if (hasattr(other, 'transcendence') and hasattr(other, 'priority')) and not isinstance(other, InertHitbox):
             if self.transcendence+other.transcendence <= 0:
                 return (self.priority - other.priority) >= 8
         return True
@@ -45,6 +45,12 @@ class Hurtbox(spriteManager.RectSprite):
     def __init__(self,owner,rect,color):
         self.owner = owner
         spriteManager.RectSprite.__init__(self, rect, color)
+
+class InertHitbox(Hitbox):
+    def __init__(self, center, size, owner, hitbox_lock, transcendence=0, priority=0):
+        Hitbox.__init__(self, center, size, owner, hitbox_lock, transcendence, priority)
+
+
         
        
 class DamageHitbox(Hitbox):
@@ -190,15 +196,15 @@ class GrabHitbox(Hitbox):
             return True
         return Hitbox.compareTo(self, other)
 
-class ReflectorHitbox(Hitbox):
+class ReflectorHitbox(InertHitbox):
     def __init__(self, center, size, owner, hitbox_lock, damage_multiplier, velocity_multiplier, hp, angle=90, transcendence=2):
-        Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,hp)
+        InertHitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,hp)
         self.damage_multiplier = damage_multiplier
         self.velocity_multiplier = velocity_multiplier
         self.angle = angle
 
     def compareTo(self, other):
-        if other.article != None and other.article.owner != self.owner and hasattr(other.article, 'tags') and 'reflectable' in other.article.tags:
+        if self.owner.lockHitbox(other) and other.article != None and other.article.owner != self.owner and hasattr(other.article, 'tags') and 'reflectable' in other.article.tags:
             if hasattr(other.article, 'changeOwner'):
                 other.article.changeOwner(self.owner)
             if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
@@ -221,7 +227,7 @@ class ReflectorHitbox(Hitbox):
                 self.owner.change_y = -15
                 self.owner.invincible = 20
                 self.owner.doStunned(200)
-        return Hitbox.compareTo(self, other)
+        return True
 
     def onCollision(self, other):
         Hitbox.onCollision(self, other)
@@ -230,30 +236,35 @@ class ReflectorHitbox(Hitbox):
 
 class ShieldHitbox(Hitbox):
     def __init__(self, center, size, owner, hitbox_lock):
-        Hitbox.__init__(self, center, size, owner, hitbox_lock, -5, owner.shieldIntegrity)
+        Hitbox.__init__(self, center, size, owner, hitbox_lock, -5, owner.shieldIntegrity-8)
 
     def update(self):
-        self.priority = self.owner.shieldIntegrity
+        self.priority = self.owner.shieldIntegrity-8
         self.rect.width = self.owner.shieldIntegrity*self.owner.var['shieldSize']
         self.rect.height = self.owner.shieldIntegrity*self.owner.var['shieldSize']
         Hitbox.update(self)
    
     def compareTo(self, other):
-        if isinstance(other, DamageHitbox):
+        if isinstance(other, DamageHitbox) and self.owner.lockHitbox(other):
             self.owner.shieldDamage(math.floor(other.damage*other.shield_multiplier))
             prevailed = Hitbox.compareTo(self, other)
             if not prevailed:
                 self.owner.change_y = -15
                 self.owner.invincible = 20
                 self.owner.doStunned(200)
-        return Hitbox.compareTo(self, other)
+        return True
 
-class PerfectShieldHitbox(ReflectorHitbox):
+class PerfectShieldHitbox(Hitbox):
     def __init__(self, center, size, owner, hitbox_lock):
-        ReflectorHitbox.__init__(self,center,size,owner,hitbox_lock,1,1,9999,0,-5)
+        Hitbox.__init__(self,center,size,owner,hitbox_lock,-5,float("inf"))
+
+    def update(self):
+        self.rect.width = self.owner.shieldIntegrity*self.owner.var['shieldSize']
+        self.rect.height = self.owner.shieldIntegrity*self.owner.var['shieldSize']
+        Hitbox.update(self)
 
     def compareTo(self, other):
-        if other.article != None and other.article.owner != self.owner and hasattr(other.article, 'tags') and 'reflectable' in other.article.tags:
+        if self.owner.lockHitbox(other) and other.article != None and other.article.owner != self.owner and hasattr(other.article, 'tags') and 'reflectable' in other.article.tags:
             if hasattr(other.article, 'changeOwner'):
                 other.article.changeOwner(self.owner)
             if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
@@ -263,9 +274,5 @@ class PerfectShieldHitbox(ReflectorHitbox):
                 normsqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
                 ratio = 1 if normsqr == 0 else dot/normsqr
                 projection = [v_self[0]*ratio, v_self[1]*ratio]
-                (other.article.change_x, other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), self.velocity_multiplier*(2*projection[1]-v_other[1]))
-
-            if hasattr(other, 'damage'):
-                self.priority -= other.damage
-                other.damage = int(math.floor(other.damage*self.damage_multiplier))
-        return Hitbox.compareTo(self, other)
+                (other.article.change_x, other.article.change_y) = (2*projection[0]-v_other[0], 2*projection[1]-v_other[1])
+        return True
