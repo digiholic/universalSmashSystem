@@ -201,12 +201,12 @@ class Battle():
                     print('Other hitbox: '+str(other))
                     hboxClank = False
                     otherClank = False
-                    if not hbox.compareTo(other):
-                        if hbox.article == None and hasattr(hbox.owner,'current_action') and other.owner.lockHitbox(hbox):
+                    if other.owner.lockHitbox(hbox) and not hbox.compareTo(other):
+                        if hbox.article == None and hasattr(hbox.owner,'current_action'):
                             hboxClank = True
                         print("CLANK!")
-                    if not other.compareTo(hbox):
-                        if other.article == None and hasattr(other.owner,'current_action') and hbox.owner.lockHitbox(other):
+                    if hbox.owner.lockHitbox(other) and not other.compareTo(hbox):
+                        if other.article == None and hasattr(other.owner,'current_action'):
                             otherClank = True
                         print("CLANK!")
                     if (isinstance(hbox, hitbox.DamageHitbox) or isinstance(hbox, hitbox.GrabHitbox)) and (isinstance(other, hitbox.DamageHitbox) or isinstance(other, hitbox.GrabHitbox)):
@@ -216,6 +216,9 @@ class Battle():
                         if otherClank:
                             other.owner.hitstop += 6
                             other.owner.current_action.onClank(other.owner)
+                    elif hboxClank and otherClank:
+                        hbox.owner.hitstop += 6
+                        other.owner.hitstop += 6
                             
             for hbox in hurtbox_hits:
                 #then, hurtbox collisions

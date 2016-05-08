@@ -150,8 +150,8 @@ class BasicFighter():
     def doThrow(self):
         return None
    
-    def doShield(self):
-        self.changeAction(self.actions.Shield())
+    def doShield(self, newShield=True):
+        self.changeAction(self.actions.Shield(newShield))
 
     def doShieldStun(self, length):
         self.changeAction(self.actions.ShieldStun(length))

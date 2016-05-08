@@ -143,9 +143,7 @@ class ForwardSpecial(action.Action):
                 if other.lockHitbox(self):
                     if self.article is None:
                         self.owner.applyPushback(self.baseKnockback/2.0, self.trajectory+180, self.damage / 4.0 + 2.0)
-                    if other.shield:
-                        other.shieldDamage(math.floor(self.damage*self.shield_multiplier))
-                    elif other.grounded:
+                    if other.grounded:
                         other.applyKnockback(self.damage, 0, 0, 0, 1, 1)
                         (otherDirect,_) = other.getDirectionMagnitude()
                         other.doTrip(55, other.getForwardWithOffset(otherDirect))
@@ -1740,8 +1738,8 @@ class PlatformDrop(baseActions.PlatformDrop):
         baseActions.PlatformDrop.update(self, actor)
         
 class Shield(baseActions.Shield):
-    def __init__(self):
-        baseActions.Shield.__init__(self)
+    def __init__(self, newShield):
+        baseActions.Shield.__init__(self, newShield)
     
     def update(self,actor):
         if self.frame == 0:

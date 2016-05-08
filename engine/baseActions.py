@@ -624,28 +624,33 @@ class PlatformDrop(action.Action):
         self.frame += 1
 
 class Shield(action.Action):
-    def __init__(self):
+    def __init__(self, newShield=True):
         action.Action.__init__(self, 4)
         self.forward_last = 0
         self.backward_last = 0
         self.down_last = 0
+        self.newShield = newShield
    
     def stateTransitions(self, actor):
         shieldState(actor)
         (key, invkey) = actor.getForwardBackwardKeys()
-        if actor.keyBuffered(key) and self.forward_last > 0:
+        if actor.keyBuffered(key, 1, 1) and self.forward_last > 0:
             actor.doForwardRoll()
-        elif actor.keyBuffered(invkey) and self.backward_last > 0:
+        elif actor.keyBuffered(invkey, 1, 1) and self.backward_last > 0:
             actor.doBackwardRoll()
-        elif actor.keyBuffered('down') and self.down_last > 0:
+        elif actor.keyBuffered('down', 1, 1) and self.down_last > 0:
             actor.doSpotDodge()
 
         if actor.keyBuffered(key):
             self.forward_last = 9
+            self.backward_last = 0
         if actor.keyBuffered(invkey):
             self.backward_last = 9
+            self.forward_last = 0
         if actor.keyBuffered('down'):
             self.down_last = 9
+        if actor.keyBuffered('up'):
+            self.down_last = 0
    
     def tearDown(self, actor, newAction):
         if not isinstance(newAction, ShieldStun):
@@ -657,15 +662,14 @@ class Shield(action.Action):
             actor.doFall()
         if self.frame == 0:
             actor.shield = True
-            actor.startShield()
+            if self.newShield:
+                actor.startShield()
             if actor.keysContain('shield'):
                 self.frame += 1
             else:
                 self.frame += 2
         elif self.frame == 1:
-            if actor.keysContain('shield'):
-                actor.shieldDamage(1)
-            else:
+            if not actor.keysContain('shield'):
                 self.frame += 1
         elif self.frame >= 2 and self.frame < self.lastFrame:
             actor.shield = False
@@ -690,7 +694,7 @@ class ShieldStun(action.Action):
             actor.shield = False
             actor.doFall()
         if self.frame >= self.lastFrame and actor.keysContain('shield'):
-            actor.doShield()
+            actor.doShield(False)
         elif self.frame >= self.lastFrame:
             actor.doIdle()
         self.frame += 1

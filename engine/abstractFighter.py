@@ -375,8 +375,8 @@ class AbstractFighter():
     def doThrow(self):
         return None
    
-    def doShield(self):
-        self.changeAction(baseActions.Shield())
+    def doShield(self, newShield=True):
+        self.changeAction(baseActions.Shield(newShield))
 
     def doShieldStun(self, length):
         self.changeAction(baseActions.ShieldStun(length))
@@ -588,10 +588,6 @@ class AbstractFighter():
             self.shieldIntegrity -= damage
             if damage > 1:
                 self.doShieldStun(math.floor(damage+2))
-        elif self.shieldIntegrity <= 0:
-            self.change_y -= 15
-            self.invincible = 20
-            self.doStunned(200)
     
 ########################################################
 #                 ENGINE FUNCTIONS                     #

@@ -53,16 +53,24 @@ class ShieldArticle(Article):
         Article.__init__(self,image, owner, owner.rect.center)
         self.reflectHitbox = hitbox.PerfectShieldHitbox([0,0], [owner.shieldIntegrity*owner.var['shieldSize'], owner.shieldIntegrity*owner.var['shieldSize']], owner, hitbox.HitboxLock())
         self.reflectHitbox.article = self
+        self.mainHitbox = hitbox.ShieldHitbox([0,0], [owner.shieldIntegrity*owner.var['shieldSize'], owner.shieldIntegrity*owner.var['shieldSize']], owner, hitbox.HitboxLock())
+        self.mainHitbox.article = self
         
     def update(self):
-        self.rect.center = self.owner.rect.center
+        self.rect.center = [self.owner.rect.center[0]+50*self.owner.var['shieldSize']*self.owner.getSmoothedInput()[0], 
+                            self.owner.rect.center[1]+50*self.owner.var['shieldSize']*self.owner.getSmoothedInput()[1]]
         if self.frame == 0:
             self.owner.active_hitboxes.add(self.reflectHitbox)
-        if self.frame > 4:
+        if self.frame == 4:
             self.reflectHitbox.kill()
+            self.owner.active_hitboxes.add(self.mainHitbox)
         if not self.owner.shield:
             self.reflectHitbox.kill()
+            self.mainHitbox.kill()
             self.kill()     
+        self.reflectHitbox.update()
+        self.mainHitbox.update()
+        self.owner.shieldDamage(1)
         self.frame += 1       
    
     def draw(self,screen,offset,zoom):
