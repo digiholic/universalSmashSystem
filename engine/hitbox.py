@@ -49,9 +49,6 @@ class Hurtbox(spriteManager.RectSprite):
 class InertHitbox(Hitbox):
     def __init__(self, center, size, owner, hitbox_lock, transcendence=0, priority=0):
         Hitbox.__init__(self, center, size, owner, hitbox_lock, transcendence, priority)
-
-
-        
        
 class DamageHitbox(Hitbox):
     def __init__(self,center,size,owner,
