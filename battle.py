@@ -201,11 +201,11 @@ class Battle():
                     print('Other hitbox: '+str(other))
                     hboxClank = False
                     otherClank = False
-                    if other.owner.lockHitbox(hbox) and not hbox.compareTo(other):
+                    if not hbox.compareTo(other) and other.owner.lockHitbox(hbox):
                         if hbox.article == None and hasattr(hbox.owner,'current_action'):
                             hboxClank = True
                         print("CLANK!")
-                    if hbox.owner.lockHitbox(other) and not other.compareTo(hbox):
+                    if not other.compareTo(hbox) and hbox.owner.lockHitbox(other):
                         if other.article == None and hasattr(other.owner,'current_action'):
                             otherClank = True
                         print("CLANK!")
