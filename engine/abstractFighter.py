@@ -13,7 +13,33 @@ class AbstractFighter():
     def __init__(self,baseDir,playerNum):
         self.playerNum = playerNum
         
-        self.var = { #default data, will be overwritten by most characters
+        
+        directory = os.path.join(baseDir,'sprites')
+        prefix = ''
+        defaultSprite = 'idle'
+        imgwidth = '64'
+        
+        
+        self.xmlData = ElementTree.parse(os.path.join(baseDir,'fighter.xml')).getroot()
+
+        try:
+            self.name = self.xmlData.find('name').text
+        except:
+            self.name = 'Unknown'
+        
+        try:
+            franchise_icon_path = os.path.join(baseDir,self.xmlData.find('icon').text)
+        except:
+            franchise_icon_path = settingsManager.createPath('sprites/default_franchise_icon.png')
+        self.franchise_icon = spriteManager.ImageSprite(franchise_icon_path)
+        
+        try:
+            css_icon_path = os.path.join(baseDir,self.xmlData.find('css_icon').text)
+        except:
+            css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
+        self.css_icon = spriteManager.ImageSprite(css_icon_path)
+        
+        self.var = {
                 'weight': 100,
                 'gravity': .5,
                 'maxFallSpeed': 20,
@@ -33,38 +59,45 @@ class AbstractFighter():
                 'fastfallMultiplier': 2,
                 'hitstunElasticity': .8
                 }
-            
-        #try: #attempt to load data from the xml file
-        self.xmlData = ElementTree.parse(os.path.join(baseDir,'fighter.xml')).getroot()
-    
-        self.name = self.xmlData.find('name').text
-        self.franchise_icon = spriteManager.ImageSprite(os.path.join(baseDir,self.xmlData.find('icon').text))
-        self.css_icon = spriteManager.ImageSprite(os.path.join(baseDir,self.xmlData.find('css_icon').text))
         
         for stat in self.xmlData.find('stats'):
             self.var[stat.tag] = float(stat.text)
         
-        self.article_path = os.path.join(baseDir,self.xmlData.find('article_path').text)
+        try:
+            self.article_path = os.path.join(baseDir,self.xmlData.find('article_path').text)
+        except:
+            self.article_path = baseDir
         
-        directory = os.path.join(baseDir,self.xmlData.find('sprite_directory').text)
-        prefix = self.xmlData.find('sprite_prefix').text
-        defaultSprite = self.xmlData.find('default_sprite').text
-        imgwidth = int(self.xmlData.find('sprite_width').text)
+        try:
+            directory = os.path.join(baseDir,self.xmlData.find('sprite_directory').text)
+            prefix = self.xmlData.find('sprite_prefix').text
+            defaultSprite = self.xmlData.find('default_sprite').text
+            imgwidth = int(self.xmlData.find('sprite_width').text)
+        except:
+            directory = os.path.join(baseDir,'sprites')
+            prefix = ''
+            defaultSprite = 'idle'
+            imgwidth = 64
+        
         
         self.colorPalettes = []
-        for colorPalette in self.xmlData.findall('colorPalette'):
-            colorDict = {}
-            for colorMap in colorPalette.findall('colorMap'):
-                fromColor = pygame.Color(colorMap.attrib['fromColor'])
-                toColor = pygame.Color(colorMap.attrib['toColor'])
-                colorDict[(fromColor.r, fromColor.g, fromColor.b)] = (toColor.r, toColor.g, toColor.b)
-            
-            self.colorPalettes.append(colorDict)
+        try:
+            for colorPalette in self.xmlData.findall('colorPalette'):
+                colorDict = {}
+                for colorMap in colorPalette.findall('colorMap'):
+                    fromColor = pygame.Color(colorMap.attrib['fromColor'])
+                    toColor = pygame.Color(colorMap.attrib['toColor'])
+                    colorDict[(fromColor.r, fromColor.g, fromColor.b)] = (toColor.r, toColor.g, toColor.b)
+                
+                self.colorPalettes.append(colorDict)
+        except:
+            pass
         
         color = self.colorPalettes[self.playerNum] #TODO: Pick colors
         
         self.sprite = spriteManager.SpriteHandler(directory,prefix,defaultSprite,imgwidth,color)
     
+        
         try:
             self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),self.xmlData.find('actions').text,suffix=str(playerNum))
         except:
@@ -147,7 +180,7 @@ class AbstractFighter():
         #list of all of the other things to worry about
         self.gameState = None
         self.players = None
-        
+    
     def update(self):
         self.ecb.store()
         self.ecb.normalize()
