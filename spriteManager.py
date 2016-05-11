@@ -305,7 +305,7 @@ class ImageLibrary():
                 sprite = pygame.image.load(os.path.join(self.directory,f))
                 sprite = sprite.convert_alpha()
                 self.imageDict[spriteName] = sprite
-                print(sprite.get_alpha(), spriteName, self.imageDict[spriteName])
+                #print(sprite.get_alpha(), spriteName, self.imageDict[spriteName])
 
 class RectSprite(Sprite):
     def __init__(self,rect,color=[0,0,0]):

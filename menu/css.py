@@ -119,7 +119,6 @@ class FighterWheel():
                 fighter = fighterpy.getFighter(os.path.join(directory,subdir),playerNum)
             else:
                 fighter = abstractFighter.AbstractFighter(os.path.join(directory,subdir),playerNum)
-            print(fighter)
             if (fighter == None):
                 raise ValueError("No fighter found at " + os.path.join(directory,subdir,"fighter.py"))
             fightercount += 1

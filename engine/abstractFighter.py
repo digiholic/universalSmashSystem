@@ -8,6 +8,7 @@ import engine.hitbox as hitbox
 import weakref
 import xml.etree.ElementTree as ElementTree
 import os
+import actionLoader
 
 class AbstractFighter():
     def __init__(self,baseDir,playerNum):
@@ -79,7 +80,6 @@ class AbstractFighter():
             defaultSprite = 'idle'
             imgwidth = 64
         
-        
         self.colorPalettes = []
         try:
             for colorPalette in self.xmlData.findall('colorPalette'):
@@ -98,11 +98,16 @@ class AbstractFighter():
         self.sprite = spriteManager.SpriteHandler(directory,prefix,defaultSprite,imgwidth,color)
     
         
-        try:
-            self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),self.xmlData.find('actions').text,suffix=str(playerNum))
-        except:
-            print('unable to load actions. Loading base')
-            self.actions = settingsManager.importFromURI(settingsManager.createPath(''),'engine/baseActions.py',suffix=str(playerNum))
+        #try:
+        actions = self.xmlData.find('actions').text
+        if actions.endswith('.py'):
+            self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),actions,suffix=str(playerNum))
+        else:
+            self.actions = actionLoader.ActionLoader(os.path.join(baseDir,actions))
+            
+        #except:
+        #    print('unable to load actions. Loading base')
+        #    self.actions = settingsManager.importFromURI(settingsManager.createPath(''),'engine/baseActions.py',suffix=str(playerNum))
           
         # Super armor variables
         # Set with attacks to make them super armored

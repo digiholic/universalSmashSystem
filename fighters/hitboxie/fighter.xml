@@ -9,11 +9,9 @@
 	<sprite_width>92</sprite_width>
 	<default_sprite>idle</default_sprite>
 	<article_path>sprites/articles</article_path>
-	
-	<actions>hitboxie_actions.py</actions>
+	<actions>hitboxie_actions.xml</actions>
 	
 	<colorPalette id='0' displayColor='#000000'>
-		
 	</colorPalette>
 	
 	<colorPalette id='1' displayColor='#0000FF'>

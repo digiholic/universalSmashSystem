@@ -1,10 +1,12 @@
 import engine.action as action
+import engine.subaction as subaction
 import engine.baseActions as baseActions
 import engine.hitbox as hitbox
 import engine.article as article
 import engine.abstractFighter as abstractFighter
 import math
 import pygame
+from engine.subaction import SubAction
 
 class SplatArticle(article.AnimatedArticle):
     def __init__(self, owner, origin, direction):
@@ -1441,16 +1443,29 @@ class RunPivot(baseActions.RunPivot):
     def tearDown(self,actor,newAction):
         if isinstance(newAction, Dash):
             newAction.accel = False
-        
-class NeutralAction(baseActions.NeutralAction):
-    def __init__(self):
-        baseActions.NeutralAction.__init__(self,1)
-        
-    def update(self, actor):
-        if self.frame == 0:
-            actor.changeSprite("idle")
-            self.frame += 1
 
+class NeutralAction(action.DynamicAction):
+    def __init__(self):
+        action.DynamicAction.__init__(self, 1, parent=baseActions.NeutralAction)
+        self.actionsAtFrame = [[subaction.changeFighterSprite(self,'idle')],
+                               [subaction.changeActionFrame(self,1)]]
+        
+
+class Crouch(action.DynamicAction):
+    def __init__(self):
+        action.DynamicAction.__init__(self, 2, parent=baseActions.Crouch)
+        self.setUpActions = [subaction.changeFighterSprite(self,'land')]
+        
+        self.actionsAtFrame = [[subaction.changeFighterSubimage(self,0)],
+                               [subaction.changeFighterSubimage(self,1)],
+                               [subaction.changeFighterSubimage(self,2)],
+                               ]
+        self.actionsAtLastFrame = [subaction.changeActionFrame(self,self.lastFrame - 1)]
+    
+    def update(self, actor):
+        print(self.frame)
+        action.DynamicAction.update(self, actor)
+        
 class Grabbing(baseActions.Grabbing):
     def __init__(self):
         baseActions.Grabbing.__init__(self,1)
@@ -1496,18 +1511,6 @@ class RunStop(baseActions.RunStop):
             else: actor.doIdle()
         baseActions.RunStop.update(self, actor)
 
-class Crouch(baseActions.Crouch):
-    def __init__(self):
-        baseActions.Crouch.__init__(self, 2)
-
-    def setUp(self, actor):
-        actor.changeSprite('land', 0)
-
-    def update(self, actor):
-        actor.changeSpriteImage(self.frame)
-        if self.frame == self.lastFrame:
-            self.frame -= 1
-        baseActions.Crouch.update(self, actor)
 
 class CrouchGetup(baseActions.CrouchGetup):
     def __init__(self):

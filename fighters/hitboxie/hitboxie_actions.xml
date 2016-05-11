@@ -1,3 +1,34 @@
-<action name="Move">
+<actionList>
+	<NeutralAction>
+		<length>1</length>
+		
+		<frame number="0">
+			<changeSprite>idle</changeSprite>
+		</frame>
+		<frame number="1">
+			<setFrame>1</setFrame>
+		</frame>
+	</NeutralAction>
 	
-</action>
+	<Crouch>
+		<length>2</length>
+		
+		<setUp>
+			<changeSprite>land</changeSprite>
+		</setUp>
+		
+		<frame number="0">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+		<frame number="1">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="2">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="last">
+			<setFrame>1</setFrame>
+		</frame>
+	</Crouch>
+	
+</actionList>

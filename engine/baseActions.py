@@ -1259,3 +1259,9 @@ def grabLedges(actor):
                     ledge.fighterGrabs(actor)
                 elif ledge.side == 'right' and actor.keysContain('left'):
                     ledge.fighterGrabs(actor)
+
+
+nameToClass = {
+               'NeutralAction': NeutralAction,
+               'Crouch': Crouch
+               }

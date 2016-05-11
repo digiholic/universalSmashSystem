@@ -51,7 +51,7 @@ It returns the imported module.
 def importFromURI(filePath, uri, absl=False, suffix=""):
     if not absl:
         uri = os.path.normpath(os.path.join(os.path.dirname(filePath).replace('main.exe',''), uri))
-    print(uri)
+    #print(uri)
     path, fname = os.path.split(uri)
     mname, ext = os.path.splitext(fname)
     
