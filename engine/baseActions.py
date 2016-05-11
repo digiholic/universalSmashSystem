@@ -625,7 +625,7 @@ class PlatformDrop(action.Action):
 
 class Shield(action.Action):
     def __init__(self, newShield=True):
-        action.Action.__init__(self, 4)
+        action.Action.__init__(self, 8)
         self.forward_last = 0
         self.backward_last = 0
         self.down_last = 0

@@ -61,7 +61,7 @@ class ShieldArticle(Article):
                             self.owner.rect.center[1]+50*self.owner.var['shieldSize']*self.owner.getSmoothedInput()[1]]
         if self.frame == 0:
             self.owner.active_hitboxes.add(self.reflectHitbox)
-        if self.frame == 4:
+        if self.frame == 2:
             self.reflectHitbox.kill()
             self.owner.active_hitboxes.add(self.mainHitbox)
         if not self.owner.shield:
