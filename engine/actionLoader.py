@@ -26,7 +26,12 @@ def loadAction(actionName):
     vars = {}
     if actionXML.find('vars') is not None:
         for var in actionXML.find('vars'):
-            vars[var.tag] = var.text
+            t = var.attrib['type']
+            if t and t == 'int':
+                vars[var.tag] = int(var.text)
+            elif t and t == 'float':
+                vars[var.tag] = float(var.text)
+            else: vars[var.tag] = var.text
     
     #Load the SetUp subactions
     setUpActions = []
@@ -110,6 +115,42 @@ class ActionLoader():
     def Crouch(self):
         return loadAction('Crouch')
     
+    def CrouchGetup(self):
+        return loadAction('CrouchGetup')
+    
+    def Stop(self):
+        return loadAction('Stop')
+    
+    def RunStop(self):
+        return loadAction('RunStop')
+    
+    def Fall(self):
+        return loadAction('Fall')
+    
+    """
+    def Land(self):
+        #TODO rework landing, does not work in current system
+        pass
+    """
+    class Land(baseActions.Land):
+        def __init__(self):
+            baseActions.Land.__init__(self)
+            
+    def Jump(self):
+        return loadAction('Jump')
+    
+    def AirJump(self):
+        return loadAction('AirJump')
+    
+    def Helpless(self):
+        return loadAction('Helpless')
+    
+    def PlatformDrop(self):
+        return loadAction('PlatformDrop')
+    
+    ###############################################
+    #           UNIMPLEMENTED ACTIONS             #
+    ###############################################
     class Move(baseActions.Move):
         def __init__(self,accel = True):
             baseActions.Move.__init__(self)
@@ -134,19 +175,7 @@ class ActionLoader():
     class Grabbing(baseActions.Grabbing):
         def __init__(self):
             baseActions.Grabbing.__init__(self)
-            
-    class Stop(baseActions.Stop):
-        def __init__(self):
-            baseActions.Stop.__init__(self)
-    
-    class RunStop(baseActions.RunStop):
-        def __init__(self):
-            baseActions.RunStop.__init__(self)
-    
-    class CrouchGetup(baseActions.CrouchGetup):
-        def __init__(self):
-            baseActions.CrouchGetup.__init__(self)
-            
+             
     class HitStun(baseActions.HitStun):
         def __init__(self,hitstun,direction,hitstop):
             baseActions.HitStun.__init__(self, hitstun, direction,hitstop)
@@ -154,26 +183,6 @@ class ActionLoader():
     class TryTech(baseActions.TryTech):
         def __init__(self,hitstun,direction,hitstop):
             baseActions.TryTech.__init__(self, hitstun, direction, hitstop)
-                 
-    class Jump(baseActions.Jump):
-        def __init__(self):
-            baseActions.Jump.__init__(self)
-    
-    class AirJump(baseActions.AirJump):
-        def __init__(self):
-            baseActions.AirJump.__init__(self)
-                
-    class Fall(baseActions.Fall):
-        def __init__(self):
-            baseActions.Fall.__init__(self)
-    
-    class Helpless(baseActions.Helpless):
-        def __init__(self):
-            baseActions.Helpless.__init__(self)
-                
-    class Land(baseActions.Land):
-        def __init__(self):
-            baseActions.Land.__init__(self)
     
     class HelplessLand(baseActions.HelplessLand):
         def __init__(self):
@@ -190,10 +199,6 @@ class ActionLoader():
     class GetupAttack(action.Action):
         def __init__(self):
             action.Action.__init__(self)
-    
-    class PlatformDrop(baseActions.PlatformDrop):
-        def __init__(self):
-            baseActions.PlatformDrop.__init__(self, 12, 6, 9)
             
     class PreShield(baseActions.PreShield):
         def __init__(self):

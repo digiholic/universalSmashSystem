@@ -10,6 +10,34 @@
 		</frame>
 	</NeutralAction>
 	
+	<Stop>
+		<length>9</length>
+		
+		<frame number="0">
+			<changeSprite>pivot</changeSprite>
+		</frame>
+		<frame number="3">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="6">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+	</Stop>
+	
+	<RunStop>
+		<length>12</length>
+		
+		<frame number="0">
+			<changeSprite>pivot</changeSprite>
+		</frame>
+		<frame number="4">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="8">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+	</RunStop>
+	
 	<Crouch>
 		<length>2</length>
 		
@@ -30,5 +58,129 @@
 			<setFrame>1</setFrame>
 		</frame>
 	</Crouch>
+	
+	<CrouchGetup>
+		<length>9</length>
+		
+		<setUp>
+			<changeSprite>land</changeSprite>
+			<changeSubimage>2</changeSubimage>
+		</setUp>
+		
+		<frame number="0">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="3">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</CrouchGetup>
+	
+	<Fall>
+		<length>1</length>
+		
+		<setUp>
+			<changeSprite>jump</changeSprite>
+		</setUp>
+		
+		<frame number="1">
+			<setFrame>0</setFrame>
+		</frame>	
+	</Fall>
+	
+	<Land>
+		<length></length>
+	</Land>
+	
+	<Jump>
+		<length>8</length>
+		
+		<vars>
+			<jumpFrame type="int">5</jumpFrame>
+		</vars>
+		
+		<setUp>
+			<changeSprite>land</changeSprite>
+		</setUp>
+		<frame number="1">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="2">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="3">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="5">
+			<changeSprite>jump</changeSprite>
+		</frame>
+	</Jump>
+	
+	<AirJump>
+		<length>8</length>
+		
+		<vars>
+			<jumpFrame type="int">4</jumpFrame>
+		</vars>
+		
+		<setUp>
+			<changeSprite>airjump</changeSprite>
+		</setUp>
+		
+		<frame number="1">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="2">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="4">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="6">
+			<changeSubimage>4</changeSubimage>
+		</frame>
+		<frame number="8">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</AirJump>
+	
+	<Helpless>
+		<length>2</length>
+		
+		<setUp>
+			<changeSprite>jump</changeSprite>
+		</setUp>
+	</Helpless>
+	
+	<PlatformDrop>
+		<length>12</length>
+	
+		<vars>
+			<phaseFrame type="int">6</phaseFrame>
+			<phaseLength type="int">9</phaseLength>
+		</vars>
+		
+		<setUp>
+			<changeSprite>airjump</changeSprite>
+			<changeSubimage>4</changeSubimage>
+		</setUp>
+		
+		<frame number="2">
+			<changeFighterSpeed>
+				<ySpeed>3</ySpeed>
+			</changeFighterSpeed>
+		</frame>
+		<frame number="4">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="6">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="8">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="10">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</PlatformDrop>
 	
 </actionList>

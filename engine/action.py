@@ -52,7 +52,8 @@ class DynamicAction(Action):
         self.stateTransitionsAtFrame = [[]]
         self.setUpActions = []
         self.tearDownActions = []
-        self.var = var
+        for key,val in var.iteritems():
+            setattr(self,key,val)
         
     def update(self,actor):
         for act in self.actionsBeforeFrame:

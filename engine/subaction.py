@@ -138,6 +138,13 @@ class changeFighterSpeed(SubAction):
         if self.speed_y:
             actor.change_x = self.speed_y
 
+    @staticmethod
+    def buildFromXml(node):
+        speed_x = int(node.find('xSpeed').text)
+        speed_y = int(node.find('ySpeed').text)
+        print(speed_x)
+        print(speed_y)
+        return changeFighterSpeed(speed_x,speed_y)
 # ApplyForceVector is usually called when launched, but can be used as an alternative to setting speed. This one
 # takes a direction in degrees (0 being forward, 90 being straight up, 180 being backward, 270 being downward)
 # and a magnitude.
@@ -230,6 +237,16 @@ class createHitBox(SubAction):
 # Change the properties of an existing hitbox, such as position, or power
 class modifyHitBox(SubAction):
     pass
+
+class activateHitbox(SubAction):
+    pass
+
+class deactivateHitbox(SubAction):
+    pass
+
+class updateHitbox(SubAction):
+    pass
+
 
 # Change the fighter's Hurtbox (where they have to be hit to take damage)
 # This is not done automatically when sprites change, so if your sprite takes the fighter out of his usual bounding box, make sure to change it.

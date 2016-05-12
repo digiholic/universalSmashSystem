@@ -1444,28 +1444,6 @@ class RunPivot(baseActions.RunPivot):
         if isinstance(newAction, Dash):
             newAction.accel = False
 
-class NeutralAction(action.DynamicAction):
-    def __init__(self):
-        action.DynamicAction.__init__(self, 1, parent=baseActions.NeutralAction)
-        self.actionsAtFrame = [[subaction.changeFighterSprite(self,'idle')],
-                               [subaction.changeActionFrame(self,1)]]
-        
-
-class Crouch(action.DynamicAction):
-    def __init__(self):
-        action.DynamicAction.__init__(self, 2, parent=baseActions.Crouch)
-        self.setUpActions = [subaction.changeFighterSprite(self,'land')]
-        
-        self.actionsAtFrame = [[subaction.changeFighterSubimage(self,0)],
-                               [subaction.changeFighterSubimage(self,1)],
-                               [subaction.changeFighterSubimage(self,2)],
-                               ]
-        self.actionsAtLastFrame = [subaction.changeActionFrame(self,self.lastFrame - 1)]
-    
-    def update(self, actor):
-        print(self.frame)
-        action.DynamicAction.update(self, actor)
-        
 class Grabbing(baseActions.Grabbing):
     def __init__(self):
         baseActions.Grabbing.__init__(self,1)
@@ -1476,23 +1454,6 @@ class Grabbing(baseActions.Grabbing):
         if self.frame == 0:
             actor.changeSprite('pivot', 4)
         self.frame += 1
-        
-class Stop(baseActions.Stop):
-    def __init__(self):
-        baseActions.Stop.__init__(self, 9)
-    
-    def update(self, actor):
-        if self.frame == 0:
-            actor.changeSprite("pivot",0)
-        elif self.frame == 3:
-            actor.changeSpriteImage(1)
-        elif self.frame == 6:
-            actor.changeSpriteImage(2)
-        elif self.frame == self.lastFrame:
-            if actor.keyHeld('jump'):
-                actor.doJump()
-            else: actor.doIdle()
-        baseActions.Stop.update(self, actor)
 
 class RunStop(baseActions.RunStop):
     def __init__(self):
@@ -1587,25 +1548,12 @@ class AirJump(baseActions.AirJump):
         elif self.frame == 8:
             actor.changeSpriteImage(0)
         baseActions.AirJump.update(self, actor)
-            
-class Fall(baseActions.Fall):
-    def __init__(self):
-        baseActions.Fall.__init__(self)
-        
-    def update(self,actor):
-        actor.changeSprite("jump")
-        baseActions.Fall.update(self, actor)
 
 class Helpless(baseActions.Helpless):
     def __init__(self):
         baseActions.Helpless.__init__(self)
 
-    def tearDown(self, actor, newAction):
-        actor.mask = None
-
     def update(self, actor):
-        if self.frame == 0:
-            actor.createMask([191, 63, 191], 99999, True, 8)
         actor.changeSprite("jump")
         baseActions.Helpless.update(self, actor)
             
@@ -1723,11 +1671,6 @@ class GetupAttack(action.Action):
 class PlatformDrop(baseActions.PlatformDrop):
     def __init__(self):
         baseActions.PlatformDrop.__init__(self, 12, 6, 9)
-    
-    def stateTransitions(self, actor):
-        baseActions.PlatformDrop.stateTransitions(self, actor)
-        if self.frame > self.phaseFrame:
-            baseActions.airControl(actor)
         
     def update(self,actor):
         if self.frame == 2:

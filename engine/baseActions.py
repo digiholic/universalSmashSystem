@@ -149,6 +149,10 @@ class Stop(action.Action):
         if actor.keyHeld(invkey,self.frame):
             print("pivot")
             actor.doPivot()
+        if self.frame == self.lastFrame:
+            if actor.keyHeld('jump'):
+                actor.doJump()
+            else: actor.doIdle()
 
 class RunPivot(action.Action):
     def __init__(self,length=0):
@@ -539,13 +543,18 @@ class Fall(action.Action):
 class Helpless(action.Action):
     def __init__(self):
         action.Action.__init__(self, 1)
-
+    
+    def tearDown(self, actor, newAction):
+        actor.mask = None
+        
     def stateTransitions(self, actor):
         helplessControl(actor)
         grabLedges(actor)
 
     def update(self, actor):
         actor.grounded = False
+        if self.frame == 0:
+            actor.createMask([191, 63, 191], 99999, True, 8)
             
 class Land(action.Action):
     def __init__(self):
@@ -621,7 +630,9 @@ class PlatformDrop(action.Action):
         elif actor.keyHeld('special') and actor.checkSmash('down') and self.frame < self.phaseFrame:
             print("Platform drop cancelled into down special")
             actor.doGroundSpecial()
-    
+        if self.frame > self.phaseFrame:
+            airControl(actor)
+        
     def update(self,actor):
         if self.frame == self.phaseFrame:
             actor.platformPhase = self.phaseLength
@@ -1263,5 +1274,14 @@ def grabLedges(actor):
 
 nameToClass = {
                'NeutralAction': NeutralAction,
-               'Crouch': Crouch
+               'Crouch': Crouch,
+               'CrouchGetup': CrouchGetup,
+               'Stop': Stop,
+               'RunStop': RunStop,
+               'Fall': Fall,
+               'Land': Land,
+               'Jump': Jump,
+               'AirJump': AirJump,
+               'Helpless': Helpless,
+               'PlatformDrop': PlatformDrop
                }
