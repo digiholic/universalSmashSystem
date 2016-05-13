@@ -870,6 +870,7 @@ class AbstractFighter():
         dy = min(max(0, dyUp), max(0, dyDown))
         
         if dx <= dy:
+            self.rect.centery = self.rect.centery + t*(self.ecb.currentECB.rect.centery-newPrev.centery)
             if dxLeft >= dxRight and other.solid:
                 self.rect.right = other.rect.left+self.rect.right-self.ecb.currentECB.rect.right
                 if self.change_x > other.change_x:
@@ -879,6 +880,7 @@ class AbstractFighter():
                 if self.change_x < other.change_x:
                     self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
         if dy <= dx:
+            self.rect.centerx = self.rect.centerx + t*(self.ecb.currentECB.rect.centerx-newPrev.centerx)
             if dyUp >= dyDown and other.solid:
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
                 if self.change_y >= other.change_y + self.var['gravity']:
@@ -964,19 +966,13 @@ def projectionIntersects(startPoints, endPoints, rectPoints, vector):
     rectDots = map(lambda x: x[0]*vector[0]+x[1]*vector[1], rectPoints)
     if min(startDots) == min(endDots):
         if min(startDots) <= max(rectDots): #.O.|...
-            t_mins = [0, float("inf")]
+            t_mins = [float("-inf"), float("inf")]
         else:                               #...|.O.
             t_mins = [float("inf"), float("-inf")]
     elif min(startDots) > min(endDots):
-        if min(startDots) <= max(rectDots): #<<<|...
-            t_mins = [0, float("inf")]
-        else:                               #...|<<<
-            t_mins = [(max(rectDots)-min(startDots)+0.0)/(min(endDots)-min(startDots)), float("inf")]
+        t_mins = [(max(rectDots)-min(startDots)+0.0)/(min(endDots)-min(startDots)), float("inf")]
     else:
-        if min(startDots) <= max(rectDots): #>>>|...
-            t_mins = [0, (max(rectDots)-min(startDots)+0.0)/(min(endDots)-min(startDots))]
-        else:                               #...|>>>
-            t_mins = [float("inf"), float("-inf")]
+        t_mins = [float("-inf"), (max(rectDots)-min(startDots)+0.0)/(min(endDots)-min(startDots))]
 
     if max(startDots) == max(endDots):
         if max(startDots) >= min(rectDots): #...|.O.
@@ -984,20 +980,19 @@ def projectionIntersects(startPoints, endPoints, rectPoints, vector):
         else:                               #.O.|...
             t_maxs = [float("inf"), float("-inf")]
     elif max(startDots) < max(endDots):
-        if max(startDots) >= max(rectDots): #...|>>>
-            t_maxs = [0, float("inf")]
-        else:                               #>>>|...
-            t_maxs = [(min(rectDots)-max(startDots)+0.0)/(max(endDots)-max(startDots)), float("inf")]
+        t_maxs = [(min(rectDots)-max(startDots)+0.0)/(max(endDots)-max(startDots)), float("inf")]
     else:
-        if max(startDots) >= min(rectDots): #...|<<<
-            t_maxs = [0, (min(rectDots)-max(startDots)+0.0)/(max(endDots)-max(startDots))]
-        else:                               #<<<|...
-            t_maxs = [float("inf"), float("-inf")]
+        t_maxs = [float("-inf"), (min(rectDots)-max(startDots)+0.0)/(max(endDots)-max(startDots))]
 
-    if max(endDots)-max(startDots) > min(endDots)-min(startDots) and min(startDots) < max(startDots):
-        t_open = [0, (max(endDots)-max(startDots)-min(endDots)+min(startDots))/(max(startDots)-min(startDots))]
+    if max(endDots)-max(startDots) == min(endDots)-min(startDots):
+        if max(startDots) > min(startDots):
+            t_open = [float("-inf"), float("inf")]
+        else:
+            t_open = [float("inf"), float("-inf")]
+    elif max(endDots)-max(startDots) > min(endDots)-min(startDots):
+        t_open = [float("-inf"), (max(endDots)-max(startDots)-min(endDots)+min(startDots))/(max(startDots)-min(startDots))]
     else:
-        t_open = [0, float("inf")]
+        t_open = [(max(endDots)-max(startDots)-min(endDots)+min(startDots))/(max(startDots)-min(startDots)), float("inf")]
 
     return [max(t_mins[0], t_maxs[0], t_open[0]), min(t_mins[1], t_maxs[1], t_open[1])]
 
@@ -1009,10 +1004,8 @@ def pathRectIntersects(startRect, endRect, rect):
     rectCorners = [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]
     horizontalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [1, 0])
     verticalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [0, 1])
-    totalIntersects = [max(horizontalIntersects[0], verticalIntersects[0]), min(horizontalIntersects[1], verticalIntersects[1], 1)]
+    totalIntersects = [max(horizontalIntersects[0], verticalIntersects[0], 0), min(horizontalIntersects[1], verticalIntersects[1], 1)]
     if totalIntersects[0] > totalIntersects[1]:
-        if endRect.colliderect(rect):
-            return 1
         return 999
     else:
         return totalIntersects[0]
