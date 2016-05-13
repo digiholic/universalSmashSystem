@@ -124,11 +124,17 @@ class AbstractFighter():
                 self.rect.y += block.change_y
             self.ecb.normalize()
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
-            block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
-            for block in block_hit_list:
-                if block.solid or (self.platformPhase <= 0):
-                    self.platformPhase = 0
-                    self.ejectMovement(block)
+            loopCount = 0
+            while loopCount < 10:
+                block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
+                if not block_hit_list:
+                    break
+                for block in block_hit_list:
+                    if block.solid or (self.platformPhase <= 0):
+                        self.platformPhase = 0
+                        self.ejectMovement(block)
+                        break
+                loopCount += 1
 
             self.sprite.updatePosition(self.rect)
 
@@ -171,11 +177,18 @@ class AbstractFighter():
         self.calc_grav()
 
         self.ecb.normalize()
-        block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
-        for block in block_hit_list:
-            if block.solid or (self.platformPhase <= 0):
-                self.platformPhase = 0
-                self.ejectSize(block)
+        loopCount = 0
+        while loopCount < 10:
+            block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
+            if not block_hit_list:
+                break
+            for block in block_hit_list:
+                if block.solid or (self.platformPhase <= 0):
+                    self.platformPhase = 0
+                    self.ejectSize(block)
+                    break
+            loopCount += 1
+        # TODO: Crush death if loopcount reaches the 100 resolution attempt ceiling
         
         # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
         self.rect.y += self.change_y
@@ -192,11 +205,17 @@ class AbstractFighter():
             self.change_y -= self.var['gravity']
         
         self.ecb.normalize()
-        block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
-        for block in block_hit_list:
-            if block.solid or (self.platformPhase <= 0):
-                self.platformPhase = 0
-                self.ejectMovement(block)
+        loopCount = 0
+        while loopCount < 10:
+            block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
+            if not block_hit_list:
+                break
+            for block in block_hit_list:
+                if block.solid or (self.platformPhase <= 0):
+                    self.platformPhase = 0
+                    self.ejectMovement(block)
+                    break
+            loopCount += 1
 
         self.sprite.updatePosition(self.rect)
 
