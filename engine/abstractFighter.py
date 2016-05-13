@@ -122,10 +122,10 @@ class AbstractFighter():
             if not block is None:
                 self.rect.x += block.change_x
                 self.rect.y += block.change_y
-            self.ecb.normalize()
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
             loopCount = 0
             while loopCount < 10:
+                self.ecb.normalize()
                 block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
                 if not block_hit_list:
                     break
@@ -176,9 +176,9 @@ class AbstractFighter():
         # Gravity
         self.calc_grav()
 
-        self.ecb.normalize()
         loopCount = 0
         while loopCount < 10:
+            self.ecb.normalize()
             block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
             if not block_hit_list:
                 break
@@ -204,9 +204,9 @@ class AbstractFighter():
             self.rect.y += block.change_y
             self.change_y -= self.var['gravity']
         
-        self.ecb.normalize()
         loopCount = 0
         while loopCount < 10:
+            self.ecb.normalize()
             block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
             if not block_hit_list:
                 break
