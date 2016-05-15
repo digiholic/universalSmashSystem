@@ -1470,10 +1470,6 @@ class Stop(baseActions.Stop):
             actor.changeSpriteImage(1)
         elif self.frame == 6:
             actor.changeSpriteImage(2)
-        elif self.frame == self.lastFrame:
-            if actor.keyHeld('jump'):
-                actor.doJump()
-            else: actor.doIdle()
         baseActions.Stop.update(self, actor)
 
 class RunStop(baseActions.RunStop):
@@ -1487,10 +1483,6 @@ class RunStop(baseActions.RunStop):
             actor.changeSpriteImage(1)
         elif self.frame == 8:
             actor.changeSpriteImage(2)
-        elif self.frame == self.lastFrame:
-            if actor.keyHeld('jump'):
-                actor.doJump()
-            else: actor.doIdle()
         baseActions.RunStop.update(self, actor)
 
 class Crouch(baseActions.Crouch):

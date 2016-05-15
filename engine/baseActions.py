@@ -104,7 +104,7 @@ class Pivot(action.Action):
         actor.flip()
 
     def stateTransitions(self, actor):
-        if actor.keyHeld('jump', self.frame):
+        if actor.keyHeld('jump', self.frame, 1):
             actor.doJump()
         
     def update(self,actor):
@@ -149,6 +149,10 @@ class Stop(action.Action):
         if actor.keyHeld(invkey,self.frame):
             print("pivot")
             actor.doPivot()
+        if self.frame == self.lastFrame:
+            if actor.keyHeld('jump', 8, 1):
+                actor.doJump()
+            else: actor.doIdle()
 
 class RunPivot(action.Action):
     def __init__(self,length):
@@ -158,7 +162,7 @@ class RunPivot(action.Action):
         actor.flip()
         
     def stateTransitions(self, actor):
-        if actor.keyHeld('jump', self.frame):
+        if actor.keyHeld('jump', self.frame, 1):
             actor.doJump()
         
     def update(self,actor):
@@ -195,6 +199,10 @@ class RunStop(action.Action):
         if actor.keyHeld(invkey,self.frame):
             print("run pivot")
             actor.doRunPivot()
+        if self.frame == self.lastFrame:
+            if actor.keyHeld('jump', 8, 1):
+                actor.doJump()
+            else: actor.doIdle()
 
                 
 class NeutralAction(action.Action):
@@ -995,7 +1003,7 @@ def neutralState(actor):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
-    elif actor.keyHeld('jump'):
+    elif actor.keyHeld('jump', 8, 1):
         actor.doJump()
     elif actor.keysContain('down', 0.5):
         actor.doCrouch()
@@ -1017,7 +1025,7 @@ def crouchState(actor):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
-    elif actor.keyHeld('jump'):
+    elif actor.keyHeld('jump', 8, 1):
         actor.doJump()
     elif not actor.keysContain('down'):
         actor.doCrouchGetup()
@@ -1030,7 +1038,7 @@ def airState(actor):
         actor.doAirAttack()
     elif actor.keyHeld('special'):
         actor.doAirSpecial()
-    elif actor.keyHeld('jump') and actor.jumps > 0:
+    elif actor.keyHeld('jump', 8, 1) and actor.jumps > 0:
         actor.doAirJump()
     elif actor.keysContain('down'):
         actor.platformPhase = 1
@@ -1044,7 +1052,7 @@ def tumbleState(actor):
         actor.doAirAttack()
     elif actor.keyHeld('special'):
         actor.doAirSpecial()
-    elif actor.keyHeld('jump') and actor.jumps > 0:
+    elif actor.keyHeld('jump', 8, 1) and actor.jumps > 0:
         actor.doAirJump()
     elif actor.keysContain('down'):
         actor.platformPhase = 1
@@ -1058,7 +1066,7 @@ def moveState(actor, direction):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
-    elif actor.keyHeld('jump'):
+    elif actor.keyHeld('jump', 8, 1):
         actor.doJump()
     elif actor.keysContain('down', 0.5):
         actor.doCrouch()
@@ -1081,7 +1089,7 @@ def dashState(actor, direction):
             actor.doDashAttack()
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
-    elif actor.keyHeld('jump'):
+    elif actor.keyHeld('jump', 8, 1):
         actor.doJump()
     elif actor.keysContain('down', 0.5):
         actor.doStop()
@@ -1100,7 +1108,7 @@ def runState(actor, direction):
         actor.doDashAttack()
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
-    elif actor.keyHeld('jump'):
+    elif actor.keyHeld('jump', 8, 1):
         actor.doJump()
     elif actor.keysContain('down', 0.5):
         actor.doRunStop()
@@ -1127,7 +1135,7 @@ def shieldState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('attack'):
         actor.doGroundGrab()
-    elif actor.keyHeld('jump'):
+    elif actor.keyHeld('jump', 8, 1):
         actor.doJump()
 
 def ledgeState(actor):
@@ -1139,7 +1147,7 @@ def ledgeState(actor):
     elif actor.keyHeld('attack'):
         actor.ledgeLock = True
         actor.doLedgeAttack()
-    elif actor.keyHeld('jump'):
+    elif actor.keyHeld('jump', 8, 1):
         actor.ledgeLock = True
         actor.invincible = 10
         actor.doJump()
