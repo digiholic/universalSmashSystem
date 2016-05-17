@@ -6,12 +6,6 @@ import engine.action as action
 
 actionsXML = None
 
-subActionDict = {
-                 'changeSprite': subaction.changeFighterSprite,
-                 'changeSubimage': subaction.changeFighterSubimage,
-                 'setFrame': subaction.changeActionFrame
-                 }
-
 def loadAction(actionName):
     global actionsXML
     
@@ -37,22 +31,22 @@ def loadAction(actionName):
     setUpActions = []
     if actionXML.find('setUp') is not None:
         for subact in actionXML.find('setUp'):
-            if subActionDict.has_key(subact.tag): #Subactions string to class dict
-                setUpActions.append(subActionDict[subact.tag].buildFromXml(subact))
+            if subaction.subActionDict.has_key(subact.tag): #Subactions string to class dict
+                setUpActions.append(subaction.subActionDict[subact.tag].buildFromXml(subact))
                 
     #Load the tearDown subactions
     tearDownActions = []
     if actionXML.find('tearDown') is not None:
         for subact in actionXML.find('tearDown'):
-            if subActionDict.has_key(subact.tag): #Subactions string to class dict
-                tearDownActions.append(subActionDict[subact.tag].buildFromXml(subact))
+            if subaction.subActionDict.has_key(subact.tag): #Subactions string to class dict
+                tearDownActions.append(subaction.subActionDict[subact.tag].buildFromXml(subact))
     
     #Load the stateTransition subactions
     stateTransitionActions = []
     if actionXML.find('transitions') is not None:
         for subact in actionXML.find('transitions'):
-            if subActionDict.has_key(subact.tag): #Subactions string to class dict
-                stateTransitionActions.append(subActionDict[subact.tag].buildFromXml(subact))
+            if subaction.subActionDict.has_key(subact.tag): #Subactions string to class dict
+                stateTransitionActions.append(subaction.subActionDict[subact.tag].buildFromXml(subact))
     
     #Load all of the frames
     frames = actionXML.findall('frame')
@@ -63,18 +57,18 @@ def loadAction(actionName):
     for frame in frames:
         if frame.attrib['number'] == 'before':
             for subact in frame:
-                if subActionDict.has_key(subact.tag): #Subactions string to class dict
-                    subactionsBeforeFrame.append(subActionDict[subact.tag].buildFromXml(subact))
+                if subaction.subActionDict.has_key(subact.tag): #Subactions string to class dict
+                    subactionsBeforeFrame.append(subaction.subActionDict[subact.tag].buildFromXml(subact))
             frames.remove(frame)
         if frame.attrib['number'] == 'after':
             for subact in frame:
-                if subActionDict.has_key(subact.tag): #Subactions string to class dict
-                    subactionsAfterFrame.append(subActionDict[subact.tag].buildFromXml(subact))
+                if subaction.subActionDict.has_key(subact.tag): #Subactions string to class dict
+                    subactionsAfterFrame.append(subaction.subActionDict[subact.tag].buildFromXml(subact))
             frames.remove(frame)
         if frame.attrib['number'] == 'last':
             for subact in frame:
-                if subActionDict.has_key(subact.tag): #Subactions string to class dict
-                    subactionsAtLastFrame.append(subActionDict[subact.tag].buildFromXml(subact))
+                if subaction.subActionDict.has_key(subact.tag): #Subactions string to class dict
+                    subactionsAtLastFrame.append(subaction.subActionDict[subact.tag].buildFromXml(subact))
             frames.remove(frame)
         
     subactionsAtFrame = []
@@ -86,8 +80,8 @@ def loadAction(actionName):
             for frame in frames:
                 if frame.attrib['number'] == str(frameNo): #If this frame matches the number we're on
                     for subact in frame:
-                        if subActionDict.has_key(subact.tag): #Subactions string to class dict
-                            sublist.append(subActionDict[subact.tag].buildFromXml(subact))
+                        if subaction.subActionDict.has_key(subact.tag): #Subactions string to class dict
+                            sublist.append(subaction.subActionDict[subact.tag].buildFromXml(subact))
                             
                     frames.remove(frame) #Done with this one
                      
@@ -148,34 +142,48 @@ class ActionLoader():
     def PlatformDrop(self):
         return loadAction('PlatformDrop')
     
+    def Move(self):
+        return loadAction('Move')
+        
+    def Dash(self):
+        return loadAction('Dash')
+    
+    def Run(self):
+        return loadAction('Run')
+    
+    def Pivot(self):
+        return loadAction('Pivot')
+    
+    def RunPivot(self):
+        return loadAction('RunPivot')
+    
+    def Grabbing(self):
+        return loadAction('Grabbing')
+    
+    def Getup(self):
+        return loadAction('Getup')
+    
+    def PreShield(self):
+        return loadAction('PreShield')
+    
+    def Shield(self):
+        return loadAction('Shield')
+    
+    def ForwardRoll(self):
+        return loadAction('ForwardRoll')
+    
+    def BackwardRoll(self):
+        return loadAction('BackwardRoll')
+    
+    def SpotDodge(self):
+        return loadAction('SpotDodge')
+    
+    def AirDodge(self):
+        return loadAction('AirDodge')
+    
     ###############################################
     #           UNIMPLEMENTED ACTIONS             #
-    ###############################################
-    class Move(baseActions.Move):
-        def __init__(self,accel = True):
-            baseActions.Move.__init__(self)
-
-    class Dash(baseActions.Dash):
-        def __init__(self,accel = True):
-            baseActions.Dash.__init__(self)
-            self.accel = accel
-            
-    class Run(baseActions.Run):
-        def __init__(self):
-            baseActions.Run.__init__(self)
-                       
-    class Pivot(baseActions.Pivot):
-        def __init__(self):
-            baseActions.Pivot.__init__(self)
-    
-    class RunPivot(baseActions.RunPivot):
-        def __init__(self):
-            baseActions.RunPivot.__init__(self)
-    
-    class Grabbing(baseActions.Grabbing):
-        def __init__(self):
-            baseActions.Grabbing.__init__(self)
-             
+    ###############################################           
     class HitStun(baseActions.HitStun):
         def __init__(self,hitstun,direction,hitstop):
             baseActions.HitStun.__init__(self, hitstun, direction,hitstop)
@@ -192,22 +200,10 @@ class ActionLoader():
         def __init__(self, length, direction):
             baseActions.Trip.__init__(self, length, direction)
     
-    class Getup(baseActions.Getup):
-        def __init__(self, direction):
-            baseActions.Getup.__init__(self, direction)
-    
     class GetupAttack(action.Action):
         def __init__(self):
             action.Action.__init__(self)
             
-    class PreShield(baseActions.PreShield):
-        def __init__(self):
-            baseActions.PreShield.__init__(self)
-            
-    class Shield(baseActions.Shield):
-        def __init__(self):
-            baseActions.Shield.__init__(self)
-    
     class ShieldStun(baseActions.ShieldStun):
         def __init__(self, length):
             baseActions.ShieldStun.__init__(self, length)
@@ -216,22 +212,6 @@ class ActionLoader():
         def __init__(self, length):
             baseActions.Stunned.__init__(self, length)
             
-    class ForwardRoll(baseActions.ForwardRoll):
-        def __init__(self):
-            baseActions.ForwardRoll.__init__(self)
-            
-    class BackwardRoll(baseActions.BackwardRoll):
-        def __init__(self):
-            baseActions.BackwardRoll.__init__(self)
-            
-    class SpotDodge(baseActions.SpotDodge):
-        def __init__(self):
-            baseActions.SpotDodge.__init__(self)
-            
-    class AirDodge(baseActions.AirDodge):
-        def __init__(self):
-            baseActions.AirDodge.__init__(self)
-    
     class TechDodge(baseActions.TechDodge):
         def __init__(self):
             baseActions.TechDodge.__init__(self)

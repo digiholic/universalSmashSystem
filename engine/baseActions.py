@@ -44,9 +44,9 @@ class Move(action.Action):
 class Dash(action.Action):
     def __init__(self,length=0): 
         action.Action.__init__(self,length)
-        self.pivoted = False
 
     def setUp(self,actor):
+        self.pivoted = False
         if actor.facing == 1: self.direction = 1
         else: self.direction = -1
 
@@ -808,9 +808,11 @@ class Released(action.Action):
 class ForwardRoll(action.Action):
     def __init__(self):
         action.Action.__init__(self, 46)
+        
+    def setUp(self, actor):
         self.startInvulnFrame = 6
         self.endInvulnFrame = 34
-
+    
     def tearDown(self, actor, nextAction):
         actor.preferred_xspeed = 0
         if actor.invulnerable > 0:
@@ -829,7 +831,7 @@ class ForwardRoll(action.Action):
             actor.flip()
             actor.change_x = 0
         elif self.frame == self.lastFrame:
-            if actor.keyHeld('shield'):
+            if 'shield' in actor.keysHeld:
                 actor.doShield()
             else:
                 actor.doIdle()
@@ -838,9 +840,11 @@ class ForwardRoll(action.Action):
 class BackwardRoll(action.Action):
     def __init__(self):
         action.Action.__init__(self, 50)
+    
+    def setUp(self, actor):
         self.startInvulnFrame = 6
         self.endInvulnFrame = 34
-
+    
     def tearDown(self, actor, nextAction):
         actor.preferred_xspeed = 0
         if actor.invulnerable > 0:
@@ -858,7 +862,7 @@ class BackwardRoll(action.Action):
         elif self.frame == self.endInvulnFrame:
             actor.change_x = 0
         elif self.frame == self.lastFrame:
-            if actor.keyHeld('shield'):
+            if 'shield' in actor.keysHeld:
                 actor.doShield()
             else:
                 actor.doIdle()
@@ -867,9 +871,11 @@ class BackwardRoll(action.Action):
 class SpotDodge(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)
+
+    def setUp(self, actor):
         self.startInvulnFrame = 4
         self.endInvulnFrame = 20
-
+    
     def tearDown(self, actor, nextAction):
         actor.preferred_xspeed = 0
         if actor.invulnerable > 0:
@@ -893,7 +899,7 @@ class SpotDodge(action.Action):
         elif self.frame == self.endInvulnFrame:
             pass
         elif self.frame == self.lastFrame:
-            if actor.keyHeld('shield'):
+            if 'shield' in actor.keysHeld:
                 actor.doShield()
             else:
                 actor.doIdle()
@@ -902,11 +908,12 @@ class SpotDodge(action.Action):
 class AirDodge(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)
+        
+    def setUp(self,actor):
         self.startInvulnFrame = 4
         self.endInvulnFrame = 20
         self.move_vec = [0,0]
     
-    def setUp(self,actor):
         if settingsManager.getSetting('enableWavedash'):
             actor.landingLag = 16
         else:
@@ -1283,5 +1290,19 @@ nameToClass = {
                'Jump': Jump,
                'AirJump': AirJump,
                'Helpless': Helpless,
-               'PlatformDrop': PlatformDrop
+               'PlatformDrop': PlatformDrop,
+               'Move': Move,
+               'Dash': Dash,
+               'Run': Run,
+               'Pivot': Pivot,
+               'RunPivot': RunPivot,
+               'Grabbing': Grabbing,
+               'Helpless': Helpless,
+               'Getup': Getup,
+               'PreShield': PreShield,
+               'Shield': Shield,
+               'ForwardRoll': ForwardRoll,
+               'BackwardRoll': BackwardRoll,
+               'SpotDodge': SpotDodge,
+               'AirDodge': AirDodge
                }

@@ -183,4 +183,242 @@
 		</frame>
 	</PlatformDrop>
 	
+	<Move>
+		<length>15</length>
+		
+		<setUp>
+			<changeSprite>run</changeSprite>
+		</setUp>
+		
+		<frame number="3">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		
+		<frame number="6">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		
+		<frame number="9">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		
+		<frame number="12">
+			<changeSubimage>4</changeSubimage>
+		</frame>
+		
+		<frame number="last">
+			<setFrame>12</setFrame>
+		</frame>
+	</Move>
+	
+	<Dash>
+		<length>15</length>
+		
+		<setUp>
+			<changeSprite>run</changeSprite>
+		</setUp>
+		
+		<frame number="2">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="4">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="6">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="8">
+			<changeSubimage>4</changeSubimage>
+		</frame>
+	</Dash>
+	
+	<Run>
+		<length>2</length>
+		
+		<setUp>
+			<changeSprite>run</changeSprite>
+			<changeSubimage>4</changeSubimage>
+		</setUp>
+		
+		<frame number="last">
+			<setFrame>1</setFrame>
+		</frame>
+	</Run>
+	
+	<Pivot>
+		<length>10</length>
+		
+		<setUp>
+			<changeSprite>pivot</changeSprite>
+			<changeSubimage>4</changeSubimage>
+		</setUp>
+		
+		<frame number="2">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="4">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="6">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="8">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</Pivot>
+	
+	<RunPivot>
+		<length>15</length>
+		
+		<setUp>
+			<changeSprite>pivot</changeSprite>
+			<changeSubimage>4</changeSubimage>
+		</setUp>
+		
+		<frame number="3">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="6">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="9">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="12">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</RunPivot>
+	
+	<Grabbing>
+		<length>1</length>
+		
+		<setUp>
+			<changeSprite>pivot</changeSprite>
+			<changeSubimage>4</changeSubimage>
+			<changeFighterSpeed>
+				<xSpeed>0</xSpeed>
+			</changeFighterSpeed>
+		</setUp>
+	</Grabbing>
+	
+	<Helpless>
+		<length>0</length>
+		
+		<setUp>
+			<changeSprite>jump</changeSprite>
+		</setUp>
+	</Helpless>
+	
+	<Getup>
+		<length>12</length>
+		
+		<setUp>
+			<changeSprite>land</changeSprite>
+			<changeSubimage>0</changeSubimage>
+		</setUp>
+		
+		<frame number="3">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		
+		<frame number="6">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		
+		<frame number="9">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		
+		<frame number="12">
+			<changeSubimage>4</changeSubimage>
+		</frame>
+	</Getup>
+	
+	<PreShield>
+		<length>4</length>
+		
+		<setUp>
+			<changeSprite>jump</changeSprite>
+		</setUp>
+	</PreShield>
+	
+	<Shield>
+		<length>4</length>
+		
+		<setUp>
+			<changeSprite>jump</changeSprite>
+		</setUp>
+	</Shield>
+	
+	<ForwardRoll>
+		<length>46</length>
+		
+		<setUp>
+			<changeSprite>land</changeSprite>
+			<changeSubimage>1</changeSubimage>
+		</setUp>
+		
+		<frame number="34">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</ForwardRoll>
+	
+	<BackwardRoll>
+		<length>50</length>
+		
+		<setUp>
+			<changeSprite>land</changeSprite>
+			<changeSubimage>1</changeSubimage>
+		</setUp>
+		
+		<frame number="34">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</BackwardRoll>
+	
+	<SpotDodge>
+		<length>24</length>
+		
+		<setUp>
+			<changeSprite>land</changeSprite>
+		</setUp>
+		
+		<frame number="1">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="2">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="3">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="21">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="22">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="23">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</SpotDodge>
+	
+	<AirDodge>
+		<length>24</length>
+		
+		<setUp>
+			<changeSprite>nair</changeSprite>
+		</setUp>
+		
+		<frame number="4">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="20">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</AirDodge>
+	
+	<TechDodge>
+		<length>20</length>
+	</TechDodge>
 </actionList>

@@ -53,27 +53,72 @@ class ifAttribute(ConditionalAction):
         ConditionalAction.__init__(self, actor, action, cond)
         self.ifActions = ifActions
         self.elseActions = elseActions
-    
-# The IfVar Subaction compares two values.
-class ifVar(ConditionalAction):
-    def __init__(self,val1,comp,val2,ifActions = [], elseActions = []):
-        if comp == '==':
-            cond = val1 == val2
-        elif comp == '<':
-            cond = val1 < val2
-        elif comp == '<=':
-            cond = val1 <= val2
-        elif comp == '>':
-            cond = val1 > val2
-        elif comp == '>=':
-            cond = val1 >= val2
-        elif comp == '!=':
-            cond = val1 != val2
-        ConditionalAction.__init__(self, action, cond)
+
+class ifVar(SubAction):
+    def __init__(self,variable,comparator='==',value=True,ifActions = [],elseActions = []):
+        self.variable = variable
+        self.comparator = comparator
+        self.value = value
         self.ifActions = ifActions
         self.elseActions = elseActions
-
-
+        
+    def execute(self, action, actor):
+        variable = getattr(action, self.variable)
+        if self.comparator == '==':
+            cond = variable == self.value
+        elif self.comparator == '<':
+            cond = variable < self.value
+        elif self.comparator == '<=':
+            cond = variable <= self.value
+        elif self.comparator == '>':
+            cond = variable > self.value
+        elif self.comparator == '>=':
+            cond = variable >= self.value
+        elif self.comparator == '!=':
+            cond = variable != self.value
+            
+        if cond:
+            for act in self.ifActions:
+                act.execute(action,actor)
+        else:
+            for act in self.elseActions:
+                act.execute(action,actor)
+    
+    @staticmethod
+    def buildFromXml(node):
+        variable = node.attrib['var']
+        print(variable)
+        
+        
+        cond = node.find('compare').attrib.get('cond')
+        if cond is None: cond = '=='
+        print(cond)
+        
+        value = node.find('value')
+        if value is not None:
+            if value.attrib.get('type') == 'int':
+                value = int(value.text)
+            elif value.attrib.get('type') == 'float':
+                value = float(value.text)
+            elif value.attrib.get('type') == 'bool':
+                value = value.text == 'True'
+        print(value)
+        
+        ifActions = []
+        for ifact in node.find('compare'):
+            if subActionDict.has_key(ifact.tag): #Subactions string to class dict
+                ifActions.append(subActionDict[ifact.tag].buildFromXml(ifact))
+        print(ifActions)
+        
+        elseActions = []
+        if node.find('else') is not None:
+            for elseact in node.find('else'):
+                if subActionDict.has_key(elseact.tag): #Subactions string to class dict
+                    elseActions.append(subActionDict[elseact.tag].buildFromXml(elseact))
+        print(elseActions)
+        
+        return ifVar(variable, cond, value, ifActions, elseActions)
+              
 ########################################################
 #                SPRITE CHANGERS                       #
 ########################################################
@@ -253,3 +298,10 @@ class updateHitbox(SubAction):
 # If a hurtbox overlaps a hitbox, the hitbox will be resolved first, so the fighter won't take damage in the case of clashes.
 class modifyHurtBox(SubAction):
     pass
+
+subActionDict = {
+                 'changeSprite': changeFighterSprite,
+                 'changeSubimage': changeFighterSubimage,
+                 'setFrame': changeActionFrame,
+                 'ifVar': ifVar
+                 }

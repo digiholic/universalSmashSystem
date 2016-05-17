@@ -1,12 +1,10 @@
 import engine.action as action
-import engine.subaction as subaction
 import engine.baseActions as baseActions
 import engine.hitbox as hitbox
 import engine.article as article
 import engine.abstractFighter as abstractFighter
 import math
 import pygame
-from engine.subaction import SubAction
 
 class SplatArticle(article.AnimatedArticle):
     def __init__(self, owner, origin, direction):
@@ -1387,8 +1385,7 @@ class Dash(baseActions.Dash):
             if (self.frame == 0):
                 actor.changeSprite("run",4)
                 
-        if actor.grounded == False:
-            actor.doFall()
+        
         baseActions.Dash.update(self, actor)
         
 class Run(baseActions.Run):
@@ -1421,7 +1418,7 @@ class Pivot(baseActions.Pivot):
         
     def tearDown(self,actor,newAction):
         if isinstance(newAction, Move) or isinstance(newAction, Dash):
-            newAction.accel = False
+            newActioxxn.accel = False
 
 class RunPivot(baseActions.RunPivot):
     def __init__(self):
