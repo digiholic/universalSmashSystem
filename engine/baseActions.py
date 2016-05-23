@@ -432,7 +432,8 @@ class Trip(action.Action):
         print("direction:", self.direction)
 
     def setUp(self, actor):
-        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        pass
+        #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
     def update(self, actor):
         if actor.grounded is False:
@@ -560,7 +561,8 @@ class Land(action.Action):
         action.Action.__init__(self, 6)
 
     def setUp(self, actor):
-        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        pass
+        #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
     def tearDown(self, actor, nextAction):
         actor.preferred_xspeed = 0
@@ -587,7 +589,8 @@ class HelplessLand(action.Action):
         action.Action.__init__(self, 6)
 
     def setUp(self, actor):
-        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        pass
+        #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
     def update(self,actor):
         if self.frame == 0:
