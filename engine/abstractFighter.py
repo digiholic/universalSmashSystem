@@ -191,19 +191,21 @@ class AbstractFighter():
 
         self.ecb.normalize()
         self.ecb.store()
-        
-        # Move y and resolve collisions. This also requires us to check the direction we're colliding from and check for pass-through platforms
-        self.rect.y += self.change_y
-        self.rect.x += self.change_x
-        self.ecb.normalize()
 
-        """
+        futureRect = self.ecb.currentECB.rect.copy()
+        futureRect.x += self.change_x
+        futureRect.y += self.change_y
+
         t = 1
 
         block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
-            if self.catchMovement(block) and self.pathRectIntersects(block) >= 0 and self.pathRectIntersects(block) < t:
-        """
+            if self.catchMovement(block) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block) < t:
+                t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block)
+
+        self.rect.y += self.change_y*t
+        self.rect.x += self.change_x*t
+        self.ecb.normalize()
                 
         
         loopCount = 0
@@ -270,7 +272,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 2
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB.rect.bottom-self.change_y <= block.rect.top-block.change_y:
+                if self.ecb.previousECB.rect.bottom-self.change_y <= block.rect.top-block.change_y+2:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
