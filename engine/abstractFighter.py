@@ -728,8 +728,8 @@ class AbstractFighter():
         self.sprite.changeImage(newSprite)
         if frame != 0: self.sprite.changeSubImage(frame)
         
-    def changeSpriteImage(self,frame):
-        self.sprite.changeSubImage(frame)
+    def changeSpriteImage(self,frame,loop=False):
+        self.sprite.changeSubImage(frame,loop)
     
     """
     This will "lock" the hitbox so that another hitbox with the same ID from the same fighter won't hit again.

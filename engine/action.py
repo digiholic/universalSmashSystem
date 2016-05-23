@@ -9,26 +9,40 @@ class Action():
         self.actor = None
         self.var = {}
         
+        self.spriteName = ""
+        self.spriteRate = 1
+        self.loop = False
+        
         #These determine the size and shape of the fighter's ECB
         #Keep these at 0 to make it fit the sprite
         self.ecbCenter = [0,0]
         self.ecbSize = [0,0]
         self.ecbOffset = [0,0]
         
+        self.hitboxes = {}
+        self.hitboxLocks = {}
     
     # The update skeleton function. You must implement it for every action or you will get
     # an error.
     def update(self,actor):
-        return None
-    
+        if self.spriteRate is not 0:
+            if self.frame % self.spriteRate == 0:
+                if self.spriteRate < 0:
+                    actor.changeSpriteImage((self.frame / self.spriteRate)-1, loop=self.loop)
+                else:
+                    actor.changeSpriteImage(self.frame / self.spriteRate, loop=self.loop)
+            
     def stateTransitions(self,actor):
         return
     
     def setUp(self,actor):
-        return
+        actor.changeSprite(self.spriteName)
+        if self.spriteRate < 0:
+            actor.changeSpriteImage(len(actor.sprite.imageLibrary[actor.sprite.flip][actor.sprite.currentSheet])-1)
     
-    def tearDown(self,actor,newAction):
-        return
+    def tearDown(self,actor,nextAction):
+        for hitbox in self.hitboxes:
+            hitbox.kill()
     
     def onClank(self,actor):
         return
@@ -76,14 +90,17 @@ class DynamicAction(Action):
         if self.parent: self.parent.stateTransitions(self,actor)
     
     def setUp(self,actor):
-        for act in self.setUpActions:
-            act.execute(self,actor)
         if self.parent: self.parent.setUp(self,actor)
         
+        for act in self.setUpActions:
+            act.execute(self,actor)
+        
     def tearDown(self,actor,newAction):
+        if self.parent: self.parent.tearDown(self,actor,newAction)
+        
         for act in self.tearDownActions:
             act.execute(self,actor)
-        if self.parent: self.parent.tearDown(self,actor,newAction)
 
     def onClank(self,actor):
+        Action.onClank(self, actor)
         if self.parent: self.parent.onClank(self,actor)

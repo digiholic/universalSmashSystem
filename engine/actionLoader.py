@@ -17,6 +17,9 @@ def loadAction(actionName):
     #Get the action variables
     length = int(actionXML.find('length').text) if actionXML.find('length') is not None else 0
     startingFrame = int(actionXML.find('startingFrame').text) if actionXML.find('startingFrame') is not None else 0
+    spriteName = actionXML.find('sprite').text if actionXML.find('sprite') is not None else None
+    spriteRate = int(actionXML.find('spriteRate').text) if actionXML.find('spriteRate') is not None else 1
+    loop = bool(actionXML.find('loop').text) if actionXML.find('loop') is not None else False
     vars = {}
     if actionXML.find('vars') is not None:
         for var in actionXML.find('vars'):
@@ -96,6 +99,9 @@ def loadAction(actionName):
     dynAction.actionsAtLastFrame = subactionsAtLastFrame
     dynAction.setUpActions = setUpActions
     dynAction.tearDownActions = tearDownActions
+    if spriteName: dynAction.spriteName = spriteName
+    if spriteRate: dynAction.spriteRate = spriteRate
+    dynAction.loop = loop
     return dynAction
     
 class ActionLoader():
@@ -180,6 +186,9 @@ class ActionLoader():
     
     def AirDodge(self):
         return loadAction('AirDodge')
+    
+    def ForwardAttack(self):
+        return loadAction('ForwardAttack')
     
     ###############################################
     #           UNIMPLEMENTED ACTIONS             #
@@ -292,10 +301,6 @@ class ActionLoader():
         def __init__(self):
             action.Action.__init__(self)
             
-    class ForwardAttack(action.Action):
-        def __init__(self):
-            action.Action.__init__(self)
-    
     class ForwardSmash(action.Action):
         def __init__(self):
             action.Action.__init__(self)

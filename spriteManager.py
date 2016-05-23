@@ -78,11 +78,17 @@ class SpriteHandler(Sprite):
         self.get_image()
         self.changed = True
         
-    def changeSubImage(self,index):
-        self.index = index % len(self.imageLibrary[self.flip][self.currentSheet])
+    def changeSubImage(self,index,loop=False):
+        if index < 0:
+            index = (len(self.imageLibrary[self.flip][self.currentSheet])) + index
+        if loop:
+            self.index = index % len(self.imageLibrary[self.flip][self.currentSheet])
+        else:
+            self.index = min(index, len(self.imageLibrary[self.flip][self.currentSheet])-1)
+            
         self.get_image()
         self.changed = True
-    
+
     def rotate(self,angle = 0):
         self.angle = angle
         self.changed = True
@@ -91,9 +97,10 @@ class SpriteHandler(Sprite):
         try:
             self.image = self.imageLibrary[self.flip][self.currentSheet][int(self.index)]
         except:
-            print("Error loading sprite ", self.currentSheet, " Loading default")
+            print("Error loading sprite " + str(self.currentSheet) + " Loading default")
             self.image = self.imageLibrary[self.flip][self.startingImage][0]
-        
+            self.currentSheet = self.startingImage
+            
         self.rect = self.image.get_rect(midtop=self.rect.midtop)
         self.boundingRect = self.getBoundingBox()
         return self.image

@@ -1418,7 +1418,7 @@ class Pivot(baseActions.Pivot):
         
     def tearDown(self,actor,newAction):
         if isinstance(newAction, Move) or isinstance(newAction, Dash):
-            newActioxxn.accel = False
+            newAction.accel = False
 
 class RunPivot(baseActions.RunPivot):
     def __init__(self):
@@ -1463,10 +1463,6 @@ class RunStop(baseActions.RunStop):
             actor.changeSpriteImage(1)
         elif self.frame == 8:
             actor.changeSpriteImage(2)
-        elif self.frame == self.lastFrame:
-            if actor.keyHeld('jump'):
-                actor.doJump()
-            else: actor.doIdle()
         baseActions.RunStop.update(self, actor)
 
 

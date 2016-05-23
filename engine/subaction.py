@@ -1,6 +1,8 @@
+import engine.hitbox
 ########################################################
 #               ABSTRACT ACTIONS                       #
 ########################################################
+
 
 # SubActions are a single part of an Action, such as moving a fighter, or tweaking a sprite.
 class SubAction():
@@ -87,12 +89,11 @@ class ifVar(SubAction):
     @staticmethod
     def buildFromXml(node):
         variable = node.attrib['var']
-        print(variable)
-        
+        #print(variable)
         
         cond = node.find('compare').attrib.get('cond')
         if cond is None: cond = '=='
-        print(cond)
+        #print(cond)
         
         value = node.find('value')
         if value is not None:
@@ -102,20 +103,20 @@ class ifVar(SubAction):
                 value = float(value.text)
             elif value.attrib.get('type') == 'bool':
                 value = value.text == 'True'
-        print(value)
+        #print(value)
         
         ifActions = []
         for ifact in node.find('compare'):
             if subActionDict.has_key(ifact.tag): #Subactions string to class dict
                 ifActions.append(subActionDict[ifact.tag].buildFromXml(ifact))
-        print(ifActions)
+        #print(ifActions)
         
         elseActions = []
         if node.find('else') is not None:
             for elseact in node.find('else'):
                 if subActionDict.has_key(elseact.tag): #Subactions string to class dict
                     elseActions.append(subActionDict[elseact.tag].buildFromXml(elseact))
-        print(elseActions)
+        #print(elseActions)
         
         return ifVar(variable, cond, value, ifActions, elseActions)
               
@@ -129,10 +130,10 @@ class changeFighterSprite(SubAction):
     def __init__(self,sprite,subImage = 0):
         SubAction.__init__(self)
         self.sprite = sprite
-        self.subImage = subImage
         
     def execute(self, action, actor):
-        actor.changeSprite(self.sprite,self.subImage)
+        action.spriteName = self.sprite
+        actor.changeSprite(self.sprite)
         
     @staticmethod
     def buildFromXml(node):
@@ -145,12 +146,14 @@ class changeFighterSubimage(SubAction):
         self.index = index
         
     def execute(self, action, actor):
+        action.spriteRate = 0 #spriteRate has been broken, so we have to ignore it from now on
+        #TODO changeSpriteRate subaction
         actor.changeSpriteImage(self.index)
         
     @staticmethod
     def buildFromXml(node):
         return changeFighterSubimage(int(node.text))
-
+    
 ########################################################
 #               FIGHTER MOVEMENT                       #
 ########################################################
@@ -276,21 +279,134 @@ class changeAction(SubAction):
 ########################################################
 
 # Create a new hitbox
-class createHitBox(SubAction):
-    pass
+class createHitbox(SubAction):
+    def __init__(self,name,hitboxType,
+                 center,size,
+                 damage,baseKnockback,knockbackGrowth,trajectory,hitstun=1,
+                 hitboxLock="",
+                 weightInfluence=1,shieldMultiplier=1,transcendence=0,priorityDiff=0,
+                 xBias=0,yBias=0,xDraw=0.1,yDraw=0.1):
+        SubAction.__init__(self)
+        
+        self.name = name
+        self.hitboxType = hitboxType if hitboxType is not None else "damage"
+        self.center = center
+        self.size = size
+        self.damage = damage
+        self.baseKnockback = baseKnockback
+        self.knockbackGrowth = knockbackGrowth
+        self.trajectory = trajectory
+        self.hitstun = hitstun
+        self.hitboxLock = hitboxLock
+        self.weightInfluence = weightInfluence
+        self.shieldMultiplier = shieldMultiplier
+        self.transcendence = transcendence
+        self.priorityDiff = priorityDiff
+        self.xBias = xBias
+        self.yBias = yBias
+        self.xDraw = xDraw
+        self.yDraw = yDraw
+        
+    def execute(self, action, actor):
+        SubAction.execute(self, action, actor)
+        #Use an existing hitbox lock by name, or create a new one
+        if action.hitboxLocks.has_key(self.hitboxLock):
+            hitboxLock = action.hitboxLocks[self.hitboxLock]
+        else:
+            hitboxLock = engine.hitbox.HitboxLock()
+            action.hitboxLocks[self.hitboxLock] = hitboxLock
+        
+        #Create the hitbox of the right type    
+        if self.hitboxType == "damage":
+            hitbox = engine.hitbox.DamageHitbox(self.center, self.size, actor, 
+                                       self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.hitstun, 
+                                       hitboxLock,
+                                       self.weightInfluence, self.shieldMultiplier, self.transcendence, self.priorityDiff)
+        elif self.hitboxType == "sakurai":
+            pass
+        elif self.hitboxType == "autolink":
+            pass
+        elif self.hitboxType == "funnel":
+            pass
+        elif self.hitboxType == "grab":
+            pass
+        elif self.hitboxType == "reflector":
+            pass
+        action.hitboxes[self.name] = hitbox
+        
+    @staticmethod
+    def buildFromXml(node):
+        SubAction.buildFromXml(node)
+        #mandatory fields
+        name = node.find('name').text
+        hitboxType = node.attrib['type'] if node.attrib.has_key('type') else "damage"
+        center = map(int, node.find('center').text.split(','))
+        size = map(int, node.find('size').text.split(','))
+        damage = float(node.find('damage').text)
+        baseKnockback = float(node.find('baseKnockback').text)
+        knockbackGrowth = float(node.find('knockbackGrowth').text)
+        trajectory = int(node.find('trajectory').text)
+        
+        hitstun = float(loadNodeWithDefault(node, 'hitstun', 1.0))
+        hitboxLock = loadNodeWithDefault(node, 'hitboxLock', "")
+        weightInfluence = float(loadNodeWithDefault(node, 'weightInfluence', 1.0))
+        shieldMultiplier = float(loadNodeWithDefault(node, 'shieldMultiplier', 1.0))
+        transcendence = int(loadNodeWithDefault(node, 'transcendence', 0))
+        priorityDiff = float(loadNodeWithDefault(node, 'priority', 1.0))
+        xBias = float(loadNodeWithDefault(node, 'xBias', 0))
+        yBias = float(loadNodeWithDefault(node, 'yBias', 0))
+        xDraw = float(loadNodeWithDefault(node, 'xDraw', 0.1))
+        yDraw = float(loadNodeWithDefault(node, 'yDraw', 0.1))
+        
+        return createHitbox(name, hitboxType, center, size, damage, baseKnockback, knockbackGrowth,
+                     trajectory, hitstun, hitboxLock, weightInfluence, shieldMultiplier, transcendence,
+                     priorityDiff, xBias, yBias, xDraw, yDraw)
 
+def loadNodeWithDefault(node,subnode,default):
+    return node.find(subnode).text if node.find(subnode)is not None else default
+        
 # Change the properties of an existing hitbox, such as position, or power
-class modifyHitBox(SubAction):
+class modifyHitbox(SubAction):
     pass
 
 class activateHitbox(SubAction):
-    pass
-
+    def __init__(self,hitboxName):
+        SubAction.__init__(self)
+        self.hitboxName = hitboxName
+    
+    def execute(self, action, actor):
+        SubAction.execute(self, action, actor)
+        actor.active_hitboxes.add(action.hitboxes[self.hitboxName])
+    
+    @staticmethod
+    def buildFromXml(node):
+        return activateHitbox(node.text)
+    
 class deactivateHitbox(SubAction):
-    pass
+    def __init__(self,hitboxName):
+        SubAction.__init__(self)
+        self.hitboxName = hitboxName
+    
+    def execute(self, action, actor):
+        SubAction.execute(self, action, actor)
+        action.hitboxes[self.hitboxName].kill()
+    
+    @staticmethod
+    def buildFromXml(node):
+        return deactivateHitbox(node.text)
 
 class updateHitbox(SubAction):
-    pass
+    def __init__(self,hitboxName):
+        SubAction.__init__(self)
+        self.hitboxName = hitboxName
+    
+    def execute(self, action, actor):
+        SubAction.execute(self, action, actor)
+        action.hitboxes[self.hitboxName].update()
+    
+    @staticmethod
+    def buildFromXml(node):
+        return updateHitbox(node.text)
 
 
 # Change the fighter's Hurtbox (where they have to be hit to take damage)
@@ -303,5 +419,10 @@ subActionDict = {
                  'changeSprite': changeFighterSprite,
                  'changeSubimage': changeFighterSubimage,
                  'setFrame': changeActionFrame,
-                 'ifVar': ifVar
+                 'nextFrame': nextFrame,
+                 'ifVar': ifVar,
+                 'createHitbox': createHitbox,
+                 'activateHitbox': activateHitbox,
+                 'deactivateHitbox': deactivateHitbox,
+                 'updateHitbox': updateHitbox
                  }

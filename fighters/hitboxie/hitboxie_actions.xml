@@ -1,10 +1,9 @@
 <actionList>
 	<NeutralAction>
 		<length>1</length>
+		<sprite>idle</sprite>
+		<spriteRate>0</spriteRate>
 		
-		<frame number="0">
-			<changeSprite>idle</changeSprite>
-		</frame>
 		<frame number="1">
 			<setFrame>1</setFrame>
 		</frame>
@@ -12,48 +11,23 @@
 	
 	<Stop>
 		<length>9</length>
+		<sprite>pivot</sprite>
+		<spriteRate>3</spriteRate>
 		
-		<frame number="0">
-			<changeSprite>pivot</changeSprite>
-		</frame>
-		<frame number="3">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		<frame number="6">
-			<changeSubimage>2</changeSubimage>
-		</frame>
 	</Stop>
 	
 	<RunStop>
 		<length>12</length>
+		<sprite>pivot</sprite>
+		<spriteRate>4</spriteRate>
 		
-		<frame number="0">
-			<changeSprite>pivot</changeSprite>
-		</frame>
-		<frame number="4">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		<frame number="8">
-			<changeSubimage>2</changeSubimage>
-		</frame>
 	</RunStop>
 	
 	<Crouch>
 		<length>2</length>
+		<sprite>land</sprite>
 		
-		<setUp>
-			<changeSprite>land</changeSprite>
-		</setUp>
 		
-		<frame number="0">
-			<changeSubimage>0</changeSubimage>
-		</frame>
-		<frame number="1">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		<frame number="2">
-			<changeSubimage>2</changeSubimage>
-		</frame>
 		<frame number="last">
 			<setFrame>1</setFrame>
 		</frame>
@@ -61,30 +35,15 @@
 	
 	<CrouchGetup>
 		<length>9</length>
+		<sprite>land</sprite>
+		<spriteRate>-3</spriteRate>
 		
-		<setUp>
-			<changeSprite>land</changeSprite>
-			<changeSubimage>2</changeSubimage>
-		</setUp>
-		
-		<frame number="0">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		<frame number="3">
-			<changeSubimage>0</changeSubimage>
-		</frame>
 	</CrouchGetup>
 	
 	<Fall>
 		<length>1</length>
-		
-		<setUp>
-			<changeSprite>jump</changeSprite>
-		</setUp>
-		
-		<frame number="1">
-			<setFrame>0</setFrame>
-		</frame>	
+		<sprite>jump</sprite>
+		<spriteRate>0</spriteRate>
 	</Fall>
 	
 	<Land>
@@ -93,119 +52,58 @@
 	
 	<Jump>
 		<length>8</length>
+		<sprite>land</sprite>
+		<spriteRate>1</spriteRate>
 		
 		<vars>
 			<jumpFrame type="int">5</jumpFrame>
 		</vars>
 		
-		<setUp>
-			<changeSprite>land</changeSprite>
-		</setUp>
-		<frame number="1">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		<frame number="2">
-			<changeSubimage>2</changeSubimage>
-		</frame>
-		<frame number="3">
-			<changeSubimage>3</changeSubimage>
-		</frame>
 		<frame number="5">
 			<changeSprite>jump</changeSprite>
 		</frame>
 	</Jump>
 	
 	<AirJump>
-		<length>8</length>
+		<length>12</length>
+		<sprite>airjump</sprite>
+		<spriteRate>2</spriteRate>
 		
 		<vars>
-			<jumpFrame type="int">4</jumpFrame>
+			<jumpFrame type="int">6</jumpFrame>
 		</vars>
-		
-		<setUp>
-			<changeSprite>airjump</changeSprite>
-		</setUp>
-		
-		<frame number="1">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		<frame number="2">
-			<changeSubimage>2</changeSubimage>
-		</frame>
-		<frame number="4">
-			<changeSubimage>3</changeSubimage>
-		</frame>
-		<frame number="6">
-			<changeSubimage>4</changeSubimage>
-		</frame>
-		<frame number="8">
-			<changeSubimage>0</changeSubimage>
-		</frame>
 	</AirJump>
 	
 	<Helpless>
 		<length>2</length>
-		
-		<setUp>
-			<changeSprite>jump</changeSprite>
-		</setUp>
+		<sprite>jump</sprite>
+		<spriteRate>0</spriteRate>
 	</Helpless>
 	
 	<PlatformDrop>
 		<length>12</length>
-	
+		<sprite>airjump</sprite>
+		<spriterate>-2</spriterate>
+		
 		<vars>
 			<phaseFrame type="int">6</phaseFrame>
 			<phaseLength type="int">9</phaseLength>
 		</vars>
-		
-		<setUp>
-			<changeSprite>airjump</changeSprite>
-			<changeSubimage>4</changeSubimage>
-		</setUp>
-		
-		<frame number="2">
-			<changeFighterSpeed>
-				<ySpeed>3</ySpeed>
-			</changeFighterSpeed>
-		</frame>
-		<frame number="4">
-			<changeSubimage>3</changeSubimage>
-		</frame>
-		<frame number="6">
-			<changeSubimage>2</changeSubimage>
-		</frame>
-		<frame number="8">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		<frame number="10">
-			<changeSubimage>0</changeSubimage>
-		</frame>
 	</PlatformDrop>
 	
 	<Move>
 		<length>15</length>
+		<sprite>run</sprite>
+		<spriteRate>3</spriteRate>
 		
-		<setUp>
-			<changeSprite>run</changeSprite>
-		</setUp>
-		
-		<frame number="3">
-			<changeSubimage>1</changeSubimage>
+		<frame number="0">
+			<ifVar var="accel">
+				<value type="bool">False</value>
+				<compare>
+					<changeSubimage>4</changeSubimage>
+				</compare>
+			</ifVar>
 		</frame>
-		
-		<frame number="6">
-			<changeSubimage>2</changeSubimage>
-		</frame>
-		
-		<frame number="9">
-			<changeSubimage>3</changeSubimage>
-		</frame>
-		
-		<frame number="12">
-			<changeSubimage>4</changeSubimage>
-		</frame>
-		
 		<frame number="last">
 			<setFrame>12</setFrame>
 		</frame>
@@ -213,32 +111,27 @@
 	
 	<Dash>
 		<length>15</length>
-		
-		<setUp>
-			<changeSprite>run</changeSprite>
-		</setUp>
-		
-		<frame number="2">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		<frame number="4">
-			<changeSubimage>2</changeSubimage>
-		</frame>
-		<frame number="6">
-			<changeSubimage>3</changeSubimage>
-		</frame>
-		<frame number="8">
-			<changeSubimage>4</changeSubimage>
-		</frame>
+		<sprite>run</sprite>
+		<spriteRate>2</spriteRate>
 	</Dash>
 	
 	<Run>
 		<length>2</length>
+		<sprite>run</sprite>
+		<spriteRate>0</spriteRate>
 		
 		<setUp>
-			<changeSprite>run</changeSprite>
 			<changeSubimage>4</changeSubimage>
 		</setUp>
+		
+		<frame number="0">
+			<ifVar var="accel">
+				<value type="bool">False</value>
+				<compare>
+					<changeSubimage>4</changeSubimage>
+				</compare>
+			</ifVar>
+		</frame>
 		
 		<frame number="last">
 			<setFrame>1</setFrame>
@@ -247,53 +140,23 @@
 	
 	<Pivot>
 		<length>10</length>
+		<sprite>pivot</sprite>
+		<spriteRate>-2</spriteRate>
 		
-		<setUp>
-			<changeSprite>pivot</changeSprite>
-			<changeSubimage>4</changeSubimage>
-		</setUp>
-		
-		<frame number="2">
-			<changeSubimage>3</changeSubimage>
-		</frame>
-		<frame number="4">
-			<changeSubimage>2</changeSubimage>
-		</frame>
-		<frame number="6">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		<frame number="8">
-			<changeSubimage>0</changeSubimage>
-		</frame>
 	</Pivot>
 	
 	<RunPivot>
 		<length>15</length>
-		
-		<setUp>
-			<changeSprite>pivot</changeSprite>
-			<changeSubimage>4</changeSubimage>
-		</setUp>
-		
-		<frame number="3">
-			<changeSubimage>3</changeSubimage>
-		</frame>
-		<frame number="6">
-			<changeSubimage>2</changeSubimage>
-		</frame>
-		<frame number="9">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		<frame number="12">
-			<changeSubimage>0</changeSubimage>
-		</frame>
+		<sprite>pivot</sprite>
+		<spriteRate>-3</spriteRate>
 	</RunPivot>
 	
 	<Grabbing>
 		<length>1</length>
+		<sprite>pivot</sprite>
+		<spriteRate>0</spriteRate>
 		
 		<setUp>
-			<changeSprite>pivot</changeSprite>
 			<changeSubimage>4</changeSubimage>
 			<changeFighterSpeed>
 				<xSpeed>0</xSpeed>
@@ -303,58 +166,33 @@
 	
 	<Helpless>
 		<length>0</length>
-		
-		<setUp>
-			<changeSprite>jump</changeSprite>
-		</setUp>
+		<sprite>jump</sprite>
 	</Helpless>
 	
 	<Getup>
 		<length>12</length>
-		
-		<setUp>
-			<changeSprite>land</changeSprite>
-			<changeSubimage>0</changeSubimage>
-		</setUp>
-		
-		<frame number="3">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		
-		<frame number="6">
-			<changeSubimage>2</changeSubimage>
-		</frame>
-		
-		<frame number="9">
-			<changeSubimage>3</changeSubimage>
-		</frame>
-		
-		<frame number="12">
-			<changeSubimage>4</changeSubimage>
-		</frame>
+		<sprite>land</sprite>
+		<spriteRate>3</spriteRate>
 	</Getup>
 	
 	<PreShield>
 		<length>4</length>
-		
-		<setUp>
-			<changeSprite>jump</changeSprite>
-		</setUp>
+		<sprite>jump</sprite>
+		<spriteRate>0</spriteRate>
 	</PreShield>
 	
 	<Shield>
 		<length>4</length>
-		
-		<setUp>
-			<changeSprite>jump</changeSprite>
-		</setUp>
+		<sprite>jump</sprite>
+		<spriteRate>0</spriteRate>
 	</Shield>
 	
 	<ForwardRoll>
 		<length>46</length>
+		<sprite>land</sprite>
+		<spriteRate>0</spriteRate>
 		
 		<setUp>
-			<changeSprite>land</changeSprite>
 			<changeSubimage>1</changeSubimage>
 		</setUp>
 		
@@ -365,9 +203,10 @@
 	
 	<BackwardRoll>
 		<length>50</length>
+		<sprite>land</sprite>
+		<spriteRate>0</spriteRate>
 		
 		<setUp>
-			<changeSprite>land</changeSprite>
 			<changeSubimage>1</changeSubimage>
 		</setUp>
 		
@@ -378,17 +217,9 @@
 	
 	<SpotDodge>
 		<length>24</length>
+		<sprite>land</sprite>
+		<spriteRate>1</spriteRate>
 		
-		<setUp>
-			<changeSprite>land</changeSprite>
-		</setUp>
-		
-		<frame number="1">
-			<changeSubimage>1</changeSubimage>
-		</frame>
-		<frame number="2">
-			<changeSubimage>2</changeSubimage>
-		</frame>
 		<frame number="3">
 			<changeSubimage>3</changeSubimage>
 		</frame>
@@ -405,10 +236,8 @@
 	
 	<AirDodge>
 		<length>24</length>
-		
-		<setUp>
-			<changeSprite>nair</changeSprite>
-		</setUp>
+		<sprite>nair</sprite>
+		<spriteRate>0</spriteRate>
 		
 		<frame number="4">
 			<changeSubimage>2</changeSubimage>
@@ -421,4 +250,31 @@
 	<TechDodge>
 		<length>20</length>
 	</TechDodge>
+	
+	<ForwardAttack>
+		<length>24</length>
+		<sprite>fsmash</sprite>
+		<spriteRate>2</spriteRate>
+		
+		<setUp>
+			<createHitbox type="damage">
+				<name>fTilt0</name>
+				<center>20,0</center>
+				<size>120,40</size>
+				<damage>10</damage>
+				<baseKnockback>2</baseKnockback>
+				<knockbackGrowth>0.2</knockbackGrowth>
+				<trajectory>40</trajectory>
+			</createHitbox>
+		</setUp>
+		
+		<frame number="14">
+			<updateHitbox>fTilt0</updateHitbox>
+			<activateHitbox>fTilt0</activateHitbox>
+		</frame>
+		<frame number="16">
+			<deactivateHitbox>fTilt0</deactivateHitbox>
+		</frame>
+		
+	</ForwardAttack>
 </actionList>

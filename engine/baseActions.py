@@ -8,15 +8,20 @@ import settingsManager
 class Move(action.Action):
     def __init__(self,length=0):
         action.Action.__init__(self,length) 
-        self.direction = -1
         
     def setUp(self,actor):
+        if self.spriteName=="": self.spriteName = "move"
+        action.Action.setUp(self, actor)
+        self.accel = True
         self.direction = actor.facing
 
+
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.preferred_xspeed = 0
         
     def update(self, actor):
+        action.Action.update(self, actor)
         if actor.grounded is False:
             actor.doFall()
         actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
@@ -44,17 +49,21 @@ class Move(action.Action):
 class Dash(action.Action):
     def __init__(self,length=0): 
         action.Action.__init__(self,length)
-
+        
     def setUp(self,actor):
+        if self.spriteName=="": self.spriteName = "dash"
+        action.Action.setUp(self, actor)
         self.pivoted = False
         if actor.facing == 1: self.direction = 1
         else: self.direction = -1
 
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         if not isinstance(nextAction, Run):
             actor.preferred_xspeed = 0
 
     def update(self, actor):
+        action.Action.update(self, actor)
         if self.frame == 0:
             actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
         if actor.grounded is False:
@@ -77,15 +86,20 @@ class Run(action.Action):
         action.Action.__init__(self,length)
         
     def setUp(self,actor):
+        if self.spriteName=="": self.spriteName = "run"
+        action.Action.setUp(self, actor)
         if actor.facing == 1: self.direction = 1
         else: self.direction = -1
+        self.accel = True
 
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.preferred_xspeed = 0
             
     def update(self, actor):
+        action.Action.update(self, actor)
         if self.frame == 0:
-            actor.preferred_xspeed = math.copysign(actor.var['runSpeed'], actor.preferred_xspeed)
+            actor.preferred_xspeed = actor.var['runSpeed']*self.direction
         if actor.grounded is False:
             actor.doFall()
         actor.accel(actor.var['staticGrip'])
@@ -99,8 +113,15 @@ class Run(action.Action):
 class Pivot(action.Action):
     def __init__(self,length=0):
         action.Action.__init__(self, length)
-
+        
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName = "pivot"
+        action.Action.setUp(self, actor)
+        
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
+        if isinstance(nextAction, Move):
+            nextAction.accel = False
         actor.flip()
 
     def stateTransitions(self, actor):
@@ -108,6 +129,7 @@ class Pivot(action.Action):
             actor.doJump()
         
     def update(self,actor):
+        action.Action.update(self, actor)
         if actor.grounded is False:
             actor.doFall()
         actor.accel(actor.var['staticGrip'])
@@ -134,7 +156,13 @@ class Stop(action.Action):
     def __init__(self,length=0):
         action.Action.__init__(self, length)
         
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName = "stop"
+        action.Action.setUp(self, actor)
+        
     def update(self, actor):
+        action.Action.update(self, actor)
+        #print(self.frame,actor.sprite.index)
         actor.preferred_xspeed = 0
         self.frame += 1
         
@@ -153,19 +181,34 @@ class Stop(action.Action):
             if actor.keyHeld('jump'):
                 actor.doJump()
             else: actor.doIdle()
-
+    
+    def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
+        if isinstance(nextAction, Pivot):
+            nextAction.frame = self.frame
+            print(self.frame)
+        
 class RunPivot(action.Action):
     def __init__(self,length=0):
         action.Action.__init__(self, length)
-
+        
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="runPivot" 
+        action.Action.setUp(self, actor)
+        
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.flip()
+        if isinstance(nextAction, Run):
+            nextAction.accel = False
+        
         
     def stateTransitions(self, actor):
         if actor.keyHeld('jump', self.frame):
             actor.doJump()
         
     def update(self,actor):
+        action.Action.update(self, actor)
         if actor.grounded is False:
             actor.doFall()
         if self.frame != self.lastFrame:
@@ -175,9 +218,9 @@ class RunPivot(action.Action):
             (key, _) = actor.getForwardBackwardKeys()
             if actor.keysContain(key):
                 if actor.facing == 1:
-                    actor.doDash(0)
+                    actor.doRun(0)
                 else:
-                    actor.doDash(180)
+                    actor.doRun(180)
             else:
                 actor.doIdle()
 
@@ -185,8 +228,17 @@ class RunStop(action.Action):
     def __init__(self,length=0):
         action.Action.__init__(self, length)
         
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="runStop"
+        action.Action.setUp(self, actor)
+        
     def update(self, actor):
+        action.Action.update(self, actor)
         actor.preferred_xspeed = 0
+        if self.frame == self.lastFrame:
+            if actor.keyHeld('jump'):
+                actor.doJump()
+            else: actor.doIdle()
         self.frame += 1
         
     def stateTransitions(self, actor):
@@ -204,10 +256,11 @@ class RunStop(action.Action):
 class NeutralAction(action.Action):
     def __init__(self,length=0):
         action.Action.__init__(self, length)
-
-    def update(self, actor):
-        pass
     
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="neutralAction"
+        action.Action.setUp(self, actor)
+        
     def stateTransitions(self, actor):
         if actor.grounded is False:
             actor.doFall()
@@ -216,9 +269,10 @@ class NeutralAction(action.Action):
 class Crouch(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
-        self.direction = -1
-
+        
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="crouch"
+        action.Action.setUp(self, actor)
         self.direction = actor.getForwardWithOffset(0)
 
     def stateTransitions(self, actor):
@@ -235,6 +289,7 @@ class Crouch(action.Action):
                     actor.doPlatformDrop()
 
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.preferred_xspeed = 0
 
     def update(self, actor):
@@ -255,7 +310,11 @@ class Crouch(action.Action):
 class CrouchGetup(action.Action):
     def __init__(self,length=0):
         action.Action.__init__(self, length)
-
+        
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="crouchGetup"
+        action.Action.setUp(self, actor)
+        
     def stateTransitions(self, actor):
         if actor.grounded is False:
             actor.doFall()
@@ -278,8 +337,13 @@ class BaseGrabbing(action.Action):
     def __init__(self,length=0):
         action.Action.__init__(self, length)
 
-    def tearDown(self, actor, newAction):
-        if not isinstance(newAction, BaseGrabbing) and actor.isGrabbing():
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="baseGrabbing"
+        action.Action.setUp(self, actor)
+        
+    def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
+        if not isinstance(nextAction, BaseGrabbing) and actor.isGrabbing():
             actor.grabbing.doReleased()
 
 class Grabbing(BaseGrabbing):
@@ -287,9 +351,12 @@ class Grabbing(BaseGrabbing):
         BaseGrabbing.__init__(self, length)
 
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="grabbing"
+        action.Action.setUp(self, actor)
         actor.grabbing.flinch_damage_threshold = 9999
 
-    def tearDown(self, actor, newAction):
+    def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.grabbing.flinch_damage_threshold = 0
 
     def stateTransitions(self, actor):
@@ -302,8 +369,10 @@ class HitStun(action.Action):
         action.Action.__init__(self, hitstun)
         self.direction = direction
         self.hitstop = hitstop
+        if self.spriteName=="": self.spriteName ="hitStun"
 
     def setUp(self, actor):
+        action.Action.setUp(self, actor)
         actor.elasticity = actor.var['hitstunElasticity']
 
     def stateTransitions(self, actor):
@@ -340,12 +409,14 @@ class HitStun(action.Action):
             else: #Firm landing during hitstun
                 actor.ground_elasticity = actor.var['hitstunElasticity']/2
         
-    def tearDown(self, actor, newAction):
+    def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.unRotate()
         actor.elasticity = 0
         actor.ground_elasticity = 0
         
     def update(self,actor):
+        action.Action.update(self, actor)
         if self.frame == 0:
             (direct,mag) = actor.getDirectionMagnitude()
             print("direction:", direct)
@@ -377,6 +448,7 @@ class HitStun(action.Action):
 class TryTech(HitStun):
     def __init__(self, hitstun, direction, hitstop):
         HitStun.__init__(self, hitstun, direction, hitstop)
+        if self.spriteName=="": self.spriteName ="hitStun"
 
     def stateTransitions(self, actor):
         (direct,mag) = actor.getDirectionMagnitude()
@@ -425,9 +497,10 @@ class Trip(action.Action):
     def __init__(self,length=0,direction=0):
         action.Action.__init__(self, length)
         self.direction = direction
-        print("direction:", self.direction)
-
+        
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="trip"
+        action.Action.setUp(self, actor)
         actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
     def update(self, actor):
@@ -445,7 +518,11 @@ class Getup(action.Action):
     def __init__(self, direction, length):
         action.Action.__init__(self, length)
         self.direction = direction
-
+        
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="getup"
+        action.Action.setUp(self, actor)
+        
     def update(self, actor):
         if self.frame == self.lastFrame:
             actor.doIdle()
@@ -459,7 +536,11 @@ class Jump(action.Action):
     def __init__(self,length=0,jumpFrame=0):
         action.Action.__init__(self, length)
         self.jumpFrame = jumpFrame
-
+    
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="jump"
+        action.Action.setUp(self, actor)
+        
     def stateTransitions(self, actor):
         if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jumpFrame:
             print("Jump cancelled into up smash")
@@ -471,6 +552,7 @@ class Jump(action.Action):
             jumpState(actor)
         
     def update(self,actor):
+        action.Action.update(self, actor)
         if self.frame == self.jumpFrame:
             actor.grounded = False
             if actor.keysContain('jump'):
@@ -490,6 +572,10 @@ class AirJump(action.Action):
         action.Action.__init__(self, length)
         self.jumpFrame = jumpFrame
         #TODO: Change to add the number of buffer frames
+        
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="airjump"
+        action.Action.setUp(self, actor)
 
     def stateTransitions(self, actor):
         if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jumpFrame:
@@ -502,9 +588,11 @@ class AirJump(action.Action):
             jumpState(actor)
 
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.preferred_yspeed = actor.var['maxFallSpeed']
         
     def update(self,actor):
+        action.Action.update(self, actor)
         if self.frame < self.jumpFrame:
             actor.change_y = 0
             actor.preferred_yspeed = 0
@@ -530,6 +618,8 @@ class Fall(action.Action):
         action.Action.__init__(self, 1)
 
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="fall"
+        action.Action.setUp(self, actor)
         actor.preferred_xspeed = 0
         actor.preferred_yspeed = actor.var['maxFallSpeed']
     
@@ -538,13 +628,19 @@ class Fall(action.Action):
         grabLedges(actor)
         
     def update(self,actor):
+        action.Action.update(self, actor)
         actor.grounded = False
 
 class Helpless(action.Action):
     def __init__(self):
         action.Action.__init__(self, 1)
     
-    def tearDown(self, actor, newAction):
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="helpless"
+        action.Action.setUp(self, actor)
+    
+    def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.mask = None
         
     def stateTransitions(self, actor):
@@ -561,12 +657,16 @@ class Land(action.Action):
         action.Action.__init__(self, 6)
 
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="land"
+        action.Action.setUp(self, actor)
         actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.preferred_xspeed = 0
 
     def update(self,actor):
+        action.Action.update(self, actor)
         if self.frame == 0:
             actor.preferred_yspeed = actor.var['maxFallSpeed']
             self.lastFrame = actor.landingLag
@@ -594,9 +694,12 @@ class HelplessLand(action.Action):
         action.Action.__init__(self, 6)
 
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="helplessLand"
+        action.Action.setUp(self, actor)
         actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
     def update(self,actor):
+        action.Action.update(self, actor)
         if self.frame == 0:
             actor.change_y = 0
             actor.preferred_yspeed = actor.var['maxFallSpeed']
@@ -622,7 +725,11 @@ class PlatformDrop(action.Action):
         action.Action.__init__(self, length)
         self.phaseFrame = phaseFrame
         self.phaseLength = phaseLength
-
+        
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="platformDrop"
+        action.Action.setUp(self, actor)
+        
     def stateTransitions(self, actor):
         if actor.keyHeld('attack') and actor.checkSmash('down') and self.frame < self.phaseFrame:
             print("Platform drop cancelled into down smash")
@@ -634,6 +741,7 @@ class PlatformDrop(action.Action):
             airControl(actor)
         
     def update(self,actor):
+        action.Action.update(self, actor)
         if self.frame == self.phaseFrame:
             actor.platformPhase = self.phaseLength
         if self.frame == self.lastFrame:
@@ -643,11 +751,14 @@ class PlatformDrop(action.Action):
 class PreShield(action.Action):
     def __init__(self):
         action.Action.__init__(self, 4)
-
+        
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="shield"
+        action.Action.setUp(self, actor)
         self.reflectHitbox = hitbox.PerfectShieldHitbox([0,0], [actor.hurtbox.rect.width+10, actor.hurtbox.rect.height+10], actor, hitbox.HitboxLock())
 
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         self.reflectHitbox.kill()
 
     def stateTransitions(self, actor):
@@ -667,12 +778,17 @@ class PreShield(action.Action):
 class Shield(action.Action):
     def __init__(self):
         action.Action.__init__(self, 4)
-   
+    
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="shield"
+        action.Action.setUp(self, actor)
+        
     def stateTransitions(self, actor):
         shieldState(actor)
    
-    def tearDown(self, actor, newAction):
-        if not isinstance(newAction, ShieldStun):
+    def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
+        if not isinstance(nextAction, ShieldStun):
             actor.shield = False
        
     def update(self, actor):
@@ -701,9 +817,14 @@ class Shield(action.Action):
 class ShieldStun(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
+        
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="shieldStun"
+        action.Action.setUp(self, actor)
 
-    def tearDown(self, actor, newAction):
-        if not isinstance(newAction, Shield) and not isinstance(newAction, ShieldStun):
+    def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
+        if not isinstance(nextAction, Shield) and not isinstance(nextAction, ShieldStun):
             actor.shield = False
 
     def update(self, actor):
@@ -719,7 +840,12 @@ class ShieldStun(action.Action):
 class Stunned(action.Action):
     def __init__(self, length):
         action.Action.__init__(self, length)
-
+        if self.spriteName=="": self.spriteName ="stunned"
+    
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="stunned"
+        action.Action.setUp(self, actor)
+        
     def update(self, actor):
         if self.frame == self.lastFrame:
             actor.doIdle()
@@ -730,8 +856,13 @@ class Trapped(action.Action):
         action.Action.__init__(self, length)
         self.time = 0
         self.lastPosition = [0,0]
-
+        
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="trapped"
+        action.Action.setUp(self, actor)
+        
     def update(self,actor):
+        action.Action.update(self, actor)
         newPosition = actor.getSmoothedInput()
         cross = newPosition[0]*self.lastPosition[1]-newPosition[1]*self.lastPosition[0]
         self.frame += (cross**2)*4
@@ -748,8 +879,13 @@ class Grabbed(Trapped):
     def __init__(self,height):
         Trapped.__init__(self, 40)
         self.height = height
-
+        
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="grabbed"
+        Trapped.setUp(self, actor)
+        
     def update(self,actor):
+        action.Action.update(self, actor)
         if self.frame == 0:
             self.lastFrame = 40 + actor.damage//2
         if (self.height > actor.rect.height):
@@ -762,7 +898,11 @@ class Grabbed(Trapped):
 class Release(action.Action):
     def __init__(self):
         action.Action.__init__(self, 15)
-
+    
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="release"
+        action.Action.setUp(self, actor)
+        
     def update(self, actor):
         if actor.grounded is False:
             actor.doFall()
@@ -775,6 +915,8 @@ class Released(action.Action):
         action.Action.__init__(self, 15)
 
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="released"
+        action.Action.setUp(self, actor)
         actor.preferred_xspeed = 0
         actor.preferred_yspeed = actor.var['maxFallSpeed']
     
@@ -800,6 +942,7 @@ class Released(action.Action):
         grabLedges(actor)
         
     def update(self,actor):
+        action.Action.update(self, actor)
         actor.grounded = False
         if self.frame >= self.lastFrame:
             actor.doFall()
@@ -812,8 +955,11 @@ class ForwardRoll(action.Action):
     def setUp(self, actor):
         self.startInvulnFrame = 6
         self.endInvulnFrame = 34
-    
+        if self.spriteName=="": self.spriteName ="forwardRoll"
+        action.Action.setUp(self, actor)
+
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.preferred_xspeed = 0
         if actor.invulnerable > 0:
             actor.invulnerable = 0
@@ -840,12 +986,15 @@ class ForwardRoll(action.Action):
 class BackwardRoll(action.Action):
     def __init__(self):
         action.Action.__init__(self, 50)
-    
-    def setUp(self, actor):
+        
+    def setUp(self,actor):
         self.startInvulnFrame = 6
         self.endInvulnFrame = 34
-    
+        if self.spriteName=="": self.spriteName ="backwardRoll"
+        action.Action.setUp(self, actor)
+
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.preferred_xspeed = 0
         if actor.invulnerable > 0:
             actor.invulnerable = 0
@@ -871,18 +1020,22 @@ class BackwardRoll(action.Action):
 class SpotDodge(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)
-
-    def setUp(self, actor):
+        
+    def setUp(self,actor):
         self.startInvulnFrame = 4
         self.endInvulnFrame = 20
-    
+        if self.spriteName=="": self.spriteName ="spotDodge"
+        action.Action.setUp(self, actor)
+
     def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         actor.preferred_xspeed = 0
         if actor.invulnerable > 0:
             actor.invulnerable = 0
         actor.mask = None
         
     def update(self,actor):
+        action.Action.update(self, actor)
         if actor.grounded is False:
             actor.doFall()
         elif actor.keyBuffered('down', 1) and self.frame > 0:
@@ -899,7 +1052,7 @@ class SpotDodge(action.Action):
         elif self.frame == self.endInvulnFrame:
             pass
         elif self.frame == self.lastFrame:
-            if 'shield' in actor.keysHeld:
+            if actor.keyHeld('shield'):
                 actor.doShield()
             else:
                 actor.doIdle()
@@ -910,10 +1063,12 @@ class AirDodge(action.Action):
         action.Action.__init__(self, 24)
         
     def setUp(self,actor):
+        if self.spriteName=="": self.spriteName ="airDodge"
+        action.Action.setUp(self, actor)
         self.startInvulnFrame = 4
         self.endInvulnFrame = 20
         self.move_vec = [0,0]
-    
+        
         if settingsManager.getSetting('enableWavedash'):
             actor.landingLag = 16
         else:
@@ -923,7 +1078,8 @@ class AirDodge(action.Action):
             actor.change_x = self.move_vec[0]*actor.var['dodgeSpeed']
             actor.change_y = self.move_vec[1]*actor.var['dodgeSpeed']
         
-    def tearDown(self,actor,other):
+    def tearDown(self,actor,nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         if settingsManager.getSetting('airDodgeType') == 'directional':
             actor.preferred_yspeed = actor.var['maxFallSpeed']
             actor.preferred_xspeed = 0
@@ -938,6 +1094,7 @@ class AirDodge(action.Action):
             actor.doLand()
                 
     def update(self,actor):
+        action.Action.update(self, actor)
         if settingsManager.getSetting('airDodgeType') == 'directional':
             if self.frame == 0:
                 actor.preferred_xspeed = actor.change_x
@@ -965,7 +1122,11 @@ class AirDodge(action.Action):
 class TechDodge(AirDodge):
     def __init__(self):
         AirDodge.__init__(self)
-
+        
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="techDodge"
+        AirDodge.setUp(self, actor)
+        
     def stateTransitions(self, actor):
         (direct) = actor.getDirectionMagnitude()
         if self.frame < 20 and actor.grounded:
@@ -978,18 +1139,23 @@ class LedgeGrab(action.Action):
     def __init__(self,ledge):
         action.Action.__init__(self, 1)
         self.ledge = ledge
+        
 
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="ledgeGrab"
+        action.Action.setUp(self, actor)
         actor.createMask([255,255,255], settingsManager.getSetting('ledgeInvincibilityTime'), True, 12)
         actor.invulnerable = settingsManager.getSetting('ledgeInvincibilityTime')
         
-    def tearDown(self,actor,newAction):
+    def tearDown(self,actor,nextAction):
+        action.Action.tearDown(self, actor, nextAction)
         self.ledge.fighterLeaves(actor)
         
     def stateTransitions(self,actor):
         ledgeState(actor)
         
     def update(self,actor):
+        action.Action.update(self, actor)
         actor.jumps = actor.var['jumps']
         actor.setSpeed(0, actor.getFacingDirection())
 
@@ -998,16 +1164,78 @@ class LedgeGetup(action.Action):
         action.Action.__init__(self, length)
 
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="ledgeGetup"
+        action.Action.setUp(self, actor)
         if actor.facing == 1:
             actor.rect.left -= actor.rect.width//2
         else:
             actor.rect.right += actor.rect.width//2
     
     def update(self,actor):
+        action.Action.update(self, actor)
         if self.frame >= self.lastFrame:
             actor.doIdle()
         self.frame += 1
 
+########################################################
+#                    ATTACK ACTIONS                    #
+########################################################
+class BaseAttack(action.Action):
+    def __init__(self, length):
+        action.Action.__init__(self, length)
+        
+    def tearDown(self, actor, nextAction):
+        for _,hitbox in self.hitboxes.iteritems():
+            hitbox.kill()
+            
+    def stateTransitions(self, actor):
+        action.Action.stateTransitions(self, actor)
+        if self.frame == self.lastFrame:
+            if actor.grounded:
+                actor.doIdle()
+            else:
+                actor.doFall()
+        
+    def update(self, actor):
+        action.Action.update(self, actor)
+        self.frame += 1
+        
+class ChargeAttack(BaseAttack):
+    def __init__(self,length,startChargeFrame,endChargeFrame,maxChargeLevel,damageDelta,baseKBDelta,kbGrowthDelta):
+        BaseAttack.__init__(self, length)
+        self.startChargingFrame = startChargeFrame
+        self.endChargeFrame = endChargeFrame
+        self.maxChargeLevel = maxChargeLevel
+        self.damageDelta = damageDelta
+        self.baseKBDelta = baseKBDelta
+        self.kbGrowthDelta = kbGrowthDelta
+        
+    def setUp(self, actor):
+        self.chargeLevel = 0
+        BaseAttack.setUp(self, actor)
+    def update(self, actor):
+        BaseAttack.update(self, actor)
+        if self.frame == self.startChargingFrame:
+            if actor.keysContain('attack') and self.chargeLevel == 0:
+                actor.createMask([255,255,0],72,True,32)
+        
+        #Find solution for multiple hitboxes
+        if self.frame == self.endChargeFrame:
+            if actor.keysContain('attack') and self.chargeLevel <= 30:
+                print("charging...")
+                self.chargeLevel += 1
+                self.fSmashHitbox.damage += .213
+                self.fSmashHitbox.baseKnockback += 0.02
+                self.frame -= 1
+        
+                
+class ForwardAttack(BaseAttack):
+    def __init__(self, length):
+        BaseAttack.__init__(self, length)
+
+class ForwardSmash(ChargeAttack):
+    def __init__(self,length):
+        ChargeAttack.__init__(self, length)
 ########################################################
 #               TRANSITION STATES                     #
 ########################################################
@@ -1304,5 +1532,6 @@ nameToClass = {
                'ForwardRoll': ForwardRoll,
                'BackwardRoll': BackwardRoll,
                'SpotDodge': SpotDodge,
-               'AirDodge': AirDodge
+               'AirDodge': AirDodge,
+               'ForwardAttack': ForwardAttack
                }
