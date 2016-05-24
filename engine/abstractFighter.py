@@ -197,21 +197,20 @@ class AbstractFighter():
         futureRect.y += self.change_y
 
         t = 1
+        toBounceBlock = None
 
         block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
             if self.catchMovement(block) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block) < t:
                 t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block)
+                toBounceBlock = block
 
         self.rect.y += self.change_y*t
         self.rect.x += self.change_x*t
         self.ecb.normalize()
 
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.currentECB, self.gameState.platform_list, False)
-        for block in block_hit_list:
-            if block.solid or self.platformPhase <= 0:
-                self.platformPhase = 0
-                self.ejectMovement(block)
+        if toBounceBlock is not None:
+            self.ejectMovement(toBounceBlock)
 
         groundBlocks = self.checkForGround()
 
@@ -858,24 +857,11 @@ class AbstractFighter():
         return filter(lambda r: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, q.rect)))
 
     def ejectMovement(self, other):
-        
-        """
         self.ecb.normalize()
         checkRect = other.rect.copy()
-        checkRect.centerx -= other.change_x
-        checkRect.centery -= other.change_y
-        t = pathRectIntersects(newPrev, self.ecb.currentECB.rect, checkRect)
-
-        dxLeft = -newPrev.left-t*(self.ecb.currentECB.rect.left-newPrev.left)+checkRect.right
-        dxRight = newPrev.right+t*(self.ecb.currentECB.rect.right-newPrev.right)-checkRect.left
-        dyUp = -newPrev.top-t*(self.ecb.currentECB.rect.top-newPrev.top)+checkRect.bottom
-        dyDown = newPrev.bottom+t*(self.ecb.currentECB.rect.bottom-newPrev.bottom)-checkRect.top
-        """
-        self.ecb.normalize()
-        checkRect = other.rect.copy()
-        checkRect.centerx -= other.change_x
-        checkRect.centery -= other.change_y
-        newPrev = self.ecb.currentECB.rect.copy()
+        #checkRect.centerx -= other.change_x
+        #checkRect.centery -= other.change_y
+        newPrev = self.ecb.previousECB.rect.copy()
         newPrev.center = self.ecb.previousECB.rect.center
 
         dxLeft = -self.ecb.currentECB.rect.left+checkRect.right
@@ -907,8 +893,8 @@ class AbstractFighter():
     def catchMovement(self, other):
         self.ecb.normalize()
         checkRect = other.rect.copy()
-        checkRect.centerx -= other.change_x
-        checkRect.centery -= other.change_y
+        #checkRect.centerx -= other.change_x
+        #checkRect.centery -= other.change_y
         newPrev = self.ecb.currentECB.rect.copy()
         newPrev.center = self.ecb.previousECB.rect.center
         t = pathRectIntersects(newPrev, self.ecb.currentECB.rect, checkRect)
@@ -938,8 +924,8 @@ class AbstractFighter():
     def ejectSize(self, other):
         self.ecb.normalize()
         checkRect = other.rect.copy()
-        checkRect.centerx -= other.change_x
-        checkRect.centery -= other.change_y
+        #checkRect.centerx -= other.change_x
+        #checkRect.centery -= other.change_y
 
         dxLeft = -self.ecb.currentECB.rect.left+checkRect.right
         dxRight = self.ecb.currentECB.rect.right-checkRect.left
@@ -959,6 +945,7 @@ class AbstractFighter():
                 if self.change_x < other.change_x:
                     self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
         if dy <= dx:
+            print dyDown-self.ecb.currentECB.rect.bottom+self.ecb.previousECB.rect.bottom
             if dyUp >= dyDown and other.solid:
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
                 if self.change_y >= other.change_y + self.var['gravity']:
