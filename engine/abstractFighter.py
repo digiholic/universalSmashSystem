@@ -218,6 +218,7 @@ class AbstractFighter():
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
         if not block is None:
             self.rect.x += block.change_x
+            self.rect.y += 0.2
             #self.rect.y += block.change_y
             self.change_y -= self.var['gravity']
 
@@ -263,7 +264,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 2
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB.rect.bottom-self.change_y <= block.rect.top-block.change_y+2:
+                if self.ecb.previousECB.rect.bottom+self.change_y <= block.rect.top+block.change_y+2:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
