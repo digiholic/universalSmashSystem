@@ -190,6 +190,9 @@ class ActionLoader():
     def ForwardAttack(self):
         return loadAction('ForwardAttack')
     
+    def ForwardSmash(self):
+        return loadAction('ForwardSmash')
+    
     ###############################################
     #           UNIMPLEMENTED ACTIONS             #
     ###############################################           
@@ -300,11 +303,6 @@ class ActionLoader():
     class DownSmash(action.Action):
         def __init__(self):
             action.Action.__init__(self)
-            
-    class ForwardSmash(action.Action):
-        def __init__(self):
-            action.Action.__init__(self)
-            self.chargeLevel = 0
     
     class NeutralAir(action.Action):
         def __init__(self):

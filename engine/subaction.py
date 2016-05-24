@@ -285,6 +285,7 @@ class createHitbox(SubAction):
                  damage,baseKnockback,knockbackGrowth,trajectory,hitstun=1,
                  hitboxLock="",
                  weightInfluence=1,shieldMultiplier=1,transcendence=0,priorityDiff=0,
+                 chargeDamage=0,chargeBKB=0,chargeKBG=0,
                  xBias=0,yBias=0,xDraw=0.1,yDraw=0.1):
         SubAction.__init__(self)
         
@@ -302,6 +303,9 @@ class createHitbox(SubAction):
         self.shieldMultiplier = shieldMultiplier
         self.transcendence = transcendence
         self.priorityDiff = priorityDiff
+        self.chargeDamage = chargeDamage
+        self.chargeBKB = chargeBKB
+        self.chargeKBG = chargeKBG
         self.xBias = xBias
         self.yBias = yBias
         self.xDraw = xDraw
@@ -353,6 +357,11 @@ class createHitbox(SubAction):
         shieldMultiplier = float(loadNodeWithDefault(node, 'shieldMultiplier', 1.0))
         transcendence = int(loadNodeWithDefault(node, 'transcendence', 0))
         priorityDiff = float(loadNodeWithDefault(node, 'priority', 1.0))
+        
+        chargeDamage = float(loadNodeWithDefault(node.find('chargeable'), 'damage', 0))
+        chargeBKB = float(loadNodeWithDefault(node.find('chargeable'), 'baseKnockback', 0))
+        chargeKBG = float(loadNodeWithDefault(node.find('chargeable'), 'knockbackGrowth', 0))
+        
         xBias = float(loadNodeWithDefault(node, 'xBias', 0))
         yBias = float(loadNodeWithDefault(node, 'yBias', 0))
         xDraw = float(loadNodeWithDefault(node, 'xDraw', 0.1))
@@ -360,10 +369,14 @@ class createHitbox(SubAction):
         
         return createHitbox(name, hitboxType, center, size, damage, baseKnockback, knockbackGrowth,
                      trajectory, hitstun, hitboxLock, weightInfluence, shieldMultiplier, transcendence,
-                     priorityDiff, xBias, yBias, xDraw, yDraw)
+                     priorityDiff, chargeDamage, chargeBKB, chargeKBG,
+                     xBias, yBias, xDraw, yDraw)
 
 def loadNodeWithDefault(node,subnode,default):
-    return node.find(subnode).text if node.find(subnode)is not None else default
+    if node is not None:
+        return node.find(subnode).text if node.find(subnode)is not None else default
+    else:
+        return default
         
 # Change the properties of an existing hitbox, such as position, or power
 class modifyHitbox(SubAction):

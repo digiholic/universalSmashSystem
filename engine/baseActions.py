@@ -1201,33 +1201,28 @@ class BaseAttack(action.Action):
         self.frame += 1
         
 class ChargeAttack(BaseAttack):
-    def __init__(self,length,startChargeFrame,endChargeFrame,maxChargeLevel,damageDelta,baseKBDelta,kbGrowthDelta):
+    def __init__(self,length,startChargeFrame,endChargeFrame,maxCharge):
         BaseAttack.__init__(self, length)
-        self.startChargingFrame = startChargeFrame
+        self.startChargezzzzFrame = startChargeFrame
         self.endChargeFrame = endChargeFrame
-        self.maxChargeLevel = maxChargeLevel
-        self.damageDelta = damageDelta
-        self.baseKBDelta = baseKBDelta
-        self.kbGrowthDelta = kbGrowthDelta
+        self.maxCharge
         
     def setUp(self, actor):
         self.chargeLevel = 0
         BaseAttack.setUp(self, actor)
     def update(self, actor):
         BaseAttack.update(self, actor)
-        if self.frame == self.startChargingFrame:
+        if self.frame == self.startChargeFrame:
             if actor.keysContain('attack') and self.chargeLevel == 0:
                 actor.createMask([255,255,0],72,True,32)
         
         #Find solution for multiple hitboxes
         if self.frame == self.endChargeFrame:
-            if actor.keysContain('attack') and self.chargeLevel <= 30:
-                print("charging...")
+            if actor.keysContain('attack') and self.chargeLevel <= self.maxCharge:
+                for _,hitbox in self.hitboxes.iteritems():
+                    hitbox.charge()
                 self.chargeLevel += 1
-                self.fSmashHitbox.damage += .213
-                self.fSmashHitbox.baseKnockback += 0.02
-                self.frame -= 1
-        
+                self.frame = self.startChargeFrame
                 
 class ForwardAttack(BaseAttack):
     def __init__(self, length):
@@ -1235,7 +1230,7 @@ class ForwardAttack(BaseAttack):
 
 class ForwardSmash(ChargeAttack):
     def __init__(self,length):
-        ChargeAttack.__init__(self, length)
+        ChargeAttack.__init__(self, length,0,1)
 ########################################################
 #               TRANSITION STATES                     #
 ########################################################
@@ -1533,5 +1528,6 @@ nameToClass = {
                'BackwardRoll': BackwardRoll,
                'SpotDodge': SpotDodge,
                'AirDodge': AirDodge,
-               'ForwardAttack': ForwardAttack
+               'ForwardAttack': ForwardAttack,
+               'ForwardSmash': ForwardSmash
                }

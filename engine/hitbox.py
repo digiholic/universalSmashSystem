@@ -50,8 +50,9 @@ class Hurtbox(spriteManager.RectSprite):
 class DamageHitbox(Hitbox):
     def __init__(self,center,size,owner,
                  damage,baseKnockback,knockbackGrowth,trajectory,
-                 hitstun,hitbox_lock,weight_influence=1,shield_multiplier=1, 
-                 transcendence=0, priority_diff=0):
+                 hitstun,hitbox_lock,weight_influence=1,shield_multiplier=1,
+                 transcendence=0, priority_diff=0,
+                 chargeDamage=0,chargeBKB=0,chargeKBG=0):
         Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,damage+priority_diff)
         self.damage = damage
         self.baseKnockback = baseKnockback
@@ -60,6 +61,9 @@ class DamageHitbox(Hitbox):
         self.hitstun = hitstun
         self.weight_influence = weight_influence
         self.shield_multiplier = shield_multiplier
+        self.chargeDamage = chargeDamage
+        self.chargeBKB = chargeBKB
+        self.chargeKBG = chargeKBG
         
     def onCollision(self,other):
         Hitbox.onCollision(self, other)
@@ -82,15 +86,21 @@ class DamageHitbox(Hitbox):
     def update(self):
         Hitbox.update(self)
         self.recenterSelfOnOwner() 
-
+    
+    def charge(self):
+        self.damage += self.chargeDamage
+        self.baseKnockback += self.chargeBKB
+        self.knockbackGrowth += self.chargeKBG
+    
 class SakuraiAngleHitbox(DamageHitbox):
     def __init__(self,center,size,owner,
                  damage,baseKnockback,knockbackGrowth,trajectory,
                  hitstun,hitbox_lock,weight_influence=1,shield_multiplier=1,
-                 transcendence=0,priority_diff=0):
+                 transcendence=0,priority_diff=0,
+                 chargeDamage=0,chargeBKB=0,chargeKBG=0):
         DamageHitbox.__init__(self, center, size, owner, damage, baseKnockback, knockbackGrowth, 
                  trajectory, hitstun, hitbox_lock, weight_influence, shield_multiplier,
-                 transcendence,priority_diff)
+                 transcendence,priority_diff,chargeDamage,chargeBKB,chargeKBG)
 
     def onCollision(self, other):
         Hitbox.onCollision(self, other)
@@ -123,9 +133,10 @@ class SakuraiAngleHitbox(DamageHitbox):
 class AutolinkHitbox(DamageHitbox):
     def __init__(self,center,size,owner,damage,
                 hitstun,hitbox_lock,x_bias=0,y_bias=0,shield_multiplier=1,
-                velocity_multiplier=1,transcendence=0,priority_diff=0):
+                velocity_multiplier=1,transcendence=0,priority_diff=0,
+                 chargeDamage=0,chargeBKB=0,chargeKBG=0):
         DamageHitbox.__init__(self,center,size,owner,damage,0,0,0,hitstun,hitbox_lock,0,shield_multiplier,
-                transcendence,priority_diff)
+                transcendence,priority_diff,chargeDamage,chargeBKB,chargeKBG)
         self.velocity_multiplier=velocity_multiplier
         self.x_bias=x_bias
         self.y_bias=y_bias
@@ -154,9 +165,10 @@ class AutolinkHitbox(DamageHitbox):
 class FunnelHitbox(DamageHitbox):
     def __init__(self,center,size,owner,damage,knockback,trajectory,
                 hitstun,hitbox_lock,x_draw=0.1,y_draw=0.1,
-                shield_multiplier=1,transcendence=0,priority_diff=0):
+                shield_multiplier=1,transcendence=0,priority_diff=0,
+                 chargeDamage=0,chargeBKB=0,chargeKBG=0):
         DamageHitbox.__init__(self,center,size,owner,damage,knockback,0,trajectory,hitstun,hitbox_lock,0,shield_multiplier,
-                transcendence,priority_diff)
+                transcendence,priority_diff,chargeDamage,chargeBKB,chargeKBG)
         self.x_draw=x_draw
         self.y_draw=y_draw
 

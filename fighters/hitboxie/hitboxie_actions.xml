@@ -275,6 +275,66 @@
 		<frame number="16">
 			<deactivateHitbox>fTilt0</deactivateHitbox>
 		</frame>
-		
 	</ForwardAttack>
+	
+	<ForwardSmash>
+		<length>46</length>
+		<sprite>fsmash</sprite>
+		<spriteRate>2</spriteRate>
+		
+		<vars>
+			<startChargeFrame type="int">4</startChargeFrame>
+			<endChargeFrame type="int">6</endChargeFrame>
+			<maxCharge type="int">15</maxCharge>
+		</vars>
+		
+		<setUp>
+			<createHitbox>
+				<name>fSmash0</name>
+				<center>20,0</center>
+				<size>120,40</size>
+				<damage>16</damage>
+				<baseKnockback>0.8</baseKnockback>
+				<knockbackGrowth>0.25</knockbackGrowth>
+				<trajectory>40</trajectory>
+				<chargeable>
+					<damage>.426</damage>
+					<baseKnockback>0.04</baseKnockback>
+				</chargeable>
+			</createHitbox>
+		</setUp>
+		
+		<frame number="2">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="4">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="8">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="10">
+			<changeSubimage>4</changeSubimage>
+		</frame>
+		<frame number="12">
+			<changeSubimage>5</changeSubimage>
+		</frame>
+		<frame number="14">
+			<changeSubimage>6</changeSubimage>
+		</frame>
+		<frame number="16">
+			<changeSubimage>7</changeSubimage>
+			<updateHitbox>fSmash0</updateHitbox>
+			<activateHitbox>fSmash0</activateHitbox>
+		</frame>
+		<frame number="32">
+			<deactivateHitbox>fSmash0</deactivateHitbox>
+		</frame>
+		<frame number="40">
+			<changeSubimage>8</changeSubimage>
+		</frame>
+		<frame number="43">
+			<changeSubimage>9</changeSubimage>
+		</frame>
+	</ForwardSmash>
 </actionList>
