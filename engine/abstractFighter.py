@@ -264,7 +264,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 2
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB.rect.bottom+self.change_y*0 <= block.rect.top+block.change_y+2:
+                if True or self.ecb.previousECB.rect.bottom+self.change_y*0 <= block.rect.top+block.change_y+2:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -913,7 +913,7 @@ class AbstractFighter():
         checkRect = other.rect.copy()
         #checkRect.centerx -= other.change_x
         #checkRect.centery -= other.change_y
-
+        """
         if other.solid:
             if intersectPoint(self.ecb.currentECB.rect, checkRect) is not None:
                 print(intersectPoint(self.ecb.currentECB.rect, checkRect))
@@ -922,9 +922,10 @@ class AbstractFighter():
         elif checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect):
             if intersectPoint(self.ecb.currentECB.rect, checkRect) is not None:
                 self.rect.y += intersectPoint(self.ecb.currentECB.rect, checkRect)[1]
+        """
         
 
-        """
+        
         dxLeft = -self.ecb.currentECB.rect.left+checkRect.right
         dxRight = self.ecb.currentECB.rect.right-checkRect.left
         dyUp = -self.ecb.currentECB.rect.top+checkRect.bottom
@@ -955,7 +956,7 @@ class AbstractFighter():
                 self.rect.top = other.rect.bottom+self.rect.top-self.ecb.currentECB.rect.top
                 if self.change_y <= other.change_y + self.var['gravity']:
                     self.change_y = -self.elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-        """
+        
         
         
 ########################################################
