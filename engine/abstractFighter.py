@@ -264,7 +264,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 2
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB.rect.bottom+self.change_y <= block.rect.top+block.change_y+2:
+                if self.ecb.previousECB.rect.bottom+self.change_y*0 <= block.rect.top+block.change_y+2:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -884,7 +884,7 @@ class AbstractFighter():
             if dyUp >= dyDown and other.solid:
                 if self.change_y >= other.change_y + self.var['gravity']:
                     self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-            elif dyDown <= self.ecb.currentECB.rect.bottom-newPrev.bottom and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
+            elif not other.solid and dyDown <= self.ecb.currentECB.rect.bottom-newPrev.bottom and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
                 if self.change_y >= other.change_y + self.var['gravity']:
                     self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
             elif dyDown >= dyUp and other.solid:
@@ -894,32 +894,18 @@ class AbstractFighter():
     def catchMovement(self, other):
         self.ecb.normalize()
         checkRect = other.rect.copy()
-        #checkRect.centerx -= other.change_x
-        #checkRect.centery -= other.change_y
         newPrev = self.ecb.currentECB.rect.copy()
         newPrev.center = self.ecb.previousECB.rect.center
         t = pathRectIntersects(newPrev, self.ecb.currentECB.rect, checkRect)
 
-        dxLeft = -newPrev.left-t*(self.ecb.currentECB.rect.left-newPrev.left)+checkRect.right
-        dxRight = newPrev.right+t*(self.ecb.currentECB.rect.right-newPrev.right)-checkRect.left
-        dyUp = -newPrev.top-t*(self.ecb.currentECB.rect.top-newPrev.top)+checkRect.bottom
-        dyDown = newPrev.bottom+t*(self.ecb.currentECB.rect.bottom-newPrev.bottom)-checkRect.top
+        myRect = self.ecb.currentECB.rect.copy()
+        myRect.x += t*(self.ecb.currentECB.rect.x-newPrev.x)
+        myRect.y += t*(self.ecb.currentECB.rect.y-newPrev.y)
 
-        dx = min(max(0, dxRight), max(0, dxLeft))
-        dy = min(max(0, dyUp), max(0, dyDown))
-        
-        if dx <= dy:
-            if dxLeft >= dxRight and other.solid:
-                return True
-            elif dxRight >= dxLeft and other.solid:
-                return True
-        if dy <= dx:
-            if dyUp >= dyDown and other.solid:
-                return True
-            elif dyDown <= self.ecb.currentECB.rect.bottom-newPrev.bottom and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
-                return True
-            elif dyDown >= dyUp and other.solid:
-                return True
+        if other.solid:
+            return intersectPoint(myRect, checkRect) is not None
+        else:
+            return checkPlatform(myRect, newPrev, checkRect)
         
 
     def ejectSize(self, other):
@@ -928,6 +914,17 @@ class AbstractFighter():
         #checkRect.centerx -= other.change_x
         #checkRect.centery -= other.change_y
 
+        if other.solid:
+            if intersectPoint(self.ecb.currentECB.rect, checkRect) is not None:
+                print(intersectPoint(self.ecb.currentECB.rect, checkRect))
+                self.rect.x += intersectPoint(self.ecb.currentECB.rect, checkRect)[0]
+                self.rect.y += intersectPoint(self.ecb.currentECB.rect, checkRect)[1]
+        elif checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect):
+            if intersectPoint(self.ecb.currentECB.rect, checkRect) is not None:
+                self.rect.y += intersectPoint(self.ecb.currentECB.rect, checkRect)[1]
+        
+
+        """
         dxLeft = -self.ecb.currentECB.rect.left+checkRect.right
         dxRight = self.ecb.currentECB.rect.right-checkRect.left
         dyUp = -self.ecb.currentECB.rect.top+checkRect.bottom
@@ -946,12 +943,11 @@ class AbstractFighter():
                 if self.change_x < other.change_x:
                     self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
         if dy <= dx:
-            print dyDown-self.ecb.currentECB.rect.bottom+self.ecb.previousECB.rect.bottom
             if dyUp >= dyDown and other.solid:
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
                 if self.change_y >= other.change_y + self.var['gravity']:
                     self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-            elif dyDown <= self.ecb.currentECB.rect.bottom-self.ecb.previousECB.rect.bottom and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
+            elif not other.solid and dyDown <= self.ecb.currentECB.rect.bottom-self.ecb.previousECB.rect.bottom and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
                 self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.currentECB.rect.bottom)
                 if self.change_y >= other.change_y + self.var['gravity']:
                     self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
@@ -959,6 +955,7 @@ class AbstractFighter():
                 self.rect.top = other.rect.bottom+self.rect.top-self.ecb.currentECB.rect.top
                 if self.change_y <= other.change_y + self.var['gravity']:
                     self.change_y = -self.elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
+        """
         
         
 ########################################################
@@ -986,6 +983,41 @@ def getDirectionBetweenPoints(p1, p2):
     dx = x2 - x1
     dy = y1 - y2
     return (180 * math.atan2(dy, dx)) / math.pi 
+
+def intersectPoint(firstRect, secondRect): 
+    dxLeft = -firstRect.left+secondRect.right
+    dxRight = firstRect.right-secondRect.left
+    dyUp = -firstRect.top+secondRect.bottom
+    dyDown = firstRect.bottom-secondRect.top
+
+    dx = min(max(0, dxRight), max(0, dxLeft))
+    dy = min(max(0, dyUp), max(0, dyDown))
+        
+    if dx <= dy:
+        if dxLeft >= dxRight:
+            return [-dxRight, 0]
+        elif dxRight >= dxLeft:
+            return [dxLeft, 0]
+    if dy <= dx:
+        if dyUp >= dyDown:
+            return [0, -dyDown]
+        elif dyDown >= dyUp:
+            return [0, dyUp]
+    return None
+
+def checkPlatform(current, previous, platform):
+    dxLeft = -current.left+platform.right
+    dxRight = current.right-platform.left
+    dyUp = -current.top+platform.bottom
+    dyDown = current.bottom-platform.top
+
+    dx = min(max(0, dxRight), max(0, dxLeft))
+    dy = min(max(0, dyUp), max(0, dyDown))
+
+    if (dy <= dx): 
+        if dyDown <= current.bottom-previous.bottom and dyUp >= dyDown and current.bottom >= platform.top:
+            return True
+    return False
 
 # Returns a 2-entry array representing a range of time when the points and the rect intersect
 # If the range's min is greater than its max, it represents an empty interval
