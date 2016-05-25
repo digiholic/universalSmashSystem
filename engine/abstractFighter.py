@@ -197,21 +197,20 @@ class AbstractFighter():
         futureRect.y += self.change_y
 
         t = 1
+        toBounceBlock = None
 
         block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
             if self.catchMovement(block) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block) < t:
                 t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block)
+                toBounceBlock = block
 
         self.rect.y += self.change_y*t
         self.rect.x += self.change_x*t
         self.ecb.normalize()
 
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.currentECB, self.gameState.platform_list, False)
-        for block in block_hit_list:
-            if block.solid or self.platformPhase <= 0:
-                self.platformPhase = 0
-                self.ejectMovement(block)
+        if toBounceBlock is not None:
+            self.ejectMovement(toBounceBlock)
 
         groundBlocks = self.checkForGround()
 
@@ -219,7 +218,7 @@ class AbstractFighter():
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
         if not block is None:
             self.rect.x += block.change_x
-            #self.rect.y += 0.2
+            self.rect.y += 0.2
             #self.rect.y += block.change_y
             self.change_y -= self.var['gravity']
 
@@ -265,7 +264,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 2
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.currentECB.rect.bottom-self.change_y <= block.rect.top+block.change_y+2:
+                if self.ecb.previousECB.rect.bottom+self.change_y*0 <= block.rect.top+block.change_y+2:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -877,40 +876,31 @@ class AbstractFighter():
         if dx <= dy:
             if dxLeft >= dxRight and other.solid:
                 if self.change_x > other.change_x:
-                    print("Bounce left")
                     self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
             elif dxRight >= dxLeft and other.solid:
                 if self.change_x < other.change_x:
-                    print("Bounce right")
                     self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
         if dy <= dx:
             if dyUp >= dyDown and other.solid:
-                if self.change_y >= other.change_y:
-                    print("Bounce up")
-                    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y
+                if self.change_y >= other.change_y + self.var['gravity']:
+                    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
             elif not other.solid and dyDown <= self.ecb.currentECB.rect.bottom-newPrev.bottom and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
-                if self.change_y >= other.change_y:
-                    print("Bounce up")
-                    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y
+                if self.change_y >= other.change_y + self.var['gravity']:
+                    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
             elif dyDown >= dyUp and other.solid:
-                if self.change_y <= other.change_y:
-                    print("Bounce down")
-                    self.change_y = -self.elasticity*(self.change_y-other.change_y) + other.change_y
+                if self.change_y <= other.change_y + self.var['gravity']:
+                    self.change_y = -self.elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
 
     def catchMovement(self, other):
         self.ecb.normalize()
         checkRect = other.rect.copy()
-        thisRect = self.ecb.currentECB.rect.copy()
-        thisRect.x += (self.change_x)
-        thisRect.y += (self.change_y)
-        t = pathRectIntersects(self.ecb.currentECB.rect, thisRect, checkRect)
-
-        print(t)
+        newPrev = self.ecb.currentECB.rect.copy()
+        newPrev.center = self.ecb.previousECB.rect.center
+        t = pathRectIntersects(newPrev, self.ecb.currentECB.rect, checkRect)
 
         myRect = self.ecb.currentECB.rect.copy()
-        myRect.x += t*self.change_x
-        myRect.y += t*self.change_y
-
+        myRect.x += t*(self.ecb.currentECB.rect.x-newPrev.x)
+        myRect.y += t*(self.ecb.currentECB.rect.y-newPrev.y)
 
         if other.solid:
             return intersectPoint(myRect, checkRect) is not None
@@ -934,6 +924,8 @@ class AbstractFighter():
                 self.rect.y += intersectPoint(self.ecb.currentECB.rect, checkRect)[1]
         """
         
+
+        
         dxLeft = -self.ecb.currentECB.rect.left+checkRect.right
         dxRight = self.ecb.currentECB.rect.right-checkRect.left
         dyUp = -self.ecb.currentECB.rect.top+checkRect.bottom
@@ -945,25 +937,25 @@ class AbstractFighter():
         if dx <= dy:
             if dxLeft >= dxRight and other.solid:
                 self.rect.right = other.rect.left+self.rect.right-self.ecb.currentECB.rect.right
-                #if self.change_x > other.change_x:
-                #    self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
+                if self.change_x > other.change_x:
+                    self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
             elif dxRight >= dxLeft and other.solid:
                 self.rect.left = other.rect.right+self.rect.left-self.ecb.currentECB.rect.left
-                #if self.change_x < other.change_x:
-                #    self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
+                if self.change_x < other.change_x:
+                    self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
         if dy <= dx:
             if dyUp >= dyDown and other.solid:
                 self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
-                #if self.change_y >= other.change_y + self.var['gravity']:
-                #    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
+                if self.change_y >= other.change_y + self.var['gravity']:
+                    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
             elif not other.solid and dyDown <= self.ecb.currentECB.rect.bottom-self.ecb.previousECB.rect.bottom and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
                 self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.currentECB.rect.bottom)
-                #if self.change_y >= other.change_y + self.var['gravity']:
-                #    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
+                if self.change_y >= other.change_y + self.var['gravity']:
+                    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
             elif dyDown >= dyUp and other.solid:
                 self.rect.top = other.rect.bottom+self.rect.top-self.ecb.currentECB.rect.top
-                #if self.change_y <= other.change_y + self.var['gravity']:
-                #    self.change_y = -self.elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
+                if self.change_y <= other.change_y + self.var['gravity']:
+                    self.change_y = -self.elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
         
         
         
