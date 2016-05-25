@@ -264,7 +264,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 2
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if True or self.ecb.previousECB.rect.bottom+self.change_y*0 <= block.rect.top+block.change_y+2:
+                if self.ecb.previousECB.rect.bottom+self.change_y*0 <= block.rect.top+block.change_y+2:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
