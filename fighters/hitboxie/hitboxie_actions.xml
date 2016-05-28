@@ -24,12 +24,12 @@
 	</RunStop>
 	
 	<Crouch>
-		<length>2</length>
+		<length>3</length>
 		<sprite>land</sprite>
 		
 		
 		<frame number="last">
-			<setFrame>1</setFrame>
+			<setFrame>2</setFrame>
 		</frame>
 	</Crouch>
 	
@@ -45,10 +45,6 @@
 		<sprite>jump</sprite>
 		<spriteRate>0</spriteRate>
 	</Fall>
-	
-	<Land>
-		<length></length>
-	</Land>
 	
 	<Jump>
 		<length>8</length>
@@ -251,6 +247,41 @@
 		<length>20</length>
 	</TechDodge>
 	
+	<HitStun>
+		<length>1</length>
+		<sprite>jump</sprite>
+		
+	</HitStun>
+	
+	<NeutralAttack>
+		<length>22</length>
+		<sprite>neutral</sprite>
+		<spriteRate>1</spriteRate>
+		
+		<setUp>
+			<createHitbox>
+				<name>jabHit</name>
+				<center>0,0</center>
+				<size>80,80</size>
+				<damage>3</damage>
+				<baseKnockback>8</baseKnockback>
+				<knockbackGrowth>0.02</knockbackGrowth>
+				<trajectory>20</trajectory>
+			</createHitbox>
+			
+			<frame number="before">
+				<updateHitbox>jabHit</updateHitbox>
+			</frame>
+			
+			<frame number="4">
+				<activateHitbox>jabHit</activateHitbox>
+			</frame>
+			<frame number="9">
+				<deactivateHitbox>jabHit</deactivateHitbox>
+			</frame>
+		</setUp>
+	</NeutralAttack>
+	
 	<ForwardAttack>
 		<length>24</length>
 		<sprite>fsmash</sprite>
@@ -337,4 +368,181 @@
 			<changeSubimage>9</changeSubimage>
 		</frame>
 	</ForwardSmash>
+	
+	<UpAttack>
+		<length>28</length>
+		<sprite>utilt</sprite>
+		<spriteRate>4</spriteRate>
+		
+		<setUp>
+			<createHitbox>
+				<name>sweet</name>
+				<center>30,-20</center>
+				<size>6,10</size>
+				<damage>7</damage>
+				<baseKnockback>8</baseKnockback>
+				<knockbackGrowth>0.08</knockbackGrowth>
+				<trajectory>100</trajectory>
+				<hitboxLock>main</hitboxLock>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>tangy</name>
+				<center>27,-29</center>
+				<size>12,18</size>
+				<damage>5</damage>
+				<baseKnockback>7</baseKnockback>
+				<knockbackGrowth>0.08</knockbackGrowth>
+				<trajectory>110</trajectory>
+				<hitboxLock>main</hitboxLock>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>sour</name>
+				<center>21,-32</center>
+				<size>24,26</size>
+				<damage>3</damage>
+				<baseKnockback>6</baseKnockback>
+				<knockbackGrowth>0.08</knockbackGrowth>
+				<trajectory>120</trajectory>
+				<hitboxLock>main</hitboxLock>
+			</createHitbox>
+		</setUp>
+		
+		<frame number="before">
+			<updateHitbox>sweet</updateHitbox>
+			<updateHitbox>tangy</updateHitbox>
+			<updateHitbox>sour</updateHitbox>
+		</frame>
+		
+		<frame number="4">
+			<activateHitbox>sweet</activateHitbox>
+		</frame>
+		
+		<frame number="6">
+			<activateHitbox>tangy</activateHitbox>
+		</frame>
+		
+		<frame number="8">
+			<activateHitbox>sour</activateHitbox>
+			<deactivateHitbox>sweet</deactivateHitbox>
+		</frame>
+		
+		<frame number="12">
+			<deactivateHitbox>tangy</deactivateHitbox>
+		</frame>
+		
+		<frame number="16">
+			<deactivateHitbox>sour</deactivateHitbox>
+		</frame>
+		
+		<!--TODO: Hurtbox updates missing -->
+	</UpAttack>
+	
+	<UpSmash>
+		<length>45</length>
+		<sprite>usmash</sprite>
+		<spriteRate>2</spriteRate>
+		
+		<vars>
+			<startChargeFrame type="int">6</startChargeFrame>
+			<endChargeFrame type="int">8</endChargeFrame>
+			<maxCharge type="int">15</maxCharge>
+		</vars>
+		
+		<setUp>
+			<createHitbox>
+				<name>popup</name>
+				<center>0,0</center>
+				<size>100,100</size>
+				<damage>0</damage>
+				<baseKnockback>20</baseKnockback>
+				<knockbackGrowth>0</knockbackGrowth>
+				<trajectory>90</trajectory>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>weakL</name>
+				<center>0,-80</center>
+				<size>80,80</size>
+				<damage>2</damage>
+				<baseKnockback>5</baseKnockback>
+				<knockbackGrowth>0</knockbackGrowth>
+				<trajectory>150</trajectory>
+				<chargeable>
+					<damage>.027</damage>
+				</chargeable>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>weakR</name>
+				<center>0,-80</center>
+				<size>80,80</size>
+				<damage>2</damage>
+				<baseKnockback>5</baseKnockback>
+				<knockbackGrowth>0</knockbackGrowth>
+				<trajectory>30</trajectory>
+				<chargeable>
+					<damage>.027</damage>
+				</chargeable>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>uSmash</name>
+				<center>0,-80</center>
+				<size>120,120</size>
+				<damage>8</damage>
+				<baseKnockback>2</baseKnockback>
+				<knockbackGrowth>0.25</knockbackGrowth>
+				<trajectory>80</trajectory>
+				<chargeable>
+					<damage>.1</damage>
+					<baseKnockback>0.02</baseKnockback>
+				</chargeable>
+			</createHitbox>
+		</setUp>
+		
+		<frame number="12">
+			<changeSubimage>5</changeSubimage>
+			<updateHitbox>popup</updateHitbox>
+			<activateHitbox>popup</activateHitbox>
+		</frame>
+		<frame number="15">
+			<changeSubimage>6</changeSubimage>
+			<deactivateHitbox>popup</deactivateHitbox>
+			<updateHitbox>weakL</updateHitbox>
+			<activateHitbox>weakL</activateHitbox>
+		</frame>
+		<frame number="18">
+			<changeSubimage>7</changeSubimage>
+			<deactivateHitbox>weakL</deactivateHitbox>
+			<updateHitbox>weakR</updateHitbox>
+			<activateHitbox>weakR</activateHitbox>
+		</frame>
+		<frame number="21">
+			<changeSubimage>8</changeSubimage>
+			<deactivateHitbox>weakR</deactivateHitbox>
+			<updateHitbox>weakL</updateHitbox>
+			<activateHitbox>weakL</activateHitbox>
+		</frame>
+		<frame number="24">
+			<changeSubimage>9</changeSubimage>
+			<deactivateHitbox>weakL</deactivateHitbox>
+			<updateHitbox>weakR</updateHitbox>
+			<activateHitbox>weakR</activateHitbox>
+		</frame>
+		<frame number="27">
+			<changeSubimage>10</changeSubimage>
+			<deactivateHitbox>weakR</deactivateHitbox>
+			<updateHitbox>uSmash</updateHitbox>
+			<activateHitbox>uSmash</activateHitbox>
+		</frame>
+		<frame number="last">
+			<deactivateHitbox>uSmash</deactivateHitbox>
+		</frame>
+	</UpSmash>
+	
+	<DownAttack>
+		
+	</DownAttack>
 </actionList>

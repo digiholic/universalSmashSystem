@@ -1988,6 +1988,48 @@ class LedgeRoll(baseActions.LedgeGetup):
             actor.changeSprite("land", 0)
         baseActions.LedgeGetup.update(self, actor)
 
+class NeutralAction(baseActions.NeutralAction):
+    def __init__(self):
+        baseActions.NeutralAction.__init__(self,1)
+        
+    def update(self, actor):
+        if self.frame == 0:
+            actor.changeSprite("idle")
+            self.frame += 1
+
+class Stop(baseActions.Stop):
+    def __init__(self):
+        baseActions.Stop.__init__(self, 9)
+    
+    def update(self, actor):
+        if self.frame == 0:
+            actor.changeSprite("pivot",0)
+        elif self.frame == 3:
+            actor.changeSpriteImage(1)
+        elif self.frame == 6:
+            actor.changeSpriteImage(2)
+        baseActions.Stop.update(self, actor)
+        
+class Crouch(baseActions.Crouch):
+    def __init__(self):
+        baseActions.Crouch.__init__(self, 2)
+    def setUp(self, actor):
+        actor.changeSprite('land', 0)
+    def update(self, actor):
+        actor.changeSpriteImage(self.frame)
+        if self.frame == self.lastFrame:
+            self.frame -= 1
+        baseActions.Crouch.update(self, actor)
+        
+class Fall(baseActions.Fall):
+    def __init__(self):
+        baseActions.Fall.__init__(self)
+        
+    def update(self,actor):
+        actor.changeSprite("jump")
+        baseActions.Fall.update(self, actor)
+
+
 ########################################################
 #             BEGIN HELPER METHODS                     #
 ########################################################

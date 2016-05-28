@@ -314,7 +314,7 @@ class createHitbox(SubAction):
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
         #Use an existing hitbox lock by name, or create a new one
-        if action.hitboxLocks.has_key(self.hitboxLock):
+        if self.hitboxLock and action.hitboxLocks.has_key(self.hitboxLock):
             hitboxLock = action.hitboxLocks[self.hitboxLock]
         else:
             hitboxLock = engine.hitbox.HitboxLock()

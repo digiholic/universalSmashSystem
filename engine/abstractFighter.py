@@ -162,7 +162,12 @@ class AbstractFighter():
         self.ledgeLock = False
         
         #initialize the action
-        self.current_action = self.actions.NeutralAction()
+        if hasattr(self.actions,'loadAction'):
+            self.current_action = self.actions.loadAction('NeutralAction')
+        elif hasattr(self.actions, 'NeutralAction'):
+            class_ = getattr(self.actions,'NeutralAction')
+            self.current_action = class_()
+            
         self.hurtbox = hitbox.Hurtbox(self,self.sprite.boundingRect,[255,255,0])
         
         #state variables and flags
@@ -357,110 +362,122 @@ class AbstractFighter():
         newAction.setUp(self)
         self.current_action.tearDown(self,newAction)
         self.current_action = newAction
-        
-    def doIdle(self):
-        self.changeAction(self.actions.NeutralAction())
-
-    def doCrouch(self):
-        self.changeAction(self.actions.Crouch())
-
-    def doCrouchGetup(self):
-        self.changeAction(self.actions.CrouchGetup())
     
-    def doFall(self):
-        self.changeAction(self.actions.Fall())
-
-    def doHelpless(self):
-        self.changeAction(self.actions.Helpless())
-    
-    def doPlatformDrop(self):
-        self.changeAction(self.actions.PlatformDrop())
-          
-    def doLand(self):
-        self.changeAction(self.actions.Land())
-
-    def doHelplessLand(self):
-        self.changeAction(self.actions.HelplessLand())
-        
-    def doStop(self):
-        if self.grounded:
-            self.changeAction(self.actions.Stop())
-
-    def doRunStop(self):
-        if self.grounded:
-            self.changeAction(self.actions.RunStop())
-            
+    def doAction(self,actionName):
+        if hasattr(self.actions,'loadAction'):
+            self.changeAction(self.actions.loadAction(actionName))
+        elif hasattr(self.actions, actionName):
+            class_ = getattr(self.actions,actionName)
+            self.changeAction(class_())
+                        
     def doGroundMove(self,direction):
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
             self.flip()
-        self.changeAction(self.actions.Move())
-
+        self.doAction('Move')
+        
     def doDash(self,direction):
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
             self.flip()
-        self.changeAction(self.actions.Dash())
+        self.doAction('Dash')
         
     def doRun(self,direction):
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
             self.flip()
-        self.changeAction(self.actions.Run())
+        self.doAction('Run')
         
-    def doPivot(self):
-        newAction = self.actions.Pivot()
-        self.flip()
-        self.changeAction(newAction)
-
-    def doRunPivot(self):
-        self.flip()
-        self.changeAction(self.actions.RunPivot())
+        
+    def doThrow(self):
+        (key, invkey) = self.getForwardBackwardKeys()
+        if self.keysContain(key):
+            self.doAction('ForwardThrow')
+        elif self.keysContain(invkey):
+            self.doAction('BackThrow')
+        elif self.keysContain('down'):
+            self.doAction('DownThrow')
+        elif self.keysContain('up'):
+            self.doAction('UpThrow')
+        else: # How did we get here? 
+            self.doAction('ForwardThrow')
+        
+    def doGroundAttack(self):
+        (key, invkey) = self.getForwardBackwardKeys()
+        if self.keysContain(key):
+            self.doAction('ForwardSmash') if self.checkSmash(key) else self.doAction('ForwardAttack') 
+        elif self.keysContain(invkey):
+            self.flip()
+            self.doAction('ForwardSmash') if self.checkSmash(invkey) else self.doAction('ForwardAttack')
+        elif self.keysContain('down'):
+            self.doAction('DownSmash') if self.checkSmash('down') else self.doAction('DownAttack')
+        elif self.keysContain('up'):
+            self.doAction('UpSmash') if self.checkSmash('up') else self.doAction('UpAttack')
+        else:
+            self.doAction('NeutralAttack')
     
-    def doJump(self):
-        self.changeAction(self.actions.Jump())
+    def doAirAttack(self):
+        (forward, backward) = self.getForwardBackwardKeys()
+        if (self.keysContain(forward)):
+            self.changeAction(self.actions.ForwardAir())
+            self.doAction('ForwardAir')
+        elif (self.keysContain(backward)):
+            self.doAction('BackAir')
+        elif (self.keysContain('down')):
+            self.doAction('DownAir')
+        elif(self.keysContain('up')):
+            self.doAction('UpAir')
+        else: self.doAction('NeutralAir')
+    
+    def doGroundSpecial(self):
+        (forward, backward) = self.getForwardBackwardKeys()
+        if self.keysContain(forward):
+            if self.sideSpecialUses > 0:
+                self.doAction('ForwardSpecial')
+        elif self.keysContain(backward):
+            self.flip()
+            if self.sideSpecialUses > 0:
+                self.doAction('ForwardSpecial')
+        elif (self.keysContain('down')):
+            self.doAction('DownSpecial')
+        elif (self.keysContain('up')):
+            self.doAction('UpSpecial')
+        else: 
+            self.doAction('NeutralGroundSpecial')
 
-    def doAirJump(self):
-        self.changeAction(self.actions.AirJump())
+    def doAirSpecial(self):
+        (forward, backward) = self.getForwardBackwardKeys()
+        if self.keysContain(forward):
+            if self.sideSpecialUses > 0:
+                self.doAction('ForwardSpecial')
+        elif self.keysContain(backward):
+            self.flip()
+            if self.sideSpecialUses > 0:
+                self.doAction('ForwardSpecial')
+        elif (self.keysContain('down')):
+            self.doAction('DownSpecial')
+        elif (self.keysContain('up')):
+            self.doAction('UpSpecial')
+        else: 
+            self.doAction('NeutralAirSpecial')
+    
+    def doHitStun(self,hitstun,trajectory,hitstop):
+        self.doAction('HitStun')
+        self.current_action.hitstop = hitstop
+        self.current_action.direction = trajectory
+        self.current_action.lastFrame = hitstun
+        
+    def doTryTech(self, hitstun, trajectory, hitstop):
+        self.changeAction(self.actions.TryTech(hitstun, trajectory, hitstop))
 
-    def doPreShield(self):
-        self.changeAction(self.actions.PreShield())
-                
-    def doShield(self):
-        self.changeAction(self.actions.Shield())
+    def doTrip(self, length, direction):
+        self.changeAction(self.actions.Trip(length, direction))
 
+    def doGetup(self, direction):
+        self.changeAction(self.actions.Getup(direction))
+    
     def doShieldStun(self, length):
         self.changeAction(self.actions.ShieldStun(length))
-        
-    def doForwardRoll(self):
-        self.changeAction(self.actions.ForwardRoll())
-    
-    def doBackwardRoll(self):
-        self.changeAction(self.actions.BackwardRoll())
-        
-    def doSpotDodge(self):
-        self.changeAction(self.actions.SpotDodge())
-        
-    def doAirDodge(self):
-        self.changeAction(self.actions.AirDodge())
-
-    def doTechDodge(self):
-        self.changeAction(self.actions.TechDodge())
-     
+             
     def doLedgeGrab(self,ledge):
         self.changeAction(self.actions.LedgeGrab(ledge))
-
-    def doLedgeGetup(self):
-        self.changeAction(self.actions.LedgeGetup())
-
-    def doLedgeAttack(self):
-        self.changeAction(self.actions.LedgeAttack())
-
-    def doLedgeRoll(self):
-        self.changeAction(self.actions.LedgeRoll())
-
-    def doGroundGrab(self):
-        self.changeAction(self.actions.GroundGrab())
-
-    def doGrabbing(self):
-        self.changeAction(self.actions.Grabbing())
 
     def doTrapped(self, length):
         self.changeAction(self.actions.Trapped(length))
@@ -471,118 +488,6 @@ class AbstractFighter():
     def doGrabbed(self, height):
         self.changeAction(self.actions.Grabbed(height))
 
-    def doPummel(self):
-        self.changeAction(self.actions.Pummel())
-
-    def doThrow(self):
-        (key, invkey) = self.getForwardBackwardKeys()
-        if self.keysContain(key):
-            self.changeAction(self.actions.ForwardThrow())
-        elif self.keysContain(invkey):
-            self.changeAction(self.actions.BackThrow())
-        elif self.keysContain('down'):
-            self.changeAction(self.actions.DownThrow())
-        elif self.keysContain('up'):
-            self.changeAction(self.actions.UpThrow())
-        else: # How did we get here? 
-            self.changeAction(self.actions.ForwardThrow())
-        
-    def doGroundAttack(self):
-        print('player ', self.playerNum, ' attacking')
-        (key, invkey) = self.getForwardBackwardKeys()
-        if self.keysContain(key):
-            if self.checkSmash(key):
-                print("SMASH!")
-                self.changeAction(self.actions.ForwardSmash())
-            else:
-                self.changeAction(self.actions.ForwardAttack())
-        elif self.keysContain(invkey):
-            self.flip()
-            if self.checkSmash(key):
-                print("SMASH!")
-                self.changeAction(self.actions.ForwardSmash())
-            else:
-                self.changeAction(self.actions.ForwardAttack())
-        elif self.keysContain('down'):
-            if self.checkSmash('down'):
-                print("SMASH!")
-                self.changeAction(self.actions.DownSmash())
-            else:
-                self.changeAction(self.actions.DownAttack())
-        elif self.keysContain('up'):
-            if self.checkSmash('up'):
-                print("SMASH!")
-                self.changeAction(self.actions.UpSmash())
-            else:
-                self.changeAction(self.actions.UpAttack())
-        else:
-            self.changeAction(self.actions.NeutralAttack())
-
-    def doDashAttack(self):
-        self.changeAction(self.actions.DashAttack())
-
-    def doDashGrab(self):
-        self.changeAction(self.actions.DashGrab())
-    
-    def doAirAttack(self):
-        (forward, backward) = self.getForwardBackwardKeys()
-        if (self.keysContain(forward)):
-            self.changeAction(self.actions.ForwardAir())
-        elif (self.keysContain(backward)):
-            self.changeAction(self.actions.BackAir())
-        elif (self.keysContain('down')):
-            self.changeAction(self.actions.DownAir())
-        elif(self.keysContain('up')):
-            self.changeAction(self.actions.UpAir())
-        else: self.changeAction(self.actions.NeutralAir())
-
-    def doGetupAttack(self, direction):
-        self.changeAction(self.actions.GetupAttack())
-    
-    def doGroundSpecial(self):
-        (forward, backward) = self.getForwardBackwardKeys()
-        if self.keysContain(forward):
-            if self.sideSpecialUses > 0:
-                self.changeAction(self.actions.ForwardSpecial())
-        elif self.keysContain(backward):
-            self.flip()
-            if self.sideSpecialUses > 0:
-                self.changeAction(self.actions.ForwardSpecial())
-        elif (self.keysContain('down')):
-            self.changeAction(self.actions.DownSpecial())
-        elif (self.keysContain('up')):
-            self.changeAction(self.actions.UpSpecial())
-        else: 
-            self.changeAction(self.actions.NeutralGroundSpecial())
-
-    def doAirSpecial(self):
-        (forward, backward) = self.getForwardBackwardKeys()
-        if self.keysContain(forward):
-            if self.sideSpecialUses > 0:
-                self.changeAction(self.actions.ForwardSpecial())
-        elif self.keysContain(backward):
-            self.flip()
-            if self.sideSpecialUses > 0:
-                self.changeAction(self.actions.ForwardSpecial())
-        elif (self.keysContain('down')):
-            self.changeAction(self.actions.DownSpecial())
-        elif (self.keysContain('up')):
-            self.changeAction(self.actions.UpSpecial())
-        else: 
-            self.changeAction(self.actions.NeutralAirSpecial())
-
-    def doHitStun(self,hitstun,trajectory,hitstop):
-        self.changeAction(self.actions.HitStun(hitstun,trajectory,hitstop))
-
-    def doTryTech(self, hitstun, trajectory, hitstop):
-        self.changeAction(self.actions.TryTech(hitstun, trajectory, hitstop))
-
-    def doTrip(self, length, direction):
-        self.changeAction(self.actions.Trip(length, direction))
-
-    def doGetup(self, direction):
-        self.changeAction(self.actions.Getup(direction))
-        
 ########################################################
 #                  STATE CHANGERS                      #
 ########################################################

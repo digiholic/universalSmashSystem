@@ -23,7 +23,7 @@ class Move(action.Action):
     def update(self, actor):
         action.Action.update(self, actor)
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
         actor.accel(actor.var['staticGrip'])
 
@@ -67,7 +67,7 @@ class Dash(action.Action):
         if self.frame == 0:
             actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         if not self.pivoted:
             (key,invkey) = actor.getForwardBackwardKeys()
             if actor.keysContain(invkey):
@@ -101,7 +101,7 @@ class Run(action.Action):
         if self.frame == 0:
             actor.preferred_xspeed = actor.var['runSpeed']*self.direction
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         actor.accel(actor.var['staticGrip'])
         
         self.frame += 1
@@ -117,6 +117,7 @@ class Pivot(action.Action):
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName = "pivot"
         action.Action.setUp(self, actor)
+        actor.flip()
         
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
@@ -126,12 +127,12 @@ class Pivot(action.Action):
 
     def stateTransitions(self, actor):
         if actor.keyHeld('jump', self.frame):
-            actor.doJump()
+            actor.doAction('Jump')
         
     def update(self,actor):
         action.Action.update(self, actor)
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         actor.accel(actor.var['staticGrip'])
         if self.frame != self.lastFrame:
             self.frame += 1
@@ -150,7 +151,7 @@ class Pivot(action.Action):
                     else:
                         actor.doGroundMove(180)
             else:
-                actor.doIdle()
+                actor.doAction('NeutralAction')
           
 class Stop(action.Action):
     def __init__(self,length=0):
@@ -168,7 +169,7 @@ class Stop(action.Action):
         
     def stateTransitions(self, actor):
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         actor.accel(actor.var['staticGrip'])
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.keyHeld(key,self.frame):
@@ -176,11 +177,11 @@ class Stop(action.Action):
             actor.doDash(actor.getFacingDirection())
         if actor.keyHeld(invkey,self.frame):
             print("pivot")
-            actor.doPivot()
+            actor.doAction('Pivot')
         if self.frame == self.lastFrame:
             if actor.keyHeld('jump'):
-                actor.doJump()
-            else: actor.doIdle()
+                actor.doAction('Jump')
+            else: actor.doAction('NeutralAction')
     
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
@@ -195,6 +196,7 @@ class RunPivot(action.Action):
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="runPivot" 
         action.Action.setUp(self, actor)
+        actor.flip()
         
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
@@ -205,12 +207,12 @@ class RunPivot(action.Action):
         
     def stateTransitions(self, actor):
         if actor.keyHeld('jump', self.frame):
-            actor.doJump()
+            actor.doAction('Jump')
         
     def update(self,actor):
         action.Action.update(self, actor)
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         if self.frame != self.lastFrame:
             self.frame += 1
             actor.preferred_xspeed = 0
@@ -222,7 +224,7 @@ class RunPivot(action.Action):
                 else:
                     actor.doRun(180)
             else:
-                actor.doIdle()
+                actor.doAction('NeutralAction')
 
 class RunStop(action.Action):
     def __init__(self,length=0):
@@ -237,20 +239,20 @@ class RunStop(action.Action):
         actor.preferred_xspeed = 0
         if self.frame == self.lastFrame:
             if actor.keyHeld('jump'):
-                actor.doJump()
-            else: actor.doIdle()
+                actor.doAction('Jump')
+            else: actor.doAction('NeutralAction')
         self.frame += 1
         
     def stateTransitions(self, actor):
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.keyHeld(key,self.frame):
             print("run")
             actor.doRun(actor.getFacingDirection())
         if actor.keyHeld(invkey,self.frame):
             print("run pivot")
-            actor.doRunPivot()
+            actor.doAction('RunPivot')
 
                 
 class NeutralAction(action.Action):
@@ -263,7 +265,7 @@ class NeutralAction(action.Action):
         
     def stateTransitions(self, actor):
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         neutralState(actor)
 
 class Crouch(action.Action):
@@ -278,7 +280,7 @@ class Crouch(action.Action):
     def stateTransitions(self, actor):
         crouchState(actor)
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         if self.frame > 0 and actor.keyBuffered('down', 1, state = 1):
             blocks = actor.checkForGround()
             if blocks:
@@ -286,15 +288,16 @@ class Crouch(action.Action):
                 blocks = map(lambda x:x.solid,blocks)
                 #If none of the ground is solid
                 if not any(blocks):
-                    actor.doPlatformDrop()
+                    actor.doAction('PlatformDrop')
 
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
         actor.preferred_xspeed = 0
 
     def update(self, actor):
+        action.Action.update(self, actor)
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         actor.accel(actor.var['staticGrip'])
         (key, invkey) = actor.getForwardBackwardKeys()
         if actor.keysContain(key):
@@ -305,7 +308,6 @@ class Crouch(action.Action):
             actor.preferred_xspeed = 0
         
         self.frame += 1
-        if self.frame > self.lastFrame: self.frame = 0
 
 class CrouchGetup(action.Action):
     def __init__(self,length=0):
@@ -317,7 +319,7 @@ class CrouchGetup(action.Action):
         
     def stateTransitions(self, actor):
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         elif actor.keyBuffered('down', 1, state = 1):
             blocks = actor.checkForGround()
             if blocks:
@@ -325,13 +327,14 @@ class CrouchGetup(action.Action):
                 blocks = map(lambda x:x.solid,blocks)
                 #If none of the ground is solid
                 if not any(blocks):
-                    actor.doPlatformDrop()
+                    actor.doAction('PlatformDrop')
 
     def update(self, actor):
+        action.Action.update(self, actor)
         actor.preferred_xspeed = 0
         self.frame += 1
         if self.frame >= self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
 
 class BaseGrabbing(action.Action):
     def __init__(self,length=0):
@@ -361,12 +364,12 @@ class Grabbing(BaseGrabbing):
 
     def stateTransitions(self, actor):
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         grabbingState(actor)
         
 class HitStun(action.Action):
     def __init__(self,hitstun,direction,hitstop):
-        action.Action.__init__(self, hitstun)
+        action.Action.__init__(self, 1)
         self.direction = direction
         self.hitstop = hitstop
         if self.spriteName=="": self.spriteName ="hitStun"
@@ -374,7 +377,7 @@ class HitStun(action.Action):
     def setUp(self, actor):
         action.Action.setUp(self, actor)
         actor.elasticity = actor.var['hitstunElasticity']
-
+        
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
         if actor.keyBuffered('shield', 1) and self.frame < self.lastFrame:
@@ -525,7 +528,7 @@ class Getup(action.Action):
         
     def update(self, actor):
         if self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
         
 """
@@ -565,7 +568,7 @@ class Jump(action.Action):
         if self.frame < self.lastFrame:
             self.frame += 1
         if self.frame == self.lastFrame and not actor.keysContain('jump'):
-            actor.doFall()
+            actor.doAction('Fall')
 
 class AirJump(action.Action):
     def __init__(self,length=0,jumpFrame=0):
@@ -611,7 +614,7 @@ class AirJump(action.Action):
         if self.frame < self.lastFrame:
             self.frame += 1
         if self.frame == self.lastFrame and not actor.keysContain('jump'):
-            actor.doFall()
+            actor.doAction('Fall')
         
 class Fall(action.Action):
     def __init__(self):
@@ -678,13 +681,13 @@ class Land(action.Action):
             if blocks:   
                 blocks = map(lambda x: x.solid, blocks)
                 if not any(blocks):
-                    actor.doPlatformDrop()
+                    actor.doAction('PlatformDrop')
         if self.frame == 1:
             #actor.articles.add(article.LandingArticle(actor)) #this looks awful don't try it
             pass
         if self.frame >= self.lastFrame:
             actor.landingLag = actor.var['heavyLandLag']
-            actor.doIdle()
+            actor.doAction('NeutralAction')
             actor.platformPhase = 0
             actor.preferred_xspeed = 0
         self.frame+= 1
@@ -712,10 +715,10 @@ class HelplessLand(action.Action):
             if blocks:
                 blocks = map(lambda x: x.solid, blocks)
                 if not any(blocks):
-                    actor.doPlatformDrop()
+                    actor.doAction('PlatformDrop')
         if self.frame >= self.lastFrame:
             actor.landingLag = actor.var['heavyLandLag']
-            actor.doIdle()
+            actor.doAction('NeutralAction')
             actor.platformPhase = 0
             actor.preferred_xspeed = 0
         self.frame += 1
@@ -745,7 +748,7 @@ class PlatformDrop(action.Action):
         if self.frame == self.phaseFrame:
             actor.platformPhase = self.phaseLength
         if self.frame == self.lastFrame:
-            actor.doFall()
+            actor.doAction('Fall')
         self.frame += 1
         
 class PreShield(action.Action):
@@ -769,10 +772,10 @@ class PreShield(action.Action):
             actor.active_hitboxes.add(self.reflectHitbox)
         if actor.grounded is False:
             self.reflectHitbox.kill()
-            actor.doFall()
+            actor.doAction('Fall')
         if self.frame == self.lastFrame:
             self.reflectHitbox.kill()
-            actor.doShield()
+            actor.doAction('Shield')
         self.frame += 1
 
 class Shield(action.Action):
@@ -794,7 +797,7 @@ class Shield(action.Action):
     def update(self, actor):
         if actor.grounded is False:
             actor.shield = False
-            actor.doFall()
+            actor.doAction('Fall')
         if self.frame == 0:
             actor.shield = True
             actor.startShield()
@@ -811,7 +814,7 @@ class Shield(action.Action):
             actor.shield = False
             self.frame += 1
         elif self.frame >= self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         else: self.frame += 1
 
 class ShieldStun(action.Action):
@@ -830,11 +833,11 @@ class ShieldStun(action.Action):
     def update(self, actor):
         if actor.grounded is False:
             actor.shield = False
-            actor.doFall()
+            actor.doAction('Fall')
         if self.frame >= self.lastFrame and actor.keysContain('shield'):
-            actor.doShield()
+            actor.doAction('Shield')
         elif self.frame >= self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 class Stunned(action.Action):
@@ -848,7 +851,7 @@ class Stunned(action.Action):
         
     def update(self, actor):
         if self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 class Trapped(action.Action):
@@ -905,9 +908,9 @@ class Release(action.Action):
         
     def update(self, actor):
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         if self.frame >= self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 class Released(action.Action):
@@ -945,7 +948,7 @@ class Released(action.Action):
         action.Action.update(self, actor)
         actor.grounded = False
         if self.frame >= self.lastFrame:
-            actor.doFall()
+            actor.doAction('Fall')
         self.frame += 1
         
 class ForwardRoll(action.Action):
@@ -967,7 +970,7 @@ class ForwardRoll(action.Action):
         
     def update(self, actor):
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         if self.frame == 1:
             actor.change_x = actor.facing * actor.var['dodgeSpeed']
         elif self.frame == self.startInvulnFrame:
@@ -978,9 +981,9 @@ class ForwardRoll(action.Action):
             actor.change_x = 0
         elif self.frame == self.lastFrame:
             if 'shield' in actor.keysHeld:
-                actor.doShield()
+                actor.doAction('Shield')
             else:
-                actor.doIdle()
+                actor.doAction('NeutralAction')
         self.frame += 1
 
 class BackwardRoll(action.Action):
@@ -1002,7 +1005,7 @@ class BackwardRoll(action.Action):
         
     def update(self, actor):
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         if self.frame == 1:
             actor.change_x = actor.facing * -actor.var['dodgeSpeed']
         elif self.frame == self.startInvulnFrame:
@@ -1012,9 +1015,9 @@ class BackwardRoll(action.Action):
             actor.change_x = 0
         elif self.frame == self.lastFrame:
             if 'shield' in actor.keysHeld:
-                actor.doShield()
+                actor.doAction('Shield')
             else:
-                actor.doIdle()
+                actor.doAction('NeutralAction')
         self.frame += 1
         
 class SpotDodge(action.Action):
@@ -1037,13 +1040,13 @@ class SpotDodge(action.Action):
     def update(self,actor):
         action.Action.update(self, actor)
         if actor.grounded is False:
-            actor.doFall()
+            actor.doAction('Fall')
         elif actor.keyBuffered('down', 1) and self.frame > 0:
             blocks = actor.checkForGround()
             if blocks:
                 blocks = map(lambda x:x.solid,blocks)
                 if not any(blocks):
-                    actor.doPlatformDrop()
+                    actor.doAction('PlatformDrop')
         if self.frame == 1:
             actor.change_x = 0
         elif self.frame == self.startInvulnFrame:
@@ -1053,9 +1056,9 @@ class SpotDodge(action.Action):
             pass
         elif self.frame == self.lastFrame:
             if actor.keyHeld('shield'):
-                actor.doShield()
+                actor.doAction('Shield')
             else:
-                actor.doIdle()
+                actor.doAction('NeutralAction')
         self.frame += 1
         
 class AirDodge(action.Action):
@@ -1091,7 +1094,7 @@ class AirDodge(action.Action):
         if actor.grounded:
             if not settingsManager.getSetting('enableWavedash'):
                 actor.change_x = 0
-            actor.doLand()
+            actor.doAction('Land')
                 
     def update(self,actor):
         action.Action.update(self, actor)
@@ -1114,9 +1117,9 @@ class AirDodge(action.Action):
             actor.landingLag = 24
         elif self.frame == self.lastFrame:
             if settingsManager.getSetting('freeDodgeSpecialFall'):
-                actor.doHelpless()
+                actor.doAction('Helpless')
             else:
-                actor.doFall()
+                actor.doAction('Fall')
         self.frame += 1
 
 class TechDodge(AirDodge):
@@ -1174,7 +1177,7 @@ class LedgeGetup(action.Action):
     def update(self,actor):
         action.Action.update(self, actor)
         if self.frame >= self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 ########################################################
@@ -1192,9 +1195,9 @@ class BaseAttack(action.Action):
         action.Action.stateTransitions(self, actor)
         if self.frame == self.lastFrame:
             if actor.grounded:
-                actor.doIdle()
+                actor.doAction('NeutralAction')
             else:
-                actor.doFall()
+                actor.doAction('Fall')
         
     def update(self, actor):
         action.Action.update(self, actor)
@@ -1210,6 +1213,7 @@ class ChargeAttack(BaseAttack):
     def setUp(self, actor):
         self.chargeLevel = 0
         BaseAttack.setUp(self, actor)
+        
     def update(self, actor):
         BaseAttack.update(self, actor)
         if self.frame == self.startChargeFrame:
@@ -1223,29 +1227,51 @@ class ChargeAttack(BaseAttack):
                     hitbox.charge()
                 self.chargeLevel += 1
                 self.frame = self.startChargeFrame
+
+class NeutralAttack(BaseAttack):
+    def __init__(self, length):
+        BaseAttack.__init__(self, length)
                 
 class ForwardAttack(BaseAttack):
+    def __init__(self, length):
+        BaseAttack.__init__(self, length)
+
+class UpAttack(BaseAttack):
+    def __init__(self, length):
+        BaseAttack.__init__(self, length)
+
+class DownAttack(BaseAttack):
     def __init__(self, length):
         BaseAttack.__init__(self, length)
 
 class ForwardSmash(ChargeAttack):
     def __init__(self,length):
         ChargeAttack.__init__(self, length,0,1)
+        
+class UpSmash(ChargeAttack):
+    def __init__(self,length):
+        ChargeAttack.__init__(self, length,0,1)
+        
+class DownSmash(ChargeAttack):
+    def __init__(self,length):
+        ChargeAttack.__init__(self, length,0,1)
+        
+
 ########################################################
 #               TRANSITION STATES                     #
 ########################################################
 def neutralState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('shield'):
-        actor.doPreShield()
+        actor.doAction('PreShield')
     elif actor.keyHeld('attack'):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
     elif actor.keyHeld('jump'):
-        actor.doJump()
+        actor.doAction('Jump')
     elif actor.keysContain('down', 0.5):
-        actor.doCrouch()
+        actor.doAction('Crouch')
     elif actor.keysContain(invkey):
         actor.doGroundMove(actor.getForwardWithOffset(180))
     elif actor.keysContain(key):
@@ -1255,30 +1281,30 @@ def crouchState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('shield'):
         if actor.keysContain(invkey):
-            actor.doBackwardRoll()
+            actor.doAction('BackwardRoll')
         elif actor.keysContain(key):
-            actor.doForwardRoll()
+            actor.doAction('ForwardRoll')
         else:
-            actor.doSpotDodge()
+            actor.doAction('SpotDodge')
     if actor.keyHeld('attack'):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
     elif actor.keyHeld('jump'):
-        actor.doJump()
+        actor.doAction('Jump')
     elif not actor.keysContain('down'):
-        actor.doCrouchGetup()
+        actor.doAction('CrouchGetup')
 
 def airState(actor):
     airControl(actor)
     if actor.keyHeld('shield'):
-        actor.doAirDodge()
+        actor.doAction('AirDodge')
     elif actor.keyHeld('attack'):
         actor.doAirAttack()
     elif actor.keyHeld('special'):
         actor.doAirSpecial()
     elif actor.keyHeld('jump') and actor.jumps > 0:
-        actor.doAirJump()
+        actor.doAction('AirJump')
     elif actor.keysContain('down'):
         actor.platformPhase = 1
         actor.calc_grav(actor.var['fastfallMultiplier'])
@@ -1286,13 +1312,13 @@ def airState(actor):
 def tumbleState(actor):
     airControl(actor)
     if actor.keyHeld('shield'):
-        actor.doTechDodge()
+        actor.doAction('TechDodge')
     elif actor.keyHeld('attack'):
         actor.doAirAttack()
     elif actor.keyHeld('special'):
         actor.doAirSpecial()
     elif actor.keyHeld('jump') and actor.jumps > 0:
-        actor.doAirJump()
+        actor.doAction('AirJump')
     elif actor.keysContain('down'):
         actor.platformPhase = 1
         actor.calc_grav(actor.var['fastfallMultiplier'])
@@ -1300,68 +1326,68 @@ def tumbleState(actor):
 def moveState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('shield') and actor.keyHeld('attack'):
-        actor.doGroundGrab()
+        actor.doAction('GroundGrab')()
     elif actor.keyHeld('attack'):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
     elif actor.keyHeld('jump'):
-        actor.doJump()
+        actor.doAction('Jump')
     elif actor.keysContain('down', 0.5):
-        actor.doCrouch()
+        actor.doAction('Crouch')
     elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
-        actor.doStop()
+        actor.doAction('Stop')
     elif actor.preferred_xspeed < 0 and not actor.keysContain('left',1) and actor.keysContain('right',1):
-        actor.doStop()
+        actor.doAction('Stop')
     elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
-        actor.doStop()
+        actor.doAction('Stop')
 
 def dashState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keysContain('shield') and actor.keyHeld('attack'):
-        actor.doDashGrab()
+        actor.doAction('DashGrab')
     elif actor.keyHeld('attack'):
         if actor.checkSmash(key):
             print("Dash cancelled into forward smash")
             actor.doGroundAttack()
         else:
-            actor.doDashAttack()
+            actor.doAction('DashAttack')
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
     elif actor.keyHeld('jump'):
-        actor.doJump()
+        actor.doAction('Jump')
     elif actor.keysContain('down', 0.5):
-        actor.doStop()
+        actor.doAction('Stop')
     elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
-        actor.doStop()
+        actor.doAction('Stop')
     elif actor.preferred_xspeed < 0 and not actor.keysContain('left',1) and actor.keysContain('right',1):
-        actor.doStop()
+        actor.doAction('Stop')
     elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
-        actor.doStop()
+        actor.doAction('Stop')
 
 def runState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keysContain('shield') and actor.keyHeld('attack'):
-        actor.doDashGrab()
+        actor.doAction('DashGrab')
     elif actor.keyHeld('attack'):
-        actor.doDashAttack()
+        actor.doAction('DashAttack')
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
     elif actor.keyHeld('jump'):
-        actor.doJump()
+        actor.doAction('Jump')
     elif actor.keysContain('down', 0.5):
-        actor.doRunStop()
+        actor.doAction('RunStop')
     elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
-        actor.doRunStop()
+        actor.doAction('RunStop')
     elif actor.preferred_xspeed < 0 and not actor.keysContain('left',1) and actor.keysContain('right',1):
-        actor.doRunStop()
+        actor.doAction('RunStop')
     elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
-        actor.doRunStop()
+        actor.doAction('RunStop')
 
 def jumpState(actor):
     airControl(actor)
     if actor.keyHeld('shield'):
-        actor.doAirDodge()
+        actor.doAction('AirDodge')
     elif actor.keyHeld('attack'):
         actor.doAirAttack()
     elif actor.keyHeld('special'):
@@ -1373,51 +1399,51 @@ def jumpState(actor):
 def shieldState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('attack'):
-        actor.doGroundGrab()
+        actor.doAction('GroundGrab')()
     elif actor.keyHeld('jump'):
-        actor.doJump()
+        actor.doAction('Jump')
     elif actor.keyHeld(key):
-        actor.doForwardRoll()
+        actor.doAction('ForwardRoll')
     elif actor.keyHeld(invkey):
-        actor.doBackwardRoll()
+        actor.doAction('BackwardRoll')
     elif actor.keyHeld('down'):
-        actor.doSpotDodge()
+        actor.doAction('SpotDodge')
 
 def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     actor.setSpeed(0, actor.getFacingDirection())
     if actor.keyHeld('shield'):
         actor.ledgeLock = True
-        actor.doLedgeRoll()
+        actor.doAction('LedgeRoll')
     elif actor.keyHeld('attack'):
         actor.ledgeLock = True
-        actor.doLedgeAttack()
+        actor.doAction('LedgeAttack')
     elif actor.keyHeld('jump'):
         actor.ledgeLock = True
         actor.invincible = 10
-        actor.doJump()
+        actor.doAction('Jump')
     elif actor.keyBuffered(key):
         actor.ledgeLock = True
-        actor.doLedgeGetup()
+        actor.doAction('LedgeGetup')
     elif actor.keyBuffered(invkey):
         actor.ledgeLock = True
         actor.invincible = 10
-        actor.doFall()
+        actor.doAction('Fall')
     elif actor.keyBuffered('down'):
         actor.ledgeLock = True
         actor.invincible = 10
-        actor.doFall()
+        actor.doAction('Fall')
 
 def grabbingState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     # Check to see if they broke out
     # If they did, release them
     if not actor.isGrabbing():
-        actor.doRelease()
+        actor.doAction('Release')
     elif actor.keyHeld('shield', 1):
-        actor.doRelease()
+        actor.doAction('Release')
     elif actor.keyHeld('attack', 1):
-        actor.doPummel()
+        actor.doAction('Pummel')
     elif actor.keyHeld(key):
         actor.doThrow()
     elif actor.keyHeld(invkey):
@@ -1430,15 +1456,15 @@ def grabbingState(actor):
 def tripState(actor, direction):
     (key, invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('attack'):
-        actor.doGetupAttack(direction)
+        actor.doAction('GetupAttack')
     elif actor.keyHeld('up'):
-        actor.doGetup(direction)
+        actor.doAction('Getup')
     elif actor.keyHeld(key):
-        actor.doForwardRoll()
+        actor.doAction('ForwardRoll')
     elif actor.keyHeld(invkey):
-        actor.doBackwardRoll()
+        actor.doAction('BackwardRoll')
     elif actor.keyHeld('down'):
-        actor.doSpotDodge()
+        actor.doAction('SpotDodge')
 
 ########################################################
 #             BEGIN HELPER METHODS                     #
@@ -1461,7 +1487,7 @@ def airControl(actor):
     if actor.grounded and actor.ground_elasticity == 0:
         actor.preferred_xspeed = 0
         actor.preferred_yspeed = actor.var['maxFallSpeed']
-        actor.doLand()
+        actor.doAction('Land')
 
 def helplessControl(actor):
     if actor.keysContain('left'):
@@ -1480,13 +1506,13 @@ def helplessControl(actor):
     if actor.grounded and actor.ground_elasticity == 0:
         actor.preferred_xspeed = 0
         actor.preferred_yspeed = actor.var['maxFallSpeed']
-        actor.doHelplessLand()
+        actor.doAction('HelplessLand')
 
 def hitstunLanding(actor):
     if actor.grounded and actor.ground_elasticity == 0:
         actor.preferred_xspeed = 0
         actor.preferred_yspeed = actor.var['maxFallSpeed']
-        actor.doLand()
+        actor.doAction('Land')
 
 def grabLedges(actor):
     # Check if we're colliding with any ledges.
@@ -1500,34 +1526,3 @@ def grabLedges(actor):
                     ledge.fighterGrabs(actor)
                 elif ledge.side == 'right' and actor.keysContain('left'):
                     ledge.fighterGrabs(actor)
-
-
-nameToClass = {
-               'NeutralAction': NeutralAction,
-               'Crouch': Crouch,
-               'CrouchGetup': CrouchGetup,
-               'Stop': Stop,
-               'RunStop': RunStop,
-               'Fall': Fall,
-               'Land': Land,
-               'Jump': Jump,
-               'AirJump': AirJump,
-               'Helpless': Helpless,
-               'PlatformDrop': PlatformDrop,
-               'Move': Move,
-               'Dash': Dash,
-               'Run': Run,
-               'Pivot': Pivot,
-               'RunPivot': RunPivot,
-               'Grabbing': Grabbing,
-               'Helpless': Helpless,
-               'Getup': Getup,
-               'PreShield': PreShield,
-               'Shield': Shield,
-               'ForwardRoll': ForwardRoll,
-               'BackwardRoll': BackwardRoll,
-               'SpotDodge': SpotDodge,
-               'AirDodge': AirDodge,
-               'ForwardAttack': ForwardAttack,
-               'ForwardSmash': ForwardSmash
-               }

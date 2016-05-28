@@ -115,18 +115,18 @@ class FighterWheel():
             if(subdir == '__pycache__'):
                 continue
             fighterpy = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"fighter.py"),suffix=str(fightercount))
-            try:
-                if fighterpy:
-                    fighter = fighterpy.getFighter(os.path.join(directory,subdir),playerNum)
-                else:
-                    fighter = abstractFighter.AbstractFighter(os.path.join(directory,subdir),playerNum)
-                if (fighter == None):
-                    raise ValueError("No fighter found at " + os.path.join(directory,subdir,"fighter.py"))
-                fightercount += 1
-                self.fighters.append(fighter)
-            except Exception as e:
-                print("Could not load fighter "+str(subdir)+", ignoring.")
-                print(e)
+            #try:
+            if fighterpy:
+                fighter = fighterpy.getFighter(os.path.join(directory,subdir),playerNum)
+            else:
+                fighter = abstractFighter.AbstractFighter(os.path.join(directory,subdir),playerNum)
+            if (fighter == None):
+                raise ValueError("No fighter found at " + os.path.join(directory,subdir,"fighter.py"))
+            fightercount += 1
+            self.fighters.append(fighter)
+            #except Exception as e:
+            #    print("Could not load fighter "+str(subdir)+", ignoring.")
+            #    print(e)
         
         self.currentIndex = 0
         self.currentFighter = self.fighters[0]
