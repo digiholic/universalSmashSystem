@@ -207,7 +207,6 @@ class ReflectorHitbox(InertHitbox):
             if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
                 v_other = [other.article.change_x, other.article.change_y]
                 v_self = abstractFighter.getXYFromDM(self.angle, 1.0)
-                print(v_self)
                 dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
                 normsqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
                 ratio = 1 if normsqr == 0 else dot/normsqr

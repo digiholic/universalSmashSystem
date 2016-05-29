@@ -131,7 +131,7 @@ class AbstractFighter():
                 for block in block_hit_list:
                     if block.solid or (self.platformPhase <= 0):
                         self.platformPhase = 0
-                        self.ejectSize(block)
+                        self.eject(block)
                         break
                 loopCount += 1
 
@@ -184,7 +184,7 @@ class AbstractFighter():
             for block in block_hit_list:
                 if block.solid or (self.platformPhase <= 0):
                     self.platformPhase = 0
-                    self.ejectSize(block)
+                    self.eject(block)
                     break
             loopCount += 1
         # TODO: Crush death if loopcount reaches the 100 resolution attempt ceiling
@@ -203,14 +203,26 @@ class AbstractFighter():
         for block in block_hit_list:
             if self.catchMovement(block) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block) < t:
                 t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block)
-                toBounceBlock = block
 
         self.rect.y += self.change_y*t
         self.rect.x += self.change_x*t
         self.ecb.normalize()
 
-        if toBounceBlock is not None:
-            self.ejectMovement(toBounceBlock)
+        
+        loopCount = 0
+        while loopCount < 10:
+            self.ecb.normalize()
+            block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
+            if not block_hit_list:
+                break
+            for block in block_hit_list:
+                if block.solid or (self.platformPhase <= 0):
+                    self.platformPhase = 0
+                    self.eject(block)
+                    break
+            loopCount += 1
+        # TODO: Crush death if loopcount reaches the 100 resolution attempt ceiling
+        
 
         groundBlocks = self.checkForGround()
 
@@ -258,13 +270,13 @@ class AbstractFighter():
     def checkForGround(self):
         self.ecb.normalize()
         self.grounded = False
-        self.ecb.currentECB.rect.y += 2
+        self.ecb.currentECB.rect.y += 2+self.change_y
         groundBlock = pygame.sprite.Group()
         block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
-        self.ecb.currentECB.rect.y -= 2
+        self.ecb.currentECB.rect.y -= 2+self.change_y
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB.rect.bottom+self.change_y*0 <= block.rect.top+block.change_y+2:
+                if self.ecb.previousECB.rect.bottom-self.change_y <= block.rect.top+block.change_y+2:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -857,40 +869,6 @@ class AbstractFighter():
         collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(self.ecb.previousECB.rect))
         return filter(lambda r: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, q.rect)))
 
-    def ejectMovement(self, other):
-        self.ecb.normalize()
-        checkRect = other.rect.copy()
-        #checkRect.centerx -= other.change_x
-        #checkRect.centery -= other.change_y
-        newPrev = self.ecb.previousECB.rect.copy()
-        newPrev.center = self.ecb.previousECB.rect.center
-
-        dxLeft = -self.ecb.currentECB.rect.left+checkRect.right
-        dxRight = self.ecb.currentECB.rect.right-checkRect.left
-        dyUp = -self.ecb.currentECB.rect.top+checkRect.bottom
-        dyDown = self.ecb.currentECB.rect.bottom-checkRect.top
-
-        dx = min(max(0, dxRight), max(0, dxLeft))
-        dy = min(max(0, dyUp), max(0, dyDown))
-        
-        if dx <= dy:
-            if dxLeft >= dxRight and other.solid:
-                if self.change_x > other.change_x:
-                    self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
-            elif dxRight >= dxLeft and other.solid:
-                if self.change_x < other.change_x:
-                    self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
-        if dy <= dx:
-            if dyUp >= dyDown and other.solid:
-                if self.change_y >= other.change_y + self.var['gravity']:
-                    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-            elif not other.solid and dyDown <= self.ecb.currentECB.rect.bottom-newPrev.bottom and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
-                if self.change_y >= other.change_y + self.var['gravity']:
-                    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-            elif dyDown >= dyUp and other.solid:
-                if self.change_y <= other.change_y + self.var['gravity']:
-                    self.change_y = -self.elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-
     def catchMovement(self, other):
         self.ecb.normalize()
         checkRect = other.rect.copy()
@@ -908,24 +886,39 @@ class AbstractFighter():
             return checkPlatform(myRect, newPrev, checkRect)
         
 
-    def ejectSize(self, other):
+    def eject(self, other):
         self.ecb.normalize()
         checkRect = other.rect.copy()
         #checkRect.centerx -= other.change_x
         #checkRect.centery -= other.change_y
-        """
+        
+        contact = None
+        
         if other.solid:
             if intersectPoint(self.ecb.currentECB.rect, checkRect) is not None:
-                print(intersectPoint(self.ecb.currentECB.rect, checkRect))
+                contact = intersectPoint(self.ecb.currentECB.rect, checkRect)
                 self.rect.x += intersectPoint(self.ecb.currentECB.rect, checkRect)[0]
                 self.rect.y += intersectPoint(self.ecb.currentECB.rect, checkRect)[1]
         elif checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect):
             if intersectPoint(self.ecb.currentECB.rect, checkRect) is not None:
+                contact = intersectPoint(self.ecb.currentECB.rect, checkRect)
                 self.rect.y += intersectPoint(self.ecb.currentECB.rect, checkRect)[1]
-        """
+        if contact is not None and not contact == [0, 0]:
+            print(contact)
+            #The contact vector is perpendicular to the axis over which the reflection should happen
+            v_vel = [self.change_x-other.change_x, self.change_y-other.change_y]
+            v_norm = [contact[1], -contact[0]]
+            dot = v_norm[0]*v_vel[0]+v_norm[1]*v_vel[1]
+            normsqr = v_norm[0]*v_norm[0]+v_norm[1]*v_norm[1]
+            ratio = 1 if normsqr == 0 else dot/normsqr
+            projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
+            elasticity = self.ground_elasticity if contact[1] < 0 else self.elasticity
+            (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
+            
+        
         
 
-        
+        """
         dxLeft = -self.ecb.currentECB.rect.left+checkRect.right
         dxRight = self.ecb.currentECB.rect.right-checkRect.left
         dyUp = -self.ecb.currentECB.rect.top+checkRect.bottom
@@ -956,6 +949,7 @@ class AbstractFighter():
                 self.rect.top = other.rect.bottom+self.rect.top-self.ecb.currentECB.rect.top
                 if self.change_y <= other.change_y + self.var['gravity']:
                     self.change_y = -self.elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
+        """
         
         
         
