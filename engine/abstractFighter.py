@@ -943,24 +943,24 @@ def getDirectionBetweenPoints(p1, p2):
     return (180 * math.atan2(dy, dx)) / math.pi 
 
 def intersectPoint(firstRect, secondRect): 
-    dxLeft = -firstRect.left+secondRect.right
-    dxRight = firstRect.right-secondRect.left
-    dyUp = -firstRect.top+secondRect.bottom
-    dyDown = firstRect.bottom-secondRect.top
+    dxLeft = -firstRect.centerx+secondRect.right
+    dxRight = firstRect.centerx-secondRect.left
+    dyUp = -firstRect.centery+secondRect.bottom
+    dyDown = firstRect.centery-secondRect.top
 
     dx = min(max(0, dxRight), max(0, dxLeft))
     dy = min(max(0, dyUp), max(0, dyDown))
         
     if dx <= dy:
         if dxLeft >= dxRight:
-            return [-dxRight, 0]
+            return [-firstRect.right+secondRect.left, 0]
         elif dxRight >= dxLeft:
-            return [dxLeft, 0]
+            return [-firstRect.left+secondRect.right, 0]
     if dy <= dx:
         if dyUp >= dyDown:
-            return [0, -dyDown]
+            return [0, -firstRect.bottom+secondRect.top]
         elif dyDown >= dyUp:
-            return [0, dyUp]
+            return [0, -firstRect.top+secondRect.bottom]
     return None
 
 def checkPlatform(current, previous, platform):
