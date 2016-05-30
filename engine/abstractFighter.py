@@ -913,45 +913,8 @@ class AbstractFighter():
             ratio = 1 if normsqr == 0 else dot/normsqr
             projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
             elasticity = self.ground_elasticity if contact[1] < 0 else self.elasticity
-            (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
-            
-        
-        
-
-        """
-        dxLeft = -self.ecb.currentECB.rect.left+checkRect.right
-        dxRight = self.ecb.currentECB.rect.right-checkRect.left
-        dyUp = -self.ecb.currentECB.rect.top+checkRect.bottom
-        dyDown = self.ecb.currentECB.rect.bottom-checkRect.top
-
-        dx = min(max(0, dxRight), max(0, dxLeft))
-        dy = min(max(0, dyUp), max(0, dyDown))
-        
-        if dx <= dy:
-            if dxLeft >= dxRight and other.solid:
-                self.rect.right = other.rect.left+self.rect.right-self.ecb.currentECB.rect.right
-                if self.change_x > other.change_x:
-                    self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
-            elif dxRight >= dxLeft and other.solid:
-                self.rect.left = other.rect.right+self.rect.left-self.ecb.currentECB.rect.left
-                if self.change_x < other.change_x:
-                    self.change_x = -self.elasticity*(self.change_x-other.change_x) + other.change_x
-        if dy <= dx:
-            if dyUp >= dyDown and other.solid:
-                self.rect.bottom = other.rect.top+self.rect.bottom-self.ecb.currentECB.rect.bottom
-                if self.change_y >= other.change_y + self.var['gravity']:
-                    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-            elif not other.solid and dyDown <= self.ecb.currentECB.rect.bottom-self.ecb.previousECB.rect.bottom and dyUp >= dyDown and self.ecb.currentECB.rect.bottom >= other.rect.top:
-                self.rect.bottom = other.rect.top+(self.rect.bottom-self.ecb.currentECB.rect.bottom)
-                if self.change_y >= other.change_y + self.var['gravity']:
-                    self.change_y = -self.ground_elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-            elif dyDown >= dyUp and other.solid:
-                self.rect.top = other.rect.bottom+self.rect.top-self.ecb.currentECB.rect.top
-                if self.change_y <= other.change_y + self.var['gravity']:
-                    self.change_y = -self.elasticity*(self.change_y-other.change_y) + other.change_y + self.var['gravity']
-        """
-        
-        
+            if dot <= 0:
+                (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
