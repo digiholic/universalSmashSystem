@@ -230,8 +230,8 @@ class AbstractFighter():
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
         if not block is None:
             self.rect.x += block.change_x
-            self.rect.y += 0.2
-            #self.rect.y += block.change_y
+            if self.rect.bottom > block.rect.bottom:
+                self.rect.bottom = block.rect.bottom
             self.change_y -= self.var['gravity']
 
         self.sprite.updatePosition(self.rect)
@@ -276,7 +276,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 2+self.change_y
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB.rect.bottom-self.change_y <= block.rect.top+block.change_y+2:
+                if self.ecb.previousECB.rect.bottom-self.change_y-4 <= block.rect.top+block.change_y+2:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -947,6 +947,21 @@ def intersectPoint(firstRect, secondRect):
     dxRight = firstRect.centerx-secondRect.left
     dyUp = -firstRect.centery+secondRect.bottom
     dyDown = firstRect.centery-secondRect.top
+
+    """
+    if dxLeft >= dxRight and dxLeft >= dyUp and dxLeft >= dyDown:
+        #Right voronoi region
+        return [-firstRect.right+secondRect.left, 0]
+    elif dxRight >= dyUp and dxRight >= dyUp:
+        #Left voronoi region
+        return [-firstRect.left+secondRect.right, 0]
+    elif dyUp >= dyDown:
+        #Bottom voronoi region
+        return [0, -firstRect.bottom+secondRect.top]
+    else:
+        #Top voronoi region
+        return [0, -firstRect.top+secondRect.bottom]
+    """
 
     dx = min(max(0, dxRight), max(0, dxLeft))
     dy = min(max(0, dyUp), max(0, dyDown))
