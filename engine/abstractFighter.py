@@ -948,21 +948,6 @@ def intersectPoint(firstRect, secondRect):
     dyUp = -firstRect.centery+secondRect.bottom
     dyDown = firstRect.centery-secondRect.top
 
-    """
-    if dxLeft >= dxRight and dxLeft >= dyUp and dxLeft >= dyDown:
-        #Right voronoi region
-        return [-firstRect.right+secondRect.left, 0]
-    elif dxRight >= dyUp and dxRight >= dyUp:
-        #Left voronoi region
-        return [-firstRect.left+secondRect.right, 0]
-    elif dyUp >= dyDown:
-        #Bottom voronoi region
-        return [0, -firstRect.bottom+secondRect.top]
-    else:
-        #Top voronoi region
-        return [0, -firstRect.top+secondRect.bottom]
-    """
-
     dx = min(max(0, dxRight), max(0, dxLeft))
     dy = min(max(0, dyUp), max(0, dyDown))
         
@@ -991,6 +976,12 @@ def checkPlatform(current, previous, platform):
         if dyDown <= current.bottom-previous.bottom and dyUp >= dyDown and current.bottom >= platform.top:
             return True
     return False
+
+def directionalDisplacement(firstPoints, secondPoints, direction):
+    #Given a direction to displace in, determine the displacement needed to get it out
+    firstDots = map(lambda x: x[0]*direction[0]+x[1]*direction[1], firstPoints)
+    secondDots = map(lambda x: x[0]*direction[0]+x[1]*direction[1], secondPoints)
+    #TBC...
 
 # Returns a 2-entry array representing a range of time when the points and the rect intersect
 # If the range's min is greater than its max, it represents an empty interval
