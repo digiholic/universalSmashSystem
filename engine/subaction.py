@@ -172,7 +172,12 @@ class changeFighterPreferredSpeed(SubAction):
         if self.pref_y:
             actor.preferred_yspeed = self.pref_y
         
-        
+    @staticmethod
+    def buildFromXml(node):
+        speed_x = int(node.find('xSpeed').text) if node.find('xSpeed') is not None else None
+        speed_y = int(node.find('ySpeed').text) if node.find('ySpeed') is not None else None
+        return changeFighterPreferredSpeed(speed_x,speed_y)
+    
 # ChangeFighterSpeed changes the speed directly, with no acceleration/deceleration.
 class changeFighterSpeed(SubAction):
     def __init__(self,speed_x = None, speed_y = None):
@@ -188,10 +193,8 @@ class changeFighterSpeed(SubAction):
 
     @staticmethod
     def buildFromXml(node):
-        speed_x = int(node.find('xSpeed').text)
-        speed_y = int(node.find('ySpeed').text)
-        print(speed_x)
-        print(speed_y)
+        speed_x = int(node.find('xSpeed').text) if node.find('xSpeed') is not None else None
+        speed_y = int(node.find('ySpeed').text) if node.find('ySpeed') is not None else None
         return changeFighterSpeed(speed_x,speed_y)
 # ApplyForceVector is usually called when launched, but can be used as an alternative to setting speed. This one
 # takes a direction in degrees (0 being forward, 90 being straight up, 180 being backward, 270 being downward)
@@ -325,13 +328,20 @@ class createHitbox(SubAction):
             hitbox = engine.hitbox.DamageHitbox(self.center, self.size, actor, 
                                        self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.hitstun, 
                                        hitboxLock,
-                                       self.weightInfluence, self.shieldMultiplier, self.transcendence, self.priorityDiff)
+                                       self.weightInfluence, self.shieldMultiplier, self.transcendence, self.priorityDiff,
+                                       self.chargeDamage, self.chargeBKB, self.chargeKBG)
         elif self.hitboxType == "sakurai":
-            pass
+            hitbox = engine.hitbox.SakuraiAngleHitbox(self.center, self.size, actor,
+                                                      self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.hitstun,
+                                                      hitboxLock,
+                                                      self.weightInfluence, self.shieldMultiplier, self.transcendence, self.priorityDiff,
+                                                      self.chargeDamage, self.chargeBKB, self.chargeKBG)
         elif self.hitboxType == "autolink":
             pass
         elif self.hitboxType == "funnel":
-            pass
+            hitbox = engine.hitbox.FunnelHitbox(self.center, self.size, actor, self.damage, self.baseKnockback, self.trajectory, self.hitstun, hitboxLock,
+                                                self.xDraw, self.yDraw, self.shieldMultiplier, self.transcendence, self.priorityDiff,\
+                                                self.chargeDamage, self.chargeBKB, self.chargeKBG)
         elif self.hitboxType == "grab":
             pass
         elif self.hitboxType == "reflector":
@@ -347,8 +357,8 @@ class createHitbox(SubAction):
         center = map(int, node.find('center').text.split(','))
         size = map(int, node.find('size').text.split(','))
         damage = float(node.find('damage').text)
-        baseKnockback = float(node.find('baseKnockback').text)
-        knockbackGrowth = float(node.find('knockbackGrowth').text)
+        baseKnockback = float(loadNodeWithDefault(node, 'baseKnockback', 0))
+        knockbackGrowth = float(loadNodeWithDefault(node, 'knockbackGrowth', 0))
         trajectory = int(node.find('trajectory').text)
         
         hitstun = float(loadNodeWithDefault(node, 'hitstun', 1.0))
@@ -431,6 +441,8 @@ class modifyHurtBox(SubAction):
 subActionDict = {
                  'changeSprite': changeFighterSprite,
                  'changeSubimage': changeFighterSubimage,
+                 'changeFighterSpeed': changeFighterSpeed,
+                 'changeFighterPreferredSpeed': changeFighterPreferredSpeed,
                  'setFrame': changeActionFrame,
                  'nextFrame': nextFrame,
                  'ifVar': ifVar,

@@ -1227,7 +1227,10 @@ class ChargeAttack(BaseAttack):
                     hitbox.charge()
                 self.chargeLevel += 1
                 self.frame = self.startChargeFrame
-
+        
+        if self.frame == (self.endChargeFrame+1):
+            actor.mask = None
+            
 class NeutralAttack(BaseAttack):
     def __init__(self, length):
         BaseAttack.__init__(self, length)

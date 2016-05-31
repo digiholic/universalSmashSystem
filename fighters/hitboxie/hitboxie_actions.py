@@ -624,7 +624,6 @@ class DownAttack(action.Action):
     def tearDown(self,actor,other):
         self.dsmashHitbox1.kill()
         self.dsmashHitbox2.kill()
-        print(self.frame)
 
     def onClank(self,actor):
         actor.doIdle()
@@ -707,6 +706,7 @@ class DownSmash(action.Action):
             actor.hurtbox.rect.width = 44
             actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
             actor.changeSpriteImage((self.frame//2-3)%6)
+            print((self.frame//2-3)%6)
             if self.frame == 14:
                 actor.active_hitboxes.add(self.spikeBox)
                 actor.mask = None
