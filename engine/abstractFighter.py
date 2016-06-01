@@ -230,8 +230,8 @@ class AbstractFighter():
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
         if not block is None:
             self.rect.x += block.change_x
-            if self.rect.bottom > block.rect.bottom:
-                self.rect.bottom = block.rect.bottom
+            #if self.rect.bottom > block.rect.bottom:
+            #    self.rect.bottom = block.rect.bottom
             self.change_y -= self.var['gravity']
 
         self.sprite.updatePosition(self.rect)
@@ -276,7 +276,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 2+self.change_y
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB.rect.bottom-self.change_y-4 <= block.rect.top+block.change_y+2:
+                if self.ecb.previousECB.rect.centery-self.change_y-4 <= block.rect.top+block.change_y+2:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -872,6 +872,8 @@ class AbstractFighter():
     def catchMovement(self, other):
         self.ecb.normalize()
         checkRect = other.rect.copy()
+        checkRect.centerx -= other.change_x
+        checkRect.centery -= other.change_y
         newPrev = self.ecb.currentECB.rect.copy()
         newPrev.center = self.ecb.previousECB.rect.center
         t = pathRectIntersects(newPrev, self.ecb.currentECB.rect, checkRect)
@@ -889,8 +891,8 @@ class AbstractFighter():
     def eject(self, other):
         self.ecb.normalize()
         checkRect = other.rect.copy()
-        #checkRect.centerx -= other.change_x
-        #checkRect.centery -= other.change_y
+        checkRect.centerx -= other.change_x
+        checkRect.centery -= other.change_y
         
         contact = None
         
@@ -943,6 +945,7 @@ def getDirectionBetweenPoints(p1, p2):
     return (180 * math.atan2(dy, dx)) / math.pi 
 
 def intersectPoint(firstRect, secondRect): 
+    """
     dxLeft = -firstRect.centerx+secondRect.right
     dxRight = firstRect.centerx-secondRect.left
     dyUp = -firstRect.centery+secondRect.bottom
@@ -962,6 +965,15 @@ def intersectPoint(firstRect, secondRect):
         elif dyDown >= dyUp:
             return [0, -firstRect.top+secondRect.bottom]
     return None
+    """
+
+    firstPoints = [firstRect.topleft, firstRect.topright, firstRect.bottomleft, firstRect.bottomright]
+    secondPoints = [secondRect.topleft, secondRect.topright, secondRect.bottomleft, secondRect.bottomright]
+    leftDist = directionalDisplacement(firstPoints, secondPoints, [-1, 0])
+    rightDist = directionalDisplacement(firstPoints, secondPoints, [1, 0])
+    upDist = directionalDisplacement(firstPoints, secondPoints, [0, -1])
+    downDist = directionalDisplacement(firstPoints, secondPoints, [0, 1])
+    return min(leftDist, rightDist, upDist, downDist, key=lambda x: math.sqrt(x[0]*x[0] + x[1]*x[1]))
 
 def checkPlatform(current, previous, platform):
     dxLeft = -current.left+platform.right
@@ -973,7 +985,7 @@ def checkPlatform(current, previous, platform):
     dy = min(max(0, dyUp), max(0, dyDown))
 
     if (dy <= dx): 
-        if dyDown <= current.bottom-previous.bottom and dyUp >= dyDown and current.bottom >= platform.top:
+        if dyDown <= current.bottom-previous.bottom+4 and dyUp >= dyDown and current.bottom >= platform.top:
             return True
     return False
 
@@ -981,7 +993,10 @@ def directionalDisplacement(firstPoints, secondPoints, direction):
     #Given a direction to displace in, determine the displacement needed to get it out
     firstDots = map(lambda x: x[0]*direction[0]+x[1]*direction[1], firstPoints)
     secondDots = map(lambda x: x[0]*direction[0]+x[1]*direction[1], secondPoints)
-    #TBC...
+    projectedDisplacement = max(secondDots)-min(firstDots)
+    normsqr = direction[0]*direction[0]+direction[1]*direction[1]
+    normsqr = 1 if normsqr == 0 else normsqr
+    return [projectedDisplacement/normsqr*direction[0], projectedDisplacement/normsqr*direction[1]]
 
 # Returns a 2-entry array representing a range of time when the points and the rect intersect
 # If the range's min is greater than its max, it represents an empty interval
