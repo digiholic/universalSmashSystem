@@ -230,8 +230,8 @@ class AbstractFighter():
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
         if not block is None:
             self.rect.x += block.change_x
-            #if self.rect.bottom > block.rect.bottom:
-            #    self.rect.bottom = block.rect.bottom
+            if self.rect.bottom > block.rect.bottom and self.rect.centerx > block.rect.left and self.rect.centery < block.rect.right:
+                self.rect.bottom = block.rect.bottom
             self.change_y -= self.var['gravity']
 
         self.sprite.updatePosition(self.rect)
@@ -270,13 +270,13 @@ class AbstractFighter():
     def checkForGround(self):
         self.ecb.normalize()
         self.grounded = False
-        self.ecb.currentECB.rect.y += 2+self.change_y
+        self.ecb.currentECB.rect.y += 4+self.change_y
         groundBlock = pygame.sprite.Group()
         block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
-        self.ecb.currentECB.rect.y -= 2+self.change_y
+        self.ecb.currentECB.rect.y -= 4+self.change_y
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB.rect.centery-self.change_y-4 <= block.rect.top+block.change_y+2:
+                if self.ecb.previousECB.rect.bottom-self.change_y <= block.rect.top+block.change_y+4:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -872,8 +872,8 @@ class AbstractFighter():
     def catchMovement(self, other):
         self.ecb.normalize()
         checkRect = other.rect.copy()
-        checkRect.centerx -= other.change_x
-        checkRect.centery -= other.change_y
+        #checkRect.centerx -= other.change_x
+        #checkRect.centery -= other.change_y
         newPrev = self.ecb.currentECB.rect.copy()
         newPrev.center = self.ecb.previousECB.rect.center
         t = pathRectIntersects(newPrev, self.ecb.currentECB.rect, checkRect)
@@ -891,8 +891,8 @@ class AbstractFighter():
     def eject(self, other):
         self.ecb.normalize()
         checkRect = other.rect.copy()
-        checkRect.centerx -= other.change_x
-        checkRect.centery -= other.change_y
+        #checkRect.centerx -= other.change_x
+        #checkRect.centery -= other.change_y
         
         contact = None
         
