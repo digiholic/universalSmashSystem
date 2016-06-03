@@ -904,6 +904,7 @@ class AbstractFighter():
         elif checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect):
             if intersectPoint(self.ecb.currentECB.rect, checkRect) is not None:
                 contact = intersectPoint(self.ecb.currentECB.rect, checkRect)
+                #self.rect.x += intersectPoint(self.ecb.currentECB.rect, checkRect)[0]
                 self.rect.y += intersectPoint(self.ecb.currentECB.rect, checkRect)[1]
         if contact is not None and not contact == [0, 0]:
             print(contact)
@@ -973,7 +974,11 @@ def intersectPoint(firstRect, secondRect):
     rightDist = directionalDisplacement(firstPoints, secondPoints, [1, 0])
     upDist = directionalDisplacement(firstPoints, secondPoints, [0, -1])
     downDist = directionalDisplacement(firstPoints, secondPoints, [0, 1])
-    return min(leftDist, rightDist, upDist, downDist, key=lambda x: math.sqrt(x[0]*x[0] + x[1]*x[1]))
+    upLeftDist = directionalDisplacement(firstPoints, secondPoints, [-firstRect.height, -firstRect.width])
+    upRightDist = directionalDisplacement(firstPoints, secondPoints, [firstRect.height, -firstRect.width])
+    downLeftDist = directionalDisplacement(firstPoints, secondPoints, [-firstRect.height, firstRect.width])
+    downRightDist = directionalDisplacement(firstPoints, secondPoints, [firstRect.height, -firstRect.width])
+    return min(leftDist, rightDist, upDist, downDist, upLeftDist, upRightDist, downLeftDist, downRightDist, key=lambda x: math.sqrt(x[0]*x[0] + x[1]*x[1]))
 
 def checkPlatform(current, previous, platform):
     dxLeft = -current.left+platform.right
