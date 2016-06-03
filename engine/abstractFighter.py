@@ -967,13 +967,17 @@ def intersectPoint(firstRect, secondRect):
     return None
     """
 
-    firstPoints = [firstRect.topleft, firstRect.topright, firstRect.bottomleft, firstRect.bottomright]
+    firstPoints = [firstRect.midtop, firstRect.midbottom, firstRect.midleft, firstRect.midright]
     secondPoints = [secondRect.topleft, secondRect.topright, secondRect.bottomleft, secondRect.bottomright]
     leftDist = directionalDisplacement(firstPoints, secondPoints, [-1, 0])
     rightDist = directionalDisplacement(firstPoints, secondPoints, [1, 0])
     upDist = directionalDisplacement(firstPoints, secondPoints, [0, -1])
     downDist = directionalDisplacement(firstPoints, secondPoints, [0, 1])
-    return min(leftDist, rightDist, upDist, downDist, key=lambda x: math.sqrt(x[0]*x[0] + x[1]*x[1]))
+    upLeftDist = directionalDisplacement(firstPoints, secondPoints, [-firstRect.height, -firstRect.width])
+    upRightDist = directionalDisplacement(firstPoints, secondPoints, [firstRect.height, -firstRect.width])
+    downLeftDist = directionalDisplacement(firstPoints, secondPoints, [-firstRect.height, firstRect.width])
+    downRightDist = directionalDisplacement(firstPoints, secondPoints, [firstRect.height, firstRect.width])
+    return min(leftDist, rightDist, upDist, downDist, upLeftDist, upRightDist, downLeftDist, downRightDist, key=lambda x: math.sqrt(x[0]*x[0] + x[1]*x[1]))
 
 def checkPlatform(current, previous, platform):
     dxLeft = -current.left+platform.right
@@ -1039,12 +1043,14 @@ def projectionIntersects(startPoints, endPoints, rectPoints, vector):
 def pathRectIntersects(startRect, endRect, rect):
     if startRect.colliderect(rect):
         return 0
-    startCorners = [startRect.topleft, startRect.topright, startRect.bottomleft, startRect.bottomright]
-    endCorners = [endRect.topleft, endRect.topright, endRect.bottomleft, endRect.bottomright]
+    startCorners = [startRect.midtop, startRect.midbottom, startRect.midleft, startRect.midright]
+    endCorners = [endRect.midtop, endRect.midbottom, endRect.midleft, endRect.midright]
     rectCorners = [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]
     horizontalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [1, 0])
     verticalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [0, 1])
-    totalIntersects = [max(horizontalIntersects[0], verticalIntersects[0], 0), min(horizontalIntersects[1], verticalIntersects[1], 1)]
+    downwardDiagonalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [startRect.height, startRect.width])
+    upwardDiagonalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [-startRect.height, startRect.width])
+    totalIntersects = [max(horizontalIntersects[0], verticalIntersects[0], downwardDiagonalIntersects[0], upwardDiagonalIntersects[0], 0), min(horizontalIntersects[1], verticalIntersects[1], downwardDiagonalIntersects[1], upwardDiagonalIntersects[1], 1)]
     if totalIntersects[0] > totalIntersects[1]:
         return 999
     else:
