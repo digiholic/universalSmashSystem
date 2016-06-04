@@ -260,7 +260,7 @@
 		
 		<setUp>
 			<createHitbox>
-				<name>jabHit</name>
+				<name>jab</name>
 				<center>0,0</center>
 				<size>80,80</size>
 				<damage>3</damage>
@@ -268,18 +268,19 @@
 				<knockbackGrowth>0.02</knockbackGrowth>
 				<trajectory>20</trajectory>
 			</createHitbox>
-			
-			<frame number="before">
-				<updateHitbox>jabHit</updateHitbox>
-			</frame>
-			
-			<frame number="4">
-				<activateHitbox>jabHit</activateHitbox>
-			</frame>
-			<frame number="9">
-				<deactivateHitbox>jabHit</deactivateHitbox>
-			</frame>
 		</setUp>
+
+		<frame number="before">
+			<updateHitbox>jab</updateHitbox>
+			<print>frame</print>
+		</frame>
+		
+		<frame number="4">
+			<activateHitbox>jab</activateHitbox>
+		</frame>
+		<frame number="9">
+			<deactivateHitbox>jab</deactivateHitbox>
+		</frame>
 	</NeutralAttack>
 	
 	<ForwardAttack>
@@ -325,13 +326,14 @@
 				<center>20,0</center>
 				<size>120,40</size>
 				<damage>16</damage>
-				<baseKnockback>0.8</baseKnockback>
-				<knockbackGrowth>0.25</knockbackGrowth>
+				<baseKnockback>8</baseKnockback>
+				<knockbackGrowth>0.15</knockbackGrowth>
 				<trajectory>40</trajectory>
 				<chargeable>
 					<damage>.426</damage>
 					<baseKnockback>0.04</baseKnockback>
 				</chargeable>
+				<hitstun>0.8</hitstun>
 			</createHitbox>
 		</setUp>
 		
@@ -687,4 +689,421 @@
 			<deactivateHitbox>leftHbox</deactivateHitbox>
 		</frame>
 	</DownSmash>
+	
+	<NeutralAir>
+		<length>40</length>
+		<sprite>nair</sprite>
+		<loop>True</loop>
+		
+		<vars>
+			<fastFallFrame type="int">0</fastFallFrame>
+		</vars>
+		
+		<setUp>
+			<changeFighterPreferredSpeed>
+				<xSpeed>0</xSpeed>
+			</changeFighterPreferredSpeed>
+			
+			<createHitbox type="sakurai">
+				<name>nairBox</name>
+				<center>0,0</center>
+				<size>72,72</size>
+				<damage>10</damage>
+				<baseKnockback>4</baseKnockback>
+				<knockbackGrowth>0.1</knockbackGrowth>
+				<trajectory>40</trajectory>
+				<transcendence>1</transcendence>
+			</createHitbox>
+		</setUp>
+		
+		<transitions>
+			<transitionState>airControl</transitionState>
+		</transitions>
+		
+		<!-- Hurtbox Manipulation -->
+		<frame number="before">
+			<updateHitbox>nairBox</updateHitbox>
+		</frame>
+		<frame number="2">
+			<updateLandingLag>20</updateLandingLag>
+			<activateHitbox>nairBox</activateHitbox>
+		</frame>
+		<frame number="6">
+			<modifyHitbox name="nairBox">
+				<damage type="int">7</damage>
+				<baseKnockback type="int">5</baseKnockback>
+			</modifyHitbox>
+		</frame>
+		<frame number="12">
+			<modifyHitbox name="nairBox">
+				<damage type="int">5</damage>
+				<baseKnockback type="int">2</baseKnockback>
+			</modifyHitbox>
+		</frame>
+		<frame number="18">
+			<modifyHitbox name="nairBox">
+				<damage type="int">3</damage>
+				<baseKnockback type="int">1</baseKnockback>
+				<hitstun type="float">0.5</hitstun>
+			</modifyHitbox>
+		</frame>
+		<frame number="24">
+			<modifyHitbox name="nairBox">
+				<damage type="int">1</damage>
+				<baseKnockback type="int">0</baseKnockback>
+				<hitstun type="float">0</hitstun>
+			</modifyHitbox>
+		</frame>
+		<frame number="30">
+			<updateLandingLag>12</updateLandingLag>
+		</frame>
+	</NeutralAir>
+	
+	<BackAir>
+		<length>35</length>
+		<sprite>bair</sprite>
+		
+		<transitions>
+			<ifVar var="frame">
+				<value type="int">15</value>
+				<cond>>=</cond>
+				<compare>
+					<transitionState>airControl</transitionState>
+				</compare>
+			</ifVar>
+		</transitions>
+		
+		<setUp>
+			<createHitbox>
+				<name>bairBox</name>
+				<center>-14,0</center>
+				<size>64,46</size>
+				<damage>10</damage>
+				<baseKnockback>8</baseKnockback>
+				<knockbackGrowth>0.2</knockbackGrowth>
+				<trajectory>180</trajectory>
+			</createHitbox>
+		</setUp>
+		
+		<frame number="before">
+			<updateHitbox>bairBox</updateHitbox>
+		</frame>
+		<frame number="2">
+			<updateLandingLag>18</updateLandingLag>
+			<changeFighterSpeed>
+				<xSpeed>0</xSpeed>
+			</changeFighterSpeed>
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="4">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="6">
+			<changeSubimage>4</changeSubimage>
+		</frame>
+		<frame number="8">
+			<changeSubimage>5</changeSubimage>
+			<activateHitbox>bairBox</activateHitbox>
+			<changeFighterSpeed>
+				<xSpeed relative="true">10</xSpeed>
+			</changeFighterSpeed>
+		</frame>
+		<frame number="12">
+			<deactivateHitbox>bairBox</deactivateHitbox>
+			<changeSubimage>6</changeSubimage>
+		</frame>
+		<frame number="16">
+			<changeSubimage>7</changeSubimage>
+		</frame>
+		<frame number="20">
+			<changeSprite>jump</changeSprite>
+		</frame>
+	</BackAir>
+	
+	<ForwardAir>
+		<length>44</length>
+		<sprite>fair</sprite>
+		<spriteRate>3</spriteRate>
+		
+		<transitions>
+			<transitionState>airControl</transitionState>
+		</transitions>
+		
+		<setUp>
+			<createHitbox>
+				<name>sourSpot</name>
+				<center>-30,-2</center>
+				<size>40,40</size>
+				<damage>10</damage>
+				<baseKnockback>8</baseKnockback>
+				<knockbackGrowth>0.2</knockbackGrowth>
+				<trajectory>50</trajectory>
+				<hitboxLock>sharedLock</hitboxLock>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>sweetSpot</name>
+				<center>30,10</center>
+				<size>40,40</size>
+				<damage>14</damage>
+				<baseKnockback>12</baseKnockback>
+				<knockbackGrowth>0.3</knockbackGrowth>
+				<trajectory>270</trajectory>
+				<hitboxLock>sharedLock</hitboxLock>
+			</createHitbox>
+		</setUp>
+		
+		<frame number="before">
+			<updateHitbox>sourSpot</updateHitbox>
+			<updateHitbox>sweetSpot</updateHitbox>
+		</frame>
+		<frame number="0">
+			<updateLandingLag>26</updateLandingLag>
+		</frame>
+		<frame number="18">
+			<activateHitbox>sourSpot</activateHitbox>
+		</frame>
+		<frame number="21">
+			<modifyHitbox name="sourSpot">
+				<x_offset type="int">-14</x_offset>
+				<y_offset type="int">-20</y_offset>
+			</modifyHitbox>
+		</frame>
+		<frame number="24">
+			<modifyHitbox name="sourSpot">
+				<x_offset type="int">9</x_offset>
+				<y_offset type="int">-26</y_offset>
+			</modifyHitbox>
+			<activateHitbox>sweetSpot</activateHitbox>
+		</frame>
+		<frame number="27">
+			<modifyHitbox name="sourSpot">
+				<x_offset type="int">23</x_offset>
+				<y_offset type="int">-12</y_offset>
+			</modifyHitbox>
+			<deactivateHitbox>sweetSpot</deactivateHitbox>
+		</frame>
+		<frame number="30">
+			<modifyHitbox name="sourSpot">
+				<x_offset type="int">30</x_offset>
+				<y_offset type="int">10</y_offset>
+			</modifyHitbox>
+		</frame>
+		<frame number="33">
+			<deactivateHitbox>sourSpot</deactivateHitbox>
+		</frame>
+		<frame number="39">
+			<changeSprite>jump</changeSprite>
+		</frame>
+		<!-- Hurtbox -->	
+	</ForwardAir>
+	
+	<UpAir>
+		<length>34</length>
+		<sprite>uair</sprite>
+		<spriteRate>3</spriteRate>
+		
+		<setUp>
+			<createHitbox>
+				<name>sour</name>
+				<center>0,18</center>
+				<size>60,47</size>
+				<damage>6</damage>
+				<baseKnockback>8</baseKnockback>
+				<knockbackGrowth>0.05</knockbackGrowth>
+				<trajectory>60</trajectory>
+				<hitboxLock>shared</hitboxLock>
+				<transcendence>1</transcendence>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>tangy</name>
+				<center>0,-27</center>
+				<size>30,46</size>
+				<damage>8</damage>
+				<baseKnockback>6</baseKnockback>
+				<knockbackGrowth>0.1</knockbackGrowth>
+				<trajectory>75</trajectory>
+				<hitboxLock>shared</hitboxLock>
+				<transcendence>1</transcendence>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>sweet</name>
+				<center>0,-25</center>
+				<size>20,42</size>
+				<damage>12</damage>
+				<baseKnockback>6</baseKnockback>
+				<knockbackGrowth>0.2</knockbackGrowth>
+				<trajectory>90</trajectory>
+				<hitboxLock>shared</hitboxLock>
+				<transcendence>1</transcendence>
+			</createHitbox>
+		</setUp>
+		
+		<frame number="before">
+			<updateHitbox>sour</updateHitbox>
+			<updateHitbox>tangy</updateHitbox>
+			<updateHitbox>sweet</updateHitbox>
+		</frame>
+		<frame number="0">
+			<updateLandingLag>20</updateLandingLag>
+		</frame>
+		<frame number="6">
+			<activateHitbox>sour</activateHitbox>
+			<activateHitbox>sweet</activateHitbox>
+		</frame>
+		<frame number="9">
+			<changeSubimage>2</changeSubimage>
+			<deactivateHitbox>sweet</deactivateHitbox>
+			<activateHitbox>tangy</activateHitbox>
+		</frame>
+		<frame number="18">
+			<changeSubimage>3</changeSubimage>
+			<deactivateHitbox>tangy</deactivateHitbox>
+		</frame>
+		<frame number="21">
+			<changeSubimage>4</changeSubimage>
+			<deactivateHitbox>sour</deactivateHitbox>
+		</frame>
+		<frame number="last">
+			<updateLandingLag>16</updateLandingLag>
+		</frame>
+	</UpAir>
+	
+	<DownAir>
+		<length>39</length>
+		<sprite>dair</sprite>
+		<spriteRate>3</spriteRate>
+		
+		<vars>
+			<bottom>0</bottom>
+		</vars>
+		
+		<transitions>
+			<transitionState>airControl</transitionState>
+		</transitions>
+		
+		<setUp>
+			<createHitbox>
+				<name>downHbox</name>
+				<center>0,80</center>
+				<size>10,50</size>
+				<damage>9</damage>
+				<baseKnockback>8</baseKnockback>
+				<knockbackGrowth>0.08</knockbackGrowth>
+				<trajectory>270</trajectory>
+				<hitboxLock>allLock</hitboxLock>
+				<transcendence>1</transcendence>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>leftDiagHbox</name>
+				<center>-10,70</center>
+				<size>10,30</size>
+				<damage>7</damage>
+				<baseKnockback>7</baseKnockback>
+				<knockbackGrowth>0.06</knockbackGrowth>
+				<trajectory>225</trajectory>
+				<hitboxLock>allLock</hitboxLock>
+				<transcendence>1</transcendence>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>rightDiagHbox</name>
+				<center>10,70</center>
+				<size>10,30</size>
+				<damage>7</damage>
+				<baseKnockback>7</baseKnockback>
+				<knockbackGrowth>0.06</knockbackGrowth>
+				<trajectory>315</trajectory>
+				<hitboxLock>allLock</hitboxLock>
+				<transcendence>1</transcendence>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>leftSourHbox</name>
+				<center>-20,60</center>
+				<size>10,10</size>
+				<damage>5</damage>
+				<baseKnockback>6</baseKnockback>
+				<knockbackGrowth>0.04</knockbackGrowth>
+				<trajectory>180</trajectory>
+				<hitboxLock>allLock</hitboxLock>
+				<transcendence>1</transcendence>
+			</createHitbox>
+			
+			<createHitbox>
+				<name>rightSourHbox</name>
+				<center>20,60</center>
+				<size>10,10</size>
+				<damage>5</damage>
+				<baseKnockback>6</baseKnockback>
+				<knockbackGrowth>0.04</knockbackGrowth>
+				<trajectory>0</trajectory>
+				<hitboxLock>allLock</hitboxLock>
+				<transcendence>1</transcendence>
+			</createHitbox>
+		</setUp>
+		
+		<tearDown>
+			<!-- actor.rect.bottom += self.bottom -->
+		</tearDown>
+		
+		<frame number="before">
+			<updateHitbox>downHbox</updateHitbox>
+			<updateHitbox>leftDiagHbox</updateHitbox>
+			<updateHitbox>rightDiagHbox</updateHitbox>
+			<updateHitbox>leftSourHbox</updateHitbox>
+			<updateHitbox>rightSourHbox</updateHitbox>
+		</frame>
+		<frame number="3">
+			<updateLandingLag>16</updateLandingLag>
+		</frame>
+		<frame number="13">
+			<activateHitbox>downHbox</activateHitbox>
+			<activateHitbox>leftDiagHbox</activateHitbox>
+			<activateHitbox>rightDiagHbox</activateHitbox>
+			<activateHitbox>leftSourHbox</activateHitbox>
+			<activateHitbox>rightSourHbox</activateHitbox>
+			<changeFighterSpeed>
+				<ySpeed>20</ySpeed>
+			</changeFighterSpeed>
+		</frame>
+		<frame number="30">
+			<!-- if keysContainAttack frame -1 -->
+		</frame>
+		<frame number="31">
+			<deactivateHitbox>downHbox</deactivateHitbox>
+			<deactivateHitbox>leftDiagHbox</deactivateHitbox>
+			<deactivateHitbox>rightDiagHbox</deactivateHitbox>
+			<deactivateHitbox>leftSourHbox</deactivateHitbox>
+			<deactivateHitbox>rightSourHbox</deactivateHitbox>
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="33">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="36">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="39">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+		<frame number="last">
+			<updateLandingLag>8</updateLandingLag>
+		</frame>
+		<frame number="after">
+			<!-- hurtbox -->
+			<ifVar var="frame">
+				<value type="int">13</value>
+				<compare cond="&lt;">
+					<changeFighterSpeed>
+						<ySpeed>0</ySpeed>
+					</changeFighterSpeed>
+				</compare>
+			</ifVar>
+		</frame>
+	</DownAir>
+	
 </actionList>

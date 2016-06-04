@@ -1043,11 +1043,11 @@ class DownAir(action.Action):
             actor.active_hitboxes.add(self.rightDiagonalHitbox)
             actor.active_hitboxes.add(self.leftSourSpot)
             actor.active_hitboxes.add(self.rightSourSpot)
-        elif self.frame == self.lastFrame-9 and actor.keysContain('attack'):
+        elif self.frame == 30 and actor.keysContain('attack'):
             self.frame -= 1
-        elif self.frame < self.lastFrame-9:
+        elif self.frame < 30:
             pass
-        elif self.frame < self.lastFrame-6:
+        elif self.frame < 33:
             self.bottom = 14
             self.downHitbox.kill()
             self.leftDiagonalHitbox.kill()
@@ -1055,10 +1055,10 @@ class DownAir(action.Action):
             self.leftSourSpot.kill()
             self.rightSourSpot.kill()
             actor.changeSpriteImage(3)
-        elif self.frame < self.lastFrame - 3:
+        elif self.frame < 36:
             self.bottom = 0
             actor.changeSpriteImage(2)
-        elif self.frame < self.lastFrame:
+        elif self.frame < 39:
             actor.changeSpriteImage(1)
         else: 
             actor.changeSpriteImage(0)

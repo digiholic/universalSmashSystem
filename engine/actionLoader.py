@@ -21,7 +21,7 @@ class ActionLoader():
             return base()
         
         #Get the action variables
-        length = int(self.loadNodeWithDefault(actionXML, 'length', 0))
+        length = int(self.loadNodeWithDefault(actionXML, 'length', 1))
         startingFrame = int(self.loadNodeWithDefault(actionXML, 'startingFrame', 0))
         spriteName = self.loadNodeWithDefault(actionXML, 'sprite', None)
         spriteRate = int(self.loadNodeWithDefault(actionXML, 'spriteRate', 1))
@@ -30,7 +30,7 @@ class ActionLoader():
         actionvars = {}
         if actionXML.find('vars') is not None:
             for var in actionXML.find('vars'):
-                t = var.attrib['type']
+                t = var.attrib['type'] if var.attrib.has_key('type') else None
                 if t and t == 'int':
                     actionvars[var.tag] = int(var.text)
                 elif t and t == 'float':
@@ -104,6 +104,7 @@ class ActionLoader():
         dynAction.actionsAtFrame = subactionsAtFrame
         dynAction.actionsAfterFrame = subactionsAfterFrame
         dynAction.actionsAtLastFrame = subactionsAtLastFrame
+        dynAction.stateTransitionActions = stateTransitionActions
         dynAction.setUpActions = setUpActions
         dynAction.tearDownActions = tearDownActions
         if spriteName: dynAction.spriteName = spriteName

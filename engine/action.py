@@ -63,7 +63,7 @@ class DynamicAction(Action):
         self.actionsAfterFrame = []
         self.actionsAtLastFrame = []
         
-        self.stateTransitionsAtFrame = [[]]
+        self.stateTransitionActions = []
         self.setUpActions = []
         self.tearDownActions = []
         for key,val in var.iteritems():
@@ -84,9 +84,8 @@ class DynamicAction(Action):
         if self.parent: self.parent.update(self,actor)
     
     def stateTransitions(self,actor):
-        if self.frame < len(self.stateTransitionsAtFrame):
-            for act in self.stateTransitionsAtFrame[self.frame]:
-                act(actor)
+        for act in self.stateTransitionActions:
+            act.execute(self,actor)
         if self.parent: self.parent.stateTransitions(self,actor)
     
     def setUp(self,actor):

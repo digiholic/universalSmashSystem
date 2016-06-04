@@ -416,7 +416,6 @@ class AbstractFighter():
     def doAirAttack(self):
         (forward, backward) = self.getForwardBackwardKeys()
         if (self.keysContain(forward)):
-            self.changeAction(self.actions.ForwardAir())
             self.doAction('ForwardAir')
         elif (self.keysContain(backward)):
             self.doAction('BackAir')
@@ -468,26 +467,34 @@ class AbstractFighter():
         self.changeAction(self.actions.TryTech(hitstun, trajectory, hitstop))
 
     def doTrip(self, length, direction):
-        self.changeAction(self.actions.Trip(length, direction))
+        self.doAction('Trip')
+        self.current_action.lastFrame = length
+        self.current_action.direction = direction
 
     def doGetup(self, direction):
-        self.changeAction(self.actions.Getup(direction))
+        self.doAction('Getup')
+        self.current_action.direction = direction
     
     def doShieldStun(self, length):
-        self.changeAction(self.actions.ShieldStun(length))
+        self.doAction('ShieldStun')
+        self.current_action.lastFrame = length
              
     def doLedgeGrab(self,ledge):
-        self.changeAction(self.actions.LedgeGrab(ledge))
+        self.doAction('LedgeGrab')
+        self.current_action.ledge = ledge
 
     def doTrapped(self, length):
-        self.changeAction(self.actions.Trapped(length))
+        self.doAction('Trapped')
+        self.current_action.lastFrame = length
 
     def doStunned(self, length):
-        self.changeAction(self.actions.Stunned(length))
+        self.doAction('Stunned')
+        self.current_action.lastFrame = length
 
     def doGrabbed(self, height):
-        self.changeAction(self.actions.Grabbed(height))
-
+        self.doAction('Grabbed')
+        self.current_action.height = height
+    
 ########################################################
 #                  STATE CHANGERS                      #
 ########################################################
@@ -670,6 +677,11 @@ class AbstractFighter():
             self.invincible = 20
             self.doStunned(200)
     
+    def updateLandingLag(self,lag,reset=False):
+        if reset: self.landingLag = lag
+        else:
+            if lag > self.landingLag: self.landingLag = lag
+            
 ########################################################
 #                 ENGINE FUNCTIONS                     #
 ########################################################

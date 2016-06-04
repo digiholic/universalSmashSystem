@@ -1,8 +1,13 @@
 import engine.hitbox
+import baseActions
 ########################################################
 #               ABSTRACT ACTIONS                       #
 ########################################################
-
+def loadNodeWithDefault(node,subnode,default):
+    if node is not None:
+        return node.find(subnode).text if node.find(subnode)is not None else default
+    else:
+        return default
 
 # SubActions are a single part of an Action, such as moving a fighter, or tweaking a sprite.
 class SubAction():
@@ -91,8 +96,7 @@ class ifVar(SubAction):
         variable = node.attrib['var']
         #print(variable)
         
-        cond = node.find('compare').attrib.get('cond')
-        if cond is None: cond = '=='
+        cond = node.find('cond').text if node.find('cond') is not None else '=='
         #print(cond)
         
         value = node.find('value')
@@ -167,9 +171,9 @@ class changeFighterPreferredSpeed(SubAction):
         self.pref_y = pref_y
         
     def execute(self, action, actor):
-        if self.pref_x:
+        if self.pref_x is not None:
             actor.preferred_xspeed = self.pref_x
-        if self.pref_y:
+        if self.pref_y is not None:
             actor.preferred_yspeed = self.pref_y
         
     @staticmethod
@@ -180,22 +184,27 @@ class changeFighterPreferredSpeed(SubAction):
     
 # ChangeFighterSpeed changes the speed directly, with no acceleration/deceleration.
 class changeFighterSpeed(SubAction):
-    def __init__(self,speed_x = None, speed_y = None):
+    def __init__(self,speed_x = None, speed_y = None, xRelative = False):
         SubAction.__init__(self)
         self.speed_x = speed_x
         self.speed_y = speed_y
+        self.xRelative = xRelative
         
     def execute(self, action, actor):
-        if self.speed_x:
-            actor.change_x = self.speed_x
-        if self.speed_y:
-            actor.change_x = self.speed_y
+        if self.speed_x is not None:
+            if self.xRelative: actor.change_x = self.speed_x*actor.facing
+            else: actor.change_x = self.speed_x
+        if self.speed_y is not None:
+            actor.change_y = self.speed_y
 
     @staticmethod
     def buildFromXml(node):
+        xRelative = True
         speed_x = int(node.find('xSpeed').text) if node.find('xSpeed') is not None else None
+        if speed_x and node.find('xSpeed').attrib.has_key("relative"): xRelative = True
         speed_y = int(node.find('ySpeed').text) if node.find('ySpeed') is not None else None
-        return changeFighterSpeed(speed_x,speed_y)
+        return changeFighterSpeed(speed_x,speed_y,xRelative)
+
 # ApplyForceVector is usually called when launched, but can be used as an alternative to setting speed. This one
 # takes a direction in degrees (0 being forward, 90 being straight up, 180 being backward, 270 being downward)
 # and a magnitude.
@@ -224,6 +233,18 @@ class shiftFighterPosition(SubAction):
             actor.rect.x = self.new_x
         if self.new_y:
             actor.rect.y = self.new_y
+            
+class updateLandingLag(SubAction):
+    def __init__(self,newLag,reset = False):
+        self.newLag = newLag
+        self.reset = reset
+        
+    def execute(self, action, actor):
+        actor.updateLandingLag(self.newLag,self.reset)
+        
+    @staticmethod
+    def buildFromXml(node):
+        return updateLandingLag(int(node.text),node.attrib.has_key('reset'))
 ########################################################
 #           ATTRIBUTES AND VARIABLES                   #
 ########################################################
@@ -277,6 +298,19 @@ class nextFrame(SubAction):
 class changeAction(SubAction):
     pass
 
+class transitionState(SubAction):
+    def __init__(self,transition):
+        SubAction.__init__(self)
+        self.transition = transition
+    
+    def execute(self, action, actor):
+        SubAction.execute(self, action, actor)
+        baseActions.stateDict[self.transition](actor)
+        
+    @staticmethod
+    def buildFromXml(node):
+        return transitionState(node.text)
+        
 ########################################################
 #                 HIT/HURTBOXES                        #
 ########################################################
@@ -356,10 +390,10 @@ class createHitbox(SubAction):
         hitboxType = node.attrib['type'] if node.attrib.has_key('type') else "damage"
         center = map(int, node.find('center').text.split(','))
         size = map(int, node.find('size').text.split(','))
-        damage = float(node.find('damage').text)
+        damage = float(loadNodeWithDefault(node, 'damage', 0))
         baseKnockback = float(loadNodeWithDefault(node, 'baseKnockback', 0))
         knockbackGrowth = float(loadNodeWithDefault(node, 'knockbackGrowth', 0))
-        trajectory = int(node.find('trajectory').text)
+        trajectory = int(loadNodeWithDefault(node, 'trajectory', 0))
         
         hitstun = float(loadNodeWithDefault(node, 'hitstun', 1.0))
         hitboxLock = loadNodeWithDefault(node, 'hitboxLock', "")
@@ -381,17 +415,36 @@ class createHitbox(SubAction):
                      trajectory, hitstun, hitboxLock, weightInfluence, shieldMultiplier, transcendence,
                      priorityDiff, chargeDamage, chargeBKB, chargeKBG,
                      xBias, yBias, xDraw, yDraw)
-
-def loadNodeWithDefault(node,subnode,default):
-    if node is not None:
-        return node.find(subnode).text if node.find(subnode)is not None else default
-    else:
-        return default
         
 # Change the properties of an existing hitbox, such as position, or power
 class modifyHitbox(SubAction):
-    pass
-
+    def __init__(self,hitboxName,hitboxVars):
+        SubAction.__init__(self)
+        self.hitboxName = hitboxName
+        self.hitboxVars = hitboxVars
+        
+    def execute(self, action, actor):
+        SubAction.execute(self, action, actor)
+        hitbox = action.hitboxes[self.hitboxName]
+        if hitbox:
+            for name,value in self.hitboxVars.iteritems():
+                if hasattr(hitbox, name):
+                    setattr(hitbox, name, value)
+    @staticmethod
+    def buildFromXml(node):
+        SubAction.buildFromXml(node)
+        hitboxName = node.attrib['name']
+        hitboxVars = {}
+        for var in node:
+            t = var.attrib['type'] if var.attrib.has_key('type') else None
+            if t and t == 'int':
+                hitboxVars[var.tag] = int(var.text)
+            elif t and t == 'float':
+                hitboxVars[var.tag] = float(var.text)
+            else: hitboxVars[var.tag] = var.text
+        print(hitboxVars)
+        return modifyHitbox(hitboxName,hitboxVars)
+        
 class activateHitbox(SubAction):
     def __init__(self,hitboxName):
         SubAction.__init__(self)
@@ -438,6 +491,19 @@ class updateHitbox(SubAction):
 class modifyHurtBox(SubAction):
     pass
 
+class debugAction(SubAction):
+    def __init__(self,statement):
+        SubAction.__init__(self)
+        self.statement = statement
+        
+    def execute(self, action, actor):
+        SubAction.execute(self, action, actor)
+        print(self.statement)
+    
+    @staticmethod
+    def buildFromXml(node):
+        return debugAction(node.text)
+        
 subActionDict = {
                  'changeSprite': changeFighterSprite,
                  'changeSubimage': changeFighterSubimage,
@@ -449,5 +515,9 @@ subActionDict = {
                  'createHitbox': createHitbox,
                  'activateHitbox': activateHitbox,
                  'deactivateHitbox': deactivateHitbox,
-                 'updateHitbox': updateHitbox
+                 'updateHitbox': updateHitbox,
+                 'modifyHitbox': modifyHitbox,
+                 'transitionState': transitionState,
+                 'updateLandingLag': updateLandingLag,
+                 'print': debugAction
                  }

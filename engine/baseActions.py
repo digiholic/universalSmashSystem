@@ -685,7 +685,7 @@ class Land(action.Action):
         if self.frame == 1:
             #actor.articles.add(article.LandingArticle(actor)) #this looks awful don't try it
             pass
-        if self.frame >= self.lastFrame:
+        if self.frame == self.lastFrame:
             actor.landingLag = actor.var['heavyLandLag']
             actor.doAction('NeutralAction')
             actor.platformPhase = 0
@@ -1139,11 +1139,10 @@ class TechDodge(AirDodge):
         AirDodge.stateTransitions(self, actor)
         
 class LedgeGrab(action.Action):
-    def __init__(self,ledge):
+    def __init__(self,ledge=None):
         action.Action.__init__(self, 1)
         self.ledge = ledge
         
-
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="ledgeGrab"
         action.Action.setUp(self, actor)
@@ -1163,7 +1162,7 @@ class LedgeGrab(action.Action):
         actor.setSpeed(0, actor.getFacingDirection())
 
 class LedgeGetup(action.Action):
-    def __init__(self, length):
+    def __init__(self, length=1):
         action.Action.__init__(self, length)
 
     def setUp(self, actor):
@@ -1202,13 +1201,38 @@ class BaseAttack(action.Action):
     def update(self, actor):
         action.Action.update(self, actor)
         self.frame += 1
+
+class AirAttack(BaseAttack):
+    def __init__(self, length):
+        BaseAttack.__init__(self, length)
+        self.fastFallFrame = None
+    
+    def setUp(self, actor):
+        BaseAttack.setUp(self, actor)
+        if not hasattr(self, 'fastFallFrame'):
+            self.fastFallFrame = None
+            
+    def stateTransitions(self, actor):
+        BaseAttack.stateTransitions(self, actor)
         
+        if self.fastFallFrame is not None and self.frame >= self.fastFallFrame:
+            if actor.keysContain('down'):
+                actor.platformPhase = 1
+                actor.calc_grav(actor.var['fastfallMultiplier'])
+        if actor.grounded and actor.ground_elasticity == 0:
+            actor.preferred_xspeed = 0
+            actor.preferred_yspeed = actor.var['maxFallSpeed']
+            actor.doAction('Land')
+                
+    def update(self, actor):
+        BaseAttack.update(self, actor)
+            
 class ChargeAttack(BaseAttack):
     def __init__(self,length,startChargeFrame,endChargeFrame,maxCharge):
         BaseAttack.__init__(self, length)
         self.startChargezzzzFrame = startChargeFrame
         self.endChargeFrame = endChargeFrame
-        self.maxCharge
+        self.maxCharge = 1
         
     def setUp(self, actor):
         self.chargeLevel = 0
@@ -1230,7 +1254,7 @@ class ChargeAttack(BaseAttack):
         
         if self.frame == (self.endChargeFrame+1):
             actor.mask = None
-            
+          
 class NeutralAttack(BaseAttack):
     def __init__(self, length):
         BaseAttack.__init__(self, length)
@@ -1259,9 +1283,28 @@ class DownSmash(ChargeAttack):
     def __init__(self,length):
         ChargeAttack.__init__(self, length,0,1)
         
+class NeutralAir(AirAttack):
+    def __init__(self,length):
+        AirAttack.__init__(self, length)
+
+class ForwardAir(AirAttack):
+    def __init__(self,length):
+        AirAttack.__init__(self, length)
+
+class BackAir(AirAttack):
+    def __init__(self,length):
+        AirAttack.__init__(self, length)
+
+class UpAir(AirAttack):
+    def __init__(self,length):
+        AirAttack.__init__(self, length)
+
+class DownAir(AirAttack):
+    def __init__(self,length):
+        AirAttack.__init__(self, length)
 
 ########################################################
-#               TRANSITION STATES                     #
+#               TRANSITION STATES                      #
 ########################################################
 def neutralState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
@@ -1529,3 +1572,23 @@ def grabLedges(actor):
                     ledge.fighterGrabs(actor)
                 elif ledge.side == 'right' and actor.keysContain('left'):
                     ledge.fighterGrabs(actor)
+                    
+
+stateDict = {
+            "neutralState": neutralState,
+            "crouchState": crouchState,
+            "airState": airState,
+            "tumbleState": tumbleState,
+            "moveState": moveState,
+            "dashState": dashState,
+            "runState": runState,
+            "jumpState": jumpState,
+            "shieldState": shieldState,
+            "ledgeState": ledgeState,
+            "grabbingState": grabbingState,
+            "tripState": tripState,
+            "airControl": airControl,
+            "helplessControl": helplessControl,
+            "hitstunLanding": hitstunLanding,
+            "grabLedges": grabLedges     
+            }
