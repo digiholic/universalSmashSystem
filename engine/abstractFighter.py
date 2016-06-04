@@ -201,8 +201,8 @@ class AbstractFighter():
 
         block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
-            if self.catchMovement(block) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block) < t:
-                t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block)
+            if self.catchMovement(block) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t:
+                t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect)
 
         self.rect.y += self.change_y*t
         self.rect.x += self.change_x*t
@@ -999,7 +999,7 @@ def directionalDisplacement(firstPoints, secondPoints, direction):
     secondDots = map(lambda x: x[0]*direction[0]+x[1]*direction[1], secondPoints)
     projectedDisplacement = max(secondDots)-min(firstDots)
     normsqr = direction[0]*direction[0]+direction[1]*direction[1]
-    normsqr = 1 if normsqr == 0 else normsqr
+    normsqr = 1.0 if normsqr == 0 else normsqr+0.0
     return [projectedDisplacement/normsqr*direction[0], projectedDisplacement/normsqr*direction[1]]
 
 # Returns a 2-entry array representing a range of time when the points and the rect intersect
@@ -1041,8 +1041,8 @@ def projectionIntersects(startPoints, endPoints, rectPoints, vector):
     return [max(t_mins[0], t_maxs[0], t_open[0]), min(t_mins[1], t_maxs[1], t_open[1])]
 
 def pathRectIntersects(startRect, endRect, rect):
-    if startRect.colliderect(rect):
-        return 0
+    #if startRect.colliderect(rect):
+    #    return 0
     startCorners = [startRect.midtop, startRect.midbottom, startRect.midleft, startRect.midright]
     endCorners = [endRect.midtop, endRect.midbottom, endRect.midleft, endRect.midright]
     rectCorners = [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]
