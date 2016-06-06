@@ -207,7 +207,6 @@ class AbstractFighter():
         self.rect.y += self.change_y*t
         self.rect.x += self.change_x*t
         self.ecb.normalize()
-
         
         loopCount = 0
         while loopCount < 10:
@@ -230,8 +229,8 @@ class AbstractFighter():
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
         if not block is None:
             self.rect.x += block.change_x
-            if self.rect.bottom > block.rect.bottom and self.rect.centerx > block.rect.left and self.rect.centery < block.rect.right:
-                self.rect.bottom = block.rect.bottom
+            #if self.rect.bottom > block.rect.bottom and self.rect.centerx > block.rect.left and self.rect.centery < block.rect.right:
+            #    self.rect.bottom = block.rect.bottom
             self.change_y -= self.var['gravity']
 
         self.sprite.updatePosition(self.rect)
