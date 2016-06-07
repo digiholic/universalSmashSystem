@@ -39,9 +39,10 @@ class Sprite(pygame.sprite.Sprite):
         return None
   
 class SpriteHandler(Sprite):
-    def __init__(self,directory,prefix,startingImage,offset,colorMap = {}):
+    def __init__(self,directory,prefix,startingImage,offset,colorMap = {},scale=1.0):
         Sprite.__init__(self)
         self.colorMap = colorMap
+        self.scale = scale
         self.imageLibrary = self.buildImageLibrary(ImageLibrary(directory,prefix), offset)
         
         self.startingImage = startingImage
@@ -132,6 +133,10 @@ class SpriteHandler(Sprite):
             image = sheet.subsurface(sheet.get_clip())
             for fromColor,toColor in self.colorMap.items():
                 self.recolor(image, tuple(list(fromColor)), tuple(list(toColor)))
+            if not self.scale == 1.0:
+                w = int(image.get_width() * self.scale)
+                h = int(image.get_height() * self.scale)
+                image = pygame.transform.scale(image, (w,h))
             imageList.append(image)
             index += 1
         return imageList

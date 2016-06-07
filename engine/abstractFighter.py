@@ -19,7 +19,7 @@ class AbstractFighter():
         prefix = ''
         defaultSprite = 'idle'
         imgwidth = '64'
-        
+        print('base',baseDir)
         
         self.xmlData = ElementTree.parse(os.path.join(baseDir,'fighter.xml')).getroot()
 
@@ -39,6 +39,11 @@ class AbstractFighter():
         except:
             css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
         self.css_icon = spriteManager.ImageSprite(css_icon_path)
+        
+        try:
+            scale = float(self.xmlData.find('scale').text)
+        except:
+            scale = 1.0
         
         self.var = {
                 'weight': 100,
@@ -95,8 +100,8 @@ class AbstractFighter():
         
         color = self.colorPalettes[self.playerNum] #TODO: Pick colors
         
-        self.sprite = spriteManager.SpriteHandler(directory,prefix,defaultSprite,imgwidth,color)
-    
+        self.sprite = spriteManager.SpriteHandler(directory,prefix,defaultSprite,imgwidth,color,scale)
+        
         
         #try:
         actions = self.xmlData.find('actions').text
@@ -464,7 +469,10 @@ class AbstractFighter():
         self.current_action.lastFrame = hitstun
         
     def doTryTech(self, hitstun, trajectory, hitstop):
-        self.changeAction(self.actions.TryTech(hitstun, trajectory, hitstop))
+        self.doAction('TryTech')
+        self.current_action.hitstop = hitstop
+        self.current_action.direction = trajectory
+        self.current_action.lastFrame = hitstun
 
     def doTrip(self, length, direction):
         self.doAction('Trip')

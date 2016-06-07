@@ -64,8 +64,8 @@ class Dash(action.Action):
 
     def update(self, actor):
         action.Action.update(self, actor)
-        if self.frame == 0:
-            actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
+        #if self.frame == 0:
+            #actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
         if actor.grounded is False:
             actor.doAction('Fall')
         if not self.pivoted:
@@ -75,7 +75,7 @@ class Dash(action.Action):
                 self.pivoted = True
         actor.accel(actor.var['staticGrip'])
         self.frame += 1
-        if self.frame > self.lastFrame: 
+        if self.frame == self.lastFrame: 
             actor.doRun(actor.getFacingDirection())
     
     def stateTransitions(self,actor):
@@ -256,7 +256,7 @@ class RunStop(action.Action):
 
                 
 class NeutralAction(action.Action):
-    def __init__(self,length=0):
+    def __init__(self,length=1):
         action.Action.__init__(self, length)
     
     def setUp(self, actor):
@@ -267,6 +267,12 @@ class NeutralAction(action.Action):
         if actor.grounded is False:
             actor.doAction('Fall')
         neutralState(actor)
+    
+    def update(self,actor):
+        action.Action.update(self, actor)
+        if self.frame == self.lastFrame:
+            self.frame = 0
+        self.frame += 1
 
 class Crouch(action.Action):
     def __init__(self, length):
