@@ -14,7 +14,9 @@ class AbstractFighter():
     def __init__(self,baseDir,playerNum):
         self.playerNum = playerNum
         
-        
+        """
+        Load the fighter variables from fighter.xml
+        """
         directory = os.path.join(baseDir,'sprites')
         prefix = ''
         defaultSprite = 'idle'
@@ -22,7 +24,7 @@ class AbstractFighter():
         print('base',baseDir)
         
         self.xmlData = ElementTree.parse(os.path.join(baseDir,'fighter.xml')).getroot()
-
+        
         try:
             self.name = self.xmlData.find('name').text
         except:
@@ -96,7 +98,8 @@ class AbstractFighter():
                 
                 self.colorPalettes.append(colorDict)
         except:
-            pass
+            while len(self.colorPalettes < 4):
+                self.colorPalettes.append({})
         
         color = self.colorPalettes[self.playerNum] #TODO: Pick colors
         
@@ -137,6 +140,8 @@ class AbstractFighter():
         self.hitTagged = None
         
         #Initialize engine variables
+        
+        # Connect the keyBindings object to the fighter and flush any residual inputs
         self.keyBindings = settingsManager.getControls(playerNum)
         self.keyBindings.loadFighter(self)
         self.keyBindings.flushInputs()
@@ -183,6 +188,7 @@ class AbstractFighter():
         self.damage = 0
         self.landingLag = 6
         self.platformPhase = 0
+        self.techWindow = 0
         
         self.change_x = 0
         self.change_y = 0
@@ -241,6 +247,15 @@ class AbstractFighter():
             ledges = pygame.sprite.spritecollide(self, self.gameState.platform_ledges, False)
             if len(ledges) == 0: # If we've cleared out of all of the ledges
                 self.ledgeLock = False
+        
+        # Count down the tech window
+        if self.techWindow > 0:
+            if self.grounded:
+                (direct,_) = self.getDirectionMagnitude()
+                print('Ground tech!')
+                self.unRotate()
+                self.doTrip(-175, direct) #TODO fix this trip call
+            self.techWindow -= 1
                 
         # We set the hurbox to be the Bounding Rect of the sprite.
         # It is done here, so that the hurtbox can be changed by the action.
@@ -468,21 +483,11 @@ class AbstractFighter():
         self.current_action.direction = trajectory
         self.current_action.lastFrame = hitstun
         
-    def doTryTech(self, hitstun, trajectory, hitstop):
-        self.doAction('TryTech')
-        self.current_action.hitstop = hitstop
-        self.current_action.direction = trajectory
-        self.current_action.lastFrame = hitstun
-
     def doTrip(self, length, direction):
         self.doAction('Trip')
         self.current_action.lastFrame = length
         self.current_action.direction = direction
 
-    def doGetup(self, direction):
-        self.doAction('Getup')
-        self.current_action.direction = direction
-    
     def doShieldStun(self, length):
         self.doAction('ShieldStun')
         self.current_action.lastFrame = length

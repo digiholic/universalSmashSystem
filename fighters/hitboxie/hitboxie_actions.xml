@@ -243,16 +243,22 @@
 		</frame>
 	</AirDodge>
 	
-	<TechDodge>
-		<length>20</length>
-	</TechDodge>
-	
 	<HitStun>
 		<length>1</length>
 		<sprite>jump</sprite>
 		
 	</HitStun>
 	
+	<Prone>
+		<length>360</length>
+		<sprite>land</sprite>
+		<spriteRate>2</spriteRate>
+		
+		<frame number="6">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		
+	</Prone>
 	<NeutralAttack>
 		<length>22</length>
 		<sprite>neutral</sprite>

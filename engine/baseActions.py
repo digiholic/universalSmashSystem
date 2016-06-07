@@ -382,36 +382,30 @@ class HitStun(action.Action):
 
     def setUp(self, actor):
         action.Action.setUp(self, actor)
+        self.techCooldown = 0
         actor.elasticity = actor.var['hitstunElasticity']
         
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
-        if actor.keyBuffered('shield', 1) and self.frame < self.lastFrame:
-            actor.doTryTech(self.lastFrame-self.frame, self.direction, self.hitstop)
-        if self.frame >= self.lastFrame:
-            tumbleState(actor)
+        if actor.keyBuffered('shield', 1) and self.techCooldown == 0 and not actor.grounded:
+            print('Try tech')
+            actor.techWindow = 20
+            self.techCooldown = 40
+            
+        if self.frame == self.lastFrame:
             actor.elasticity = actor.var['hitstunElasticity']/2
         else:
             actor.elasticity = actor.var['hitstunElasticity']
             if self.frame > 2:
                 hitstunLanding(actor)
         if self.frame > 2:
-            if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']:#Hard landing during tumble
-                actor.ground_elasticity = actor.var['hitstunElasticity']/2
-            elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun
+            if self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun
                 actor.ground_elasticity = actor.var['hitstunElasticity']
             elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
                 actor.ground_elasticity = 0
                 if actor.grounded:
-                    actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
-            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during tumble
-                actor.ground_elasticity = 0
-                if actor.grounded: 
-                    actor.doTrip(self.lastFrame-self.frame//2, direct)
-            elif self.frame >= self.lastFrame: #Firm landing during tumble
-                actor.ground_elasticity = 0
-                if actor.grounded: 
-                    actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
+                    #actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
+                    actor.doAction('Prone')
             elif actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during hitstun
                 actor.landingLag = actor.var['heavyLandLag']+self.lastFrame-self.frame
                 actor.ground_elasticity = 0
@@ -420,12 +414,15 @@ class HitStun(action.Action):
         
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
+        if not isinstance(nextAction, Tumble):
+            actor.elasticity = 0
+            actor.ground_elasticity = 0
         actor.unRotate()
-        actor.elasticity = 0
-        actor.ground_elasticity = 0
         
     def update(self,actor):
         action.Action.update(self, actor)
+        if self.techCooldown > 0: self.techCooldown -= 1
+        
         if self.frame == 0:
             (direct,mag) = actor.getDirectionMagnitude()
             print("direction:", direct)
@@ -433,12 +430,12 @@ class HitStun(action.Action):
                 actor.grounded = False
                 if mag > 10:
                     actor.rotateSprite(self.direction)
+            
             actor.hitstop = self.hitstop
-            if actor.grounded:
-                actor.hitstopVibration = (3,0)
-            else:
-                actor.hitstopVibration = (0,3)
+            if actor.grounded: actor.hitstopVibration = (3,0)
+            else: actor.hitstopVibration = (0,3)
             actor.hitstopPos = actor.rect.center
+            
         if self.frame % 15 == 10 and self.frame < self.lastFrame:
             if abs(actor.change_x) > 8 or abs(actor.change_y) > 8:
                 art = article.AnimatedArticle(settingsManager.createPath('sprites/circlepuff.png'),actor,actor.rect.center,86,6)
@@ -450,58 +447,73 @@ class HitStun(action.Action):
                     
         if self.frame == self.lastFrame:
             actor.unRotate()
+            actor.doAction('Tumble')
             #Tumbling continues indefinetely, but can be cancelled out of
 
         self.frame += 1
 
-class TryTech(HitStun):
-    def __init__(self, hitstun, direction, hitstop):
-        HitStun.__init__(self, hitstun, direction, hitstop)
-        if self.spriteName=="": self.spriteName ="hitStun"
-
+class Tumble(action.Action):
+    def __init__(self, length=1):
+        action.Action.__init__(self, length)
+    
+    def setUp(self, actor):
+        action.Action.setUp(self, actor)    
+        self.techCooldown = 0
+        
     def stateTransitions(self, actor):
-        (direct,mag) = actor.getDirectionMagnitude()
-        if self.frame > 5 and self.frame < 20:
-            actor.elasticity = 0
+        action.Action.stateTransitions(self, actor)
+        airState(actor)
+        
+        (direct,_) = actor.getDirectionMagnitude()
+        
+        if actor.keyBuffered('shield', 1) and self.techCooldown == 0 and not actor.grounded:
+            print('Try tech')
+            actor.techWindow = 20
+            self.techCooldown = 40
+            
+        if actor.change_y >= actor.var['maxFallSpeed']:#Hard landing during tumble
+            actor.ground_elasticity = actor.var['hitstunElasticity']/2
+        elif actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during tumble
             actor.ground_elasticity = 0
-            if actor.grounded:
-                print('Ground tech!')
-                actor.unRotate()
-                actor.doTrip(-175, direct)
-        else:
-            if self.frame >= self.lastFrame:
-                tumbleState(actor)
-                actor.elasticity = actor.var['hitstunElasticity']/2
-            else:
-                hitstunLanding(actor)
-                actor.elasticity = actor.var['hitstunElasticity']
-            if self.frame >= self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']:#Hard landing during tumble
-                actor.ground_elasticity = actor.var['hitstunElasticity']/2
-            elif self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun
-                actor.ground_elasticity = actor.var['hitstunElasticity']
-            elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
-                actor.ground_elasticity = 0
-                if actor.grounded:
-                    actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
-            elif self.frame >= self.lastFrame and actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during tumble
-                actor.ground_elasticity = 0
-                if actor.grounded: 
-                    actor.doTrip(self.lastFrame-self.frame//2, direct)
-            elif self.frame >= self.lastFrame: #Firm landing during tumble
-                actor.ground_elasticity = 0
-                if actor.grounded: 
-                    actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
-            elif actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during hitstun
-                actor.landingLag = actor.var['heavyLandLag']+self.lastFrame-self.frame
-                actor.ground_elasticity = 0
-            else: #Firm landing during hitstun
-                actor.ground_elasticity = actor.var['hitstunElasticity']/2
-
+            if actor.grounded: 
+                #actor.doTrip(self.lastFrame-self.frame//2, direct)
+                actor.doAction('Prone')
+        else: #Firm landing during tumble
+            actor.ground_elasticity = 0
+            if actor.grounded: 
+                #actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
+                actor.doAction('Prone')
+    
+    def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
+        actor.elasticity = 0
+        actor.ground_elasticity = 0
+        actor.unRotate()
+        
     def update(self, actor):
-        if self.frame >= 40:
-            actor.doHitStun(self.lastFrame-self.frame, self.direction,0)
-        HitStun.update(self, actor)
-
+        action.Action.update(self, actor)
+        
+class Prone(action.Action):
+    def __init__(self,length=360):
+        action.Action.__init__(self, length)
+        
+    def setUp(self, actor):
+        if self.spriteName == "": self.spriteName = "prone"
+        action.Action.setUp(self, actor)
+        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        
+    def update(self, actor):
+        action.Action.update(self, actor)
+        if not actor.grounded:
+            actor.doAction('Tumble')
+        if self.frame == self.lastFrame:
+            actor.doGetup()
+        self.frame += 1
+        
+    def stateTransitions(self, actor):
+        action.Action.stateTransitions(self, actor)
+        proneState(actor)
+        
 class Trip(action.Action):
     def __init__(self,length=0,direction=0):
         action.Action.__init__(self, length)
@@ -521,12 +533,11 @@ class Trip(action.Action):
 
     def stateTransitions(self, actor):
         if self.frame >= self.lastFrame:
-            tripState(actor, self.direction)
+            proneState(actor)
 
 class Getup(action.Action):
-    def __init__(self, direction, length):
-        action.Action.__init__(self, length)
-        self.direction = direction
+    def __init__(self, length):
+        action.Action.__init__(self, length=1)
         
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="getup"
@@ -946,7 +957,8 @@ class Released(action.Action):
         if actor.grounded and actor.ground_elasticity == 0:
             actor.preferred_xspeed = 0
             actor.preferred_yspeed = actor.var['maxFallSpeed']
-            actor.doTrip(-175, 90)
+            #actor.doTrip(-175, 90)
+            actor.doAction('Prone')
 
         grabLedges(actor)
         
@@ -1127,22 +1139,6 @@ class AirDodge(action.Action):
             else:
                 actor.doAction('Fall')
         self.frame += 1
-
-class TechDodge(AirDodge):
-    def __init__(self):
-        AirDodge.__init__(self)
-        
-    def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="techDodge"
-        AirDodge.setUp(self, actor)
-        
-    def stateTransitions(self, actor):
-        (direct) = actor.getDirectionMagnitude()
-        if self.frame < 20 and actor.grounded:
-            print('Ground tech!')
-            actor.unRotate()
-            actor.doTrip(-175, direct)
-        AirDodge.stateTransitions(self, actor)
         
 class LedgeGrab(action.Action):
     def __init__(self,ledge=None):
@@ -1360,20 +1356,6 @@ def airState(actor):
     elif actor.keysContain('down'):
         actor.platformPhase = 1
         actor.calc_grav(actor.var['fastfallMultiplier'])
-
-def tumbleState(actor):
-    airControl(actor)
-    if actor.keyHeld('shield'):
-        actor.doAction('TechDodge')
-    elif actor.keyHeld('attack'):
-        actor.doAirAttack()
-    elif actor.keyHeld('special'):
-        actor.doAirSpecial()
-    elif actor.keyHeld('jump') and actor.jumps > 0:
-        actor.doAction('AirJump')
-    elif actor.keysContain('down'):
-        actor.platformPhase = 1
-        actor.calc_grav(actor.var['fastfallMultiplier'])
             
 def moveState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
@@ -1505,7 +1487,7 @@ def grabbingState(actor):
     elif actor.keyHeld('down'):
         actor.doThrow()
 
-def tripState(actor, direction):
+def proneState(actor):
     (key, invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('attack'):
         actor.doAction('GetupAttack')
@@ -1584,7 +1566,6 @@ stateDict = {
             "neutralState": neutralState,
             "crouchState": crouchState,
             "airState": airState,
-            "tumbleState": tumbleState,
             "moveState": moveState,
             "dashState": dashState,
             "runState": runState,
@@ -1592,7 +1573,7 @@ stateDict = {
             "shieldState": shieldState,
             "ledgeState": ledgeState,
             "grabbingState": grabbingState,
-            "tripState": tripState,
+            "proneState": proneState,
             "airControl": airControl,
             "helplessControl": helplessControl,
             "hitstunLanding": hitstunLanding,
