@@ -47,7 +47,7 @@ class Move(action.Action):
             actor.doDash(actor.getFacingDirection())
 
 class Dash(action.Action):
-    def __init__(self,length=0): 
+    def __init__(self,length=1): 
         action.Action.__init__(self,length)
         
     def setUp(self,actor):
@@ -61,23 +61,28 @@ class Dash(action.Action):
         action.Action.tearDown(self, actor, nextAction)
         if not isinstance(nextAction, Run):
             actor.preferred_xspeed = 0
+            actor.change_x = 0
 
     def update(self, actor):
         action.Action.update(self, actor)
         #if self.frame == 0:
             #actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
+        (key,invkey) = actor.getForwardBackwardKeys()
         if actor.grounded is False:
             actor.doAction('Fall')
         if not self.pivoted:
-            (key,invkey) = actor.getForwardBackwardKeys()
             if actor.keysContain(invkey):
                 actor.flip() #Do the moonwalk!
                 self.pivoted = True
-        actor.accel(actor.var['staticGrip'])
-        self.frame += 1
+        #actor.accel(actor.var['staticGrip'])
         if self.frame == self.lastFrame: 
-            actor.doRun(actor.getFacingDirection())
-    
+            if actor.keysContain(key):
+                actor.doRun(actor.getFacingDirection())
+            else:
+                actor.doAction('RunStop')
+        
+        self.frame += 1
+        
     def stateTransitions(self,actor):
         dashState(actor,self.direction)
 
@@ -507,7 +512,7 @@ class Prone(action.Action):
         if not actor.grounded:
             actor.doAction('Tumble')
         if self.frame == self.lastFrame:
-            actor.doGetup()
+            actor.doAction('Getup')
         self.frame += 1
         
     def stateTransitions(self, actor):
@@ -536,8 +541,8 @@ class Trip(action.Action):
             proneState(actor)
 
 class Getup(action.Action):
-    def __init__(self, length):
-        action.Action.__init__(self, length=1)
+    def __init__(self, length=1):
+        action.Action.__init__(self, length)
         
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="getup"
@@ -1091,9 +1096,9 @@ class AirDodge(action.Action):
         self.move_vec = [0,0]
         
         if settingsManager.getSetting('enableWavedash'):
-            actor.landingLag = 16
+            actor.updateLandingLag(1,True)
         else:
-            actor.landingLag = 24
+            actor.updateLandingLag(24)
         if settingsManager.getSetting('airDodgeType') == 'directional':
             self.move_vec = actor.getSmoothedInput()
             actor.change_x = self.move_vec[0]*actor.var['dodgeSpeed']
@@ -1131,6 +1136,7 @@ class AirDodge(action.Action):
         if self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255],16,True,24)
             actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
+            actor.updateLandingLag(24)
         elif self.frame == self.endInvulnFrame:
             actor.landingLag = 24
         elif self.frame == self.lastFrame:
@@ -1144,12 +1150,17 @@ class LedgeGrab(action.Action):
     def __init__(self,ledge=None):
         action.Action.__init__(self, 1)
         self.ledge = ledge
+        self.sweetSpotX = 0
+        self.sweetSpotY = 0
         
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="ledgeGrab"
         action.Action.setUp(self, actor)
         actor.createMask([255,255,255], settingsManager.getSetting('ledgeInvincibilityTime'), True, 12)
         actor.invulnerable = settingsManager.getSetting('ledgeInvincibilityTime')
+        if not hasattr(self, 'ledge'): self.ledge = None
+        if not hasattr(self, 'sweetSpotX'): self.sweetSpotX = 0
+        if not hasattr(self, 'sweetSpotY'): self.sweetSpotY = 0
         
     def tearDown(self,actor,nextAction):
         action.Action.tearDown(self, actor, nextAction)
@@ -1161,15 +1172,33 @@ class LedgeGrab(action.Action):
     def update(self,actor):
         action.Action.update(self, actor)
         actor.jumps = actor.var['jumps']
+        if self.ledge.side == 'left':
+            if actor.facing == -1:
+                actor.flip()
+            actor.hurtbox.rect.right = self.ledge.rect.centerx + self.sweetSpotX
+            actor.hurtbox.rect.top = self.ledge.rect.top + self.sweetSpotY
+            actor.rect.center = actor.hurtbox.rect.center
+        else:
+            if actor.facing == 1:
+                actor.flip()
+            actor.hurtbox.rect.left = self.ledge.rect.centerx - self.sweetSpotX
+            actor.hurtbox.rect.top = self.ledge.rect.top + self.sweetSpotY
+            actor.rect.center = actor.hurtbox.rect.center
         actor.setSpeed(0, actor.getFacingDirection())
+        
 
 class LedgeGetup(action.Action):
     def __init__(self, length=1):
         action.Action.__init__(self, length)
-
+    
+    def tearDown(self, actor, nextAction):
+        actor.preferred_xspeed = 0
+        actor.change_x = 0
+        
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="ledgeGetup"
         action.Action.setUp(self, actor)
+        actor.invincibility = 24
         if actor.facing == 1:
             actor.rect.left -= actor.rect.width//2
         else:
@@ -1177,6 +1206,8 @@ class LedgeGetup(action.Action):
     
     def update(self,actor):
         action.Action.update(self, actor)
+        if self.frame == 0:
+            actor.createMask([255,255,255], 24, True, 24)
         if self.frame >= self.lastFrame:
             actor.doAction('NeutralAction')
         self.frame += 1
@@ -1305,6 +1336,9 @@ class DownAir(AirAttack):
     def __init__(self,length):
         AirAttack.__init__(self, length)
 
+class DashAttack(BaseAttack):
+    def __init__(self,length):
+        BaseAttack.__init__(self, length)
 ########################################################
 #               TRANSITION STATES                      #
 ########################################################
@@ -1391,12 +1425,6 @@ def dashState(actor, direction):
     elif actor.keyHeld('jump'):
         actor.doAction('Jump')
     elif actor.keysContain('down', 0.5):
-        actor.doAction('Stop')
-    elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
-        actor.doAction('Stop')
-    elif actor.preferred_xspeed < 0 and not actor.keysContain('left',1) and actor.keysContain('right',1):
-        actor.doAction('Stop')
-    elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
         actor.doAction('Stop')
 
 def runState(actor, direction):

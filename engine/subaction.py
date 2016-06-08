@@ -165,22 +165,26 @@ class changeFighterSubimage(SubAction):
 # The preferred speed is what a fighter will accelerate/decelerate to. Use this action if you
 # want the fighter to gradually speed up to a point (for accelerating), or slow down to a point (for deccelerating)
 class changeFighterPreferredSpeed(SubAction):
-    def __init__(self,pref_x = None, pref_y = None):
+    def __init__(self,pref_x = None, pref_y = None, xRelative = False):
         SubAction.__init__(self)
         self.pref_x = pref_x
         self.pref_y = pref_y
+        self.xRelative = xRelative
         
     def execute(self, action, actor):
         if self.pref_x is not None:
-            actor.preferred_xspeed = self.pref_x
+            if self.xRelative: actor.preferred_xspeed = self.pref_x*actor.facing
+            else: actor.preferred_xspeed = self.pref_x
         if self.pref_y is not None:
             actor.preferred_yspeed = self.pref_y
         
     @staticmethod
     def buildFromXml(node):
+        xRelative = False
         speed_x = int(node.find('xSpeed').text) if node.find('xSpeed') is not None else None
+        if speed_x and node.find('xSpeed').attrib.has_key("relative"): xRelative = True
         speed_y = int(node.find('ySpeed').text) if node.find('ySpeed') is not None else None
-        return changeFighterPreferredSpeed(speed_x,speed_y)
+        return changeFighterPreferredSpeed(speed_x,speed_y,xRelative)
     
 # ChangeFighterSpeed changes the speed directly, with no acceleration/deceleration.
 class changeFighterSpeed(SubAction):
@@ -199,7 +203,7 @@ class changeFighterSpeed(SubAction):
 
     @staticmethod
     def buildFromXml(node):
-        xRelative = True
+        xRelative = False
         speed_x = int(node.find('xSpeed').text) if node.find('xSpeed') is not None else None
         if speed_x and node.find('xSpeed').attrib.has_key("relative"): xRelative = True
         speed_y = int(node.find('ySpeed').text) if node.find('ySpeed') is not None else None
@@ -371,7 +375,13 @@ class createHitbox(SubAction):
                                                       self.weightInfluence, self.shieldMultiplier, self.transcendence, self.priorityDiff,
                                                       self.chargeDamage, self.chargeBKB, self.chargeKBG)
         elif self.hitboxType == "autolink":
-            pass
+            #Velocity_multiplier
+            hitbox = engine.hitbox.AutolinkHitbox(self.center, self.size, actor,
+                                                  self.damage,self.hitstun,
+                                                  hitboxLock,
+                                                  self.xBias,self.yBias,
+                                                  self.shieldMultiplier,1,self.transcendence,self.priorityDiff,
+                                                  self.chargeDamage,self.chargeBKB,self.chargeKBG)
         elif self.hitboxType == "funnel":
             hitbox = engine.hitbox.FunnelHitbox(self.center, self.size, actor, self.damage, self.baseKnockback, self.trajectory, self.hitstun, hitboxLock,
                                                 self.xDraw, self.yDraw, self.shieldMultiplier, self.transcendence, self.priorityDiff,\
@@ -485,6 +495,19 @@ class updateHitbox(SubAction):
         return updateHitbox(node.text)
 
 
+class unlockHitbox(SubAction):
+    def __init__(self,hitboxName):
+        SubAction.__init__(self)
+        self.hitboxName = hitboxName
+        
+    def execute(self, action, actor):
+        SubAction.execute(self, action, actor)
+        action.hitboxes[self.hitboxName].hitbox_lock = engine.hitbox.HitboxLock()
+    
+    @staticmethod
+    def buildFromXml(node):
+        return unlockHitbox(node.text)
+    
 # Change the fighter's Hurtbox (where they have to be hit to take damage)
 # This is not done automatically when sprites change, so if your sprite takes the fighter out of his usual bounding box, make sure to change it.
 # If a hurtbox overlaps a hitbox, the hitbox will be resolved first, so the fighter won't take damage in the case of clashes.
@@ -517,6 +540,7 @@ subActionDict = {
                  'deactivateHitbox': deactivateHitbox,
                  'updateHitbox': updateHitbox,
                  'modifyHitbox': modifyHitbox,
+                 'unlockHitbox': unlockHitbox,
                  'transitionState': transitionState,
                  'updateLandingLag': updateLandingLag,
                  'print': debugAction

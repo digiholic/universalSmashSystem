@@ -1493,18 +1493,6 @@ class HitStun(baseActions.HitStun):
             else:
                 actor.changeSprite("jump")
         
-class TryTech(baseActions.TryTech):
-    def __init__(self,hitstun,direction,hitstop):
-        baseActions.TryTech.__init__(self, hitstun, direction, hitstop)
-
-    def update(self,actor):
-        baseActions.TryTech.update(self, actor)
-        if self.frame == 1:
-            if actor.grounded:
-                actor.changeSprite("land",1)
-            else:
-                actor.changeSprite("jump")
-             
 class Jump(baseActions.Jump):
     def __init__(self):
         baseActions.Jump.__init__(self,8,5)
@@ -1773,19 +1761,6 @@ class AirDodge(baseActions.AirDodge):
             actor.changeSpriteImage(0)
         baseActions.AirDodge.update(self, actor)
 
-class TechDodge(baseActions.TechDodge):
-    def __init__(self):
-        baseActions.TechDodge.__init__(self)
-
-    def update(self, actor):
-        if self.frame == 0:
-            actor.changeSprite("nair",0)
-        elif self.frame == self.startInvulnFrame:
-            actor.changeSpriteImage(-round(abs(actor.change_x)))
-        elif self.frame == self.endInvulnFrame:
-            actor.changeSpriteImage(0)
-        baseActions.TechDodge.update(self, actor)
-
 class Trapped(baseActions.Trapped):
     def __init__(self, length):
         baseActions.Trapped.__init__(self, length)
@@ -1838,7 +1813,6 @@ class Released(baseActions.Released):
 class LedgeGrab(baseActions.LedgeGrab):
     def __init__(self,ledge):
         baseActions.LedgeGrab.__init__(self, ledge)
-        self.sweetSpotLocation = [64,64]
 
     def setUp(self, actor):
         baseActions.LedgeGrab.setUp(self, actor)
@@ -1846,29 +1820,11 @@ class LedgeGrab(baseActions.LedgeGrab):
         
     def update(self,actor):
         actor.changeSprite('jump')
-        if self.ledge.side == 'left':
-            if actor.facing == -1:
-                actor.flip()
-            actor.hurtbox.rect.topright = self.ledge.rect.midtop
-            actor.rect.center = actor.hurtbox.rect.center
-        else:
-            if actor.facing == 1:
-                actor.flip()
-            actor.hurtbox.rect.topleft = self.ledge.rect.midtop
-            actor.rect.center = actor.hurtbox.rect.center
         baseActions.LedgeGrab.update(self, actor)
 
 class LedgeGetup(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self,27)
-
-    def setUp(self,actor):
-        baseActions.LedgeGetup.setUp(self,actor)
-        actor.invincibility = 24
-
-    def tearDown(self,actor,other):
-        actor.preferred_xspeed = 0
-        actor.change_x = 0
 
     def update(self,actor):
         if self.frame == 0:

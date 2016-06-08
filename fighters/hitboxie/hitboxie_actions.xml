@@ -243,6 +243,13 @@
 		</frame>
 	</AirDodge>
 	
+	<LedgeGrab>
+		<length>1</length>
+		<sprite>jump</sprite>
+		<spriteRate>0</spriteRate>
+	</LedgeGrab>
+	
+	
 	<HitStun>
 		<length>1</length>
 		<sprite>jump</sprite>
@@ -259,6 +266,13 @@
 		</frame>
 		
 	</Prone>
+	
+	<Getup>
+		<length>12</length>
+		<sprite>land</sprite>
+		<spriteRate>3</spriteRate>
+	</Getup>
+	
 	<NeutralAttack>
 		<length>22</length>
 		<sprite>neutral</sprite>
@@ -1112,4 +1126,53 @@
 		</frame>
 	</DownAir>
 	
+	<DashAttack>
+		<length>32</length>
+		<sprite>nair</sprite>
+		<spriteRate>2</spriteRate>
+		
+		<setUp>
+			<!-- ECB Size -->
+			<createHitbox>
+				<name>dashHitbox</name>
+				<center>0,0</center>
+				<size>70,70</size>
+				<damage>2</damage>
+				<baseKnockback>8</baseKnockback>
+				<knockbackGrowth>0.2</knockbackGrowth>
+				<trajectory>20</trajectory>
+			</createHitbox>
+			
+			<createHitbox type="autolink">
+				<name>chainHitbox</name>
+				<center>0,0</center>
+				<size>70,70</size>
+				<damage>2</damage>
+				<xBias>0</xBias>
+				<yBias>-1</yBias>
+			</createHitbox>
+		</setUp>
+		
+		<frame number="before">
+			<updateHitbox>dashHitbox</updateHitbox>
+			<updateHitbox>chainHitbox</updateHitbox>
+			<!-- Hurtbox manipulation -->
+		</frame>
+		<frame number="8">
+			<activateHitbox>chainHitbox</activateHitbox>
+		</frame>
+		<frame number="12">
+			<unlockHitbox>chainHitbox</unlockHitbox>
+		</frame>
+		<frame number="16">
+			<unlockHitbox>chainHitbox</unlockHitbox>
+		</frame>
+		<frame number="20">
+			<deactivateHitbox>chainHitbox</deactivateHitbox>
+			<activateHitbox>dashHitbox</activateHitbox>
+		</frame>
+		<frame number="24">
+			<deactivateHitbox>dashHitbox</deactivateHitbox>
+		</frame>
+	</DashAttack>
 </actionList>
