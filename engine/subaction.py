@@ -512,8 +512,58 @@ class unlockHitbox(SubAction):
 # This is not done automatically when sprites change, so if your sprite takes the fighter out of his usual bounding box, make sure to change it.
 # If a hurtbox overlaps a hitbox, the hitbox will be resolved first, so the fighter won't take damage in the case of clashes.
 class modifyHurtBox(SubAction):
-    pass
+    def __init__(self,center,size,imageCenter = False):
+        SubAction.__init__(self)
+        self.center = center
+        self.size = size
+        self.imageCenter = imageCenter
+        
+    def execute(self, action, actor):
+        SubAction.execute(self, action, actor)
+        actor.hurtbox.rect.size = self.size
+        if self.imageCenter:
+            actor.hurtbox.rect.centerx = (actor.sprite.boundingRect.centerx + self.center[0])
+            actor.hurtbox.rect.centery = (actor.sprite.boundingRect.centery + self.center[1])
+        else:
+            actor.hurtbox.rect.centerx = actor.sprite.rect.centerx + self.center[0]
+            actor.hurtbox.rect.centery = actor.sprite.rect.centery + self.center[1]
+        
+    
+    @staticmethod
+    def buildFromXml(node):
+        imageCenter = False
+        center = map(int, node.find('center').text.split(','))
+        if node.find('center').attrib.has_key('centerOn') and node.find('center').attrib['centerOn'] == 'image':
+            imageCenter = True
+        size = map(int, node.find('size').text.split(','))
+        return modifyHurtBox(center,size,imageCenter)
 
+class changeECB(SubAction):
+    def __init__(self,center,size,ecbOffset):
+        SubAction.__init__(self)
+        self.center = center
+        self.size = size
+        self.offset = ecbOffset
+        
+    def execute(self, action, actor):
+        SubAction.execute(self, action, actor)
+        action.ecbSize = self.size
+        action.ecbCenter = self.size
+        action.ecbOffset = self.offset
+    
+    @staticmethod
+    def buildFromXml(node):
+        center=[0,0]
+        size = [0,0]
+        ecbOffset = [0,0]
+        if node.find('center') is not None:
+            center = map(int, node.find('center').text.split(','))
+        if node.find('size') is not None:
+            size = map(int, node.find('size').text.split(','))
+        if node.find('center') is not None:
+            ecbOffset = map(int, node.find('offset').text.split(','))
+        return changeECB(center,size,ecbOffset)
+       
 class debugAction(SubAction):
     def __init__(self,statement):
         SubAction.__init__(self)
@@ -535,6 +585,8 @@ subActionDict = {
                  'setFrame': changeActionFrame,
                  'nextFrame': nextFrame,
                  'ifVar': ifVar,
+                 'modifyHurtbox': modifyHurtBox,
+                 'changeECB': changeECB,
                  'createHitbox': createHitbox,
                  'activateHitbox': activateHitbox,
                  'deactivateHitbox': deactivateHitbox,

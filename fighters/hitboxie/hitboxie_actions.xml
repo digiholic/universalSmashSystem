@@ -720,6 +720,10 @@
 		</vars>
 		
 		<setUp>
+			<changeECB>
+				<center>0,7</center>
+				<size>64,78</size>
+			</changeECB>
 			<changeFighterPreferredSpeed>
 				<xSpeed>0</xSpeed>
 			</changeFighterPreferredSpeed>
@@ -740,9 +744,12 @@
 			<transitionState>airControl</transitionState>
 		</transitions>
 		
-		<!-- Hurtbox Manipulation -->
 		<frame number="before">
 			<updateHitbox>nairBox</updateHitbox>
+			<modifyHurtbox>
+				<center centerOn="image">0,0</center>
+				<size>64,64</size>
+			</modifyHurtbox>
 		</frame>
 		<frame number="2">
 			<updateLandingLag>20</updateLandingLag>
@@ -1132,7 +1139,10 @@
 		<spriteRate>2</spriteRate>
 		
 		<setUp>
-			<!-- ECB Size -->
+			<changeECB>
+				<center>0,7</center>
+				<size>64,78</size>
+			</changeECB>
 			<createHitbox>
 				<name>dashHitbox</name>
 				<center>0,0</center>
@@ -1156,7 +1166,10 @@
 		<frame number="before">
 			<updateHitbox>dashHitbox</updateHitbox>
 			<updateHitbox>chainHitbox</updateHitbox>
-			<!-- Hurtbox manipulation -->
+			<modifyHurtbox>
+				<center centerOn="image">0,0</center>
+				<size>64,64</size>
+			</modifyHurtbox>
 		</frame>
 		<frame number="8">
 			<activateHitbox>chainHitbox</activateHitbox>
