@@ -6,73 +6,22 @@ import engine.abstractFighter as abstractFighter
 import math
 import pygame
 
-class SplatArticle(article.AnimatedArticle):
-    def __init__(self, owner, origin, direction):
-        article.AnimatedArticle.__init__(self, owner.article_path+'/hitboxie_projectile.png', owner, origin, imageWidth=16,length=120)
-        self.direction = direction
-        self.change_x = self.direction*24
-        self.change_y = 0
-        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 3, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)
-        self.hitbox.article = self
-        self.tags = ['reflectable']
-
-    # Override the onCollision of the hitbox
-    def onCollision(self, other):
-        othersClasses = list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]
-        if ('AbstractFighter' in othersClasses or 'Platform' in othersClasses):
-            self.hitbox.kill()
-            self.kill()
-        #TODO check for verticality of platform landing
-            
-    def update(self):
-        self.rect.x += self.change_x
-        self.rect.y += self.change_y
-        self.change_y += 0.5
-        self.hitbox.rect.center = self.rect.center #update adjusts to the actor
-        self.hitbox.owner = self.owner
-        self.frame += 1
-            
-        if self.frame > 120:
-            self.kill()
-            self.hitbox.kill()
-
-    def draw(self, screen, offset, zoom):
-        # This is all the same as the base Draw method. We're overriding because we need to put some code in the middle of it.
-        h = int(round(self.rect.height * zoom))
-        w = int(round(self.rect.width * zoom))
-        newOff = (int(offset[0] * zoom), int(offset[1] * zoom))
-        
-        screenRect = pygame.Rect(newOff,(w,h)) # Store the rect that it will draw
-        angle = -math.atan2(self.change_y, self.change_x)*180.0/math.pi
-        blitSprite = pygame.transform.rotate(self.image, angle) # Rotate
-        
-        screen.blit(blitSprite,screenRect)
-
 class NeutralGroundSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self,36)
                 
     def setUp(self, actor):
-        self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (24 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
+        self.projectile = actor.loadArticle('SplatArticle')
         actor.preferred_xspeed = 0
         actor.changeSprite("nspecial",0)
         
-    def tearDown(self, actor, new):
-        pass
-    
-    def stateTransitions(self, actor):
-        pass
-               
     def update(self, actor):
         if self.frame <= 14:
             actor.changeSpriteImage(self.frame//2)
         elif self.frame <= 26:
             actor.changeSpriteImage((self.frame+14)//4)
         if self.frame == 12:
-            self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
-            actor.articles.add(self.projectile)
-            actor.active_hitboxes.add(self.projectile.hitbox)
-            print(actor.active_hitboxes)
+            self.projectile.activate()
         if self.frame == 26:
             if actor.keysContain('special'):
                 actor.changeAction(NeutralGroundSpecial())
@@ -85,7 +34,7 @@ class NeutralAirSpecial(action.Action):
         action.Action.__init__(self,36)
                 
     def setUp(self, actor):
-        self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (24 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
+        self.projectile = actor.loadArticle('SplatArticle')
         actor.changeSprite("nspecial",0)
 
     def stateTransitions(self, actor):
@@ -226,32 +175,13 @@ class ForwardSpecial(action.Action):
                     actor.doFall()
 
         self.frame += 1
-
-class ShineArticle(article.AnimatedArticle):
-    def __init__(self, owner):
-        article.AnimatedArticle.__init__(self, owner.article_path+'/hitboxie_shine.png', owner, [0,0], imageWidth=92,length=8)
-            
-    def update(self):
-        self.rect.center = self.owner.sprite.boundingRect.center
-        if self.frame == 0:
-            self.getImageAtIndex(0)
-        elif self.frame == 2:
-            self.getImageAtIndex(1)
-        elif self.frame == 4:
-            self.getImageAtIndex(2)
-        elif self.frame == 6:
-            self.getImageAtIndex(3)
-        if self.frame == self.lastFrame:
-            self.frame = 2
-        else:
-            self.frame += 1
             
 class DownSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self, 32)
     
     def setUp(self, actor):
-        self.article = ShineArticle(actor)
+        self.article = actor.loadArticle('ShineArticle')
         self.damageHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 4, 9, 0.1, 330, 1.5, hitbox.HitboxLock(), 1, 1, 2)
         self.reflectorHitbox = hitbox.ReflectorHitbox([0,0], [92,92], actor, hitbox.HitboxLock(), 1.3, 1.1, 100, 90)
         return action.Action.setUp(self, actor)           

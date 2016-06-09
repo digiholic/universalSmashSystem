@@ -3,7 +3,7 @@
 # character. It has a length, and keeps track of its current frame.
 
 class Action():
-    def __init__(self,length,startingFrame = 0):
+    def __init__(self,length=0,startingFrame = 0):
         self.frame = startingFrame
         self.lastFrame = length
         self.actor = None
@@ -21,6 +21,7 @@ class Action():
         
         self.hitboxes = {}
         self.hitboxLocks = {}
+        self.articles = {}
     
     # The update skeleton function. You must implement it for every action or you will get
     # an error.

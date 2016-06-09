@@ -292,7 +292,6 @@
 
 		<frame number="before">
 			<updateHitbox>jab</updateHitbox>
-			<print>frame</print>
 		</frame>
 		
 		<frame number="4">
@@ -922,7 +921,6 @@
 		<frame number="39">
 			<changeSprite>jump</changeSprite>
 		</frame>
-		<!-- Hurtbox -->	
 	</ForwardAir>
 	
 	<UpAir>
@@ -1188,4 +1186,135 @@
 			<deactivateHitbox>dashHitbox</deactivateHitbox>
 		</frame>
 	</DashAttack>
+	
+	<NeutralGroundSpecial>
+		<length>36</length>
+		<sprite>nspecial</sprite>
+		<spriteRate>2</spriteRate>
+		
+		<setUp>
+			<loadArticle name="projectile">SplatArticle</loadArticle>
+			<changeFighterPreferredSpeed>
+				<xSpeed>0</xSpeed>
+			</changeFighterPreferredSpeed>
+		</setUp>
+		
+		<frame number="12">
+			<activateArticle>projectile</activateArticle>
+		</frame>
+		
+		<frame number="14">
+			<changeSubimage>7</changeSubimage>
+		</frame>
+		<frame number="18">
+			<changeSubimage>8</changeSubimage>
+		</frame>
+		<frame number="22">
+			<changeSubimage>9</changeSubimage>
+		</frame>
+		<frame number="26">
+			<changeSubimage>10</changeSubimage>
+		</frame>
+	</NeutralGroundSpecial>
+	
+	<NeutralAirSpecial>
+		<length>36</length>
+		<sprite>nspecial</sprite>
+		<spriteRate>2</spriteRate>
+		
+		<vars>
+			<fastFallFrame type="int">0</fastFallFrame>
+		</vars>
+		
+		<setUp>
+			<loadArticle name="projectile">SplatArticle</loadArticle>
+		</setUp>
+		
+		<frame number="0">
+			<updateLandingLag>15</updateLandingLag>
+		</frame>
+		<frame number="12">
+			<activateArticle>projectile</activateArticle>
+		</frame>
+		
+		<frame number="14">
+			<changeSubimage>7</changeSubimage>
+		</frame>
+		<frame number="18">
+			<changeSubimage>8</changeSubimage>
+		</frame>
+		<frame number="22">
+			<changeSubimage>9</changeSubimage>
+		</frame>
+		<frame number="26">
+			<changeSubimage>10</changeSubimage>
+		</frame>
+		<frame number="last">
+			<updateLandingLag reset="true">9</updateLandingLag>
+		</frame>
+	</NeutralAirSpecial>
+	
+	<DownSpecial>
+		<length>32</length>
+		<sprite>getup</sprite>
+		<spriteRate>0</spriteRate>
+		
+		<setUp>
+			<loadArticle name="shine">ShineArticle</loadArticle>
+			<createHitbox>
+				<name>damage</name>
+				<center>0,0</center>
+				<size>64,64</size>
+				<damage>4</damage>
+				<baseKnockback>9</baseKnockback>
+				<knockbackGrowth>0.1</knockbackGrowth>
+				<trajectory>330</trajectory>
+				<hitstun>1.5</hitstun>
+				<transcendence>2</transcendence>
+			</createHitbox>
+			
+			<createHitbox type="reflector">
+				<name>reflect</name>
+				<center>0,0</center>
+				<size>92,92</size>
+				<damageMultiplier>1.3</damageMultiplier>
+				<velocityMultiplier>1.1</velocityMultiplier>
+				<hp>100</hp>
+				<trajectory>90</trajectory>
+			</createHitbox>
+		</setUp>
+		
+		<tearDown>
+			<deactivateArticle>shine</deactivateArticle>
+			<!-- preferred yspeed to fall speed -->
+		</tearDown>
+		
+		<frame number="before">
+			<updateHitbox>damage</updateHitbox>
+			<updateHitbox>reflect</updateHitbox>
+		</frame>
+		<frame number="0">
+			<changeFighterSpeed>
+				<ySpeed>0</ySpeed>
+			</changeFighterSpeed>
+			<changeSubimage>12</changeSubimage>
+			<activateArticle>shine</activateArticle>
+			<activateHitbox>damage</activateHitbox>
+			<activateHitbox>reflect</activateHitbox>
+			<!-- Create mask -->
+		</frame>
+		<frame number="1">
+			<deactivateHitbox>damage</deactivateHitbox>
+		</frame>
+		<frame number="12">
+			<!-- if button held, minus frame -->
+			<!-- reset preferred y -->
+			<!-- reset mask -->
+		</frame>
+		<frame number="18">
+			<deactivateArticle>shine</deactivateArticle>
+			<deactivateHitbox>reflect</deactivateHitbox>
+			<!-- kill mask -->
+		</frame>
+	</DownSpecial>
 </actionList>

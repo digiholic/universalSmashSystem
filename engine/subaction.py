@@ -325,6 +325,7 @@ class createHitbox(SubAction):
                  center,size,
                  damage,baseKnockback,knockbackGrowth,trajectory,hitstun=1,
                  hitboxLock="",
+                 damageMultiplier=1,velocityMultiplier=1,hp=1,
                  weightInfluence=1,shieldMultiplier=1,transcendence=0,priorityDiff=0,
                  chargeDamage=0,chargeBKB=0,chargeKBG=0,
                  xBias=0,yBias=0,xDraw=0.1,yDraw=0.1):
@@ -340,6 +341,9 @@ class createHitbox(SubAction):
         self.trajectory = trajectory
         self.hitstun = hitstun
         self.hitboxLock = hitboxLock
+        self.damageMultiplier = damageMultiplier
+        self.velocityMultiplier = velocityMultiplier
+        self.hp = hp
         self.weightInfluence = weightInfluence
         self.shieldMultiplier = shieldMultiplier
         self.transcendence = transcendence
@@ -375,12 +379,11 @@ class createHitbox(SubAction):
                                                       self.weightInfluence, self.shieldMultiplier, self.transcendence, self.priorityDiff,
                                                       self.chargeDamage, self.chargeBKB, self.chargeKBG)
         elif self.hitboxType == "autolink":
-            #Velocity_multiplier
             hitbox = engine.hitbox.AutolinkHitbox(self.center, self.size, actor,
                                                   self.damage,self.hitstun,
                                                   hitboxLock,
                                                   self.xBias,self.yBias,
-                                                  self.shieldMultiplier,1,self.transcendence,self.priorityDiff,
+                                                  self.shieldMultiplier,self.velocityMultiplier,self.transcendence,self.priorityDiff,
                                                   self.chargeDamage,self.chargeBKB,self.chargeKBG)
         elif self.hitboxType == "funnel":
             hitbox = engine.hitbox.FunnelHitbox(self.center, self.size, actor, self.damage, self.baseKnockback, self.trajectory, self.hitstun, hitboxLock,
@@ -389,7 +392,10 @@ class createHitbox(SubAction):
         elif self.hitboxType == "grab":
             pass
         elif self.hitboxType == "reflector":
-            pass
+            hitbox = engine.hitbox.ReflectorHitbox(self.center, self.size, actor,
+                                                   hitboxLock,
+                                                   self.damageMultiplier, self.velocityMultiplier,
+                                                   self.hp, self.trajectory, self.transcendence)
         action.hitboxes[self.name] = hitbox
         
     @staticmethod
@@ -407,6 +413,9 @@ class createHitbox(SubAction):
         
         hitstun = float(loadNodeWithDefault(node, 'hitstun', 1.0))
         hitboxLock = loadNodeWithDefault(node, 'hitboxLock', "")
+        damageMultiplier = float(loadNodeWithDefault(node, 'damageMultiplier', 1.0))
+        velocityMultiplier = float(loadNodeWithDefault(node, 'velocityMultiplier', 1.0))
+        hp = int(loadNodeWithDefault(node, 'hp', 1))
         weightInfluence = float(loadNodeWithDefault(node, 'weightInfluence', 1.0))
         shieldMultiplier = float(loadNodeWithDefault(node, 'shieldMultiplier', 1.0))
         transcendence = int(loadNodeWithDefault(node, 'transcendence', 0))
@@ -422,7 +431,7 @@ class createHitbox(SubAction):
         yDraw = float(loadNodeWithDefault(node, 'yDraw', 0.1))
         
         return createHitbox(name, hitboxType, center, size, damage, baseKnockback, knockbackGrowth,
-                     trajectory, hitstun, hitboxLock, weightInfluence, shieldMultiplier, transcendence,
+                     trajectory, hitstun, hitboxLock, damageMultiplier, velocityMultiplier, hp, weightInfluence, shieldMultiplier, transcendence,
                      priorityDiff, chargeDamage, chargeBKB, chargeKBG,
                      xBias, yBias, xDraw, yDraw)
         
@@ -548,7 +557,7 @@ class changeECB(SubAction):
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
         action.ecbSize = self.size
-        action.ecbCenter = self.size
+        action.ecbCenter = self.center
         action.ecbOffset = self.offset
     
     @staticmethod
@@ -560,10 +569,49 @@ class changeECB(SubAction):
             center = map(int, node.find('center').text.split(','))
         if node.find('size') is not None:
             size = map(int, node.find('size').text.split(','))
-        if node.find('center') is not None:
+        if node.find('offset') is not None:
             ecbOffset = map(int, node.find('offset').text.split(','))
         return changeECB(center,size,ecbOffset)
-       
+
+class loadArticle(SubAction):
+    def __init__(self,article,name):
+        SubAction.__init__(self)
+        self.article = article
+        self.name = name
+        
+    def execute(self, action, actor):
+        SubAction.execute(self, action, actor)
+        action.articles[self.name] = actor.loadArticle(self.article)
+        print(action.articles)
+        
+    @staticmethod
+    def buildFromXml(node):
+        return loadArticle(node.text,node.attrib['name'])
+        
+class activateArticle(SubAction):
+    def __init__(self,name):
+        SubAction.__init__(self)
+        self.name = name
+        
+    def execute(self, action, actor):
+        action.articles[self.name].activate()
+        
+    @staticmethod
+    def buildFromXml(node):
+        return activateArticle(node.text)
+    
+class deactivateArticle(SubAction):
+    def __init__(self,name):
+        SubAction.__init__(self)
+        self.name = name
+        
+    def execute(self, action, actor):
+        action.articles[self.name].deactivate()
+        
+    @staticmethod
+    def buildFromXml(node):
+        return deactivateArticle(node.text)
+    
 class debugAction(SubAction):
     def __init__(self,statement):
         SubAction.__init__(self)
@@ -593,6 +641,9 @@ subActionDict = {
                  'updateHitbox': updateHitbox,
                  'modifyHitbox': modifyHitbox,
                  'unlockHitbox': unlockHitbox,
+                 'loadArticle': loadArticle,
+                 'activateArticle': activateArticle,
+                 'deactivateArticle': deactivateArticle,
                  'transitionState': transitionState,
                  'updateLandingLag': updateLandingLag,
                  'print': debugAction

@@ -1223,16 +1223,14 @@ class BaseAttack(action.Action):
         for _,hitbox in self.hitboxes.iteritems():
             hitbox.kill()
             
-    def stateTransitions(self, actor):
-        action.Action.stateTransitions(self, actor)
+    def update(self, actor):
+        action.Action.update(self, actor)
         if self.frame == self.lastFrame:
             if actor.grounded:
                 actor.doAction('NeutralAction')
             else:
                 actor.doAction('Fall')
         
-    def update(self, actor):
-        action.Action.update(self, actor)
         self.frame += 1
 
 class AirAttack(BaseAttack):
@@ -1246,8 +1244,6 @@ class AirAttack(BaseAttack):
             self.fastFallFrame = None
             
     def stateTransitions(self, actor):
-        BaseAttack.stateTransitions(self, actor)
-        
         if self.fastFallFrame is not None and self.frame >= self.fastFallFrame:
             if actor.keysContain('down'):
                 actor.platformPhase = 1
@@ -1289,56 +1285,105 @@ class ChargeAttack(BaseAttack):
             actor.mask = None
           
 class NeutralAttack(BaseAttack):
-    def __init__(self, length):
+    def __init__(self, length=0):
         BaseAttack.__init__(self, length)
                 
 class ForwardAttack(BaseAttack):
-    def __init__(self, length):
+    def __init__(self, length=0):
         BaseAttack.__init__(self, length)
 
 class UpAttack(BaseAttack):
-    def __init__(self, length):
+    def __init__(self, length=0):
         BaseAttack.__init__(self, length)
 
 class DownAttack(BaseAttack):
-    def __init__(self, length):
+    def __init__(self, length=0):
         BaseAttack.__init__(self, length)
 
 class ForwardSmash(ChargeAttack):
-    def __init__(self,length):
+    def __init__(self,length=0):
         ChargeAttack.__init__(self, length,0,1)
         
 class UpSmash(ChargeAttack):
-    def __init__(self,length):
+    def __init__(self,length=0):
         ChargeAttack.__init__(self, length,0,1)
         
 class DownSmash(ChargeAttack):
-    def __init__(self,length):
+    def __init__(self,length=0):
         ChargeAttack.__init__(self, length,0,1)
         
 class NeutralAir(AirAttack):
-    def __init__(self,length):
+    def __init__(self,length=0):
         AirAttack.__init__(self, length)
 
 class ForwardAir(AirAttack):
-    def __init__(self,length):
+    def __init__(self,length=0):
         AirAttack.__init__(self, length)
 
 class BackAir(AirAttack):
-    def __init__(self,length):
+    def __init__(self,length=0):
         AirAttack.__init__(self, length)
 
 class UpAir(AirAttack):
-    def __init__(self,length):
+    def __init__(self,length=0):
         AirAttack.__init__(self, length)
 
 class DownAir(AirAttack):
-    def __init__(self,length):
+    def __init__(self,length=0):
         AirAttack.__init__(self, length)
 
 class DashAttack(BaseAttack):
-    def __init__(self,length):
+    def __init__(self,length=0):
         BaseAttack.__init__(self, length)
+
+class NeutralSpecial(BaseAttack):
+    def __init__(self,length=0):
+        BaseAttack.__init__(self, length)
+                
+class NeutralGroundSpecial(BaseAttack):
+    def __init__(self,length=0):
+        BaseAttack.__init__(self, length)
+
+class NeutralAirSpecial(AirAttack):
+    def __init__(self,length=0):
+        AirAttack.__init__(self, length)
+        
+class ForwardSpecial(BaseAttack):
+    def __init__(self,length=0):
+        BaseAttack.__init__(self, length)
+                
+class ForwardGroundSpecial(BaseAttack):
+    def __init__(self,length=0):
+        BaseAttack.__init__(self, length)
+        
+class ForwardAirSpecial(AirAttack):
+    def __init__(self,length=0):
+        AirAttack.__init__(self, length)
+        
+class UpSpecial(BaseAttack):
+    def __init__(self,length=0):
+        BaseAttack.__init__(self, length)
+                
+class UpGroundSpecial(BaseAttack):
+    def __init__(self,length=0):
+        BaseAttack.__init__(self, length)
+        
+class UpAirSpecial(AirAttack):
+    def __init__(self,length=0):
+        AirAttack.__init__(self, length)
+        
+class DownSpecial(BaseAttack):
+    def __init__(self,length=0):
+        BaseAttack.__init__(self, length)
+                
+class DownGroundSpecial(BaseAttack):
+    def __init__(self,length=0):
+        BaseAttack.__init__(self, length)
+    
+class DownAirSpecial(AirAttack):
+    def __init__(self,length=0):
+        AirAttack.__init__(self, length)
+        
 ########################################################
 #               TRANSITION STATES                      #
 ########################################################

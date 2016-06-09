@@ -76,6 +76,9 @@ class AbstractFighter():
         except:
             self.article_path = baseDir
         
+        #self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),'articles.py',suffix=str(playerNum))
+        self.articleLoader = settingsManager.importFromURI(os.path.join(baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(playerNum))
+
         try:
             directory = os.path.join(baseDir,self.xmlData.find('sprite_directory').text)
             prefix = self.xmlData.find('sprite_prefix').text
@@ -385,11 +388,25 @@ class AbstractFighter():
     
     def doAction(self,actionName):
         if hasattr(self.actions,'loadAction'):
-            self.changeAction(self.actions.loadAction(actionName))
+            action = self.actions.loadAction(actionName)
+            if action.lastFrame > 0: self.changeAction(action)
         elif hasattr(self.actions, actionName):
             class_ = getattr(self.actions,actionName)
-            self.changeAction(class_())
-                        
+            action = class_()
+            if action.lastFrame > 0: self.changeAction(action)
+            
+    def hasAction(self,actionName):
+        if hasattr(self.actions,'hasAction'):
+            return self.actions.hasAction(actionName)
+        else: return hasattr(self.actions, actionName)
+            
+    def loadArticle(self,articleName):
+        if hasattr(self.articleLoader, 'loadArticle'):
+            return self.articleLoader.loadArticle(articleName,self)
+        elif hasattr(self.articleLoader, articleName):
+            class_ = getattr(self.articleLoader, articleName)
+            return(class_(self)) 
+                            
     def doGroundMove(self,direction):
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
             self.flip()
@@ -448,34 +465,60 @@ class AbstractFighter():
     def doGroundSpecial(self):
         (forward, backward) = self.getForwardBackwardKeys()
         if self.keysContain(forward):
-            if self.sideSpecialUses > 0:
+            if self.hasAction('ForwardSpecial'): #If there's a ground/air version, do it
                 self.doAction('ForwardSpecial')
+            else: #If there is not a universal one, do a ground one
+                self.doAction('ForwardGroundSpecial')
         elif self.keysContain(backward):
             self.flip()
-            if self.sideSpecialUses > 0:
+            if self.hasAction('ForwardSpecial'):
                 self.doAction('ForwardSpecial')
+            else:
+                self.doAction('ForwardGroundSpecial')
         elif (self.keysContain('down')):
-            self.doAction('DownSpecial')
+            if self.hasAction('DownSpecial'):
+                self.doAction('DownSpecial')
+            else:
+                self.doAction('DownGroundSpecial')
         elif (self.keysContain('up')):
-            self.doAction('UpSpecial')
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
+            else:
+                self.doAction('UpGroundSpecial')
         else: 
-            self.doAction('NeutralGroundSpecial')
-
+            if self.hasAction('NeutralSpecial'):
+                self.doAction('NeutralSpecial')
+            else:
+                self.doAction('NeutralGroundSpecial')
+                
     def doAirSpecial(self):
         (forward, backward) = self.getForwardBackwardKeys()
         if self.keysContain(forward):
-            if self.sideSpecialUses > 0:
+            if self.hasAction('ForwardSpecial'): #If there's a ground/air version, do it
                 self.doAction('ForwardSpecial')
+            else: #If there is not a universal one, do an air one
+                self.doAction('ForwardAirSpecial')
         elif self.keysContain(backward):
             self.flip()
-            if self.sideSpecialUses > 0:
+            if self.hasAction('ForwardSpecial'):
                 self.doAction('ForwardSpecial')
+            else:
+                self.doAction('ForwardAirSpecial')
         elif (self.keysContain('down')):
-            self.doAction('DownSpecial')
+            if self.hasAction('DownSpecial'):
+                self.doAction('DownSpecial')
+            else:
+                self.doAction('DownAirSpecial')
         elif (self.keysContain('up')):
-            self.doAction('UpSpecial')
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
+            else:
+                self.doAction('UpAirSpecial')
         else: 
-            self.doAction('NeutralAirSpecial')
+            if self.hasAction('NeutralSpecial'):
+                self.doAction('NeutralSpecial')
+            else:
+                self.doAction('NeutralAirSpecial')
     
     def doHitStun(self,hitstun,trajectory,hitstop):
         self.doAction('HitStun')

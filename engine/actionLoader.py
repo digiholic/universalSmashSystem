@@ -9,16 +9,29 @@ class ActionLoader():
         self.actionsXML = ElementTree.parse(actionsXMLdata).getroot()
         print('actionsXML: ' + str(self.actionsXML))
     
+    def hasAction(self, actionName):
+        if self.actionsXML.find(actionName) is None:
+            return False
+        return True
+        
     def loadAction(self,actionName):
         #Load the action XML
         actionXML = self.actionsXML.find(actionName)
         
         #Get the baseClass
-        class_ = getattr(baseActions,actionName)
+        class_ = None
+        if (actionXML is not None) and (actionXML.find('base') is not None):
+            if hasattr(baseActions, actionXML.find('base')): 
+                class_ = getattr(baseActions, actionXML.find('base'))
+        else:
+            if hasattr(baseActions, actionName):
+                class_ = getattr(baseActions,actionName)
+        
         if class_: base = class_
         else: base = action.Action
         if actionXML is None:
             return base()
+        
         
         #Get the action variables
         length = int(self.loadNodeWithDefault(actionXML, 'length', 1))
