@@ -233,6 +233,7 @@ class Settings():
                 if self.KeyNameMap.has_key(opt):
                     bindings[self.KeyNameMap[opt]] = self.parser.get(groupName, opt)
             self.setting[groupName] = engine.controller.Controller(bindings)
+            #self.setting[groupName] = engine.cpuPlayer.CPUplayer(bindings) #Here be CPU players
                     
             playerNum += 1
     

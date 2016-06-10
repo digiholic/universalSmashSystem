@@ -357,12 +357,12 @@ class HitStun(action.Action):
                 actor.grounded = False
                 if mag > 10:
                     actor.rotateSprite(self.direction)
-            actor.hitstop = self.hitstop
-            if actor.grounded:
-                actor.hitstopVibration = (3,0)
-            else:
-                actor.hitstopVibration = (0,3)
-            actor.hitstopPos = actor.rect.center
+            #actor.hitstop = self.hitstop
+            #if actor.grounded:
+            #    actor.hitstopVibration = (3,0)
+            #else:
+            #    actor.hitstopVibration = (0,3)
+            #actor.hitstopPos = actor.rect.center
         if self.frame % 15 == 10 and self.frame < self.lastFrame:
             if abs(actor.change_x) > 8 or abs(actor.change_y) > 8:
                 art = article.AnimatedArticle(settingsManager.createPath('sprites/circlepuff.png'),actor,actor.rect.center,86,6)

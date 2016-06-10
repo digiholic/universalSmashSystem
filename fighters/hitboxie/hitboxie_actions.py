@@ -66,13 +66,13 @@ class NeutralGroundSpecial(action.Action):
     def update(self, actor):
         if self.frame <= 14:
             actor.changeSpriteImage(self.frame//2)
-        elif self.frame <= 26:
-            actor.changeSpriteImage((self.frame+14)//4)
+        elif self.frame > 24 and self.frame <= 36:
+            actor.changeSpriteImage((self.frame+4)//4)
         if self.frame == 12:
             self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
             actor.articles.add(self.projectile)
             actor.active_hitboxes.add(self.projectile.hitbox)
-        if self.frame == 26:
+        if self.frame == 20:
             if actor.keysContain('special'):
                 actor.changeAction(NeutralGroundSpecial())
         if self.frame == self.lastFrame:
@@ -94,21 +94,21 @@ class NeutralAirSpecial(action.Action):
         baseActions.airControl(actor)
                
     def update(self, actor):
-        actor.landingLag = 15
+        actor.landingLag = 18
         if self.frame <= 14:
             actor.changeSpriteImage(self.frame//2)
-        elif self.frame <= 26:
-            actor.changeSpriteImage((self.frame+14)//4)
+        elif self.frame > 24 and self.frame <= 36:
+            actor.changeSpriteImage((self.frame+4)//4)
         if self.frame == 12:
             self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
             actor.articles.add(self.projectile)
             actor.active_hitboxes.add(self.projectile.hitbox)
             print(actor.active_hitboxes)
-        if self.frame == 20:
+        if self.frame == 15:
             if actor.keysContain('special'):
                 actor.changeAction(NeutralAirSpecial())
         if self.frame == self.lastFrame:
-            actor.landingLag = 9
+            actor.landingLag = 11
             actor.doFall()
         self.frame += 1
 
@@ -941,41 +941,41 @@ class ForwardAir(action.Action):
         self.sweetSpotHitbox.update()
         if self.frame == 0:
             actor.changeSpriteImage(0)
-        elif self.frame == 3:
+        elif self.frame == 2:
             actor.changeSpriteImage(1)
-        elif self.frame == 6:
+        elif self.frame == 4:
             actor.changeSpriteImage(2)
-        elif self.frame == 9:
+        elif self.frame == 6:
             actor.changeSpriteImage(3)
-        elif self.frame == 15:
+        elif self.frame == 10:
             actor.changeSpriteImage(4)
-        elif self.frame == 18:
+        elif self.frame == 12:
             actor.changeSpriteImage(5)
             actor.active_hitboxes.add(self.sourSpotHitbox)
-        elif self.frame == 21:
+        elif self.frame == 14:
             actor.changeSpriteImage(6)
             self.sourSpotHitbox.x_offset = -14
             self.sourSpotHitbox.y_offset = -20
-        elif self.frame == 24:
+        elif self.frame == 16:
             actor.changeSpriteImage(7)
             actor.active_hitboxes.add(self.sweetSpotHitbox)
             self.sourSpotHitbox.x_offset = 9
             self.sourSpotHitbox.y_offset = -26
-        elif self.frame == 27:
+        elif self.frame == 18:
             actor.changeSpriteImage(8)
             self.sourSpotHitbox.x_offset = 23
             self.sourSpotHitbox.y_offset = -12
             self.sweetSpotHitbox.kill()
-        elif self.frame == 30:
+        elif self.frame == 20:
             self.sourSpotHitbox.x_offset = 30
             self.sourSpotHitbox.y_offset = 10
             actor.changeSpriteImage(9)
-        elif self.frame == 33:
+        elif self.frame == 22:
             actor.changeSpriteImage(10)
             self.sourSpotHitbox.kill()
-        elif self.frame == 36:
+        elif self.frame == 24:
             actor.changeSpriteImage(11)
-        elif self.frame == 39:
+        elif self.frame == 26:
             actor.changeSprite('jump')
         elif self.frame == self.lastFrame:
             actor.doFall()
@@ -1084,6 +1084,7 @@ class UpAir(action.Action):
         self.sweetspot.kill()
     
     def update(self, actor):
+        print(self.frame)
         actor.landingLag = 20
         self.sourspot.update()
         self.semisweet.update()
@@ -1103,19 +1104,60 @@ class UpAir(action.Action):
             actor.changeSpriteImage(3)
             self.semisweet.kill()
         elif self.frame == 21:
+            actor.landingLag = 12
             actor.changeSpriteImage(4)
             self.sourspot.kill()
         elif self.frame == self.lastFrame:
-            actor.landingLag = 16
             actor.doFall()
         self.frame += 1
 
 class GroundGrab(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 33)
+        action.Action.__init__(self, 30)
 
     def setUp(self, actor):
         self.grabHitbox = hitbox.GrabHitbox([30,0], [30,30], actor, hitbox.HitboxLock(), 30)
+
+    def tearDown(self, actor, other):
+        self.grabHitbox.kill()
+
+    def stateTransitions(self, actor):
+        if not actor.grounded:
+            actor.doFall()
+
+    def update(self,actor):
+        self.grabHitbox.update()
+        actor.preferred_xspeed = 0
+        if self.frame == 0:
+            actor.changeSprite("pivot", 0)
+        elif self.frame == 2:
+            actor.changeSpriteImage(1)
+        elif self.frame == 4:
+            actor.changeSpriteImage(2)
+            actor.active_hitboxes.add(self.grabHitbox)
+        elif self.frame == 6:
+            actor.changeSpriteImage(3)
+        elif self.frame == 8:
+            actor.changeSpriteImage(4)
+        elif self.frame == 11:
+            actor.changeSpriteImage(3)
+            self.grabHitbox.kill()
+        elif self.frame == 15:
+            actor.changeSpriteImage(2)
+        elif self.frame == 20:
+            actor.changeSpriteImage(1)
+        elif self.frame == 26:
+            actor.changeSpriteImage(0)
+        if self.frame == self.lastFrame:
+            actor.doIdle()
+        self.frame += 1
+
+class DashGrab(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 35)
+
+    def setUp(self, actor):
+        self.grabHitbox = hitbox.GrabHitbox([40,0], [50,30], actor, hitbox.HitboxLock(), 30)
 
     def tearDown(self, actor, other):
         self.grabHitbox.kill()
@@ -1136,57 +1178,16 @@ class GroundGrab(action.Action):
             actor.active_hitboxes.add(self.grabHitbox)
         elif self.frame == 9:
             actor.changeSpriteImage(3)
-        elif self.frame == 12:
+        elif self.frame == 13:
             actor.changeSpriteImage(4)
-        elif self.frame == 15:
+        elif self.frame == 18:
             actor.changeSpriteImage(3)
             self.grabHitbox.kill()
-        elif self.frame == 20:
+        elif self.frame == 22:
             actor.changeSpriteImage(2)
-        elif self.frame == 24:
+        elif self.frame == 26:
             actor.changeSpriteImage(1)
-        elif self.frame == 28:
-            actor.changeSpriteImage(0)
-        if self.frame == self.lastFrame:
-            actor.doIdle()
-        self.frame += 1
-
-class DashGrab(action.Action):
-    def __init__(self):
-        action.Action.__init__(self, 38)
-
-    def setUp(self, actor):
-        self.grabHitbox = hitbox.GrabHitbox([40,0], [50,30], actor, hitbox.HitboxLock(), 30)
-
-    def tearDown(self, actor, other):
-        self.grabHitbox.kill()
-
-    def stateTransitions(self, actor):
-        if not actor.grounded:
-            actor.doFall()
-
-    def update(self,actor):
-        self.grabHitbox.update()
-        actor.preferred_xspeed = 0
-        if self.frame == 0:
-            actor.changeSprite("pivot", 0)
-        elif self.frame == 4:
-            actor.changeSpriteImage(1)
-        elif self.frame == 7:
-            actor.changeSpriteImage(2)
-            actor.active_hitboxes.add(self.grabHitbox)
-        elif self.frame == 10:
-            actor.changeSpriteImage(3)
-        elif self.frame == 14:
-            actor.changeSpriteImage(4)
-        elif self.frame == 17:
-            actor.changeSpriteImage(3)
-            self.grabHitbox.kill()
-        elif self.frame == 23:
-            actor.changeSpriteImage(2)
-        elif self.frame == 28:
-            actor.changeSpriteImage(1)
-        elif self.frame == 33:
+        elif self.frame == 30:
             actor.changeSpriteImage(0)
         if self.frame == self.lastFrame:
             actor.doIdle()

@@ -500,6 +500,12 @@ class AbstractFighter():
     all the modding)
     """
     def applyKnockback(self, damage, kb, kbg, trajectory, weight_influence=1, hitstun_multiplier=1):
+        self.hitstop = math.floor(damage / 4.0 + 2)
+        if self.grounded:
+            self.hitstopVibration = (3,0)
+        else:
+            self.hitstopVibration = (0,3)
+        self.hitstopPos = self.rect.center
         
         p = float(self.damage)
         d = float(damage)
