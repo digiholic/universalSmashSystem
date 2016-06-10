@@ -135,14 +135,14 @@ class ForwardSpecial(action.Action):
     
     class sideSpecialHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
-            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 6, 2, .2, 300, 1, hitbox.HitboxLock(), 1, 10, 0, 0)
+            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 6, 4, .1, 300, 1, hitbox.HitboxLock(), 1, 10, 0, 0)
 
         def onCollision(self, other):
             hitbox.Hitbox.onCollision(self, other)
             if 'AbstractFighter' in list(map(lambda x:x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
                 if other.lockHitbox(self):
                     if self.article is None:
-                        self.owner.applyPushback(self.baseKnockback/2.0, self.trajectory+180, self.damage / 4.0 + 2.0)
+                        self.owner.applyPushback(self.baseKnockback/2.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     if other.grounded:
                         other.applyKnockback(self.damage, 0, 0, 0, 1, 1)
                         (otherDirect,_) = other.getDirectionMagnitude()
@@ -1511,8 +1511,8 @@ class CrouchGetup(baseActions.CrouchGetup):
         baseActions.CrouchGetup.update(self, actor)
         
 class HitStun(baseActions.HitStun):
-    def __init__(self,hitstun,direction,hitstop):
-        baseActions.HitStun.__init__(self, hitstun, direction,hitstop)
+    def __init__(self,hitstun,direction):
+        baseActions.HitStun.__init__(self, hitstun, direction)
 
     def setUp(self, actor):
         baseActions.HitStun.setUp(self, actor)
@@ -1527,8 +1527,8 @@ class HitStun(baseActions.HitStun):
                 actor.changeSprite("jump")
         
 class TryTech(baseActions.TryTech):
-    def __init__(self,hitstun,direction,hitstop):
-        baseActions.TryTech.__init__(self, hitstun, direction, hitstop)
+    def __init__(self,hitstun,direction):
+        baseActions.TryTech.__init__(self, hitstun, direction)
 
     def update(self,actor):
         baseActions.TryTech.update(self, actor)

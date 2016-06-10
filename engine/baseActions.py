@@ -302,10 +302,9 @@ class Grabbing(BaseGrabbing):
         grabbingState(actor)
         
 class HitStun(action.Action):
-    def __init__(self,hitstun,direction,hitstop):
+    def __init__(self,hitstun,direction):
         action.Action.__init__(self, hitstun)
         self.direction = direction
-        self.hitstop = hitstop
 
     def setUp(self, actor):
         actor.elasticity = actor.var['hitstunElasticity']
@@ -313,7 +312,7 @@ class HitStun(action.Action):
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
         if actor.keyBuffered('shield', 1) and self.frame < self.lastFrame:
-            actor.doTryTech(self.lastFrame-self.frame, self.direction, self.hitstop)
+            actor.doTryTech(self.lastFrame-self.frame, self.direction)
         if self.frame >= self.lastFrame:
             tumbleState(actor)
             actor.elasticity = actor.var['hitstunElasticity']/2
@@ -357,12 +356,6 @@ class HitStun(action.Action):
                 actor.grounded = False
                 if mag > 10:
                     actor.rotateSprite(self.direction)
-            #actor.hitstop = self.hitstop
-            #if actor.grounded:
-            #    actor.hitstopVibration = (3,0)
-            #else:
-            #    actor.hitstopVibration = (0,3)
-            #actor.hitstopPos = actor.rect.center
         if self.frame % 15 == 10 and self.frame < self.lastFrame:
             if abs(actor.change_x) > 8 or abs(actor.change_y) > 8:
                 art = article.AnimatedArticle(settingsManager.createPath('sprites/circlepuff.png'),actor,actor.rect.center,86,6)
@@ -379,8 +372,8 @@ class HitStun(action.Action):
         self.frame += 1
 
 class TryTech(HitStun):
-    def __init__(self, hitstun, direction, hitstop):
-        HitStun.__init__(self, hitstun, direction, hitstop)
+    def __init__(self, hitstun, direction):
+        HitStun.__init__(self, hitstun, direction)
 
     def stateTransitions(self, actor):
         (direct,mag) = actor.getDirectionMagnitude()
@@ -422,7 +415,7 @@ class TryTech(HitStun):
 
     def update(self, actor):
         if self.frame >= 40:
-            actor.doHitStun(self.lastFrame-self.frame, self.direction,0)
+            actor.doHitStun(self.lastFrame-self.frame, self.direction)
         HitStun.update(self, actor)
 
 class Trip(action.Action):
@@ -437,7 +430,7 @@ class Trip(action.Action):
 
     def update(self, actor):
         if actor.grounded is False:
-            actor.doHitStun(self.lastFrame-self.frame, self.direction,0)
+            actor.doHitStun(self.lastFrame-self.frame, self.direction)
         if self.frame >= self.lastFrame + 180: #You aren't up yet?
             actor.doGetup(self.direction)
         self.frame += 1

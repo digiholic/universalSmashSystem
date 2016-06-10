@@ -472,8 +472,8 @@ class HealthTracker(spriteManager.Sprite):
         length += self.kerningValues[10]
         
     def draw(self,screen,offset,scale):
-        if not self.percent == self.fighter.damage:
-            self.percent = self.fighter.damage
+        if not self.percent == int(self.fighter.damage):
+            self.percent = int(self.fighter.damage)
             self.updateDamage()
         
         h = int(round(self.rect.height * scale))

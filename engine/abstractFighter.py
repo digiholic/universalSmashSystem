@@ -353,11 +353,11 @@ class AbstractFighter():
     def doAirJump(self):
         self.changeAction(baseActions.AirJump())
 
-    def doHitStun(self,hitstun,direction,hitstop):
-        self.changeAction(baseActions.HitStun(hitstun,direction,hitstop))
+    def doHitStun(self,hitstun,direction):
+        self.changeAction(baseActions.HitStun(hitstun,direction))
 
-    def doTryTech(self, hitstun, direction, hitstop):
-        self.changeAction(baseActions.TryTech(hitstun, direction, hitstop))
+    def doTryTech(self, hitstun, direction):
+        self.changeAction(baseActions.TryTech(hitstun, direction))
 
     def doTrip(self, length, direction):
         self.changeAction(baseActions.Trip(length, direction))
@@ -476,7 +476,7 @@ class AbstractFighter():
     for things like poison, non-knockback attacks, etc.
     """ 
     def dealDamage(self, damage):
-        self.damage += int(math.floor(damage))
+        self.damage += float(math.floor(damage))
         if self.damage >= 999:
             self.damage = 999
     
@@ -499,8 +499,8 @@ class AbstractFighter():
     it is based off of Super Smash Bros. Brawl's knockback calculation, which is the one with the most information available (due to
     all the modding)
     """
-    def applyKnockback(self, damage, kb, kbg, trajectory, weight_influence=1, hitstun_multiplier=1):
-        self.hitstop = math.floor(damage / 4.0 + 2)
+    def applyKnockback(self, damage, kb, kbg, trajectory, weight_influence=1, hitstun_multiplier=1, base_hitstun=1, hitlag_multiplier=1):
+        self.hitstop = math.floor((damage / 4.0 + 2)*hitlag_multiplier)
         if self.grounded:
             self.hitstopVibration = (3,0)
         else:
@@ -530,7 +530,7 @@ class AbstractFighter():
         DI_multiplier = 1+dot*.12
         trajectory += cross*15
 
-        hitstun_frames = math.floor((totalKB+1)*3*hitstun_multiplier) #Tweak this constant
+        hitstun_frames = math.floor(totalKB*3*hitstun_multiplier+base_hitstun) #Tweak this constant
         print(hitstun_frames)
 
         if self.no_flinch_hits > 0:
@@ -541,7 +541,7 @@ class AbstractFighter():
 
         if hitstun_frames > 0.5:
             print(totalKB)
-            self.doHitStun(hitstun_frames,trajectory,math.floor(damage / 4.0 + 2))
+            self.doHitStun(hitstun_frames,trajectory)
         
         self.dealDamage(damage)
         
