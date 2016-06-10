@@ -46,12 +46,18 @@ class SpriteHandler(Sprite):
         self.imageLibrary = self.buildImageLibrary(ImageLibrary(directory,prefix), offset)
         
         self.startingImage = startingImage
-         
+        
         self.flip = "right"
-        self.currentSheet = startingImage
+        if not self.startingImage in self.imageLibrary[self.flip]:
+            keyList = self.imageLibrary[self.flip].keys()
+            self.startingImage = keyList[0] 
+            print("Default Sprite not found. New default sprite: " + str(self.startingImage))
+            
+        self.currentSheet = self.startingImage
         self.index = 0
         self.angle = 0
         
+        print(self.imageLibrary)
         self.image = self.imageLibrary[self.flip][self.startingImage][self.index]
         
         self.rect = self.image.get_rect()

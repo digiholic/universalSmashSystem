@@ -22,9 +22,11 @@ class AbstractFighter():
         defaultSprite = 'idle'
         imgwidth = '64'
         print('base',baseDir)
-        
-        self.xmlData = ElementTree.parse(os.path.join(baseDir,'fighter.xml')).getroot()
-        
+        try:
+            self.xmlData = ElementTree.parse(os.path.join(baseDir,'fighter.xml')).getroot()
+        except:
+            self.xmlData = ElementTree.ElementTree()
+            
         try:
             self.name = self.xmlData.find('name').text
         except:
@@ -68,8 +70,11 @@ class AbstractFighter():
                 'hitstunElasticity': .8
                 }
         
-        for stat in self.xmlData.find('stats'):
-            self.var[stat.tag] = float(stat.text)
+        try:
+            for stat in self.xmlData.find('stats'):
+                self.var[stat.tag] = float(stat.text)
+        except:
+            pass
         
         try:
             self.article_path = os.path.join(baseDir,self.xmlData.find('article_path').text)
@@ -77,8 +82,11 @@ class AbstractFighter():
             self.article_path = baseDir
         
         #self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),'articles.py',suffix=str(playerNum))
-        self.articleLoader = settingsManager.importFromURI(os.path.join(baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(playerNum))
-
+        try:
+            self.articleLoader = settingsManager.importFromURI(os.path.join(baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(playerNum))
+        except:
+            self.articleLoader = None
+            
         try:
             directory = os.path.join(baseDir,self.xmlData.find('sprite_directory').text)
             prefix = self.xmlData.find('sprite_prefix').text
@@ -101,7 +109,7 @@ class AbstractFighter():
                 
                 self.colorPalettes.append(colorDict)
         except:
-            while len(self.colorPalettes < 4):
+            while len(self.colorPalettes) < 4:
                 self.colorPalettes.append({})
         
         color = self.colorPalettes[self.playerNum] #TODO: Pick colors
@@ -110,12 +118,14 @@ class AbstractFighter():
         
         
         #try:
-        actions = self.xmlData.find('actions').text
-        if actions.endswith('.py'):
-            self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),actions,suffix=str(playerNum))
-        else:
-            self.actions = actionLoader.ActionLoader(baseDir,actions)
-            
+        try:
+            actions = self.xmlData.find('actions').text
+            if actions.endswith('.py'):
+                self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),actions,suffix=str(playerNum))
+            else:
+                self.actions = actionLoader.ActionLoader(baseDir,actions)
+        except:
+            self.actions = baseActions
         #except:
         #    print('unable to load actions. Loading base')
         #    self.actions = settingsManager.importFromURI(settingsManager.createPath(''),'engine/baseActions.py',suffix=str(playerNum))
