@@ -114,7 +114,7 @@ class AbstractFighter():
         if actions.endswith('.py'):
             self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),actions,suffix=str(playerNum))
         else:
-            self.actions = actionLoader.ActionLoader(os.path.join(baseDir,actions))
+            self.actions = actionLoader.ActionLoader(baseDir,actions)
             
         #except:
         #    print('unable to load actions. Loading base')
@@ -694,6 +694,7 @@ class AbstractFighter():
         
     def changeSprite(self,newSprite,frame=0):
         self.sprite.changeImage(newSprite)
+        self.current_action.spriteName = newSprite
         if frame != 0: self.sprite.changeSubImage(frame)
         
     def changeSpriteImage(self,frame,loop=False):

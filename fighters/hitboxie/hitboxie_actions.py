@@ -202,8 +202,6 @@ class DownSpecial(action.Action):
         self.reflectorHitbox.update()
         if self.frame == 0:
             actor.change_y = 0
-            if actor.change_y > 2:
-                actor.change_y = 2
             actor.preferred_yspeed = 2
             actor.changeSprite('getup',12)
             actor.articles.add(self.article)
@@ -233,18 +231,20 @@ class UpSpecial(action.Action):
         self.angle = 90
         
     def setUp(self, actor):
+        action.Action.setUp(self,actor)
         sharedLock = hitbox.HitboxLock()
         self.launchHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 14, 12, 0.1, 90, 1.5, sharedLock)
         self.flyingHitbox = hitbox.DamageHitbox([0,0],[64,64], actor, 8, 10, 0.05, 90, 1, sharedLock)
-        actor.changeSprite('dtilt',4)
-        return action.Action.setUp(self,actor)
+        actor.changeSprite('dtilt')
+        actor.changeSpriteImage(4)
+        
         
     def tearDown(self, actor, newAction):
+        action.Action.tearDown(self,actor,newAction)
         self.launchHitbox.kill()
         self.flyingHitbox.kill()
         actor.unRotate()
         actor.preferred_yspeed = actor.var['maxFallSpeed']
-        return action.Action.tearDown(self,actor,newAction)
     
     def stateTransitions(self,actor):
         if self.frame < 19:
@@ -294,10 +294,10 @@ class UpSpecial(action.Action):
             self.flyingHitbox.kill()
         if self.frame > 20:
             if self.frame % 2 == 0:
-                actor.changeSpriteImage((self.frame - 15) // 2)
+                actor.changeSpriteImage((self.frame - 15) // 2,loop=True)
             self.flyingHitbox.update()
         if self.frame == self.lastFrame:
-            actor.doHelpless()
+            actor.doAction('Helpless')
         self.frame += 1
         
 class NeutralAttack(action.Action):

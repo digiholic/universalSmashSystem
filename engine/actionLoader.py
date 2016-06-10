@@ -3,9 +3,13 @@ import engine.baseActions as baseActions
 import xml.etree.ElementTree as ElementTree
 import engine.subaction as subaction
 import engine.action as action
-    
+import settingsManager
+import os
+
 class ActionLoader():
-    def __init__(self,actionsXMLdata):
+    def __init__(self,baseDir, actions):
+        actionsXMLdata = os.path.join(baseDir,actions)
+        self.baseDir = baseDir
         self.actionsXML = ElementTree.parse(actionsXMLdata).getroot()
         print('actionsXML: ' + str(self.actionsXML))
     
@@ -17,6 +21,14 @@ class ActionLoader():
     def loadAction(self,actionName):
         #Load the action XML
         actionXML = self.actionsXML.find(actionName)
+        
+        #Check if it's a Python action
+        if actionXML is not None and actionXML.find('loadCodeAction') is not None:
+            fileName = actionXML.find('loadCodeAction').find('file').text
+            actionName = actionXML.find('loadCodeAction').find('action').text
+            newaction = settingsManager.importFromURI(os.path.join(self.baseDir,fileName), fileName)
+            return getattr(newaction, actionName)()
+        
         
         #Get the baseClass
         class_ = None
@@ -31,7 +43,6 @@ class ActionLoader():
         else: base = action.Action
         if actionXML is None:
             return base()
-        
         
         #Get the action variables
         length = int(self.loadNodeWithDefault(actionXML, 'length', 1))

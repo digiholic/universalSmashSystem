@@ -1097,6 +1097,12 @@
 		</frame>
 		<frame number="30">
 			<!-- if keysContainAttack frame -1 -->
+			<ifButton>
+				<button held="true">attack</button>
+				<if>
+					<setFrame relative="true">-1</setFrame>
+				</if>
+			</ifButton>
 		</frame>
 		<frame number="31">
 			<deactivateHitbox>downHbox</deactivateHitbox>
@@ -1214,6 +1220,12 @@
 		</frame>
 		<frame number="26">
 			<changeSubimage>10</changeSubimage>
+			<ifButton>
+				<button held="true">special</button>
+				<if>
+					<doAction>NeutralGroundSpeical</doAction>
+				</if>
+			</ifButton>
 		</frame>
 	</NeutralGroundSpecial>
 	
@@ -1242,6 +1254,14 @@
 		</frame>
 		<frame number="18">
 			<changeSubimage>8</changeSubimage>
+		</frame>
+		<frame number="20">
+			<ifButton>
+				<button held="true">special</button>
+				<if>
+					<doAction>NeutralAirSpecial</doAction>
+				</if>
+			</ifButton>
 		</frame>
 		<frame number="22">
 			<changeSubimage>9</changeSubimage>
@@ -1286,7 +1306,9 @@
 		
 		<tearDown>
 			<deactivateArticle>shine</deactivateArticle>
-			<!-- preferred yspeed to fall speed -->
+			<changeFighterPreferredSpeed>
+				<ySpeed><var from="actor">maxFallSpeed</var></ySpeed>
+			</changeFighterPreferredSpeed>
 		</tearDown>
 		
 		<frame number="before">
@@ -1297,6 +1319,9 @@
 			<changeFighterSpeed>
 				<ySpeed>0</ySpeed>
 			</changeFighterSpeed>
+			<changeFighterPreferredSpeed>
+				<ySpeed>2</ySpeed>
+			</changeFighterPreferredSpeed>
 			<changeSubimage>12</changeSubimage>
 			<activateArticle>shine</activateArticle>
 			<activateHitbox>damage</activateHitbox>
@@ -1307,8 +1332,15 @@
 			<deactivateHitbox>damage</deactivateHitbox>
 		</frame>
 		<frame number="12">
-			<!-- if button held, minus frame -->
-			<!-- reset preferred y -->
+			<ifButton>
+				<button held="true">special</button>
+				<if>
+					<setFrame relative="true">-1</setFrame>
+				</if>
+			</ifButton>
+			<changeFighterPreferredSpeed>
+				<ySpeed><var from="actor">maxFallSpeed</var></ySpeed>
+			</changeFighterPreferredSpeed>
 			<!-- reset mask -->
 		</frame>
 		<frame number="18">
@@ -1317,4 +1349,13 @@
 			<!-- kill mask -->
 		</frame>
 	</DownSpecial>
+	
+	<UpSpecial>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>UpSpecial</action>
+		</loadCodeAction>
+	</UpSpecial>
+	
+	
 </actionList>

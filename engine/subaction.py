@@ -1,5 +1,6 @@
 import engine.hitbox
 import baseActions
+from test.test_bigmem import BufferTest
 ########################################################
 #               ABSTRACT ACTIONS                       #
 ########################################################
@@ -9,6 +10,30 @@ def loadNodeWithDefault(node,subnode,default):
     else:
         return default
 
+# This will load either a variable if the tag contains a "var" tag, or a literal
+# value based on the type given. If the node doesn't exist, returns default instead.
+def loadValueOrVariable(node, subnode, type="string", default=""):
+    if node.find(subnode) is not None:
+        if node.find(subnode).find('var') is not None: #if there's a var set
+            varNode = node.find(subnode).find('var')
+            if not varNode.attrib.has_key('from'):
+                fromKey = 'action'
+            else: fromKey = varNode.attrib['from']
+            if fromKey == 'actor':
+                return ('actor', varNode.text)
+            elif fromKey == 'action':
+                return ('action', varNode.text)
+        else: #If it's a normal value
+            if type=="int":
+                return int(node.find(subnode).text)
+            if type=="float":
+                return float(node.find(subnode).text)
+            if type=="bool":
+                return bool(node.find(subnode).text)
+            return varNode.text
+    else: #If there is no node
+        return default
+    
 # SubActions are a single part of an Action, such as moving a fighter, or tweaking a sprite.
 class SubAction():
     def __init__(self):
@@ -43,24 +68,110 @@ class ConditionalAction(SubAction):
 ########################################################
 
 # The IfAttribute SubAction compares a fighter attribute to a value.
-class ifAttribute(ConditionalAction):
-    def __init__(self,attr,comp,val,ifActions = [], elseActions = []):
-        if comp == '==':
-            cond = actor.var[attr] == val
-        elif comp == '<':
-            cond = actor.var[attr] < val
-        elif comp == '<=':
-            cond = actor.var[attr] <= val
-        elif comp == '>':
-            cond = actor.var[attr] > val
-        elif comp == '>=':
-            cond = actor.var[attr] >= val
-        elif comp == '!=':
-            cond = actor.var[attr] != val
-        ConditionalAction.__init__(self, actor, action, cond)
+class ifAttribute(SubAction):
+    def __init__(self,variable,comparator='==',value=True,ifActions = [],elseActions = []):
+        self.variable = variable
+        self.comparator = comparator
+        self.value = value
         self.ifActions = ifActions
         self.elseActions = elseActions
+        
+    def execute(self, action, actor):
+        variable = actor.var[self.variable]
+        if self.comparator == '==':
+            cond = variable == self.value
+        elif self.comparator == '<':
+            cond = variable < self.value
+        elif self.comparator == '<=':
+            cond = variable <= self.value
+        elif self.comparator == '>':
+            cond = variable > self.value
+        elif self.comparator == '>=':
+            cond = variable >= self.value
+        elif self.comparator == '!=':
+            cond = variable != self.value
+            
+        if cond:
+            for act in self.ifActions:
+                act.execute(action,actor)
+        else:
+            for act in self.elseActions:
+                act.execute(action,actor)
+    
+    @staticmethod
+    def buildFromXml(node):
+        variable = node.attrib['var']
+        #print(variable)
+        
+        cond = node.find('cond').text if node.find('cond') is not None else '=='
+        #print(cond)
+        
+        value = node.find('value')
+        if value is not None:
+            if value.attrib.get('type') == 'int':
+                value = int(value.text)
+            elif value.attrib.get('type') == 'float':
+                value = float(value.text)
+            elif value.attrib.get('type') == 'bool':
+                value = value.text == 'True'
+        #print(value)
+        
+        ifActions = []
+        for ifact in node.find('compare'):
+            if subActionDict.has_key(ifact.tag): #Subactions string to class dict
+                ifActions.append(subActionDict[ifact.tag].buildFromXml(ifact))
+        #print(ifActions)
+        
+        elseActions = []
+        if node.find('else') is not None:
+            for elseact in node.find('else'):
+                if subActionDict.has_key(elseact.tag): #Subactions string to class dict
+                    elseActions.append(subActionDict[elseact.tag].buildFromXml(elseact))
+        #print(elseActions)
+        
+        return ifAttribute(variable, cond, value, ifActions, elseActions)
 
+class ifButton(SubAction):
+    def __init__(self,button,held,bufferTime=0,ifActions = [],elseActions = []):
+        self.button = button
+        self.held = held
+        self.bufferTime = bufferTime
+        self.ifActions = ifActions
+        self.elseActions = elseActions
+        
+    def execute(self, action, actor):
+        if self.held:
+            cond = self.button in actor.keysHeld
+        else:
+            cond = actor.keyBuffered(self.button, self.bufferTime)
+        if cond:
+            for act in self.ifActions:
+                act.execute(action,actor)
+        else:
+            for act in self.elseActions:
+                act.execute(action,actor)
+    
+    @staticmethod
+    def buildFromXml(node):
+        button = node.find('button').text
+        if node.find('button').attrib.has_key('held'): held = True
+        else: held = False
+        bufferTime = loadNodeWithDefault(node, 'buffer', 1)
+        ifActions = []
+        for ifact in node.find('if'):
+            if subActionDict.has_key(ifact.tag): #Subactions string to class dict
+                ifActions.append(subActionDict[ifact.tag].buildFromXml(ifact))
+        #print(ifActions)
+        
+        elseActions = []
+        if node.find('else') is not None:
+            for elseact in node.find('else'):
+                if subActionDict.has_key(elseact.tag): #Subactions string to class dict
+                    elseActions.append(subActionDict[elseact.tag].buildFromXml(elseact))
+        #print(elseActions)
+        
+        return ifButton(button, held, bufferTime, ifActions, elseActions)
+    
 class ifVar(SubAction):
     def __init__(self,variable,comparator='==',value=True,ifActions = [],elseActions = []):
         self.variable = variable
@@ -173,19 +284,32 @@ class changeFighterPreferredSpeed(SubAction):
         
     def execute(self, action, actor):
         if self.pref_x is not None:
+            if type(self.pref_x) is tuple:
+                owner,value = self.pref_x
+                if owner == 'actor':
+                    self.pref_x = actor.var[value]
+                elif owner == 'action':
+                    self.pref_x = getattr(self, value)
             if self.xRelative: actor.preferred_xspeed = self.pref_x*actor.facing
             else: actor.preferred_xspeed = self.pref_x
+            
         if self.pref_y is not None:
+            if type(self.pref_y) is tuple:
+                owner,value = self.pref_y
+                if owner == 'actor':
+                    self.pref_y = actor.var[value]
+                elif owner == 'action':
+                    self.pref_y = getattr(self, value)
             actor.preferred_yspeed = self.pref_y
         
     @staticmethod
     def buildFromXml(node):
         xRelative = False
-        speed_x = int(node.find('xSpeed').text) if node.find('xSpeed') is not None else None
+        speed_x = loadValueOrVariable(node, 'xSpeed', 'int', None)
         if speed_x and node.find('xSpeed').attrib.has_key("relative"): xRelative = True
-        speed_y = int(node.find('ySpeed').text) if node.find('ySpeed') is not None else None
+        speed_y = loadValueOrVariable(node, 'ySpeed', 'int', None)
         return changeFighterPreferredSpeed(speed_x,speed_y,xRelative)
-    
+        
 # ChangeFighterSpeed changes the speed directly, with no acceleration/deceleration.
 class changeFighterSpeed(SubAction):
     def __init__(self,speed_x = None, speed_y = None, xRelative = False):
@@ -196,17 +320,31 @@ class changeFighterSpeed(SubAction):
         
     def execute(self, action, actor):
         if self.speed_x is not None:
+            if type(self.speed_x) is tuple:
+                owner,value = self.speed_x
+                if owner == 'actor':
+                    self.speed_x = actor.var[value]
+                elif owner == 'action':
+                    self.speed_x = getattr(self, value)
             if self.xRelative: actor.change_x = self.speed_x*actor.facing
             else: actor.change_x = self.speed_x
+        
         if self.speed_y is not None:
+            if type(self.speed_y) is tuple:
+                owner,value = self.speed_y
+                if owner == 'actor':
+                    self.speed_y = actor.var[value]
+                elif owner == 'action':
+                    self.speed_y = getattr(self, value)
+            
             actor.change_y = self.speed_y
 
     @staticmethod
     def buildFromXml(node):
         xRelative = False
-        speed_x = int(node.find('xSpeed').text) if node.find('xSpeed') is not None else None
+        speed_x = loadValueOrVariable(node, 'xSpeed', 'int', None)
         if speed_x and node.find('xSpeed').attrib.has_key("relative"): xRelative = True
-        speed_y = int(node.find('ySpeed').text) if node.find('ySpeed') is not None else None
+        speed_y = loadValueOrVariable(node, 'ySpeed', 'int', None)
         return changeFighterSpeed(speed_x,speed_y,xRelative)
 
 # ApplyForceVector is usually called when launched, but can be used as an alternative to setting speed. This one
@@ -278,16 +416,18 @@ class modifyActionVar(SubAction):
                    
 # Change the frame of the action to a value.
 class changeActionFrame(SubAction):
-    def __init__(self,newFrame):
+    def __init__(self,newFrame,relative=False):
         SubAction.__init__(self)
         self.frame = newFrame
-    
+        self.relative = relative
+        
     def execute(self, action, actor):
-        action.frame = self.frame
+        if self.relative: action.frame += self.frame
+        else: action.frame = self.frame
         
     @staticmethod
     def buildFromXml(node):
-        return changeActionFrame(int(node.text))
+        return changeActionFrame(int(node.text),node.attrib.has_key('relative'))
         
 # Go to the next frame in the action
 class nextFrame(SubAction):
@@ -611,7 +751,20 @@ class deactivateArticle(SubAction):
     @staticmethod
     def buildFromXml(node):
         return deactivateArticle(node.text)
-    
+
+class doAction(SubAction):
+    def __init__(self,action):
+        SubAction.__init__(self)
+        self.action = action
+        
+    def execute(self, action, actor):
+        print('changing action: ',self.action)
+        actor.doAction(self.action)
+        
+    @staticmethod
+    def buildFromXml(node):
+        return doAction(node.text)
+        
 class debugAction(SubAction):
     def __init__(self,statement):
         SubAction.__init__(self)
@@ -632,7 +785,9 @@ subActionDict = {
                  'changeFighterPreferredSpeed': changeFighterPreferredSpeed,
                  'setFrame': changeActionFrame,
                  'nextFrame': nextFrame,
+                 'ifAttribute': ifAttribute,
                  'ifVar': ifVar,
+                 'ifButton': ifButton,
                  'modifyHurtbox': modifyHurtBox,
                  'changeECB': changeECB,
                  'createHitbox': createHitbox,
@@ -646,5 +801,6 @@ subActionDict = {
                  'deactivateArticle': deactivateArticle,
                  'transitionState': transitionState,
                  'updateLandingLag': updateLandingLag,
+                 'doAction': doAction,
                  'print': debugAction
                  }
