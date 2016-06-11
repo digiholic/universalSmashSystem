@@ -4,20 +4,132 @@ import math
 import settingsManager
 import spriteManager
 import engine.article as article
-import hitbox
-import math
+import engine.hitbox as hitbox
 import weakref
-import pprint
+import xml.etree.ElementTree as ElementTree
+import os
+import actionLoader
 
 class AbstractFighter():
-    
-    def __init__(self,playerNum,sprite,name,var):
-        self.name = name
-        self.var = var
+    def __init__(self,baseDir,playerNum):
         self.playerNum = playerNum
-        self.franchise_icon = spriteManager.ImageSprite(settingsManager.createPath("sprites/default_franchise_icon.png"))
-        self.article_path = ''
         
+        """
+        Load the fighter variables from fighter.xml
+        """
+        directory = os.path.join(baseDir,'sprites')
+        prefix = ''
+        defaultSprite = 'idle'
+        imgwidth = '64'
+        print('base',baseDir)
+        try:
+            self.xmlData = ElementTree.parse(os.path.join(baseDir,'fighter.xml')).getroot()
+        except:
+            self.xmlData = ElementTree.ElementTree()
+            
+        try:
+            self.name = self.xmlData.find('name').text
+        except:
+            self.name = 'Unknown'
+        
+        try:
+            franchise_icon_path = os.path.join(baseDir,self.xmlData.find('icon').text)
+        except:
+            franchise_icon_path = settingsManager.createPath('sprites/default_franchise_icon.png')
+        self.franchise_icon = spriteManager.ImageSprite(franchise_icon_path)
+        
+        try:
+            css_icon_path = os.path.join(baseDir,self.xmlData.find('css_icon').text)
+        except:
+            css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
+        self.css_icon = spriteManager.ImageSprite(css_icon_path)
+        
+        try:
+            scale = float(self.xmlData.find('scale').text)
+        except:
+            scale = 1.0
+        
+        self.var = {
+                'weight': 100,
+                'gravity': .5,
+                'maxFallSpeed': 20,
+                'maxGroundSpeed': 6,
+                'runSpeed': 9,
+                'maxAirSpeed': 6,
+                'crawlSpeed': 3,
+                'dodgeSpeed': 10,
+                'friction': 0.2,
+                'staticGrip': 0.1,
+                'airControl': 0.6,
+                'jumps': 1,
+                'jumpHeight': 12.5,
+                'shortHopHeight': 8.5,
+                'airJumpHeight': 15,
+                'heavyLandLag': 4,
+                'fastfallMultiplier': 2,
+                'hitstunElasticity': .8
+                }
+        
+        try:
+            for stat in self.xmlData.find('stats'):
+                self.var[stat.tag] = float(stat.text)
+        except:
+            pass
+        
+        try:
+            self.article_path = os.path.join(baseDir,self.xmlData.find('article_path').text)
+        except:
+            self.article_path = baseDir
+        
+        #self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),'articles.py',suffix=str(playerNum))
+        try:
+            self.articleLoader = settingsManager.importFromURI(os.path.join(baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(playerNum))
+        except:
+            self.articleLoader = None
+            
+        try:
+            directory = os.path.join(baseDir,self.xmlData.find('sprite_directory').text)
+            prefix = self.xmlData.find('sprite_prefix').text
+            defaultSprite = self.xmlData.find('default_sprite').text
+            imgwidth = int(self.xmlData.find('sprite_width').text)
+        except:
+            directory = os.path.join(baseDir,'sprites')
+            prefix = ''
+            defaultSprite = 'idle'
+            imgwidth = 64
+        
+        self.colorPalettes = []
+        try:
+            for colorPalette in self.xmlData.findall('colorPalette'):
+                colorDict = {}
+                for colorMap in colorPalette.findall('colorMap'):
+                    fromColor = pygame.Color(colorMap.attrib['fromColor'])
+                    toColor = pygame.Color(colorMap.attrib['toColor'])
+                    colorDict[(fromColor.r, fromColor.g, fromColor.b)] = (toColor.r, toColor.g, toColor.b)
+                
+                self.colorPalettes.append(colorDict)
+        except:
+            while len(self.colorPalettes) < 4:
+                self.colorPalettes.append({})
+        
+        color = self.colorPalettes[self.playerNum] #TODO: Pick colors
+        
+        self.sprite = spriteManager.SpriteHandler(directory,prefix,defaultSprite,imgwidth,color,scale)
+        
+        
+        #try:
+        try:
+            actions = self.xmlData.find('actions').text
+            if actions.endswith('.py'):
+                self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),actions,suffix=str(playerNum))
+            else:
+                self.actions = actionLoader.ActionLoader(baseDir,actions)
+        except:
+            self.actions = baseActions
+        #except:
+        #    print('unable to load actions. Loading base')
+        #    self.actions = settingsManager.importFromURI(settingsManager.createPath(''),'engine/baseActions.py',suffix=str(playerNum))
+          
         # Super armor variables
         # Set with attacks to make them super armored
         # Remember to set them back at some point
@@ -41,6 +153,8 @@ class AbstractFighter():
         self.hitTagged = None
         
         #Initialize engine variables
+        
+        # Connect the keyBindings object to the fighter and flush any residual inputs
         self.keyBindings = settingsManager.getControls(playerNum)
         self.keyBindings.loadFighter(self)
         self.keyBindings.flushInputs()
@@ -48,7 +162,6 @@ class AbstractFighter():
         self.inputBuffer = InputBuffer()
         self.keysHeld = dict()
         
-        self.sprite = sprite
         self.mask = None
         self.ecb = ECB(self)
         
@@ -72,7 +185,12 @@ class AbstractFighter():
         self.ledgeLock = False
         
         #initialize the action
-        self.current_action = None
+        if hasattr(self.actions,'loadAction'):
+            self.current_action = self.actions.loadAction('NeutralAction')
+        elif hasattr(self.actions, 'NeutralAction'):
+            class_ = getattr(self.actions,'NeutralAction')
+            self.current_action = class_()
+            
         self.hurtbox = hitbox.Hurtbox(self,self.sprite.boundingRect,[255,255,0])
         
         #state variables and flags
@@ -83,6 +201,7 @@ class AbstractFighter():
         self.damage = 0
         self.landingLag = 6
         self.platformPhase = 0
+        self.techWindow = 0
         
         self.change_x = 0
         self.change_y = 0
@@ -95,7 +214,7 @@ class AbstractFighter():
         #list of all of the other things to worry about
         self.gameState = None
         self.players = None
-        
+    
     def update(self):
         self.ecb.normalize()
         #Step one, push the input buffer
@@ -155,6 +274,15 @@ class AbstractFighter():
             ledges = pygame.sprite.spritecollide(self, self.gameState.platform_ledges, False)
             if len(ledges) == 0: # If we've cleared out of all of the ledges
                 self.ledgeLock = False
+        
+        # Count down the tech window
+        if self.techWindow > 0:
+            if self.grounded:
+                (direct,_) = self.getDirectionMagnitude()
+                print('Ground tech!')
+                self.unRotate()
+                self.doTrip(-175, direct) #TODO fix this trip call
+            self.techWindow -= 1
                 
         # We set the hurbox to be the Bounding Rect of the sprite.
         # It is done here, so that the hurtbox can be changed by the action.
@@ -311,142 +439,176 @@ class AbstractFighter():
         newAction.setUp(self)
         self.current_action.tearDown(self,newAction)
         self.current_action = newAction
-        
-    def doIdle(self):
-        self.changeAction(baseActions.NeutralAction())
-
-    def doCrouch(self):
-        self.changeAction(baseActions.Crouch())
-
-    def doCrouchGetup(self):
-        self.changeAction(baseActions.CrouchGetup())
-        
+    
+    def doAction(self,actionName):
+        if hasattr(self.actions,'loadAction'):
+            action = self.actions.loadAction(actionName)
+            if action.lastFrame > 0: self.changeAction(action)
+        elif hasattr(self.actions, actionName):
+            class_ = getattr(self.actions,actionName)
+            action = class_()
+            if action.lastFrame > 0: self.changeAction(action)
+            
+    def hasAction(self,actionName):
+        if hasattr(self.actions,'hasAction'):
+            return self.actions.hasAction(actionName)
+        else: return hasattr(self.actions, actionName)
+            
+    def loadArticle(self,articleName):
+        if hasattr(self.articleLoader, 'loadArticle'):
+            return self.articleLoader.loadArticle(articleName,self)
+        elif hasattr(self.articleLoader, articleName):
+            class_ = getattr(self.articleLoader, articleName)
+            return(class_(self)) 
+                            
     def doGroundMove(self,direction):
-        self.changeAction(baseActions.Move())
-
+        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
+            self.flip()
+        self.doAction('Move')
+        
     def doDash(self,direction):
-        self.changeAction(baseActions.Dash())
-
+        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
+            self.flip()
+        self.doAction('Dash')
+        
     def doRun(self,direction):
-        self.changeAction(baseActions.Run())
-    
-    def doPivot(self):
-        self.changeAction(baseActions.Pivot())
-    
-    def doStop(self):
-        self.changeAction(baseActions.NeutralAction())
-    
-    def doLand(self):
-        self.changeAction(baseActions.Land())
-
-    def doHelplessLand(self):
-        self.changeAction(baseActions.HelplessLand())
-    
-    def doFall(self):
-        self.changeAction(baseActions.Fall())
-
-    def doHelpless(self):
-        self.changeAction(baseActions.Helpless())
-    
-    def doPlatformDrop(self):
-        self.changeAction(baseActions.PlatformDrop())
-    
-    def doAirJump(self):
-        self.changeAction(baseActions.AirJump())
-
-    def doHitStun(self,hitstun,direction):
-        self.changeAction(baseActions.HitStun(hitstun,direction))
-
-    def doTryTech(self, hitstun, direction):
-        self.changeAction(baseActions.TryTech(hitstun, direction))
-
-    def doTrip(self, length, direction):
-        self.changeAction(baseActions.Trip(length, direction))
-
-    def doGetup(self, direction, length):
-        self.changeAction(baseActions.Getup(direction, length))
-    
+        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
+            self.flip()
+        self.doAction('Run')
+        
+        
+    def doThrow(self):
+        (key, invkey) = self.getForwardBackwardKeys()
+        if self.keysContain(key):
+            self.doAction('ForwardThrow')
+        elif self.keysContain(invkey):
+            self.doAction('BackThrow')
+        elif self.keysContain('down'):
+            self.doAction('DownThrow')
+        elif self.keysContain('up'):
+            self.doAction('UpThrow')
+        else: # How did we get here? 
+            self.doAction('ForwardThrow')
+        
     def doGroundAttack(self):
-        return None
-
-    def doDashAttack(self):
-        return None
+        (key, invkey) = self.getForwardBackwardKeys()
+        if self.keysContain(key):
+            self.doAction('ForwardSmash') if self.checkSmash(key) else self.doAction('ForwardAttack') 
+        elif self.keysContain(invkey):
+            self.flip()
+            self.doAction('ForwardSmash') if self.checkSmash(invkey) else self.doAction('ForwardAttack')
+        elif self.keysContain('down'):
+            self.doAction('DownSmash') if self.checkSmash('down') else self.doAction('DownAttack')
+        elif self.keysContain('up'):
+            self.doAction('UpSmash') if self.checkSmash('up') else self.doAction('UpAttack')
+        else:
+            self.doAction('NeutralAttack')
     
     def doAirAttack(self):
-        return None
+        (forward, backward) = self.getForwardBackwardKeys()
+        if (self.keysContain(forward)):
+            self.doAction('ForwardAir')
+        elif (self.keysContain(backward)):
+            self.doAction('BackAir')
+        elif (self.keysContain('down')):
+            self.doAction('DownAir')
+        elif(self.keysContain('up')):
+            self.doAction('UpAir')
+        else: self.doAction('NeutralAir')
+    
+    def doGroundSpecial(self):
+        (forward, backward) = self.getForwardBackwardKeys()
+        if self.keysContain(forward):
+            if self.hasAction('ForwardSpecial'): #If there's a ground/air version, do it
+                self.doAction('ForwardSpecial')
+            else: #If there is not a universal one, do a ground one
+                self.doAction('ForwardGroundSpecial')
+        elif self.keysContain(backward):
+            self.flip()
+            if self.hasAction('ForwardSpecial'):
+                self.doAction('ForwardSpecial')
+            else:
+                self.doAction('ForwardGroundSpecial')
+        elif (self.keysContain('down')):
+            if self.hasAction('DownSpecial'):
+                self.doAction('DownSpecial')
+            else:
+                self.doAction('DownGroundSpecial')
+        elif (self.keysContain('up')):
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
+            else:
+                self.doAction('UpGroundSpecial')
+        else: 
+            if self.hasAction('NeutralSpecial'):
+                self.doAction('NeutralSpecial')
+            else:
+                self.doAction('NeutralGroundSpecial')
+                
+    def doAirSpecial(self):
+        (forward, backward) = self.getForwardBackwardKeys()
+        if self.keysContain(forward):
+            if self.hasAction('ForwardSpecial'): #If there's a ground/air version, do it
+                self.doAction('ForwardSpecial')
+            else: #If there is not a universal one, do an air one
+                self.doAction('ForwardAirSpecial')
+        elif self.keysContain(backward):
+            self.flip()
+            if self.hasAction('ForwardSpecial'):
+                self.doAction('ForwardSpecial')
+            else:
+                self.doAction('ForwardAirSpecial')
+        elif (self.keysContain('down')):
+            if self.hasAction('DownSpecial'):
+                self.doAction('DownSpecial')
+            else:
+                self.doAction('DownAirSpecial')
+        elif (self.keysContain('up')):
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
+            else:
+                self.doAction('UpAirSpecial')
+        else: 
+            if self.hasAction('NeutralSpecial'):
+                self.doAction('NeutralSpecial')
+            else:
+                self.doAction('NeutralAirSpecial')
+    
+    def doHitStun(self,hitstun,trajectory,hitstop):
+        self.doAction('HitStun')
+        self.current_action.hitstop = hitstop
+        self.current_action.direction = trajectory
+        self.current_action.lastFrame = hitstun
+        
+    def doTrip(self, length, direction):
+        self.doAction('Trip')
+        self.current_action.lastFrame = length
+        self.current_action.direction = direction
 
-    def doGetupAttack(self):
-        return None
-
-    def doGroundGrab(self):
-        return None
-
-    def doDashGrab(self):
-        return None
-
-    def doGrabbing(self):
-        self.changeAction(baseActions.Grabbing())
-
-    def doAirGrab(self):
-        return None
-
-    def doTrapped(self, length):
-        self.changeAction(baseActions.Trapped(length))
-
-    def doStunned(self, length):
-        self.changeAction(baseActions.Stunned(length))
-
-    def doGrabbed(self, height):
-        self.changeAction(baseActions.Grabbed(height))
-
-    def doRelease(self):
-        self.changeAction(baseActions.Release())
-
-    def doReleased(self):
-        self.changeAction(baseActions.Released())
-
-    def doPummel(self):
-        return None
-
-    def doThrow(self):
-        return None
-   
     def doShield(self, newShield=True):
-        self.changeAction(baseActions.Shield(newShield))
+        self.doAction('Shield')
+        self.current_action.newShield = newShield
 
     def doShieldStun(self, length):
-        self.changeAction(baseActions.ShieldStun(length))
-        
-    def doForwardRoll(self):
-        self.changeAction(baseActions.ForwardRoll())
-    
-    def doBackwardRoll(self):
-        self.changeAction(baseActions.BackwardRoll())
-        
-    def doSpotDodge(self):
-        self.changeAction(baseActions.SpotDodge())
-        
-    def doAirDodge(self):
-        self.changeAction(baseActions.AirDodge())
-
-    def doTechDodge(self):
-        self.changeAction(baseActions.TechDodge())
-        
+        self.doAction('ShieldStun')
+        self.current_action.lastFrame = length
+             
     def doLedgeGrab(self,ledge):
-        self.changeAction(baseActions.LedgeGrab(ledge))
-        
-    def doLedgeGetup(self):
-        return None
+        self.doAction('LedgeGrab')
+        self.current_action.ledge = ledge
 
-    def doLedgeAttack(self):
-        return None
+    def doTrapped(self, length):
+        self.doAction('Trapped')
+        self.current_action.lastFrame = length
 
-    def doLedgeRoll(self):
-        return None
-        
-    def doGetTrumped(self):
-        print("trumped")
-        
+    def doStunned(self, length):
+        self.doAction('Stunned')
+        self.current_action.lastFrame = length
+
+    def doGrabbed(self, height):
+        self.doAction('Grabbed')
+        self.current_action.height = height
+    
 ########################################################
 #                  STATE CHANGERS                      #
 ########################################################
@@ -596,10 +758,11 @@ class AbstractFighter():
         
     def changeSprite(self,newSprite,frame=0):
         self.sprite.changeImage(newSprite)
+        self.current_action.spriteName = newSprite
         if frame != 0: self.sprite.changeSubImage(frame)
         
-    def changeSpriteImage(self,frame):
-        self.sprite.changeSubImage(frame)
+    def changeSpriteImage(self,frame,loop=False):
+        self.sprite.changeSubImage(frame,loop)
     
     """
     This will "lock" the hitbox so that another hitbox with the same ID from the same fighter won't hit again.
@@ -635,6 +798,11 @@ class AbstractFighter():
             self.invincible = 20
             self.doStunned(200)
     
+    def updateLandingLag(self,lag,reset=False):
+        if reset: self.landingLag = lag
+        else:
+            if lag > self.landingLag: self.landingLag = lag
+            
 ########################################################
 #                 ENGINE FUNCTIONS                     #
 ########################################################

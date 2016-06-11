@@ -7,6 +7,7 @@ import battle
 import sys
 import stages.true_arena as stage
 import engine.cpuPlayer as cpuPlayer
+import engine.abstractFighter as abstractFighter
 import sss
     
 import musicManager
@@ -83,9 +84,9 @@ class CSSScreen():
     
     def getFightersFromPanels(self):
         fighterList = []
-        for num,panel in enumerate(self.playerPanels):
+        for panel in self.playerPanels:
             if panel.active:
-                fighterList.append(panel.chosenFighter.getFighter(num,num))
+                fighterList.append(panel.chosenFighter)
         return fighterList
     
 class CSSWidget():
@@ -104,7 +105,7 @@ class CSSWidget():
         pass
        
 class FighterWheel():
-    def __init__(self):
+    def __init__(self,playerNum):
         self.fighters = []
         
         # Load all files.
@@ -113,8 +114,12 @@ class FighterWheel():
         for subdir in next(os.walk(directory))[1]:
             if(subdir == '__pycache__'):
                 continue
-            fighter = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"fighter.py"),suffix=str(fightercount))
-            print(fighter)
+            fighterpy = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"fighter.py"),suffix=str(fightercount))
+            #try:
+            if fighterpy:
+                fighter = fighterpy.getFighter(os.path.join(directory,subdir),playerNum)
+            else:
+                fighter = abstractFighter.AbstractFighter(os.path.join(directory,subdir),playerNum)
             if (fighter == None):
                 print("No fighter found at " + os.path.join(directory,subdir,"fighter.py"))
             else:
@@ -137,10 +142,10 @@ class FighterWheel():
         return self.fighters[(self.currentIndex + offset) % len(self.fighters)]
     
     def animateWheel(self):
-        self.visibleSprites[0] = self.getFighterPortrait(self.fighterAt(0))
+        self.visibleSprites[0] = self.fighterAt(0).css_icon
         for i in range(1,(self.wheelSize//2)+1):
-            self.visibleSprites[2*i-1] = self.getFighterPortrait(self.fighterAt(i))
-            self.visibleSprites[2*i] = self.getFighterPortrait(self.fighterAt(-1 * i))
+            self.visibleSprites[2*i-1] = self.fighterAt(i).css_icon
+            self.visibleSprites[2*i] = self.fighterAt(-1 * i).css_icon
                         
         [spriteManager.ImageSprite.alpha(sprite, 128) for sprite in self.visibleSprites]
         self.visibleSprites[0].alpha(255)
@@ -156,12 +161,6 @@ class FighterWheel():
         blankImage.blit(self.wheelShadow.image,[0,0])
         screen.blit(blankImage, location)
                      
-    def getFighterPortrait(self,fighter):
-        portrait = fighter.cssIcon()
-        if portrait == None:
-            portrait = spriteManager.ImageSprite(settingsManager.createPath(os.path.join("sprites","icon_unknown.png")))
-        return portrait
-
 class PlayerPanel(pygame.Surface):
     def __init__(self,playerNum):
         pygame.Surface.__init__(self,(settingsManager.getSetting('windowWidth')//2,
@@ -169,7 +168,7 @@ class PlayerPanel(pygame.Surface):
         
         self.keys = settingsManager.getControls(playerNum)
         self.playerNum = playerNum
-        self.wheel = FighterWheel()
+        self.wheel = FighterWheel(playerNum)
         self.active = False
         self.activeObject = self.wheel
         self.chosenFighter = None

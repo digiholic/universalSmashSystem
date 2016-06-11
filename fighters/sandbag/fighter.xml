@@ -1,0 +1,49 @@
+<fighter>
+	<name>Sandbag</name>
+	<icon>franchise_icon.png</icon>
+	<css_icon>sprites/icon_sandbag.png</css_icon>
+	<css_portrait></css_portrait>
+	
+	<sprite_directory>sprites/</sprite_directory>
+	<sprite_prefix>sandbag_</sprite_prefix>
+	<sprite_width>128</sprite_width>
+	<default_sprite>idle</default_sprite>
+	<article_path>sprites/</article_path>
+	
+	<actions>sandbag_actions.py</actions>
+	
+	<colorPalette id='0' displayColor='#000000'>
+		
+	</colorPalette>
+	
+	<colorPalette id='1' displayColor='#000000'>
+		
+	</colorPalette>
+	
+	<colorPalette id='2' displayColor='#000000'>
+		
+	</colorPalette>
+	
+	<colorPalette id='3' displayColor='#000000'>
+		
+	</colorPalette>
+	<stats>
+		<weight>200</weight>
+		<gravity>1.0</gravity>
+		<maxFallSpeed>20</maxFallSpeed>
+		<runSpeed>5</runSpeed>
+		<maxAirSpeed>4</maxAirSpeed>
+		<crawlSpeed>0</crawlSpeed>
+		<dodgeSpeed>10</dodgeSpeed>
+		<friction>1.0</friction>
+		<staticGrip>1.0</staticGrip>
+		<airControl>0.2</airControl>
+		<jumps>1</jumps>
+		<jumpHeight>8</jumpHeight>
+		<shortHopHeight>4</shortHopHeight>
+		<airJumpHeight>10</airJumpHeight>
+		<heavyLandLag>4</heavyLandLag>
+		<fastfallMultiplier>2</fastfallMultiplier>
+		<hitstunElasticity>.8</hitstunElasticity>
+	</stats>
+</fighter>

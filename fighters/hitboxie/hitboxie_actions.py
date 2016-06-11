@@ -6,77 +6,27 @@ import engine.abstractFighter as abstractFighter
 import math
 import pygame
 
-class SplatArticle(article.AnimatedArticle):
-    def __init__(self, owner, origin, direction):
-        article.AnimatedArticle.__init__(self, owner.article_path+'/hitboxie_projectile.png', owner, origin, imageWidth=16,length=120)
-        self.direction = direction
-        self.change_x = self.direction*24
-        self.change_y = 0
-        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 3, 0, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)
-        self.hitbox.article = self
-        self.tags = ['reflectable']
-
-    # Override the onCollision of the hitbox
-    def onCollision(self, other):
-        othersClasses = list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]
-        if ('AbstractFighter' in othersClasses or 'Platform' in othersClasses):
-            self.hitbox.kill()
-            self.kill()
-        #TODO check for verticality of platform landing
-            
-    def update(self):
-        self.rect.x += self.change_x
-        self.rect.y += self.change_y
-        self.change_y += 0.5
-        self.hitbox.rect.center = self.rect.center #update adjusts to the actor
-        self.hitbox.owner = self.owner
-        self.frame += 1
-            
-        if self.frame > 120:
-            self.kill()
-            self.hitbox.kill()
-
-    def draw(self, screen, offset, zoom):
-        # This is all the same as the base Draw method. We're overriding because we need to put some code in the middle of it.
-        h = int(round(self.rect.height * zoom))
-        w = int(round(self.rect.width * zoom))
-        newOff = (int(offset[0] * zoom), int(offset[1] * zoom))
-        
-        screenRect = pygame.Rect(newOff,(w,h)) # Store the rect that it will draw
-        angle = -math.atan2(self.change_y, self.change_x)*180.0/math.pi
-        blitSprite = pygame.transform.rotate(self.image, angle) # Rotate
-        
-        screen.blit(blitSprite,screenRect)
-
 class NeutralGroundSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self,36)
                 
     def setUp(self, actor):
-        self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (24 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
+        self.projectile = actor.loadArticle('SplatArticle')
         actor.preferred_xspeed = 0
         actor.changeSprite("nspecial",0)
         
-    def tearDown(self, actor, new):
-        pass
-    
-    def stateTransitions(self, actor):
-        pass
-               
     def update(self, actor):
         if self.frame <= 14:
             actor.changeSpriteImage(self.frame//2)
         elif self.frame > 24 and self.frame <= 36:
             actor.changeSpriteImage((self.frame+4)//4)
         if self.frame == 12:
-            self.projectile.rect.center = (actor.sprite.boundingRect.centerx + (24 * actor.facing),actor.sprite.boundingRect.centery-8)
-            actor.articles.add(self.projectile)
-            actor.active_hitboxes.add(self.projectile.hitbox)
-        if self.frame == 20:
+            self.projectile.activate()
+        if self.frame == 26:
             if actor.keysContain('special'):
                 actor.changeAction(NeutralGroundSpecial())
         if self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 class NeutralAirSpecial(action.Action):
@@ -84,7 +34,7 @@ class NeutralAirSpecial(action.Action):
         action.Action.__init__(self,36)
                 
     def setUp(self, actor):
-        self.projectile = SplatArticle(actor,(actor.sprite.boundingRect.centerx + (24 * actor.facing), actor.sprite.boundingRect.centery), actor.facing)
+        self.projectile = actor.loadArticle('SplatArticle')
         actor.changeSprite("nspecial",0)
 
     def stateTransitions(self, actor):
@@ -109,7 +59,7 @@ class NeutralAirSpecial(action.Action):
                 actor.changeAction(NeutralAirSpecial())
         if self.frame == self.lastFrame:
             actor.landingLag = 11
-            actor.doFall()
+            actor.doAction('Fall')
         self.frame += 1
 
 class ForwardSpecial(action.Action):
@@ -131,7 +81,7 @@ class ForwardSpecial(action.Action):
     
     def onClank(self,actor):
         actor.landingLag = 30
-        actor.doFall()
+        actor.doAction('Fall')
     
     class sideSpecialHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
@@ -217,38 +167,19 @@ class ForwardSpecial(action.Action):
             if self.frame >= self.lastFrame:
                 if actor.grounded:
                     actor.landingLag = 30
-                    actor.doLand()
+                    actor.doAction('Land')
                 else:
                     actor.landingLag = 30
-                    actor.doFall()
+                    actor.doAction('Fall')
 
         self.frame += 1
-
-class ShineArticle(article.AnimatedArticle):
-    def __init__(self, owner):
-        article.AnimatedArticle.__init__(self, owner.article_path+'/hitboxie_shine.png', owner, [0,0], imageWidth=92,length=8)
-            
-    def update(self):
-        self.rect.center = self.owner.sprite.boundingRect.center
-        if self.frame == 0:
-            self.getImageAtIndex(0)
-        elif self.frame == 2:
-            self.getImageAtIndex(1)
-        elif self.frame == 4:
-            self.getImageAtIndex(2)
-        elif self.frame == 6:
-            self.getImageAtIndex(3)
-        if self.frame == self.lastFrame:
-            self.frame = 2
-        else:
-            self.frame += 1
             
 class DownSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self, 32)
     
     def setUp(self, actor):
-        self.article = ShineArticle(actor)
+        self.article = actor.loadArticle('ShineArticle')
         self.damageHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 4, 9, 0.1, 330, 1.5, hitbox.HitboxLock(), 1, 1, 2)
         self.reflectorHitbox = hitbox.ReflectorHitbox([0,0], [92,92], actor, hitbox.HitboxLock(), 1.3, 1.1, 100, 90)
         return action.Action.setUp(self, actor)           
@@ -269,8 +200,6 @@ class DownSpecial(action.Action):
         self.reflectorHitbox.update()
         if self.frame == 0:
             actor.change_y = 0
-            if actor.change_y > 2:
-                actor.change_y = 2
             actor.preferred_yspeed = 2
             actor.changeSprite('getup',12)
             actor.articles.add(self.article)
@@ -290,7 +219,7 @@ class DownSpecial(action.Action):
             self.reflectorHitbox.kill()
             actor.mask = None
         elif self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
         return action.Action.update(self, actor)
     
@@ -300,18 +229,20 @@ class UpSpecial(action.Action):
         self.angle = 90
         
     def setUp(self, actor):
+        action.Action.setUp(self,actor)
         sharedLock = hitbox.HitboxLock()
         self.launchHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 14, 12, 0.1, 90, 1.5, sharedLock)
         self.flyingHitbox = hitbox.DamageHitbox([0,0],[64,64], actor, 8, 10, 0.05, 90, 1, sharedLock)
-        actor.changeSprite('dtilt',4)
-        return action.Action.setUp(self,actor)
+        actor.changeSprite('dtilt')
+        actor.changeSpriteImage(4)
+        
         
     def tearDown(self, actor, newAction):
+        action.Action.tearDown(self,actor,newAction)
         self.launchHitbox.kill()
         self.flyingHitbox.kill()
         actor.unRotate()
         actor.preferred_yspeed = actor.var['maxFallSpeed']
-        return action.Action.tearDown(self,actor,newAction)
     
     def stateTransitions(self,actor):
         if self.frame < 19:
@@ -361,10 +292,10 @@ class UpSpecial(action.Action):
             self.flyingHitbox.kill()
         if self.frame > 20:
             if self.frame % 2 == 0:
-                actor.changeSpriteImage((self.frame - 15) // 2)
+                actor.changeSpriteImage((self.frame - 15) // 2,loop=True)
             self.flyingHitbox.update()
         if self.frame == self.lastFrame:
-            actor.doHelpless()
+            actor.doAction('Helpless')
         self.frame += 1
         
 class NeutralAttack(action.Action):
@@ -380,11 +311,11 @@ class NeutralAttack(action.Action):
         self.jabHitbox.kill()
 
     def onClank(self,actor):
-        actor.doIdle()
+        actor.doAction('NeutralAction')
     
     def stateTransitions(self, actor):
         if not actor.grounded:
-            actor.doFall()
+            actor.doAction('Fall')
         elif self.frame == self.lastFrame:
             if actor.keysContain('attack') and not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('up') and not actor.keysContain('down'):
                 self.jabHitbox.hitbox_lock = hitbox.HitboxLock()
@@ -422,7 +353,7 @@ class NeutralAttack(action.Action):
         actor.hurtbox.rect.height -= 16
         actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
         if self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 class UpAttack(action.Action):
@@ -438,7 +369,7 @@ class UpAttack(action.Action):
         self.sourHitbox = hitbox.DamageHitbox([21,-32], [24,26], actor, 3, 6, 0.08, 120, 1, sharedLock)
 
     def onClank(self,actor):
-        actor.doIdle()
+        actor.doAction('NeutralAction')
 
     def tearDown(self, actor, newAction):
         self.sweetHitbox.kill()
@@ -447,7 +378,7 @@ class UpAttack(action.Action):
 
     def stateTransitions(self, actor):
         if not actor.grounded:
-            actor.doFall()
+            actor.doAction('Fall')
 
     def update(self, actor):
         actor.changeSpriteImage(self.frame//4)
@@ -466,7 +397,7 @@ class UpAttack(action.Action):
         elif self.frame == 16:
             self.sourHitbox.kill()
         if self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         if self.frame <= 8:
             actor.hurtbox.rect.height -= 32
             actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
@@ -491,7 +422,7 @@ class UpSmash(action.Action):
 
     def stateTransitions(self, actor):
         if not actor.grounded:
-            actor.doFall()
+            actor.doAction('Fall')
         
     def update(self,actor):
         if self.frame == 8 and not actor.keysContain('attack') and self.chargeLevel > 0:
@@ -551,7 +482,7 @@ class UpSmash(action.Action):
             actor.active_hitboxes.add(self.uSmashHitbox)
         elif self.frame == self.lastFrame:
             self.uSmashHitbox.kill()
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         
         self.frame += 1 
        
@@ -567,7 +498,7 @@ class DashAttack(action.Action):
         self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,0,hitbox.HitboxLock(),0,-1,1,1.5)
 
     def onClank(self,actor):
-        actor.doIdle()
+        actor.doAction('NeutralAction')
 
     def tearDown(self,actor,other):
         self.dashHitbox.kill()
@@ -575,7 +506,7 @@ class DashAttack(action.Action):
 
     def stateTransitions(self, actor):
         if not actor.grounded:
-            actor.doFall()
+            actor.doAction('Fall')
 
     def update(self,actor):
         if self.frame%2 == 0 and self.frame <= 8:
@@ -604,7 +535,7 @@ class DashAttack(action.Action):
             self.dashHitbox.kill()
 
         if self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
         
 class DownAttack(action.Action):
@@ -621,14 +552,13 @@ class DownAttack(action.Action):
     def tearDown(self,actor,other):
         self.dsmashHitbox1.kill()
         self.dsmashHitbox2.kill()
-        print(self.frame)
 
     def onClank(self,actor):
-        actor.doIdle()
+        actor.doAction('NeutralAction')
 
     def stateTransitions(self, actor):
         if not actor.grounded:
-            actor.doFall()
+            actor.doAction('Fall')
         
     def update(self,actor):
         self.dsmashHitbox1.update()
@@ -657,7 +587,7 @@ class DownAttack(action.Action):
         elif self.frame == 30:
             actor.changeSpriteImage(14)
         if self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 class DownSmash(action.Action):
@@ -680,7 +610,7 @@ class DownSmash(action.Action):
 
     def stateTransitions(self, actor):
         if not actor.grounded:
-            actor.doFall()
+            actor.doAction('Fall')
 
     def update(self, actor):
         self.spikeBox.update()
@@ -704,6 +634,7 @@ class DownSmash(action.Action):
             actor.hurtbox.rect.width = 44
             actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
             actor.changeSpriteImage((self.frame//2-3)%6)
+            print((self.frame//2-3)%6)
             if self.frame == 14:
                 actor.active_hitboxes.add(self.spikeBox)
                 actor.mask = None
@@ -720,7 +651,7 @@ class DownSmash(action.Action):
                 self.dsmashHitbox1.kill()
                 self.dsmashHitbox2.kill()
         elif self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         
         self.frame += 1 
         
@@ -732,14 +663,14 @@ class ForwardAttack(action.Action):
         self.fSmashHitbox.kill()
 
     def onClank(self,actor):
-        actor.doIdle()
+        actor.doAction('NeutralAction')
     
     def setUp(self,actor):
         self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,10,2.0,0.2,40,1,hitbox.HitboxLock())
 
     def stateTransitions(self, actor):
         if self.frame < 14 and not actor.grounded:
-            actor.doFall()
+            actor.doAction('Fall')
             
     def update(self,actor):
         if self.frame == 0:
@@ -757,7 +688,7 @@ class ForwardAttack(action.Action):
         elif self.frame == 18:
             actor.changeSpriteImage(9)
         elif self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         
         self.frame += 1   
 
@@ -774,7 +705,7 @@ class ForwardSmash(action.Action):
 
     def stateTransitions(self, actor):
         if self.frame < 18 and not actor.grounded:
-            actor.doFall()
+            actor.doAction('Fall')
             
     def update(self,actor):
         if self.frame == 6 and not actor.keysContain('attack') and self.chargeLevel > 0:
@@ -816,7 +747,7 @@ class ForwardSmash(action.Action):
         elif self.frame == 43:
             actor.changeSpriteImage(9)
         elif self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         
         self.frame += 1 
 
@@ -916,7 +847,7 @@ class BackAir(action.Action):
         elif self.frame >= 20:
             actor.changeSprite('jump')
         elif self.frame == self.lastFrame:
-            actor.doFall()
+            actor.doAction('Fall')
         self.frame += 1
 
 class ForwardAir(action.Action):
@@ -979,7 +910,7 @@ class ForwardAir(action.Action):
         elif self.frame == 26:
             actor.changeSprite('jump')
         elif self.frame == self.lastFrame:
-            actor.doFall()
+            actor.doAction('Fall')
         actor.hurtbox.rect.width -= 8
         actor.hurtbox.rect.height -= 8
         actor.hurtbox.rect.center = actor.sprite.boundingRect.center
@@ -1041,11 +972,11 @@ class DownAir(action.Action):
             actor.active_hitboxes.add(self.rightDiagonalHitbox)
             actor.active_hitboxes.add(self.leftSourSpot)
             actor.active_hitboxes.add(self.rightSourSpot)
-        elif self.frame == self.lastFrame-9 and actor.keysContain('attack'):
+        elif self.frame == 30 and actor.keysContain('attack'):
             self.frame -= 1
-        elif self.frame < self.lastFrame-9:
+        elif self.frame < 30:
             pass
-        elif self.frame < self.lastFrame-6:
+        elif self.frame < 33:
             self.bottom = 14
             self.downHitbox.kill()
             self.leftDiagonalHitbox.kill()
@@ -1053,10 +984,10 @@ class DownAir(action.Action):
             self.leftSourSpot.kill()
             self.rightSourSpot.kill()
             actor.changeSpriteImage(3)
-        elif self.frame < self.lastFrame - 3:
+        elif self.frame < 36:
             self.bottom = 0
             actor.changeSpriteImage(2)
-        elif self.frame < self.lastFrame:
+        elif self.frame < 39:
             actor.changeSpriteImage(1)
         else: 
             actor.changeSpriteImage(0)
@@ -1109,7 +1040,7 @@ class UpAir(action.Action):
             actor.changeSpriteImage(4)
             self.sourspot.kill()
         elif self.frame == self.lastFrame:
-            actor.doFall()
+            actor.doAction('Fall')
         self.frame += 1
 
 class GroundGrab(action.Action):
@@ -1124,7 +1055,7 @@ class GroundGrab(action.Action):
 
     def stateTransitions(self, actor):
         if not actor.grounded:
-            actor.doFall()
+            actor.doAction('Fall')
 
     def update(self,actor):
         self.grabHitbox.update()
@@ -1150,7 +1081,7 @@ class GroundGrab(action.Action):
         elif self.frame == 26:
             actor.changeSpriteImage(0)
         if self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 class DashGrab(action.Action):
@@ -1165,7 +1096,7 @@ class DashGrab(action.Action):
 
     def stateTransitions(self, actor):
         if not actor.grounded:
-            actor.doFall()
+            actor.doAction('Fall')
 
     def update(self,actor):
         self.grabHitbox.update()
@@ -1191,7 +1122,7 @@ class DashGrab(action.Action):
         elif self.frame == 30:
             actor.changeSpriteImage(0)
         if self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 class Pummel(baseActions.BaseGrabbing):
@@ -1217,7 +1148,7 @@ class Pummel(baseActions.BaseGrabbing):
         actor.hurtbox.rect.height -= 16
         actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
         if self.frame == self.lastFrame:
-            actor.doGrabbing()
+            actor.doAction('Grabbing')
         self.frame += 1
         
 class ForwardThrow(baseActions.BaseGrabbing):
@@ -1247,7 +1178,7 @@ class ForwardThrow(baseActions.BaseGrabbing):
         elif self.frame == 18:
             actor.changeSpriteImage(9)
         elif self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         
         self.frame += 1
 
@@ -1281,7 +1212,7 @@ class DownThrow(baseActions.BaseGrabbing):
             self.bottomHitbox.knockbackGrowth = 0.12
             self.weight_influence = 1
         if self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 class UpThrow(baseActions.BaseGrabbing):
@@ -1310,7 +1241,7 @@ class UpThrow(baseActions.BaseGrabbing):
             if actor.grounded and actor.change_y >= 0:
                 if actor.isGrabbing():
                     actor.grabbing.applyKnockback(9, 12, 0.15, actor.getForwardWithOffset(70))
-                actor.doFall()
+                actor.doAction('Fall')
         self.frame += 1
 
 class BackThrow(baseActions.BaseGrabbing):
@@ -1331,7 +1262,7 @@ class BackThrow(baseActions.BaseGrabbing):
             actor.changeSpriteImage(self.frame//2)
         elif self.frame == self.lastFrame: 
             actor.flip()
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 ########################################################
@@ -1384,8 +1315,7 @@ class Dash(baseActions.Dash):
             if (self.frame == 0):
                 actor.changeSprite("run",4)
                 
-        if actor.grounded == False:
-            actor.doFall()
+        
         baseActions.Dash.update(self, actor)
         
 class Run(baseActions.Run):
@@ -1440,15 +1370,6 @@ class RunPivot(baseActions.RunPivot):
     def tearDown(self,actor,newAction):
         if isinstance(newAction, Dash):
             newAction.accel = False
-        
-class NeutralAction(baseActions.NeutralAction):
-    def __init__(self):
-        baseActions.NeutralAction.__init__(self,1)
-        
-    def update(self, actor):
-        if self.frame == 0:
-            actor.changeSprite("idle")
-            self.frame += 1
 
 class Grabbing(baseActions.Grabbing):
     def __init__(self):
@@ -1487,18 +1408,6 @@ class RunStop(baseActions.RunStop):
             actor.changeSpriteImage(2)
         baseActions.RunStop.update(self, actor)
 
-class Crouch(baseActions.Crouch):
-    def __init__(self):
-        baseActions.Crouch.__init__(self, 2)
-
-    def setUp(self, actor):
-        actor.changeSprite('land', 0)
-
-    def update(self, actor):
-        actor.changeSpriteImage(self.frame)
-        if self.frame == self.lastFrame:
-            self.frame -= 1
-        baseActions.Crouch.update(self, actor)
 
 class CrouchGetup(baseActions.CrouchGetup):
     def __init__(self):
@@ -1527,18 +1436,6 @@ class HitStun(baseActions.HitStun):
             else:
                 actor.changeSprite("jump")
         
-class TryTech(baseActions.TryTech):
-    def __init__(self,hitstun,direction):
-        baseActions.TryTech.__init__(self, hitstun, direction)
-
-    def update(self,actor):
-        baseActions.TryTech.update(self, actor)
-        if self.frame == 1:
-            if actor.grounded:
-                actor.changeSprite("land",1)
-            else:
-                actor.changeSprite("jump")
-             
 class Jump(baseActions.Jump):
     def __init__(self):
         baseActions.Jump.__init__(self,8,5)
@@ -1575,25 +1472,12 @@ class AirJump(baseActions.AirJump):
         elif self.frame == 8:
             actor.changeSpriteImage(0)
         baseActions.AirJump.update(self, actor)
-            
-class Fall(baseActions.Fall):
-    def __init__(self):
-        baseActions.Fall.__init__(self)
-        
-    def update(self,actor):
-        actor.changeSprite("jump")
-        baseActions.Fall.update(self, actor)
 
 class Helpless(baseActions.Helpless):
     def __init__(self):
         baseActions.Helpless.__init__(self)
 
-    def tearDown(self, actor, newAction):
-        actor.mask = None
-
     def update(self, actor):
-        if self.frame == 0:
-            actor.createMask([191, 63, 191], 99999, True, 8)
         actor.changeSprite("jump")
         baseActions.Helpless.update(self, actor)
             
@@ -1669,7 +1553,7 @@ class GetupAttack(action.Action):
         self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,-1,1,1.5)
 
     def onClank(self,actor):
-        actor.doIdle()
+        actor.doAction('NeutralAction')
 
     def tearDown(self,actor,other):
         self.dashHitbox.kill()
@@ -1678,7 +1562,7 @@ class GetupAttack(action.Action):
 
     def stateTransitions(self, actor):
         if not actor.grounded:
-            actor.doFall()
+            actor.doAction('Fall')
 
     def update(self,actor):
         if self.frame%2 == 0 and self.frame <= 12:
@@ -1705,17 +1589,12 @@ class GetupAttack(action.Action):
             actor.preferred_xspeed = 0
 
         if self.frame == self.lastFrame:
-            actor.doIdle()
+            actor.doAction('NeutralAction')
         self.frame += 1
 
 class PlatformDrop(baseActions.PlatformDrop):
     def __init__(self):
         baseActions.PlatformDrop.__init__(self, 12, 6, 9)
-    
-    def stateTransitions(self, actor):
-        baseActions.PlatformDrop.stateTransitions(self, actor)
-        if self.frame > self.phaseFrame:
-            baseActions.airControl(actor)
         
     def update(self,actor):
         if self.frame == 2:
@@ -1816,19 +1695,6 @@ class AirDodge(baseActions.AirDodge):
             actor.changeSpriteImage(0)
         baseActions.AirDodge.update(self, actor)
 
-class TechDodge(baseActions.TechDodge):
-    def __init__(self):
-        baseActions.TechDodge.__init__(self)
-
-    def update(self, actor):
-        if self.frame == 0:
-            actor.changeSprite("nair",0)
-        elif self.frame == self.startInvulnFrame:
-            actor.changeSpriteImage(-round(abs(actor.change_x)))
-        elif self.frame == self.endInvulnFrame:
-            actor.changeSpriteImage(0)
-        baseActions.TechDodge.update(self, actor)
-
 class Trapped(baseActions.Trapped):
     def __init__(self, length):
         baseActions.Trapped.__init__(self, length)
@@ -1879,9 +1745,8 @@ class Released(baseActions.Released):
         actor.changeSprite("jump")
 
 class LedgeGrab(baseActions.LedgeGrab):
-    def __init__(self,ledge):
+    def __init__(self,ledge=None):
         baseActions.LedgeGrab.__init__(self, ledge)
-        self.sweetSpotLocation = [64,64]
 
     def setUp(self, actor):
         baseActions.LedgeGrab.setUp(self, actor)
@@ -1889,29 +1754,11 @@ class LedgeGrab(baseActions.LedgeGrab):
         
     def update(self,actor):
         actor.changeSprite('jump')
-        if self.ledge.side == 'left':
-            if actor.facing == -1:
-                actor.flip()
-            actor.hurtbox.rect.topright = self.ledge.rect.midtop
-            actor.rect.center = actor.hurtbox.rect.center
-        else:
-            if actor.facing == 1:
-                actor.flip()
-            actor.hurtbox.rect.topleft = self.ledge.rect.midtop
-            actor.rect.center = actor.hurtbox.rect.center
         baseActions.LedgeGrab.update(self, actor)
 
 class LedgeGetup(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self,27)
-
-    def setUp(self,actor):
-        baseActions.LedgeGetup.setUp(self,actor)
-        actor.invincibility = 24
-
-    def tearDown(self,actor,other):
-        actor.preferred_xspeed = 0
-        actor.change_x = 0
 
     def update(self,actor):
         if self.frame == 0:
@@ -2030,6 +1877,35 @@ class LedgeRoll(baseActions.LedgeGetup):
         if self.frame == 33:
             actor.changeSprite("land", 0)
         baseActions.LedgeGetup.update(self, actor)
+
+class NeutralAction(baseActions.NeutralAction):
+    def __init__(self):
+        baseActions.NeutralAction.__init__(self,1)
+        
+    def update(self, actor):
+        if self.frame == 0:
+            actor.changeSprite("idle")
+            self.frame += 1
+        
+class Crouch(baseActions.Crouch):
+    def __init__(self):
+        baseActions.Crouch.__init__(self, 2)
+    def setUp(self, actor):
+        actor.changeSprite('land', 0)
+    def update(self, actor):
+        actor.changeSpriteImage(self.frame)
+        if self.frame == self.lastFrame:
+            self.frame -= 1
+        baseActions.Crouch.update(self, actor)
+        
+class Fall(baseActions.Fall):
+    def __init__(self):
+        baseActions.Fall.__init__(self)
+        
+    def update(self,actor):
+        actor.changeSprite("jump")
+        baseActions.Fall.update(self, actor)
+
 
 ########################################################
 #             BEGIN HELPER METHODS                     #

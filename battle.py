@@ -4,13 +4,10 @@ import settingsManager
 import spriteManager
 import sys
 import musicManager
-import fighters.hitboxie.fighter
 import fighters.sandbag.fighter
-import stages.true_arena
-import stages.arena
-import colorsys
 import engine.hitbox as hitbox
-import engine.controller as controller
+
+import colorsys
 from cgi import log
 
 """
@@ -30,6 +27,7 @@ class Battle():
         self.players = players
         self.controllers = []
         for player in players:
+            player.keyBindings.loadFighter(player)
             self.controllers.append(player.keyBindings)
             
         self.stage = stage

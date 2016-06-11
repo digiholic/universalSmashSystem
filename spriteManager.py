@@ -39,18 +39,25 @@ class Sprite(pygame.sprite.Sprite):
         return None
   
 class SpriteHandler(Sprite):
-    def __init__(self,directory,prefix,startingImage,offset,colorMap = {}):
+    def __init__(self,directory,prefix,startingImage,offset,colorMap = {},scale=1.0):
         Sprite.__init__(self)
         self.colorMap = colorMap
+        self.scale = scale
         self.imageLibrary = self.buildImageLibrary(ImageLibrary(directory,prefix), offset)
         
         self.startingImage = startingImage
-         
+        
         self.flip = "right"
-        self.currentSheet = startingImage
+        if not self.startingImage in self.imageLibrary[self.flip]:
+            keyList = self.imageLibrary[self.flip].keys()
+            self.startingImage = keyList[0] 
+            print("Default Sprite not found. New default sprite: " + str(self.startingImage))
+            
+        self.currentSheet = self.startingImage
         self.index = 0
         self.angle = 0
         
+        print(self.imageLibrary)
         self.image = self.imageLibrary[self.flip][self.startingImage][self.index]
         
         self.rect = self.image.get_rect()
@@ -78,11 +85,17 @@ class SpriteHandler(Sprite):
         self.get_image()
         self.changed = True
         
-    def changeSubImage(self,index):
-        self.index = index % len(self.imageLibrary[self.flip][self.currentSheet])
+    def changeSubImage(self,index,loop=False):
+        if index < 0:
+            index = (len(self.imageLibrary[self.flip][self.currentSheet])) + index
+        if loop:
+            self.index = index % len(self.imageLibrary[self.flip][self.currentSheet])
+        else:
+            self.index = min(index, len(self.imageLibrary[self.flip][self.currentSheet])-1)
+            
         self.get_image()
         self.changed = True
-    
+
     def rotate(self,angle = 0):
         self.angle = angle
         self.changed = True
@@ -91,9 +104,10 @@ class SpriteHandler(Sprite):
         try:
             self.image = self.imageLibrary[self.flip][self.currentSheet][int(self.index)]
         except:
-            print("Error loading sprite ", self.currentSheet, " Loading default")
+            print("Error loading sprite " + str(self.currentSheet) + " Loading default")
             self.image = self.imageLibrary[self.flip][self.startingImage][0]
-        
+            self.currentSheet = self.startingImage
+            
         self.rect = self.image.get_rect(midtop=self.rect.midtop)
         self.boundingRect = self.getBoundingBox()
         return self.image
@@ -125,6 +139,10 @@ class SpriteHandler(Sprite):
             image = sheet.subsurface(sheet.get_clip())
             for fromColor,toColor in self.colorMap.items():
                 self.recolor(image, tuple(list(fromColor)), tuple(list(toColor)))
+            if not self.scale == 1.0:
+                w = int(image.get_width() * self.scale)
+                h = int(image.get_height() * self.scale)
+                image = pygame.transform.scale(image, (w,h))
             imageList.append(image)
             index += 1
         return imageList
@@ -251,7 +269,7 @@ class MaskSprite(ImageSprite):
         
     
     def update(self):
-        if self.duration > 0:
+        if not self.duration == 0:
             if self.pulse:
                 self.alpha -= self.pulseSize
                 if self.alpha > 200:
@@ -307,7 +325,7 @@ class ImageLibrary():
                 sprite = pygame.image.load(os.path.join(self.directory,f))
                 sprite = sprite.convert_alpha()
                 self.imageDict[spriteName] = sprite
-                print(sprite.get_alpha(), spriteName, self.imageDict[spriteName])
+                #print(sprite.get_alpha(), spriteName, self.imageDict[spriteName])
 
 class RectSprite(Sprite):
     def __init__(self,rect,color=[0,0,0]):
