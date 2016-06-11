@@ -110,9 +110,10 @@ class AbstractFighter():
 
             #Smash directional influence AKA hitstun shuffling
             di_vec = self.getSmoothedInput()
-            self.rect.x += di_vec[0]*0.5
+            print(di_vec)
+            self.rect.x += di_vec[0]*1.5
             if not self.grounded:
-                self.rect.y += di_vec[1]*0.5
+                self.rect.y += di_vec[1]*1.5
 
             groundBlocks = self.checkForGround()
     
@@ -912,7 +913,6 @@ class AbstractFighter():
                 #self.rect.x += intersectPoint(self.ecb.currentECB.rect, checkRect)[0]
                 self.rect.y += intersectPoint(self.ecb.currentECB.rect, checkRect)[1]
         if contact is not None and not contact == [0, 0]:
-            print(contact)
             #The contact vector is perpendicular to the axis over which the reflection should happen
             v_vel = [self.change_x-other.change_x, self.change_y-other.change_y]
             v_norm = [contact[1], -contact[0]]
