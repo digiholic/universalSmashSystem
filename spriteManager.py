@@ -269,7 +269,7 @@ class MaskSprite(ImageSprite):
         
     
     def update(self):
-        if self.duration > 0:
+        if not self.duration == 0:
             if self.pulse:
                 self.alpha -= self.pulseSize
                 if self.alpha > 200:

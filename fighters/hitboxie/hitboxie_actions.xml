@@ -1309,6 +1309,7 @@
 			<changeFighterPreferredSpeed>
 				<ySpeed><var from="actor">maxFallSpeed</var></ySpeed>
 			</changeFighterPreferredSpeed>
+			<removeMask></removeMask>
 		</tearDown>
 		
 		<frame number="before">
@@ -1326,7 +1327,11 @@
 			<activateArticle>shine</activateArticle>
 			<activateHitbox>damage</activateHitbox>
 			<activateHitbox>reflect</activateHitbox>
-			<!-- Create mask -->
+			<createMask>
+				<color>#00FFFF</color>
+				<duration>-1</duration>
+				<pulse>8</pulse>
+			</createMask>
 		</frame>
 		<frame number="1">
 			<deactivateHitbox>damage</deactivateHitbox>
@@ -1341,12 +1346,11 @@
 			<changeFighterPreferredSpeed>
 				<ySpeed><var from="actor">maxFallSpeed</var></ySpeed>
 			</changeFighterPreferredSpeed>
-			<!-- reset mask -->
 		</frame>
 		<frame number="18">
 			<deactivateArticle>shine</deactivateArticle>
 			<deactivateHitbox>reflect</deactivateHitbox>
-			<!-- kill mask -->
+			<removeMask></removeMask>
 		</frame>
 	</DownSpecial>
 	

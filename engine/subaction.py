@@ -1,6 +1,8 @@
 import engine.hitbox
 import baseActions
 from test.test_bigmem import BufferTest
+import pygame.color
+
 ########################################################
 #               ABSTRACT ACTIONS                       #
 ########################################################
@@ -764,7 +766,37 @@ class doAction(SubAction):
     @staticmethod
     def buildFromXml(node):
         return doAction(node.text)
+
+class createMask(SubAction):        
+    def __init__(self,color,duration,pulseLength):
+        SubAction.__init__(self)
+        self.color = color
+        self.duration = duration
+        self.pulseLength = pulseLength
         
+    def execute(self, action, actor):
+        pulse = True if self.pulseLength > 0 else False
+        color = [self.color.r,self.color.g,self.color.b]
+        actor.createMask(color,self.duration,pulse,self.pulseLength)
+        
+    @staticmethod
+    def buildFromXml(node):
+        color = pygame.color.Color(node.find('color').text)
+        duration = int(node.find('duration').text)
+        pulseLength = int(loadNodeWithDefault(node, 'pulse', 0))
+        return createMask(color,duration,pulseLength)
+
+class removeMask(SubAction):
+    def __init__(self):
+        SubAction.__init__(self)
+    
+    def execute(self, action, actor):
+        actor.mask = None
+        
+    @staticmethod
+    def buildFromXml(node):
+        return removeMask()
+            
 class debugAction(SubAction):
     def __init__(self,statement):
         SubAction.__init__(self)
@@ -802,5 +834,7 @@ subActionDict = {
                  'transitionState': transitionState,
                  'updateLandingLag': updateLandingLag,
                  'doAction': doAction,
+                 'createMask': createMask,
+                 'removeMask': removeMask,
                  'print': debugAction
                  }
