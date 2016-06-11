@@ -12,7 +12,7 @@ class SplatArticle(article.AnimatedArticle):
         self.direction = direction
         self.change_x = self.direction*24
         self.change_y = 0
-        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 3, 2, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)
+        self.hitbox = hitbox.DamageHitbox(self.rect.center, [12,12], self.owner, 3, 0, 0, 0, 1, hitbox.HitboxLock(), 1, 1, -1, 0)
         self.hitbox.article = self
         self.tags = ['reflectable']
 
@@ -123,7 +123,7 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
         actor.changeSprite("nair",0)
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 1, 1, hitbox.HitboxLock(), 0, -1.5, 1, 1, -1, -7)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 1, 0, hitbox.HitboxLock(), 0, -1.5, 1, 1, -1, -7)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
         self.ecbCenter = [0,7]
@@ -135,14 +135,14 @@ class ForwardSpecial(action.Action):
     
     class sideSpecialHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
-            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 6, 4, .1, 300, 1, hitbox.HitboxLock(), 1, 10, 0, 0)
+            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 6, 4, .1, 300, 1, hitbox.HitboxLock(), 1, 10, 0, 0, 1, 2)
 
         def onCollision(self, other):
             hitbox.Hitbox.onCollision(self, other)
             if 'AbstractFighter' in list(map(lambda x:x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
                 if other.lockHitbox(self):
                     if self.article is None:
-                        self.owner.applyPushback(self.baseKnockback/2.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+                        self.owner.applyPushback(self.damage/4.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     if other.grounded:
                         other.applyKnockback(self.damage, 0, 0, 0, 1, 1)
                         (otherDirect,_) = other.getDirectionMagnitude()
@@ -564,7 +564,7 @@ class DashAttack(action.Action):
         self.ecbCenter = [0,7]
         self.ecbSize = [64, 78]
         self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,8,0.2,20,1,hitbox.HitboxLock())
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,-1,1,1.5)
+        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,0,hitbox.HitboxLock(),0,-1,1,1.5)
 
     def onClank(self,actor):
         actor.doIdle()
@@ -862,6 +862,7 @@ class NeutralAir(action.Action):
             self.nairHitbox.damage = 3
             self.nairHitbox.baseKnockback = 1
             self.nairHitbox.hitstun = 0.5
+            self.nairHitbox.base_hitstun = 0
         elif self.frame == 24:
             self.nairHitbox.damage = 1
             self.nairHitbox.baseKnockback = 0
