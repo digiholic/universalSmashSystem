@@ -121,12 +121,10 @@ class FighterWheel():
             else:
                 fighter = abstractFighter.AbstractFighter(os.path.join(directory,subdir),playerNum)
             if (fighter == None):
-                raise ValueError("No fighter found at " + os.path.join(directory,subdir,"fighter.py"))
-            fightercount += 1
-            self.fighters.append(fighter)
-            #except Exception as e:
-            #    print("Could not load fighter "+str(subdir)+", ignoring.")
-            #    print(e)
+                print("No fighter found at " + os.path.join(directory,subdir,"fighter.py"))
+            else:
+                fightercount += 1
+                self.fighters.append(fighter)      
         
         self.currentIndex = 0
         self.currentFighter = self.fighters[0]

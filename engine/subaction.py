@@ -470,7 +470,8 @@ class createHitbox(SubAction):
                  damageMultiplier=1,velocityMultiplier=1,hp=1,
                  weightInfluence=1,shieldMultiplier=1,transcendence=0,priorityDiff=0,
                  chargeDamage=0,chargeBKB=0,chargeKBG=0,
-                 xBias=0,yBias=0,xDraw=0.1,yDraw=0.1):
+                 xBias=0,yBias=0,xDraw=0.1,yDraw=0.1,
+                 base_hitstun=1, hitlag_multiplier=1):
         SubAction.__init__(self)
         
         self.name = name
@@ -497,6 +498,8 @@ class createHitbox(SubAction):
         self.yBias = yBias
         self.xDraw = xDraw
         self.yDraw = yDraw
+        self.baseHitstun = base_hitstun
+        self.hitlagMultiplier = hitlag_multiplier
         
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
@@ -513,24 +516,28 @@ class createHitbox(SubAction):
                                        self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.hitstun, 
                                        hitboxLock,
                                        self.weightInfluence, self.shieldMultiplier, self.transcendence, self.priorityDiff,
-                                       self.chargeDamage, self.chargeBKB, self.chargeKBG)
+                                       self.chargeDamage, self.chargeBKB, self.chargeKBG,
+                                       self.baseHitstun, self.hitlagMultiplier)
         elif self.hitboxType == "sakurai":
             hitbox = engine.hitbox.SakuraiAngleHitbox(self.center, self.size, actor,
                                                       self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.hitstun,
                                                       hitboxLock,
                                                       self.weightInfluence, self.shieldMultiplier, self.transcendence, self.priorityDiff,
-                                                      self.chargeDamage, self.chargeBKB, self.chargeKBG)
+                                                      self.chargeDamage, self.chargeBKB, self.chargeKBG,
+                                                      self.baseHitstun, self.hitlagMultiplier)
         elif self.hitboxType == "autolink":
             hitbox = engine.hitbox.AutolinkHitbox(self.center, self.size, actor,
                                                   self.damage,self.hitstun,
                                                   hitboxLock,
                                                   self.xBias,self.yBias,
                                                   self.shieldMultiplier,self.velocityMultiplier,self.transcendence,self.priorityDiff,
-                                                  self.chargeDamage,self.chargeBKB,self.chargeKBG)
+                                                  self.chargeDamage,self.chargeBKB,self.chargeKBG,
+                                                  self.baseHitstun, self.hitlagMultiplier)
         elif self.hitboxType == "funnel":
             hitbox = engine.hitbox.FunnelHitbox(self.center, self.size, actor, self.damage, self.baseKnockback, self.trajectory, self.hitstun, hitboxLock,
                                                 self.xDraw, self.yDraw, self.shieldMultiplier, self.transcendence, self.priorityDiff,\
-                                                self.chargeDamage, self.chargeBKB, self.chargeKBG)
+                                                self.chargeDamage, self.chargeBKB, self.chargeKBG,
+                                                self.baseHitstun, self.hitlagMultiplier)
         elif self.hitboxType == "grab":
             pass
         elif self.hitboxType == "reflector":
@@ -572,10 +579,14 @@ class createHitbox(SubAction):
         xDraw = float(loadNodeWithDefault(node, 'xDraw', 0.1))
         yDraw = float(loadNodeWithDefault(node, 'yDraw', 0.1))
         
+        base_hitstun = int(loadNodeWithDefault(node, 'baseHitstun', 1))
+        hitlag_multiplier = int(loadNodeWithDefault(node, 'hitlagMultiplier', 1))
+        
         return createHitbox(name, hitboxType, center, size, damage, baseKnockback, knockbackGrowth,
                      trajectory, hitstun, hitboxLock, damageMultiplier, velocityMultiplier, hp, weightInfluence, shieldMultiplier, transcendence,
                      priorityDiff, chargeDamage, chargeBKB, chargeKBG,
-                     xBias, yBias, xDraw, yDraw)
+                     xBias, yBias, xDraw, yDraw,
+                     base_hitstun, hitlag_multiplier)
         
 # Change the properties of an existing hitbox, such as position, or power
 class modifyHitbox(SubAction):

@@ -199,21 +199,36 @@ class Battle():
                     print('Other hitbox: '+str(other))
                     hboxClank = False
                     otherClank = False
-                    if not hbox.compareTo(other):
-                        if hbox.article == None and hasattr(hbox.owner,'current_action') and other.owner.lockHitbox(hbox):
+                    if not hbox.compareTo(other) and other.owner.lockHitbox(hbox):
+                        if hbox.article == None and hasattr(hbox.owner,'current_action'):
                             hboxClank = True
                         print("CLANK!")
-                    if not other.compareTo(hbox):
-                        if other.article == None and hasattr(other.owner,'current_action') and hbox.owner.lockHitbox(other):
+                    if not other.compareTo(hbox) and hbox.owner.lockHitbox(other):
+                        if other.article == None and hasattr(other.owner,'current_action'):
                             otherClank = True
                         print("CLANK!")
-                    if (isinstance(hbox, hitbox.DamageHitbox) or isinstance(hbox, hitbox.GrabHitbox)) and (isinstance(other, hitbox.DamageHitbox) or isinstance(other, hitbox.GrabHitbox)):
+                    if not isinstance(hbox, hitbox.InertHitbox) and not isinstance(other, hitbox.InertHitbox):
                         if hboxClank:
-                            hbox.owner.hitstop += 6
+                            if isinstance(hbox, hitbox.DamageHitbox):
+                                hbox.owner.applyPushback(hbox.damage/4.0, hbox.trajectory+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
+                            else:
+                                hbox.owner.hitstop += 6
                             hbox.owner.current_action.onClank(hbox.owner)
                         if otherClank:
-                            other.owner.hitstop += 6
+                            if isinstance(other, hitbox.DamageHitbox):
+                                other.owner.applyPushback(other.damage/4.0, other.trajectory+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
+                            else:
+                                other.owner.hitstop += 6
                             other.owner.current_action.onClank(other.owner)
+                    elif hboxClank and otherClank:
+                        if isinstance(hbox, hitbox.DamageHitbox):
+                            hbox.owner.applyPushback(hbox.damage/4.0, hbox.trajectory+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
+                        else:
+                            hbox.owner.hitstop += 6
+                        if isinstance(other, hitbox.DamageHitbox):
+                            other.owner.applyPushback(other.damage/4.0, other.trajectory+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
+                        else:
+                            other.owner.hitstop += 6
                             
             for hbox in hurtbox_hits:
                 #then, hurtbox collisions
@@ -467,8 +482,8 @@ class HealthTracker(spriteManager.Sprite):
         length += self.kerningValues[10]
         
     def draw(self,screen,offset,scale):
-        if not self.percent == self.fighter.damage:
-            self.percent = self.fighter.damage
+        if not self.percent == int(self.fighter.damage):
+            self.percent = int(self.fighter.damage)
             self.updateDamage()
         
         h = int(round(self.rect.height * scale))

@@ -1223,7 +1223,7 @@
 			<ifButton>
 				<button held="true">special</button>
 				<if>
-					<doAction>NeutralGroundSpeical</doAction>
+					<doAction>NeutralGroundSpecial</doAction>
 				</if>
 			</ifButton>
 		</frame>

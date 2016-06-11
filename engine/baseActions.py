@@ -133,6 +133,7 @@ class Pivot(action.Action):
     def stateTransitions(self, actor):
         if actor.keyHeld('jump', self.frame):
             actor.doAction('Jump')
+
         
     def update(self,actor):
         action.Action.update(self, actor)
@@ -187,7 +188,7 @@ class Stop(action.Action):
             if actor.keyHeld('jump'):
                 actor.doAction('Jump')
             else: actor.doAction('NeutralAction')
-    
+
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
         if isinstance(nextAction, Pivot):
@@ -258,6 +259,10 @@ class RunStop(action.Action):
         if actor.keyHeld(invkey,self.frame):
             print("run pivot")
             actor.doAction('RunPivot')
+        if self.frame == self.lastFrame:
+            if actor.keyHeld('jump', 8, 1):
+                actor.doAction('Jump')
+            else: actor.doAction('NeutralAction')
 
                 
 class NeutralAction(action.Action):
@@ -379,13 +384,13 @@ class Grabbing(BaseGrabbing):
         grabbingState(actor)
         
 class HitStun(action.Action):
-    def __init__(self,hitstun,direction,hitstop):
-        action.Action.__init__(self, 1)
+    def __init__(self,hitstun,direction):
+        action.Action.__init__(self, hitstun)
         self.direction = direction
-        self.hitstop = hitstop
-        if self.spriteName=="": self.spriteName ="hitStun"
+        
 
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="hitStun"
         action.Action.setUp(self, actor)
         self.techCooldown = 0
         actor.elasticity = actor.var['hitstunElasticity']
@@ -435,7 +440,6 @@ class HitStun(action.Action):
                 actor.grounded = False
                 if mag > 10:
                     actor.rotateSprite(self.direction)
-            
             actor.hitstop = self.hitstop
             if actor.grounded: actor.hitstopVibration = (3,0)
             else: actor.hitstopVibration = (0,3)
@@ -531,7 +535,7 @@ class Trip(action.Action):
 
     def update(self, actor):
         if actor.grounded is False:
-            actor.doHitStun(self.lastFrame-self.frame, self.direction,0)
+            actor.doHitStun(self.lastFrame-self.frame, self.direction)
         if self.frame >= self.lastFrame + 180: #You aren't up yet?
             actor.doGetup(self.direction)
         self.frame += 1
@@ -686,6 +690,7 @@ class Land(action.Action):
         action.Action.setUp(self, actor)
         actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
+
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
         actor.preferred_xspeed = 0
@@ -698,12 +703,14 @@ class Land(action.Action):
             if actor.keyHeld('shield', 1):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame // 2
+
         if actor.keyHeld('down') and self.frame*2 > self.lastFrame:
             blocks = actor.checkForGround()
             if blocks:   
                 blocks = map(lambda x: x.solid, blocks)
                 if not any(blocks):
                     actor.doAction('PlatformDrop')
+
         if self.frame == 1:
             #actor.articles.add(article.LandingArticle(actor)) #this looks awful don't try it
             pass
@@ -722,6 +729,7 @@ class HelplessLand(action.Action):
         if self.spriteName=="": self.spriteName ="helplessLand"
         action.Action.setUp(self, actor)
         actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+
 
     def update(self,actor):
         action.Action.update(self, actor)
@@ -772,44 +780,36 @@ class PlatformDrop(action.Action):
         if self.frame == self.lastFrame:
             actor.doAction('Fall')
         self.frame += 1
-        
-class PreShield(action.Action):
-    def __init__(self):
-        action.Action.__init__(self, 4)
-        
-    def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="shield"
-        action.Action.setUp(self, actor)
-        self.reflectHitbox = hitbox.PerfectShieldHitbox([0,0], [actor.hurtbox.rect.width+10, actor.hurtbox.rect.height+10], actor, hitbox.HitboxLock())
 
-    def tearDown(self, actor, nextAction):
-        action.Action.tearDown(self, actor, nextAction)
-        self.reflectHitbox.kill()
-
-    def stateTransitions(self, actor):
-        shieldState(actor)
-
-    def update(self, actor):
-        if self.frame == 0:
-            actor.active_hitboxes.add(self.reflectHitbox)
-        if actor.grounded is False:
-            self.reflectHitbox.kill()
-            actor.doAction('Fall')
-        if self.frame == self.lastFrame:
-            self.reflectHitbox.kill()
-            actor.doAction('Shield')
-        self.frame += 1
 
 class Shield(action.Action):
-    def __init__(self):
-        action.Action.__init__(self, 4)
-    
-    def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="shield"
-        action.Action.setUp(self, actor)
-        
+    def __init__(self, newShield=True):
+        action.Action.__init__(self, 8)
+        self.forward_last = 0
+        self.backward_last = 0
+        self.down_last = 0
+        self.newShield = newShield
+   
     def stateTransitions(self, actor):
         shieldState(actor)
+        (key, invkey) = actor.getForwardBackwardKeys()
+        if actor.keyBuffered(key, 1, 1) and self.forward_last > 0:
+            actor.doAction('ForwardRoll')
+        elif actor.keyBuffered(invkey, 1, 1) and self.backward_last > 0:
+            actor.doAction('BackwardRoll')
+        elif actor.keyBuffered('down', 1, 1) and self.down_last > 0:
+            actor.doAction('SpotDodge')
+
+        if actor.keyBuffered(key):
+            self.forward_last = 9
+            self.backward_last = 0
+        if actor.keyBuffered(invkey):
+            self.backward_last = 9
+            self.forward_last = 0
+        if actor.keyBuffered('down'):
+            self.down_last = 9
+        if actor.keyBuffered('up'):
+            self.down_last = 0
    
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
@@ -822,15 +822,14 @@ class Shield(action.Action):
             actor.doAction('Fall')
         if self.frame == 0:
             actor.shield = True
-            actor.startShield()
+            if self.newShield:
+                actor.startShield()
             if actor.keysContain('shield'):
                 self.frame += 1
             else:
                 self.frame += 2
         elif self.frame == 1:
-            if actor.keysContain('shield'):
-                actor.shieldDamage(1)
-            else:
+            if not actor.keysContain('shield'):
                 self.frame += 1
         elif self.frame >= 2 and self.frame < self.lastFrame:
             actor.shield = False
@@ -838,6 +837,9 @@ class Shield(action.Action):
         elif self.frame >= self.lastFrame:
             actor.doAction('NeutralAction')
         else: self.frame += 1
+        if self.forward_last > 0: self.forward_last -= 1
+        if self.backward_last > 0: self.backward_last -= 1
+        if self.down_last > 0: self.down_last -= 1
 
 class ShieldStun(action.Action):
     def __init__(self, length):
@@ -857,7 +859,7 @@ class ShieldStun(action.Action):
             actor.shield = False
             actor.doAction('Fall')
         if self.frame >= self.lastFrame and actor.keysContain('shield'):
-            actor.doAction('Shield')
+            actor.doShield(False)
         elif self.frame >= self.lastFrame:
             actor.doAction('NeutralAction')
         self.frame += 1
@@ -1390,7 +1392,7 @@ class DownAirSpecial(AirAttack):
 def neutralState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('shield'):
-        actor.doAction('PreShield')
+        actor.doShield(True)
     elif actor.keyHeld('attack'):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
@@ -1432,6 +1434,20 @@ def airState(actor):
         actor.doAirSpecial()
     elif actor.keyHeld('jump') and actor.jumps > 0:
         actor.doAction('AirJump')
+    elif actor.keysContain('down'):
+        actor.platformPhase = 1
+        actor.calc_grav(actor.var['fastfallMultiplier'])
+
+def tumbleState(actor):
+    airControl(actor)
+    if actor.keyHeld('shield'):
+        actor.doTechDodge()
+    elif actor.keyHeld('attack'):
+        actor.doAirAttack()
+    elif actor.keyHeld('special'):
+        actor.doAirSpecial()
+    elif actor.keyHeld('jump', 8, 1) and actor.jumps > 0:
+        actor.doAirJump()
     elif actor.keysContain('down'):
         actor.platformPhase = 1
         actor.calc_grav(actor.var['fastfallMultiplier'])
@@ -1506,15 +1522,9 @@ def jumpState(actor):
 def shieldState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('attack'):
-        actor.doAction('GroundGrab')()
-    elif actor.keyHeld('jump'):
-        actor.doAction('Jump')
-    elif actor.keyHeld(key):
-        actor.doAction('ForwardRoll')
-    elif actor.keyHeld(invkey):
-        actor.doAction('BackwardRoll')
-    elif actor.keyHeld('down'):
-        actor.doAction('SpotDodge')
+        actor.doGroundGrab()
+    elif actor.keyHeld('jump', 8, 1):
+        actor.doJump()
 
 def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()

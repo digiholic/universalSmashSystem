@@ -286,6 +286,8 @@ class MaskSprite(ImageSprite):
             
             return self
         else:
+            if not hasattr(self, 'rect'):
+                self.rect = self.parentSprite.rect
             return None
 
 class TextSprite(ImageSprite):

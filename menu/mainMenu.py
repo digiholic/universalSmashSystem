@@ -766,8 +766,8 @@ class SoundMenu(SubMenu):
         self.selectedOption = 0
         self.selectedBlock = 0
         
-        self.musicVol = self.settings['musicVolume']
-        self.soundVol = self.settings['sfxVolume']
+        self.musicVol = int(self.settings['musicVolume'] * 10)
+        self.soundVol = int(self.settings['sfxVolume'] * 10)
         
         self.menuText = [spriteManager.TextSprite('Music Volume: '+str(self.musicVol),'rexlia rg',16,[255,255,255]),
                          spriteManager.TextSprite('SFX Volume: '+str(self.soundVol),'rexlia rg',16,[255,255,255]),
@@ -784,9 +784,9 @@ class SoundMenu(SubMenu):
     def confirmOption(self, optionNum):
         SubMenu.confirmOption(self, optionNum)
         if optionNum == 2:
-            self.settings['musicVolume'] = self.musicVol
-            self.settings['sfxVolume'] = self.soundVol
-            pygame.mixer.music.set_volume(self.musicVol)
+            self.settings['musicVolume'] = float(self.musicVol)/10
+            self.settings['sfxVolume'] = float(self.soundVol)/10
+            pygame.mixer.music.set_volume(float(self.musicVol)/10)
             settingsManager.saveSettings(self.settings)
             self.status = 1
         elif optionNum == 3:
@@ -795,11 +795,11 @@ class SoundMenu(SubMenu):
     def incrementOption(self, optionNum, direction):
         SubMenu.incrementOption(self, optionNum, direction)
         if optionNum == 0:
-            self.musicVol += float(direction) / 10
-            if self.musicVol > 1.0: self.musicVol = 1.0
+            self.musicVol += direction
+            if self.musicVol > 10: self.musicVol = 10
         elif optionNum == 1:
-            self.soundVol += float(direction) / 10
-            if self.soundVol > 1.0: self.soundVol = 1.0
+            self.soundVol += direction
+            if self.soundVol > 10: self.soundVol = 10
     
     def update(self, screen):
         self.menuText[0].changeText('Music Volume: '+str(self.musicVol))

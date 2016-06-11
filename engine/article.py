@@ -61,12 +61,29 @@ class AnimatedArticle(spriteManager.SheetSprite):
                 
 class ShieldArticle(Article):
     def __init__(self,image,owner):
+        import engine.hitbox as hitbox
         Article.__init__(self,image, owner, owner.rect.center)
+        self.reflectHitbox = hitbox.PerfectShieldHitbox([0,0], [owner.shieldIntegrity*owner.var['shieldSize'], owner.shieldIntegrity*owner.var['shieldSize']], owner, hitbox.HitboxLock())
+        self.reflectHitbox.article = self
+        self.mainHitbox = hitbox.ShieldHitbox([0,0], [owner.shieldIntegrity*owner.var['shieldSize'], owner.shieldIntegrity*owner.var['shieldSize']], owner, hitbox.HitboxLock())
+        self.mainHitbox.article = self
         
     def update(self):
-        self.rect.center = self.owner.rect.center
+        self.rect.center = [self.owner.rect.center[0]+50*self.owner.var['shieldSize']*self.owner.getSmoothedInput()[0], 
+                            self.owner.rect.center[1]+50*self.owner.var['shieldSize']*self.owner.getSmoothedInput()[1]]
+        if self.frame == 0:
+            self.owner.active_hitboxes.add(self.reflectHitbox)
+        if self.frame == 2:
+            self.reflectHitbox.kill()
+            self.owner.active_hitboxes.add(self.mainHitbox)
         if not self.owner.shield:
-            self.kill()            
+            self.reflectHitbox.kill()
+            self.mainHitbox.kill()
+            self.kill()     
+        self.reflectHitbox.update()
+        self.mainHitbox.update()
+        self.owner.shieldDamage(1)
+        self.frame += 1       
    
     def draw(self,screen,offset,zoom):
         # This is all the same as the base Draw method. We're overriding because we need to put some code in the middle of it.
@@ -76,8 +93,8 @@ class ShieldArticle(Article):
         
         # What this does:
         screenRect = pygame.Rect(newOff,(w,h)) # Store the rect that it WOULD have drawn to at full size
-        w = int(w * float(self.owner.shieldIntegrity/100)) # Shrink based on shield integrity
-        h = int(h * float(self.owner.shieldIntegrity/100))
+        w = int(w * float(self.owner.shieldIntegrity/100)*self.owner.var['shieldSize']) # Shrink based on shield integrity
+        h = int(h * float(self.owner.shieldIntegrity/100)*self.owner.var['shieldSize'])
         blitRect = pygame.Rect(newOff,(w,h)) # Make a new rect with the shrunk sizes
         blitRect.center = screenRect.center # Center it on the screen rect
         w = max(w,0) #We can't go negative

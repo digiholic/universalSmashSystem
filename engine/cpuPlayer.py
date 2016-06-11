@@ -50,7 +50,7 @@ class CPUplayer(controller.Controller):
                 current_ecb = pygame.Rect(nodes[current][0]-self.fighter.ecb.currentECB.rect.width//2, nodes[current][1]-self.fighter.ecb.currentECB.rect.height//2, self.fighter.ecb.currentECB.rect.width, self.fighter.ecb.currentECB.rect.height)
                 next_ecb = pygame.Rect(nodes[node][0]-self.fighter.ecb.currentECB.rect.width//2, nodes[node][1]-self.fighter.ecb.currentECB.rect.height//2, self.fighter.ecb.currentECB.rect.width, self.fighter.ecb.currentECB.rect.height)
 
-                if not any(lambda f: abstractFighter.pathRectIntersects(current_ecb, next_ecb, f) <= 1, solid_list):
+                if not any(map(lambda f: abstractFighter.pathRectIntersects(current_ecb, next_ecb, f) <= 1, solid_list)):
                     tentativeDist = dists[current] + math.sqrt((nodes[current][0]-nodes[node][0])**2+(nodes[current][1]-nodes[node][1])**2)
                     if node not in openSet:
                         openSet.add(node)
