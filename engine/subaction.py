@@ -367,17 +367,65 @@ class applyForceVector(SubAction):
 # Don't use this for ordinary movement unless you're totally sure what you're doing.
 # A good use for this is to jitter a hit opponent during hitlag, just make sure to put them back where they should be before actually launching.
 class shiftFighterPosition(SubAction):
-    def __init__(self,new_x = None, new_y = None):
+    def __init__(self,new_x = None, new_y = None, xRelative = False, yRelative = False):
         SubAction.__init__(self)
         self.new_x = new_x
         self.new_y = new_y
+        self.xRelative = xRelative
+        self.yRelative = yRelative
         
     def execute(self, action, actor):
         if self.new_x:
-            actor.rect.x = self.new_x
+            if self.xRelative: actor.rect.x += self.new_x * actor.facing
+            else: actor.rect.x = self.new_x
         if self.new_y:
-            actor.rect.y = self.new_y
-            
+            if self.yRelative: actor.rect.y += self.new_y
+            else: actor.rect.y = self.new_y
+    
+    @staticmethod
+    def buildFromXml(node):
+        new_x = loadNodeWithDefault(node, 'xPos', None)
+        new_y = loadNodeWithDefault(node, 'yPos', None)
+        xRel = False
+        yRel = False
+        if node.find('xPos') is not None:
+            new_x = int(new_x)
+            xRel = node.find('xPos').attrib.has_key('relative')
+        if node.find('yPos') is not None:
+            new_y = int(new_y)
+            yRel = node.find('yPos').attrib.has_key('relative')
+        return shiftFighterPosition(new_x,new_y,xRel,yRel)
+
+class shiftSpritePosition(SubAction):
+    def __init__(self,new_x = None, new_y = None, xRelative = False):
+        SubAction.__init__(self)
+        self.new_x = new_x
+        self.new_y = new_y
+        self.xRelative = xRelative
+        
+    def execute(self, action, actor):
+        (old_x,old_y) = actor.sprite.spriteOffset
+        if self.new_x is not None:
+            old_x = self.new_x
+            if self.xRelative: old_x = old_x * actor.facing
+        if self.new_y is not None:
+            old_y = self.new_y
+        
+        actor.sprite.spriteOffset = (old_x,old_y)
+        print(actor.sprite.spriteOffset)
+        
+    @staticmethod
+    def buildFromXml(node):
+        new_x = loadNodeWithDefault(node, 'xPos', None)
+        new_y = loadNodeWithDefault(node, 'yPos', None)
+        xRel = False
+        if node.find('xPos') is not None:
+            new_x = int(new_x)
+            xRel = node.find('xPos').attrib.has_key('relative')
+        if node.find('yPos') is not None:
+            new_y = int(new_y)
+        return shiftSpritePosition(new_x,new_y,xRel)
+    
 class updateLandingLag(SubAction):
     def __init__(self,newLag,reset = False):
         self.newLag = newLag
@@ -826,6 +874,8 @@ subActionDict = {
                  'changeSubimage': changeFighterSubimage,
                  'changeFighterSpeed': changeFighterSpeed,
                  'changeFighterPreferredSpeed': changeFighterPreferredSpeed,
+                 'shiftPosition': shiftFighterPosition,
+                 'shiftSprite': shiftSpritePosition,
                  'setFrame': changeActionFrame,
                  'nextFrame': nextFrame,
                  'ifAttribute': ifAttribute,

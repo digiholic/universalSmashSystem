@@ -10,6 +10,7 @@ class Sprite(pygame.sprite.Sprite):
         self.visible = True
         self.changed = False
         self.lastDrawnPosition = pygame.Rect(0,0,0,0)
+        self.spriteOffset = (0,0)
         
     def draw(self,screen,offset,scale):
         if not self.visible:
@@ -17,7 +18,7 @@ class Sprite(pygame.sprite.Sprite):
         #TODO: Check for bit depth first, inform user about alpha
         h = int(round(self.rect.height * scale))
         w = int(round(self.rect.width * scale))
-        newOff = (int(offset[0] * scale), int(offset[1] * scale))
+        newOff = (int((offset[0]+self.spriteOffset[0]) * scale), int((offset[1]+self.spriteOffset[1]) * scale))
         try:
             blitSprite = pygame.transform.smoothscale(self.image, (w,h))
         except Exception as e:

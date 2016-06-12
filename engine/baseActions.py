@@ -384,7 +384,7 @@ class Grabbing(BaseGrabbing):
         grabbingState(actor)
         
 class HitStun(action.Action):
-    def __init__(self,hitstun,direction):
+    def __init__(self,hitstun=1,direction=0):
         action.Action.__init__(self, hitstun)
         self.direction = direction
         
@@ -655,6 +655,7 @@ class Fall(action.Action):
     def update(self,actor):
         action.Action.update(self, actor)
         actor.grounded = False
+        self.frame += 1
 
 class Helpless(action.Action):
     def __init__(self):
