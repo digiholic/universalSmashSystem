@@ -1421,7 +1421,7 @@ class CrouchGetup(baseActions.CrouchGetup):
         baseActions.CrouchGetup.update(self, actor)
         
 class HitStun(baseActions.HitStun):
-    def __init__(self,hitstun,direction):
+    def __init__(self,hitstun=0,direction=0):
         baseActions.HitStun.__init__(self, hitstun, direction)
 
     def setUp(self, actor):
@@ -1611,7 +1611,7 @@ class PlatformDrop(baseActions.PlatformDrop):
         baseActions.PlatformDrop.update(self, actor)
         
 class Shield(baseActions.Shield):
-    def __init__(self, newShield):
+    def __init__(self, newShield=True):
         baseActions.Shield.__init__(self, newShield)
     
     def update(self,actor):

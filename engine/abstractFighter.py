@@ -221,6 +221,7 @@ class AbstractFighter():
         self.inputBuffer.push()
         
         if self.hitstop > 0:
+            print("Hitstopped")
             if not self.hitstopVibration == (0,0):
                 (x,y) = self.hitstopVibration
                 self.rect.x += x
