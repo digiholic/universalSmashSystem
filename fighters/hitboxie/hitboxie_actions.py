@@ -71,7 +71,8 @@ class ForwardSpecial(action.Action):
         self.spriteRate = 0
 
     def setUp(self, actor):
-        actor.sideSpecialUses -= 1
+        #actor.sideSpecialUses -= 1
+        #TODO Attribute checking
         actor.change_x = 0
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
@@ -1571,6 +1572,15 @@ class Trip(baseActions.Trip):
             actor.changeSprite("land", 3)
         baseActions.Trip.update(self, actor)
 
+class Prone(baseActions.Prone):
+    def __init__(self):
+        baseActions.Prone.__init__(self, 360)
+        self.spriteName = 'land'
+        self.spriteRate = 2
+        
+    def update(self, actor):
+        if self.frame == 6: actor.changeSpriteImage(3)
+
 class Getup(baseActions.Getup):
     def __init__(self, direction):
         baseActions.Getup.__init__(self, direction, 12)
@@ -1655,7 +1665,7 @@ class PlatformDrop(baseActions.PlatformDrop):
         baseActions.PlatformDrop.update(self, actor)
         
 class Shield(baseActions.Shield):
-    def __init__(self, newShield):
+    def __init__(self, newShield=True):
         baseActions.Shield.__init__(self, newShield)
         self.spriteRate = 0
     
@@ -1958,7 +1968,7 @@ class Crouch(baseActions.Crouch):
         if self.frame == self.lastFrame:
             self.frame -= 1
         baseActions.Crouch.update(self, actor)
-        
+
 class Fall(baseActions.Fall):
     def __init__(self):
         baseActions.Fall.__init__(self)

@@ -1,6 +1,5 @@
 import engine.hitbox
 import baseActions
-from test.test_bigmem import BufferTest
 import pygame.color
 
 ########################################################

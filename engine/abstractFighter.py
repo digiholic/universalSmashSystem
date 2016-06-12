@@ -67,7 +67,8 @@ class AbstractFighter():
                 'airJumpHeight': 15,
                 'heavyLandLag': 4,
                 'fastfallMultiplier': 2,
-                'hitstunElasticity': .8
+                'hitstunElasticity': .8,
+                'shieldSize': 1
                 }
         
         try:
