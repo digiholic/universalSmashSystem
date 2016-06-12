@@ -782,11 +782,14 @@ class PlatformDrop(action.Action):
 class Shield(action.Action):
     def __init__(self, newShield=True):
         action.Action.__init__(self, 8)
+        self.newShield = newShield
+   
+    def setUp(self, actor):
+        action.Action.setUp(self, actor)
         self.forward_last = 0
         self.backward_last = 0
         self.down_last = 0
-        self.newShield = newShield
-   
+        
     def stateTransitions(self, actor):
         shieldState(actor)
         (key, invkey) = actor.getForwardBackwardKeys()
@@ -1003,7 +1006,7 @@ class ForwardRoll(action.Action):
             actor.change_x = 0
         elif self.frame == self.lastFrame:
             if 'shield' in actor.keysHeld:
-                actor.doAction('Shield')
+                actor.doShield()
             else:
                 actor.doAction('NeutralAction')
         self.frame += 1
@@ -1037,7 +1040,7 @@ class BackwardRoll(action.Action):
             actor.change_x = 0
         elif self.frame == self.lastFrame:
             if 'shield' in actor.keysHeld:
-                actor.doAction('Shield')
+                actor.doShield()
             else:
                 actor.doAction('NeutralAction')
         self.frame += 1
@@ -1077,8 +1080,8 @@ class SpotDodge(action.Action):
         elif self.frame == self.endInvulnFrame:
             pass
         elif self.frame == self.lastFrame:
-            if actor.keyHeld('shield'):
-                actor.doAction('Shield')
+            if 'shield' in actor.keysHeld:
+                actor.doShield()
             else:
                 actor.doAction('NeutralAction')
         self.frame += 1

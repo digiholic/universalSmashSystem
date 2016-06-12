@@ -76,6 +76,18 @@
 		<spriteRate>0</spriteRate>
 	</Helpless>
 	
+	<Land>
+		<length>6</length>
+		<sprite>land</sprite>
+		<spriteRate>3</spriteRate>
+	</Land>
+	
+	<HelplessLand>
+		<length>6</length>
+		<sprite>land</sprite>
+		<spriteRate>3</spriteRate>
+	</HelplessLand>
+	
 	<PlatformDrop>
 		<length>12</length>
 		<sprite>airjump</sprite>
@@ -171,11 +183,6 @@
 		<spriteRate>3</spriteRate>
 	</Getup>
 	
-	<PreShield>
-		<length>4</length>
-		<sprite>jump</sprite>
-		<spriteRate>0</spriteRate>
-	</PreShield>
 	
 	<Shield>
 		<length>4</length>
@@ -1354,12 +1361,147 @@
 		</frame>
 	</DownSpecial>
 	
+	<!-- Code Actions, TODO: pls fix -->
+	
 	<UpSpecial>
 		<loadCodeAction>
 			<file>hitboxie_actions.py</file>
 			<action>UpSpecial</action>
 		</loadCodeAction>
 	</UpSpecial>
+	
+	<GroundGrab>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>GroundGrab</action>
+		</loadCodeAction>
+	</GroundGrab>
+	
+	<ForwardSpecial>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>ForwardSpecial</action>
+		</loadCodeAction>
+	</ForwardSpecial>
+	
+	<DashGrab>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>DashGrab</action>
+		</loadCodeAction>
+	</DashGrab>
+	
+	<Pummel>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>Pummel</action>
+		</loadCodeAction>
+	</Pummel>
+	
+	<ForwardThrow>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>ForwardThrow</action>
+		</loadCodeAction>
+	</ForwardThrow>
+	
+	<DownThrow>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>DownThrow</action>
+		</loadCodeAction>
+	</DownThrow>
+	
+	<UpThrow>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>UpThrow</action>
+		</loadCodeAction>
+	</UpThrow>
+	
+	<BackThrow>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>BackThrow</action>
+		</loadCodeAction>
+	</BackThrow>
+	
+	<Trip>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>Trip</action>
+		</loadCodeAction>
+	</Trip>
+	
+	<GetupAttack>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>GetupAttack</action>
+		</loadCodeAction>
+	</GetupAttack>
+	
+	<ShieldStun>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>ShieldStun</action>
+		</loadCodeAction>
+	</ShieldStun>
+	
+	<Stunned>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>Stunned</action>
+		</loadCodeAction>
+	</Stunned>
+	
+	<Trapped>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>Trapped</action>
+		</loadCodeAction>
+	</Trapped>
+	
+	<Grabbed>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>Grabbed</action>
+		</loadCodeAction>
+	</Grabbed>
+	
+	<Release>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>Release</action>
+		</loadCodeAction>
+	</Release>
+	
+	<Released>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>Released</action>
+		</loadCodeAction>
+	</Released>
+	
+	<LedgeGetup>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>LedgeGetup</action>
+		</loadCodeAction>
+	</LedgeGetup>
+	
+	<LedgeAttack>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>LedgeAttack</action>
+		</loadCodeAction>
+	</LedgeAttack>
+	
+	<LedgeRoll>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>LedgeRoll</action>
+		</loadCodeAction>
+	</LedgeRoll>
 	
 	
 </actionList>
