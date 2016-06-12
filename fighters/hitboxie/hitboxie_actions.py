@@ -1455,11 +1455,7 @@ class CrouchGetup(baseActions.CrouchGetup):
         baseActions.CrouchGetup.update(self, actor)
         
 class HitStun(baseActions.HitStun):
-<<<<<<< HEAD
-    def __init__(self,hitstun=0,direction=0):
-=======
     def __init__(self,hitstun=1,direction=0):
->>>>>>> 4fce65a2de7c85bcf2080fb9f2a183e4e47242fd
         baseActions.HitStun.__init__(self, hitstun, direction)
         self.spriteRate = 0
 
