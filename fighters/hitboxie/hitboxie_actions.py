@@ -9,6 +9,7 @@ import pygame
 class NeutralGroundSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self,36)
+        self.spriteRate = 0
                 
     def setUp(self, actor):
         self.projectile = actor.loadArticle('SplatArticle')
@@ -32,6 +33,7 @@ class NeutralGroundSpecial(action.Action):
 class NeutralAirSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self,36)
+        self.spriteRate = 0
                 
     def setUp(self, actor):
         self.projectile = actor.loadArticle('SplatArticle')
@@ -66,6 +68,7 @@ class ForwardSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self, 100)
         self.spriteImage = 0
+        self.spriteRate = 0
 
     def setUp(self, actor):
         actor.sideSpecialUses -= 1
@@ -177,6 +180,7 @@ class ForwardSpecial(action.Action):
 class DownSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self, 32)
+        self.spriteRate = 0
     
     def setUp(self, actor):
         self.article = actor.loadArticle('ShineArticle')
@@ -227,6 +231,7 @@ class UpSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self, 70)
         self.angle = 90
+        self.spriteRate = 0
         
     def setUp(self, actor):
         action.Action.setUp(self,actor)
@@ -301,6 +306,7 @@ class UpSpecial(action.Action):
 class NeutralAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,22)
+        self.spriteRate = 0
     
     def setUp(self, actor):
         actor.preferred_xspeed = 0
@@ -359,6 +365,7 @@ class NeutralAttack(action.Action):
 class UpAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,28)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         actor.changeSprite("utilt")
@@ -407,6 +414,7 @@ class UpSmash(action.Action):
     def __init__(self):
         action.Action.__init__(self, 45)
         self.chargeLevel = 0
+        self.spriteRate = 0
         
     def setUp(self,actor):
         self.popupHBox = hitbox.DamageHitbox([0,0],[100,100],actor,0,20,0,90,0,hitbox.HitboxLock())
@@ -489,6 +497,7 @@ class UpSmash(action.Action):
 class DashAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,32)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         actor.changeSprite("nair")
@@ -541,6 +550,7 @@ class DashAttack(action.Action):
 class DownAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 36)
+        self.spriteRate = 0
     
     def setUp(self, actor):
         actor.preferred_xspeed = 0
@@ -594,6 +604,7 @@ class DownSmash(action.Action):
     def __init__(self):
         action.Action.__init__(self, 52)
         self.chargeLevel = 0
+        self.spriteRate = 0
 
     def setUp(self, actor):
         actor.preferred_xspeed = 0
@@ -658,6 +669,7 @@ class DownSmash(action.Action):
 class ForwardAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self, 24)
+        self.spriteRate = 0
 
     def tearDown(self,actor,nextAction):
         self.fSmashHitbox.kill()
@@ -696,6 +708,7 @@ class ForwardSmash(action.Action):
     def __init__(self):
         action.Action.__init__(self, 46)
         self.chargeLevel = 0
+        self.spriteRate = 0
         
     def setUp(self,actor):
         self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,16,0.8,.25,40,1,hitbox.HitboxLock())
@@ -756,6 +769,7 @@ class NeutralAir(action.Action):
         action.Action.__init__(self, 40)
         self.ecbCenter = [0,7]
         self.ecbSize = [64, 78]
+        self.spriteRate = 0
     
     def setUp(self, actor):
         actor.preferred_xspeed = 0
@@ -807,6 +821,7 @@ class NeutralAir(action.Action):
 class BackAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 35)
+        self.spriteRate = 0
         
     def setUp(self, actor):
         actor.changeSprite('bair')
@@ -853,6 +868,7 @@ class BackAir(action.Action):
 class ForwardAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 44)
+        self.spriteRate = 0
         
     def setUp(self, actor):
         actor.changeSprite('fair')
@@ -920,6 +936,7 @@ class DownAir(action.Action):
     def __init__(self):
         action.Action.__init__(self,39)
         self.bottom = 0
+        self.spriteRate = 0
 
     def setUp(self, actor):
         actor.setSpeed(0, actor.getFacingDirection())
@@ -1000,6 +1017,7 @@ class DownAir(action.Action):
 class UpAir(action.Action):
     def __init__(self):
         action.Action.__init__(self, 34)
+        self.spriteRate = 0
         
     def setUp(self, actor):
         sharedLock = hitbox.HitboxLock()
@@ -1046,6 +1064,7 @@ class UpAir(action.Action):
 class GroundGrab(action.Action):
     def __init__(self):
         action.Action.__init__(self, 30)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         self.grabHitbox = hitbox.GrabHitbox([30,0], [30,30], actor, hitbox.HitboxLock(), 30)
@@ -1087,6 +1106,7 @@ class GroundGrab(action.Action):
 class DashGrab(action.Action):
     def __init__(self):
         action.Action.__init__(self, 35)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         self.grabHitbox = hitbox.GrabHitbox([40,0], [50,30], actor, hitbox.HitboxLock(), 30)
@@ -1128,6 +1148,7 @@ class DashGrab(action.Action):
 class Pummel(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self,22)
+        self.spriteRate = 0
 
     def update(self, actor):
         baseActions.BaseGrabbing.update(self, actor)
@@ -1154,6 +1175,7 @@ class Pummel(baseActions.BaseGrabbing):
 class ForwardThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self,20)
+        self.spriteRate = 0
 
     def setUp(self,actor):
         self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,11,12.0,0.20,40,1,hitbox.HitboxLock())
@@ -1185,6 +1207,7 @@ class ForwardThrow(baseActions.BaseGrabbing):
 class DownThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self, 32)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         actor.changeSprite("nair")
@@ -1218,6 +1241,7 @@ class DownThrow(baseActions.BaseGrabbing):
 class UpThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self, 100)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         actor.changeSprite("land",3)
@@ -1247,6 +1271,7 @@ class UpThrow(baseActions.BaseGrabbing):
 class BackThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self, 22)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         actor.changeSprite("bthrow")
@@ -1272,6 +1297,7 @@ class BackThrow(baseActions.BaseGrabbing):
 class Move(baseActions.Move):
     def __init__(self,accel = True):
         baseActions.Move.__init__(self,15)
+        self.spriteRate = 0
         self.accel = accel
         
     def update(self, actor):
@@ -1297,6 +1323,7 @@ class Move(baseActions.Move):
 class Dash(baseActions.Dash):
     def __init__(self,accel = True):
         baseActions.Dash.__init__(self,15)
+        self.spriteRate = 0
         self.accel = accel
         
     def update(self, actor):
@@ -1321,6 +1348,7 @@ class Dash(baseActions.Dash):
 class Run(baseActions.Run):
     def __init__(self):
         baseActions.Run.__init__(self,2)
+        self.spriteRate = 0
         
     def update(self, actor):
         actor.changeSprite("run",4)
@@ -1332,6 +1360,7 @@ class Run(baseActions.Run):
 class Pivot(baseActions.Pivot):
     def __init__(self):
         baseActions.Pivot.__init__(self,10)
+        self.spriteRate = 0
         
     def update(self,actor):
         if self.frame == 0:
@@ -1353,6 +1382,7 @@ class Pivot(baseActions.Pivot):
 class RunPivot(baseActions.RunPivot):
     def __init__(self):
         baseActions.RunPivot.__init__(self,15)
+        self.spriteRate = 0
         
     def update(self,actor):
         if self.frame == 0:
@@ -1374,6 +1404,7 @@ class RunPivot(baseActions.RunPivot):
 class Grabbing(baseActions.Grabbing):
     def __init__(self):
         baseActions.Grabbing.__init__(self,1)
+        self.spriteRate = 0
 
     def update(self, actor):
         baseActions.Grabbing.update(self, actor)
@@ -1385,6 +1416,7 @@ class Grabbing(baseActions.Grabbing):
 class Stop(baseActions.Stop):
     def __init__(self):
         baseActions.Stop.__init__(self, 9)
+        self.spriteRate = 0
     
     def update(self, actor):
         if self.frame == 0:
@@ -1398,6 +1430,7 @@ class Stop(baseActions.Stop):
 class RunStop(baseActions.RunStop):
     def __init__(self):
         baseActions.RunStop.__init__(self, 12)
+        self.spriteRate = 0
     
     def update(self, actor):
         if self.frame == 0:
@@ -1412,6 +1445,7 @@ class RunStop(baseActions.RunStop):
 class CrouchGetup(baseActions.CrouchGetup):
     def __init__(self):
         baseActions.CrouchGetup.__init__(self, 9)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         actor.changeSprite('land', 2)
@@ -1421,8 +1455,9 @@ class CrouchGetup(baseActions.CrouchGetup):
         baseActions.CrouchGetup.update(self, actor)
         
 class HitStun(baseActions.HitStun):
-    def __init__(self,hitstun,direction):
+    def __init__(self,hitstun=1,direction=0):
         baseActions.HitStun.__init__(self, hitstun, direction)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         baseActions.HitStun.setUp(self, actor)
@@ -1439,6 +1474,7 @@ class HitStun(baseActions.HitStun):
 class Jump(baseActions.Jump):
     def __init__(self):
         baseActions.Jump.__init__(self,8,5)
+        self.spriteRate = 0
         
     def update(self,actor):
         if self.frame == 0:
@@ -1457,6 +1493,7 @@ class Jump(baseActions.Jump):
 class AirJump(baseActions.AirJump):
     def __init__(self):
         baseActions.AirJump.__init__(self,8,4)
+        self.spriteRate = 0
         
     def update(self,actor):
         if self.frame == 0:
@@ -1476,6 +1513,7 @@ class AirJump(baseActions.AirJump):
 class Helpless(baseActions.Helpless):
     def __init__(self):
         baseActions.Helpless.__init__(self)
+        self.spriteRate = 0
 
     def update(self, actor):
         actor.changeSprite("jump")
@@ -1484,6 +1522,7 @@ class Helpless(baseActions.Helpless):
 class Land(baseActions.Land):
     def __init__(self):
         baseActions.Land.__init__(self)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         baseActions.Land.setUp(self, actor)
@@ -1502,6 +1541,7 @@ class Land(baseActions.Land):
 class HelplessLand(baseActions.HelplessLand):
     def __init__(self):
         baseActions.HelplessLand.__init__(self)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         baseActions.HelplessLand.setUp(self, actor)
@@ -1520,6 +1560,7 @@ class HelplessLand(baseActions.HelplessLand):
 class Trip(baseActions.Trip):
     def __init__(self, length, direction):
         baseActions.Trip.__init__(self, length, direction)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         baseActions.Trip.setUp(self, actor)
@@ -1533,6 +1574,7 @@ class Trip(baseActions.Trip):
 class Getup(baseActions.Getup):
     def __init__(self, direction):
         baseActions.Getup.__init__(self, direction, 12)
+        self.spriteRate = 0
 
     def update(self, actor):
         if self.frame < 12:
@@ -1543,6 +1585,7 @@ class Getup(baseActions.Getup):
 class GetupAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,36)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         actor.preferred_xspeed = 0
@@ -1595,6 +1638,7 @@ class GetupAttack(action.Action):
 class PlatformDrop(baseActions.PlatformDrop):
     def __init__(self):
         baseActions.PlatformDrop.__init__(self, 12, 6, 9)
+        self.spriteRate = 0
         
     def update(self,actor):
         if self.frame == 2:
@@ -1613,6 +1657,7 @@ class PlatformDrop(baseActions.PlatformDrop):
 class Shield(baseActions.Shield):
     def __init__(self, newShield):
         baseActions.Shield.__init__(self, newShield)
+        self.spriteRate = 0
     
     def update(self,actor):
         if self.frame == 0:
@@ -1622,6 +1667,7 @@ class Shield(baseActions.Shield):
 class ShieldStun(baseActions.ShieldStun):
     def __init__(self, length):
         baseActions.ShieldStun.__init__(self, length)
+        self.spriteRate = 0
 
     def update(self, actor):
         actor.createMask([191, 63, 191], self.lastFrame, False, 8)
@@ -1630,6 +1676,7 @@ class ShieldStun(baseActions.ShieldStun):
 class Stunned(baseActions.Stunned):
     def __init__(self, length):
         baseActions.Stunned.__init__(self, length)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         baseActions.Stunned.setUp(self, actor)
@@ -1646,6 +1693,7 @@ class Stunned(baseActions.Stunned):
 class ForwardRoll(baseActions.ForwardRoll):
     def __init__(self):
         baseActions.ForwardRoll.__init__(self)
+        self.spriteRate = 0
         
     def update(self,actor):
         if self.frame == 0:
@@ -1657,6 +1705,7 @@ class ForwardRoll(baseActions.ForwardRoll):
 class BackwardRoll(baseActions.BackwardRoll):
     def __init__(self):
         baseActions.BackwardRoll.__init__(self)
+        self.spriteRate = 0
         
     def update(self,actor):
         if self.frame == 0:
@@ -1668,6 +1717,7 @@ class BackwardRoll(baseActions.BackwardRoll):
 class SpotDodge(baseActions.SpotDodge):
     def __init__(self):
         baseActions.SpotDodge.__init__(self)
+        self.spriteRate = 0
         
     def update(self,actor):
         if self.frame == 0:
@@ -1685,6 +1735,7 @@ class SpotDodge(baseActions.SpotDodge):
 class AirDodge(baseActions.AirDodge):
     def __init__(self):
         baseActions.AirDodge.__init__(self)
+        self.spriteRate = 0
         
     def update(self,actor):
         if self.frame == 0:
@@ -1698,6 +1749,7 @@ class AirDodge(baseActions.AirDodge):
 class Trapped(baseActions.Trapped):
     def __init__(self, length):
         baseActions.Trapped.__init__(self, length)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         baseActions.Trapped.setUp(self, actor)
@@ -1710,6 +1762,7 @@ class Trapped(baseActions.Trapped):
 class Grabbed(baseActions.Grabbed):
     def __init__(self,height):
         baseActions.Grabbed.__init__(self, height)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         baseActions.Grabbed.setUp(self, actor)
@@ -1722,6 +1775,7 @@ class Grabbed(baseActions.Grabbed):
 class Release(baseActions.Release):
     def __init__(self,height):
         baseActions.Release.__init__(self)
+        self.spriteRate = 0
 
     def update(self,actor):
         if self.frame == 0:
@@ -1739,6 +1793,7 @@ class Release(baseActions.Release):
 class Released(baseActions.Released):
     def __init__(self):
         baseActions.Released.__init__(self)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         baseActions.Released.setUp(self, actor)
@@ -1747,6 +1802,7 @@ class Released(baseActions.Released):
 class LedgeGrab(baseActions.LedgeGrab):
     def __init__(self,ledge=None):
         baseActions.LedgeGrab.__init__(self, ledge)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         baseActions.LedgeGrab.setUp(self, actor)
@@ -1759,6 +1815,7 @@ class LedgeGrab(baseActions.LedgeGrab):
 class LedgeGetup(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self,27)
+        self.spriteRate = 0
 
     def update(self,actor):
         if self.frame == 0:
@@ -1785,6 +1842,7 @@ class LedgeGetup(baseActions.LedgeGetup):
 class LedgeAttack(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self,36)
+        self.spriteRate = 0
 
     def setUp(self,actor):
         baseActions.LedgeGetup.setUp(self, actor)
@@ -1840,6 +1898,7 @@ class LedgeAttack(baseActions.LedgeGetup):
 class LedgeRoll(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self, 43)
+        self.spriteRate = 0
 
     def setUp(self, actor):
         baseActions.LedgeGetup.setUp(self, actor)
@@ -1881,6 +1940,7 @@ class LedgeRoll(baseActions.LedgeGetup):
 class NeutralAction(baseActions.NeutralAction):
     def __init__(self):
         baseActions.NeutralAction.__init__(self,1)
+        self.spriteRate = 0
         
     def update(self, actor):
         if self.frame == 0:
@@ -1890,6 +1950,7 @@ class NeutralAction(baseActions.NeutralAction):
 class Crouch(baseActions.Crouch):
     def __init__(self):
         baseActions.Crouch.__init__(self, 2)
+        self.spriteRate = 0
     def setUp(self, actor):
         actor.changeSprite('land', 0)
     def update(self, actor):
@@ -1901,6 +1962,7 @@ class Crouch(baseActions.Crouch):
 class Fall(baseActions.Fall):
     def __init__(self):
         baseActions.Fall.__init__(self)
+        self.spriteRate = 0
         
     def update(self,actor):
         actor.changeSprite("jump")

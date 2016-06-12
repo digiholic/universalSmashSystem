@@ -574,9 +574,8 @@ class AbstractFighter():
             else:
                 self.doAction('NeutralAirSpecial')
     
-    def doHitStun(self,hitstun,trajectory,hitstop):
+    def doHitStun(self,hitstun,trajectory):
         self.doAction('HitStun')
-        self.current_action.hitstop = hitstop
         self.current_action.direction = trajectory
         self.current_action.lastFrame = hitstun
         
