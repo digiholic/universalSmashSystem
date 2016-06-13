@@ -1675,7 +1675,7 @@ class Shield(baseActions.Shield):
         baseActions.Shield.update(self, actor)
 
 class ShieldStun(baseActions.ShieldStun):
-    def __init__(self, length):
+    def __init__(self, length=1):
         baseActions.ShieldStun.__init__(self, length)
         self.spriteRate = 0
 
@@ -1684,7 +1684,7 @@ class ShieldStun(baseActions.ShieldStun):
         baseActions.ShieldStun.update(self, actor)
 
 class Stunned(baseActions.Stunned):
-    def __init__(self, length):
+    def __init__(self, length=1):
         baseActions.Stunned.__init__(self, length)
         self.spriteRate = 0
 
