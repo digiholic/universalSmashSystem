@@ -3,7 +3,7 @@ import sys
 
 # Dependencies are automatically detected, but it might need
 # fine tuning.
-buildOptions = dict(packages = ['numpy', 'pygame', 'requests'], 
+buildOptions = dict(packages = ['numpy', 'pygame', 'requests', 'xml'], 
                     excludes = [], 
                     include_files = ['rexlia rg.ttf', 'full Pack 2025.ttf', 'settingsManager.py',
                                      'battle.py', 'main.py', 'musicManager.py', 'spriteManager.py',
