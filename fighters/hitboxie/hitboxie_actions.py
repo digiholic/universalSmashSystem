@@ -1559,7 +1559,7 @@ class HelplessLand(baseActions.HelplessLand):
         baseActions.HelplessLand.update(self, actor)
 
 class Trip(baseActions.Trip):
-    def __init__(self, length, direction):
+    def __init__(self, length=1, direction=0):
         baseActions.Trip.__init__(self, length, direction)
         self.spriteRate = 0
 
@@ -1582,7 +1582,7 @@ class Prone(baseActions.Prone):
         if self.frame == 6: actor.changeSpriteImage(3)
 
 class Getup(baseActions.Getup):
-    def __init__(self, direction):
+    def __init__(self, direction=0):
         baseActions.Getup.__init__(self, direction, 12)
         self.spriteRate = 0
 
@@ -1757,7 +1757,7 @@ class AirDodge(baseActions.AirDodge):
         baseActions.AirDodge.update(self, actor)
 
 class Trapped(baseActions.Trapped):
-    def __init__(self, length):
+    def __init__(self, length=1):
         baseActions.Trapped.__init__(self, length)
         self.spriteRate = 0
 
@@ -1770,7 +1770,7 @@ class Trapped(baseActions.Trapped):
         baseActions.Trapped.update(self, actor)
 
 class Grabbed(baseActions.Grabbed):
-    def __init__(self,height):
+    def __init__(self,height=0):
         baseActions.Grabbed.__init__(self, height)
         self.spriteRate = 0
 
@@ -1783,7 +1783,7 @@ class Grabbed(baseActions.Grabbed):
         baseActions.Grabbed.update(self, actor)
 
 class Release(baseActions.Release):
-    def __init__(self,height):
+    def __init__(self,height=0):
         baseActions.Release.__init__(self)
         self.spriteRate = 0
 
