@@ -429,7 +429,7 @@ class HealthTracker(spriteManager.Sprite):
     def __init__(self,fighter):
         spriteManager.Sprite.__init__(self)
         self.fighter = fighter
-        self.percent = fighter.damage
+        self.percent = int(fighter.damage)
         
         self.bgSprite = fighter.franchise_icon
         self.bgSprite.recolor(self.bgSprite.image,pygame.Color('#cccccc'),pygame.Color(settingsManager.getSetting('playerColor'+str(fighter.playerNum))))
@@ -468,7 +468,7 @@ class HealthTracker(spriteManager.Sprite):
         
         self.percentSprite.image = pygame.Surface((196,64), pygame.SRCALPHA, 32).convert_alpha()
         
-        percentString = str(self.percent) #converting it to a string so we can iterate over it.
+        percentString = str(int(self.percent)) #converting it to a string so we can iterate over it.
         length = 0
         for ch in percentString:
             i = int(ch)
