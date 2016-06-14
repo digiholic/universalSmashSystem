@@ -305,6 +305,8 @@ def saveSettings(settings):
     parser.add_section('window')
     parser.set('window','windowName',str(settings['windowName']))
     parser.set('window','windowSize',str(settings['windowSize']))
+    parser.set('window','windowWidth',str(settings['windowSize'][0]))
+    parser.set('window','windowHeight',str(settings['windowSize'][1]))
     parser.set('window','frameCap',str(settings['frameCap']))
     
     parser.add_section('sound')
