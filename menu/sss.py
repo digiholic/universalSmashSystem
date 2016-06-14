@@ -69,6 +69,7 @@ class StageScreen():
                             currentBattle = battle.Battle(self.rules,self.fighters,stage.getStage())
                             currentBattle.startBattle(screen)
                             status = 1
+                            return
                             #do something with battle result
                     
                     elif k == 'jump':

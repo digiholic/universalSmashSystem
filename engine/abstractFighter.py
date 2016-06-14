@@ -130,7 +130,9 @@ class AbstractFighter():
         #except:
         #    print('unable to load actions. Loading base')
         #    self.actions = settingsManager.importFromURI(settingsManager.createPath(''),'engine/baseActions.py',suffix=str(playerNum))
-          
+    
+    
+    def initialize(self):      
         # Super armor variables
         # Set with attacks to make them super armored
         # Remember to set them back at some point
@@ -156,7 +158,7 @@ class AbstractFighter():
         #Initialize engine variables
         
         # Connect the keyBindings object to the fighter and flush any residual inputs
-        self.keyBindings = settingsManager.getControls(playerNum)
+        self.keyBindings = settingsManager.getControls(self.playerNum)
         self.keyBindings.loadFighter(self)
         self.keyBindings.flushInputs()
         
