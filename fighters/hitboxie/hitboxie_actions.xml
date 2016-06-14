@@ -662,7 +662,6 @@
 				<baseKnockback>2</baseKnockback>
 				<trajectory>270</trajectory>
 				<hitstun>2</hitstun>
-				<hitboxLock>main</hitboxLock>
 				<xDraw>0.05</xDraw>
 				<yDraw>-0.1</yDraw>
 			</createHitbox>
@@ -704,6 +703,15 @@
 		<!-- TODO hurtbox resize -->
 		<frame number="14">
 			<activateHitbox>spikeBox</activateHitbox>
+		</frame>
+		<frame number="20">
+			<unlockHitbox>spikeBox</unlockHitbox>
+		</frame>
+		<frame number="26">
+			<unlockHitbox>spikeBox</unlockHitbox>
+		</frame>
+		<frame number="32">
+			<unlockHitbox>spikeBox</unlockHitbox>
 		</frame>
 		<frame number="38">
 			<deactivateHitbox>spikeBox</deactivateHitbox>
