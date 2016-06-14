@@ -549,6 +549,7 @@ class Getup(action.Action):
         action.Action.setUp(self, actor)
         
     def update(self, actor):
+        action.Action.update(self, actor)
         if self.frame == self.lastFrame:
             actor.doAction('NeutralAction')
         self.frame += 1

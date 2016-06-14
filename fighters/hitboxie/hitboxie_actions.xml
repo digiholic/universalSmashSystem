@@ -180,7 +180,7 @@
 	<Getup>
 		<length>12</length>
 		<sprite>land</sprite>
-		<spriteRate>3</spriteRate>
+		<spriteRate>-3</spriteRate>
 	</Getup>
 	
 	
@@ -273,12 +273,6 @@
 		</frame>
 		
 	</Prone>
-	
-	<Getup>
-		<length>12</length>
-		<sprite>land</sprite>
-		<spriteRate>3</spriteRate>
-	</Getup>
 	
 	<NeutralAttack>
 		<length>22</length>
