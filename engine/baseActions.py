@@ -895,7 +895,7 @@ class Trapped(action.Action):
         self.frame += (cross**2)*4
         self.lastPosition = newPosition
         if self.frame >= self.lastFrame:
-            actor.doReleased()
+            actor.doAction('Released')
         # Throws and other grabber-controlled releases are the grabber's responsibility
         # Also, the grabber should always check to see if the grabbee is still under grab
         self.frame += 1
@@ -1520,11 +1520,10 @@ def jumpState(actor):
         actor.calc_grav(actor.var['fastfallMultiplier'])
             
 def shieldState(actor):
-    (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('attack'):
-        actor.doGroundGrab()
+        actor.doAction('GroundGrab')
     elif actor.keyHeld('jump', 8, 1):
-        actor.doJump()
+        actor.doAction('Jump')
 
 def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
@@ -1562,13 +1561,13 @@ def grabbingState(actor):
     elif actor.keyHeld('attack', 1):
         actor.doAction('Pummel')
     elif actor.keyHeld(key):
-        actor.doThrow()
+        actor.doAction('ForwardThrow')
     elif actor.keyHeld(invkey):
-        actor.doThrow()
+        actor.doAction('BackThrow')
     elif actor.keyHeld('up'):
-        actor.doThrow()
+        actor.doAction('UpThrow')
     elif actor.keyHeld('down'):
-        actor.doThrow()
+        actor.doAction('DownThrow')
 
 def proneState(actor):
     (key, invkey) = actor.getForwardBackwardKeys()

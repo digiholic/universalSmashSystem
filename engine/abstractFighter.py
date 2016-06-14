@@ -477,20 +477,6 @@ class AbstractFighter():
             self.flip()
         self.doAction('Run')
         
-        
-    def doThrow(self):
-        (key, invkey) = self.getForwardBackwardKeys()
-        if self.keysContain(key):
-            self.doAction('ForwardThrow')
-        elif self.keysContain(invkey):
-            self.doAction('BackThrow')
-        elif self.keysContain('down'):
-            self.doAction('DownThrow')
-        elif self.keysContain('up'):
-            self.doAction('UpThrow')
-        else: # How did we get here? 
-            self.doAction('ForwardThrow')
-        
     def doGroundAttack(self):
         (key, invkey) = self.getForwardBackwardKeys()
         if self.keysContain(key):

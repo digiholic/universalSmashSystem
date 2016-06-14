@@ -209,9 +209,9 @@ class GrabHitbox(Hitbox):
         if 'AbstractFighter' in list(map(lambda x:x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
             if other.lockHitbox(self):
                 self.owner.setGrabbing(other)
-                self.owner.changeAction(self.owner.actions.Grabbing())
-                other.changeAction(other.actions.Grabbed(self.height))
-
+                self.owner.doAction('Grabbing')
+                other.doGrabbed(self.height)
+                
     def compareTo(self, other):
         if not isinstance(other, DamageHitbox) and not isinstance(other, GrabHitbox) and other.owner is not None:
             self.owner.setGrabbing(other.owner)
