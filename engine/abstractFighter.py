@@ -60,7 +60,7 @@ class AbstractFighter():
                 'dodgeSpeed': 10,
                 'friction': 0.2,
                 'staticGrip': 0.1,
-                'crawlGrip': 0.4,
+                'pivotGrip': 0.4,
                 'airControl': 0.6,
                 'jumps': 1,
                 'jumpHeight': 12.5,

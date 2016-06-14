@@ -103,6 +103,8 @@
 		<length>15</length>
 		<sprite>run</sprite>
 		<spriteRate>3</spriteRate>
+
+
 		
 		<frame number="0">
 			<ifVar var="accel">
@@ -121,11 +123,12 @@
 		<length>15</length>
 		<sprite>run</sprite>
 		<spriteRate>2</spriteRate>
+
+                <vars>
+			<runStartFrame type="int">4</runStartFrame>
+		</vars>
 		
 		<frame number="4">
-			<changeFighterSpeed>
-				<xSpeed relative="true">7</xSpeed>
-			</changeFighterSpeed>
 			<changeFighterPreferredSpeed>
 				<xSpeed relative="true">9</xSpeed>
 			</changeFighterPreferredSpeed>

@@ -1346,6 +1346,7 @@ class Dash(baseActions.Dash):
         
         baseActions.Dash.update(self, actor)
         
+"""
 class Run(baseActions.Run):
     def __init__(self):
         baseActions.Run.__init__(self,2)
@@ -1357,6 +1358,7 @@ class Run(baseActions.Run):
         baseActions.Run.update(self, actor)
         if (self.frame == self.lastFrame):
             self.frame = 1
+"""
                    
 class Pivot(baseActions.Pivot):
     def __init__(self):
