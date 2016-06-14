@@ -46,6 +46,7 @@
 		<dodgeSpeed>10</dodgeSpeed>
 		<friction>0.2</friction>
 		<staticGrip>0.1</staticGrip>
+                <crawlGrip>0.4</crawlGrip>
 		<airControl>0.6</airControl>
 		<jumps>1</jumps>
 		<jumpHeight>12.5</jumpHeight>

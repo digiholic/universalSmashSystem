@@ -314,7 +314,7 @@ class Crouch(action.Action):
         action.Action.update(self, actor)
         if actor.grounded is False:
             actor.doAction('Fall')
-        actor.accel(actor.var['staticGrip'])
+        actor.accel(actor.var['crawlGrip'])
         (key, invkey) = actor.getForwardBackwardKeys()
         if actor.keysContain(key):
             actor.preferred_xspeed = actor.var['crawlSpeed']*actor.facing
