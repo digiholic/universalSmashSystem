@@ -121,6 +121,15 @@
 		<length>15</length>
 		<sprite>run</sprite>
 		<spriteRate>2</spriteRate>
+		
+		<frame number="4">
+			<changeFighterSpeed>
+				<xSpeed relative="true">7</xSpeed>
+			</changeFighterSpeed>
+			<changeFighterPreferredSpeed>
+				<xSpeed relative="true">9</xSpeed>
+			</changeFighterPreferredSpeed>
+		</frame>
 	</Dash>
 	
 	<Run>
