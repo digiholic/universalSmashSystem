@@ -870,7 +870,7 @@
 	<ForwardAir>
 		<length>44</length>
 		<sprite>fair</sprite>
-		<spriteRate>3</spriteRate>
+		<spriteRate>2</spriteRate>
 		
 		<transitions>
 			<transitionState>airControl</transitionState>
@@ -907,39 +907,39 @@
 		<frame number="0">
 			<updateLandingLag>26</updateLandingLag>
 		</frame>
-		<frame number="18">
+		<frame number="12">
 			<activateHitbox>sourSpot</activateHitbox>
 		</frame>
-		<frame number="21">
+		<frame number="14">
 			<modifyHitbox name="sourSpot">
 				<x_offset type="int">-14</x_offset>
 				<y_offset type="int">-20</y_offset>
 			</modifyHitbox>
 		</frame>
-		<frame number="24">
+		<frame number="16">
 			<modifyHitbox name="sourSpot">
 				<x_offset type="int">9</x_offset>
 				<y_offset type="int">-26</y_offset>
 			</modifyHitbox>
 			<activateHitbox>sweetSpot</activateHitbox>
 		</frame>
-		<frame number="27">
+		<frame number="18">
 			<modifyHitbox name="sourSpot">
 				<x_offset type="int">23</x_offset>
 				<y_offset type="int">-12</y_offset>
 			</modifyHitbox>
 			<deactivateHitbox>sweetSpot</deactivateHitbox>
 		</frame>
-		<frame number="30">
+		<frame number="20">
 			<modifyHitbox name="sourSpot">
 				<x_offset type="int">30</x_offset>
 				<y_offset type="int">10</y_offset>
 			</modifyHitbox>
 		</frame>
-		<frame number="33">
+		<frame number="22">
 			<deactivateHitbox>sourSpot</deactivateHitbox>
 		</frame>
-		<frame number="39">
+		<frame number="26">
 			<changeSprite>jump</changeSprite>
 		</frame>
 	</ForwardAir>
@@ -1011,9 +1011,10 @@
 		<frame number="21">
 			<changeSubimage>4</changeSubimage>
 			<deactivateHitbox>sour</deactivateHitbox>
+                        <updateLandingLag reset="True">12</updateLandingLag>
 		</frame>
 		<frame number="last">
-			<updateLandingLag>16</updateLandingLag>
+			<updateLandingLag reset="True">12</updateLandingLag>
 		</frame>
 	</UpAir>
 	
@@ -1233,20 +1234,23 @@
 		<frame number="14">
 			<changeSubimage>7</changeSubimage>
 		</frame>
+
 		<frame number="18">
-			<changeSubimage>8</changeSubimage>
-		</frame>
-		<frame number="22">
-			<changeSubimage>9</changeSubimage>
-		</frame>
-		<frame number="26">
-			<changeSubimage>10</changeSubimage>
 			<ifButton>
 				<button held="true">special</button>
 				<if>
 					<doAction>NeutralGroundSpecial</doAction>
 				</if>
 			</ifButton>
+		</frame>
+		<frame number="20">
+			<changeSubimage>8</changeSubimage>
+		</frame>
+		<frame number="26">
+			<changeSubimage>9</changeSubimage>
+		</frame>
+		<frame number="32">
+			<changeSubimage>10</changeSubimage>
 		</frame>
 	</NeutralGroundSpecial>
 	
@@ -1264,19 +1268,16 @@
 		</setUp>
 		
 		<frame number="0">
-			<updateLandingLag>15</updateLandingLag>
+			<updateLandingLag>18</updateLandingLag>
 		</frame>
 		<frame number="12">
 			<activateArticle>projectile</activateArticle>
 		</frame>
-		
 		<frame number="14">
 			<changeSubimage>7</changeSubimage>
 		</frame>
-		<frame number="18">
-			<changeSubimage>8</changeSubimage>
-		</frame>
-		<frame number="20">
+
+		<frame number="15">
 			<ifButton>
 				<button held="true">special</button>
 				<if>
@@ -1284,14 +1285,18 @@
 				</if>
 			</ifButton>
 		</frame>
-		<frame number="22">
-			<changeSubimage>9</changeSubimage>
+		
+		<frame number="20">
+			<changeSubimage>8</changeSubimage>
 		</frame>
 		<frame number="26">
+			<changeSubimage>9</changeSubimage>
+		</frame>
+		<frame number="32">
 			<changeSubimage>10</changeSubimage>
 		</frame>
 		<frame number="last">
-			<updateLandingLag reset="true">9</updateLandingLag>
+			<updateLandingLag reset="true">12</updateLandingLag>
 		</frame>
 	</NeutralAirSpecial>
 	
