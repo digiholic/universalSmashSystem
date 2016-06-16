@@ -135,7 +135,7 @@
 		</frame>
 	</Dash>
 	
-	<Run>
+	<!--Run>
 		<length>2</length>
 		<sprite>run</sprite>
 		<spriteRate>0</spriteRate>
@@ -156,7 +156,7 @@
 		<frame number="last">
 			<setFrame>1</setFrame>
 		</frame>
-	</Run>
+	</Run-->
 	
 	<Pivot>
 		<length>10</length>

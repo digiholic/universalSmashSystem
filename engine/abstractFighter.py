@@ -475,10 +475,10 @@ class AbstractFighter():
             self.flip()
         self.doAction('Dash')
         
-    def doRun(self,direction):
-        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
-            self.flip()
-        self.doAction('Run')
+    #def doRun(self,direction):
+    #    if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
+    #        self.flip()
+    #    self.doAction('Run')
         
     def doGroundAttack(self):
         (key, invkey) = self.getForwardBackwardKeys()

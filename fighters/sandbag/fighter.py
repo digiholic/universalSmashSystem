@@ -66,8 +66,8 @@ class Fighter(abstractFighter.AbstractFighter):
     def doDash(self,direction):
         pass
         
-    def doRun(self,direction):
-        pass
+    #def doRun(self,direction):
+    #    pass
         
     def doPivot(self):
         pass

@@ -103,6 +103,10 @@ class Pivot(action.Action):
     def stateTransitions(self, actor):
         if actor.keyHeld('jump', self.frame):
             actor.doAction('Jump')
+        (key, invkey) = actor.getForwardBackwardKeys()
+        if actor.keysContain(invkey):
+            print("pivot pivot")
+            actor.doAction('Pivot')
 
         
     def update(self,actor):
@@ -226,7 +230,7 @@ class RunStop(action.Action):
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.keyHeld(key,self.frame):
             print("run")
-            actor.doRun(actor.getFacingDirection())
+            actor.doDash(actor.getFacingDirection())
         if actor.keyHeld(invkey,self.frame):
             print("run pivot")
             actor.doAction('RunPivot')
