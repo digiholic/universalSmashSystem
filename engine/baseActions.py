@@ -80,10 +80,7 @@ class Dash(action.Action):
         self.frame += 1
         
     def stateTransitions(self,actor):
-        if actor.change_x == actor.var['runSpeed']*self.direction:
-            runState(actor, self.direction)
-        else:
-            dashState(actor,self.direction)
+        dashState(actor,self.direction)
         
 class Pivot(action.Action):
     def __init__(self,length=0):
@@ -1470,6 +1467,7 @@ def dashState(actor, direction):
     elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
         actor.doAction('RunStop')
 
+"""
 def runState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keysContain('shield') and actor.keyHeld('attack'):
@@ -1488,6 +1486,7 @@ def runState(actor, direction):
         actor.doAction('RunStop')
     elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
         actor.doAction('RunStop')
+"""
 
 def jumpState(actor):
     airControl(actor)
@@ -1632,7 +1631,7 @@ stateDict = {
             "airState": airState,
             "moveState": moveState,
             "dashState": dashState,
-            "runState": runState,
+            #"runState": runState,
             "jumpState": jumpState,
             "shieldState": shieldState,
             "ledgeState": ledgeState,
