@@ -909,7 +909,7 @@ class AbstractFighter():
         return firstUpFrame > lastDownFrame
 
     #Analog directional input
-    def getSmoothedInput(self, distanceBack = 64):
+    def getSmoothedInput(self, distanceBack = 64, maxMagnitude = 1.0):
         #TODO If this is a gamepad, simply return its analog input
         holdBuffer = reversed(self.inputBuffer.getLastNFrames(distanceBack))
         smoothedX = 0.0
@@ -932,17 +932,17 @@ class AbstractFighter():
             elif (workingY < 0 and smoothedY > 0) or (workingY > 0 and smoothedY < 0):
                 ySmooth = 0.6
             magnitude = math.sqrt(workingX**2 + workingY**2)
-            if magnitude > 1:
-                workingX /= magnitude
-                workingY /= magnitude
+            if magnitude > maxMagnitude:
+                workingX /= magnitude/maxMagnitude
+                workingY /= magnitude/maxMagnitude
             smoothedX *= xSmooth
             smoothedY *= ySmooth
             smoothedX += workingX*2
             smoothedY += workingY*2
         finalMagnitude = math.sqrt(smoothedX**2+smoothedY**2)
-        if finalMagnitude > 1:
-            smoothedX /= finalMagnitude
-            smoothedY /= finalMagnitude
+        if finalMagnitude > maxMagnitude:
+            smoothedX /= finalMagnitude/maxMagnitude
+            smoothedY /= finalMagnitude/maxMagnitude
         return [smoothedX, smoothedY]
         
     

@@ -771,22 +771,22 @@ class Shield(action.Action):
     def stateTransitions(self, actor):
         shieldState(actor)
         (key, invkey) = actor.getForwardBackwardKeys()
-        if actor.keyBuffered(key, 1, 1) and self.forward_last > 0:
+        if actor.keyBuffered(key, 1, 0.6) and self.forward_last > 0:
             actor.doAction('ForwardRoll')
-        elif actor.keyBuffered(invkey, 1, 1) and self.backward_last > 0:
+        elif actor.keyBuffered(invkey, 1, 0.6) and self.backward_last > 0:
             actor.doAction('BackwardRoll')
-        elif actor.keyBuffered('down', 1, 1) and self.down_last > 0:
+        elif actor.keyBuffered('down', 1, 0.6) and self.down_last > 0:
             actor.doAction('SpotDodge')
 
-        if actor.keyBuffered(key):
+        if actor.keyBuffered(key, 1, 0.6):
             self.forward_last = 9
             self.backward_last = 0
-        if actor.keyBuffered(invkey):
+        if actor.keyBuffered(invkey, 1, 0.6):
             self.backward_last = 9
             self.forward_last = 0
-        if actor.keyBuffered('down'):
+        if actor.keyBuffered('down', 1, 0.6):
             self.down_last = 9
-        if actor.keyBuffered('up'):
+        if actor.keyBuffered('up', 1, 0.6):
             self.down_last = 0
    
     def tearDown(self, actor, nextAction):
@@ -1076,7 +1076,7 @@ class AirDodge(action.Action):
         self.move_vec = [0,0]
         
         if settingsManager.getSetting('enableWavedash'):
-            actor.updateLandingLag(1,True)
+            actor.updateLandingLag(8,True)
         else:
             actor.updateLandingLag(24)
         if settingsManager.getSetting('airDodgeType') == 'directional':
@@ -1508,6 +1508,8 @@ def jumpState(actor):
 def shieldState(actor):
     if actor.keyHeld('attack'):
         actor.doAction('GroundGrab')
+    elif actor.keyHeld('special'):
+        actor.doGroundSpecial()
     elif actor.keyHeld('jump', 8, 1):
         actor.doAction('Jump')
 

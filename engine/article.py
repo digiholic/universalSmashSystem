@@ -69,8 +69,8 @@ class ShieldArticle(Article):
         self.mainHitbox.article = self
         
     def update(self):
-        self.rect.center = [self.owner.rect.center[0]+50*self.owner.var['shieldSize']*self.owner.getSmoothedInput()[0], 
-                            self.owner.rect.center[1]+50*self.owner.var['shieldSize']*self.owner.getSmoothedInput()[1]]
+        self.rect.center = [self.owner.rect.center[0]+50*self.owner.var['shieldSize']*self.owner.getSmoothedInput(64, 0.5)[0], 
+                            self.owner.rect.center[1]+50*self.owner.var['shieldSize']*self.owner.getSmoothedInput(64, 0.5)[1]]
         if self.frame == 0:
             self.owner.active_hitboxes.add(self.reflectHitbox)
         if self.frame == 2:
