@@ -1,7 +1,6 @@
 import math
 import pygame
 import spriteManager
-import abstractFighter
 
 class HitboxLock(object):
     pass
@@ -184,14 +183,14 @@ class FunnelHitbox(DamageHitbox):
                     self.owner.applyPushback(self.damage/4.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     x_diff = self.rect.centerx - other.rect.centerx
                     y_diff = self.rect.centery - other.rect.centery
-                    (x_vel, y_vel) = abstractFighter.getXYFromDM(self.trajectory, self.baseKnockback)
+                    (x_vel, y_vel) = getXYFromDM(self.trajectory, self.baseKnockback)
                     x_vel += self.x_draw*x_diff
                     y_vel += self.y_draw*y_diff
                     other.applyKnockback(self.damage, math.hypot(x_vel,y_vel), 0, math.atan2(-y_vel,x_vel)*180.0/math.pi, 0, self.hitstun, self.base_hitstun, self.hitlag_multiplier)
                 else:
                     x_diff = self.article.rect.centerx - other.rect.centerx
                     y_diff = self.article.rect.centery - other.rect.centery
-                    (x_vel, y_vel) = abstractFighter.getXYFromDM(self.trajectory, self.baseKnockback)
+                    (x_vel, y_vel) = getXYFromDM(self.trajectory, self.baseKnockback)
                     x_vel += self.x_draw*x_diff
                     y_vel += self.y_draw*y_diff
                     other.applyKnockback(self.damage, math.hypot(x_vel,y_vel), 0, math.atan2(-y_vel,x_vel)*180.0/math.pi, 0, self.hitstun, self.base_hitstun, self.hitlag_multiplier)
@@ -233,7 +232,7 @@ class ReflectorHitbox(InertHitbox):
                 other.article.changeOwner(self.owner)
             if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
                 v_other = [other.article.change_x, other.article.change_y]
-                v_self = abstractFighter.getXYFromDM(self.angle, 1.0)
+                v_self = getXYFromDM(self.angle, 1.0)
                 dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
                 normsqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
                 ratio = 1 if normsqr == 0 else dot/normsqr
@@ -292,10 +291,23 @@ class PerfectShieldHitbox(Hitbox):
                 other.article.changeOwner(self.owner)
             if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
                 v_other = [other.article.change_x, other.article.change_y]
-                v_self = abstractFighter.getXYFromDM(abstractFighter.getDirectionBetweenPoints(self.rect.center, other.article.rect.center)+90, 1.0)
+                v_self = getXYFromDM(getDirectionBetweenPoints(self.rect.center, other.article.rect.center)+90, 1.0)
                 dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
                 normsqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
                 ratio = 1 if normsqr == 0 else dot/normsqr
                 projection = [v_self[0]*ratio, v_self[1]*ratio]
                 (other.article.change_x, other.article.change_y) = (2*projection[0]-v_other[0], 2*projection[1]-v_other[1])
         return True
+
+def getXYFromDM(direction,magnitude):
+    rad = math.radians(direction)
+    x = round(math.cos(rad) * magnitude,5)
+    y = -round(math.sin(rad) * magnitude,5)
+    return (x,y)
+
+def getDirectionBetweenPoints(p1, p2):
+    (x1, y1) = p1
+    (x2, y2) = p2
+    dx = x2 - x1
+    dy = y1 - y2
+    return (180 * math.atan2(dy, dx)) / math.pi 
