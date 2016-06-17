@@ -43,6 +43,9 @@ class SubAction():
     def execute(self, action, actor):
         pass
     
+    def getDisplayName(self):
+        pass
+    
     @staticmethod
     def buildFromXml(node):
         pass
@@ -99,6 +102,9 @@ class ifAttribute(SubAction):
             for act in self.elseActions:
                 act.execute(action,actor)
     
+    def getDisplayName(self):
+        return 'If Fighter Attribute'
+    
     @staticmethod
     def buildFromXml(node):
         variable = node.attrib['var']
@@ -152,6 +158,9 @@ class ifButton(SubAction):
             for act in self.elseActions:
                 act.execute(action,actor)
     
+    def getDisplayName(self):
+        return 'If Button'
+    
     @staticmethod
     def buildFromXml(node):
         button = node.find('button').text
@@ -203,6 +212,9 @@ class ifVar(SubAction):
             for act in self.elseActions:
                 act.execute(action,actor)
     
+    def getDisplayName(self):
+        return 'If Variable'
+    
     @staticmethod
     def buildFromXml(node):
         variable = node.attrib['var']
@@ -250,6 +262,9 @@ class changeFighterSprite(SubAction):
     def execute(self, action, actor):
         action.spriteName = self.sprite
         actor.changeSprite(self.sprite)
+    
+    def getDisplayName(self):
+        return 'Change Sprite: '+self.sprite
         
     @staticmethod
     def buildFromXml(node):
@@ -265,6 +280,9 @@ class changeFighterSubimage(SubAction):
         action.spriteRate = 0 #spriteRate has been broken, so we have to ignore it from now on
         #TODO changeSpriteRate subaction
         actor.changeSpriteImage(self.index)
+    
+    def getDisplayName(self):
+        return 'Change Subimage: '+str(self.index)
         
     @staticmethod
     def buildFromXml(node):
@@ -302,6 +320,9 @@ class changeFighterPreferredSpeed(SubAction):
                 elif owner == 'action':
                     self.pref_y = getattr(self, value)
             actor.preferred_yspeed = self.pref_y
+    
+    def getDisplayName(self):
+        return 'Change Preferred Speed: ' + str(self.pref_x) + ' X, ' + str(self.pref_y) + 'Y'
         
     @staticmethod
     def buildFromXml(node):
@@ -339,7 +360,10 @@ class changeFighterSpeed(SubAction):
                     self.speed_y = getattr(self, value)
             
             actor.change_y = self.speed_y
-
+    
+    def getDisplayName(self):
+        return 'Change Fighter Speed: ' + str(self.speed_x) + ' X, ' + str(self.speed_y) + 'Y'
+    
     @staticmethod
     def buildFromXml(node):
         xRelative = False
@@ -381,6 +405,9 @@ class shiftFighterPosition(SubAction):
             if self.yRelative: actor.rect.y += self.new_y
             else: actor.rect.y = self.new_y
     
+    def getDisplayName(self):
+        return 'Shift Position: ' + str(self.pref_x) + ' X, ' + str(self.pref_y) + 'Y'
+    
     @staticmethod
     def buildFromXml(node):
         new_x = loadNodeWithDefault(node, 'xPos', None)
@@ -412,6 +439,9 @@ class shiftSpritePosition(SubAction):
         
         actor.sprite.spriteOffset = (old_x,old_y)
         print(actor.sprite.spriteOffset)
+    
+    def getDisplayName(self):
+        return 'Shift Sprite: ' + str(self.new_x) + ' X, ' + str(self.new_y) + 'Y'
         
     @staticmethod
     def buildFromXml(node):
@@ -432,6 +462,9 @@ class updateLandingLag(SubAction):
         
     def execute(self, action, actor):
         actor.updateLandingLag(self.newLag,self.reset)
+    
+    def getDisplayName(self):
+        return 'Update Landing Lag: ' + str(self.newLag)
         
     @staticmethod
     def buildFromXml(node):
@@ -473,7 +506,13 @@ class changeActionFrame(SubAction):
     def execute(self, action, actor):
         if self.relative: action.frame += self.frame
         else: action.frame = self.frame
-        
+    
+    def getDisplayName(self):
+        if self.relative:
+            return 'Change Frame By: ' + str(self.frame)
+        else:
+            return 'Set Frame: ' + str(self.frame)
+            
     @staticmethod
     def buildFromXml(node):
         return changeActionFrame(int(node.text),node.attrib.has_key('relative'))
@@ -482,6 +521,9 @@ class changeActionFrame(SubAction):
 class nextFrame(SubAction):
     def execute(self, action, actor):
         action.frame += 1
+    
+    def getDisplayName(self):
+        return 'Next Frame'
     
     @staticmethod
     def buildFromXml(node):
@@ -499,6 +541,9 @@ class transitionState(SubAction):
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
         baseActions.stateDict[self.transition](actor)
+    
+    def getDisplayName(self):
+        return 'Apply Transition State: ' + str(self.transition)
         
     @staticmethod
     def buildFromXml(node):
@@ -593,6 +638,9 @@ class createHitbox(SubAction):
                                                    self.damageMultiplier, self.velocityMultiplier,
                                                    self.hp, self.trajectory, self.transcendence)
         action.hitboxes[self.name] = hitbox
+    
+    def getDisplayName(self):
+        return 'Create New Hitbox: ' + self.name
         
     @staticmethod
     def buildFromXml(node):
@@ -649,6 +697,10 @@ class modifyHitbox(SubAction):
             for name,value in self.hitboxVars.iteritems():
                 if hasattr(hitbox, name):
                     setattr(hitbox, name, value)
+    
+    def getDisplayName(self):
+        return 'Modify Hitbox: ' + str(self.hitboxName)
+    
     @staticmethod
     def buildFromXml(node):
         SubAction.buildFromXml(node)
@@ -673,6 +725,9 @@ class activateHitbox(SubAction):
         SubAction.execute(self, action, actor)
         actor.active_hitboxes.add(action.hitboxes[self.hitboxName])
     
+    def getDisplayName(self):
+        return 'Activate Hitbox: ' + self.hitboxName
+    
     @staticmethod
     def buildFromXml(node):
         return activateHitbox(node.text)
@@ -685,6 +740,9 @@ class deactivateHitbox(SubAction):
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
         action.hitboxes[self.hitboxName].kill()
+    
+    def getDisplayName(self):
+        return 'Deactivate Hitbox: ' + self.hitboxName
     
     @staticmethod
     def buildFromXml(node):
@@ -699,6 +757,9 @@ class updateHitbox(SubAction):
         SubAction.execute(self, action, actor)
         action.hitboxes[self.hitboxName].update()
     
+    def getDisplayName(self):
+        return 'Update Hitbox Position: ' + self.hitboxName
+    
     @staticmethod
     def buildFromXml(node):
         return updateHitbox(node.text)
@@ -712,6 +773,9 @@ class unlockHitbox(SubAction):
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
         action.hitboxes[self.hitboxName].hitbox_lock = engine.hitbox.HitboxLock()
+    
+    def getDisplayName(self):
+        return 'Unlock Hitbox: ' + self.hitboxName
     
     @staticmethod
     def buildFromXml(node):
@@ -737,7 +801,8 @@ class modifyHurtBox(SubAction):
             actor.hurtbox.rect.centerx = actor.sprite.rect.centerx + self.center[0]
             actor.hurtbox.rect.centery = actor.sprite.rect.centery + self.center[1]
         
-    
+    def getDisplayName(self):
+        return 'Modify Fighter Hurtbox'
     @staticmethod
     def buildFromXml(node):
         imageCenter = False
@@ -759,6 +824,9 @@ class changeECB(SubAction):
         action.ecbSize = self.size
         action.ecbCenter = self.center
         action.ecbOffset = self.offset
+    
+    def getDisplayName(self):
+        return 'Modify Fighter Collision Box'
     
     @staticmethod
     def buildFromXml(node):
@@ -783,6 +851,9 @@ class loadArticle(SubAction):
         SubAction.execute(self, action, actor)
         action.articles[self.name] = actor.loadArticle(self.article)
         print(action.articles)
+    
+    def getDisplayName(self):
+        return 'Load Article: ' + self.name
         
     @staticmethod
     def buildFromXml(node):
@@ -795,6 +866,9 @@ class activateArticle(SubAction):
         
     def execute(self, action, actor):
         action.articles[self.name].activate()
+    
+    def getDisplayName(self):
+        return 'Activate Article: ' + self.name
         
     @staticmethod
     def buildFromXml(node):
@@ -807,6 +881,9 @@ class deactivateArticle(SubAction):
         
     def execute(self, action, actor):
         action.articles[self.name].deactivate()
+    
+    def getDisplayName(self):
+        return 'Deactivate Article: ' + self.name
         
     @staticmethod
     def buildFromXml(node):
@@ -821,6 +898,9 @@ class doAction(SubAction):
         print('changing action: ',self.action)
         actor.doAction(self.action)
         
+    def getDisplayName(self):
+        return 'Change Action: ' + self.action
+    
     @staticmethod
     def buildFromXml(node):
         return doAction(node.text)
@@ -836,7 +916,10 @@ class createMask(SubAction):
         pulse = True if self.pulseLength > 0 else False
         color = [self.color.r,self.color.g,self.color.b]
         actor.createMask(color,self.duration,pulse,self.pulseLength)
-        
+    
+    def getDisplayName(self):
+        return 'Create Color Mask: ' + str(self.color)
+    
     @staticmethod
     def buildFromXml(node):
         color = pygame.color.Color(node.find('color').text)
@@ -851,6 +934,9 @@ class removeMask(SubAction):
     def execute(self, action, actor):
         actor.mask = None
         
+    def getDisplayName(self):
+        return 'Remove Color Mask'
+    
     @staticmethod
     def buildFromXml(node):
         return removeMask()
@@ -863,6 +949,9 @@ class debugAction(SubAction):
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
         print(self.statement)
+    
+    def getDisplayName(self):
+        return 'Print Debug'
     
     @staticmethod
     def buildFromXml(node):

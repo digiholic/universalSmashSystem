@@ -34,6 +34,8 @@ class BuilderWindow(Tk):
         self.grid_columnconfigure(1, weight=2, uniform="column")
         
         self.fighter = None
+        self.fighterFile = None
+        self.fighterProperties = None
         
         self.mainloop()
         
@@ -41,16 +43,34 @@ class BuilderWindow(Tk):
         dirname, fname = os.path.split(fighterFile.name)
         if fighterFile.name.endswith('.py'):
             fighter = settingsManager.importFromURI(fighterFile, fighterFile.name, True)
-            self.fighter = fighter.Fighter(dirname,0)
+            if hasattr(fighter, 'Fighter'):
+                self.fighter = fighter.Fighter(dirname,0)
+                showinfo('Advanced mode warning','Legacy Editor cannot edit Advanced Mode (.py) fighter files. The fighter will be opened in read-only mode. Depending on the fighter, there may be inconsistencies with behavior in-game compared to what you view here.')
+            else:
+                showinfo('Error loading fighter','File does not contain a fighter. Are you sure you are loading the right Python file?')
+                return
         else:
             self.fighter = AbstractFighter(dirname,0)
         
+        self.fighterFile = fighterFile
         self.fighter.initialize()
+        self.fighterProperties = fighterFile.read()
+        
+        #Load the fighter in the other panels that need it
         self.viewerPane.ViewerPanel.loadFighter(self.fighter)
+        self.actionPane.actionSelectorPanel.loadFighter(self.fighter)
+        self.actionPane.subactionPanel.loadText(self.fighterProperties)
+    
+    def getFighterProperties(self):
+        if self.fighterProperties:
+            return self.fighterProperties
+        else:
+            return ''
         
-        #Load the fighter.xml in the side pane
-        self.actionPane.subactionPanel.loadText(fighterFile.read())
-        
+    def getFighterAction(self,actionName,getRawXml=False):
+        if getRawXml: return self.fighter.actions.actionsXML.find(actionName)
+        else: return self.fighter.getAction(actionName)
+    
 class MenuBar(Menu):
     def __init__(self,root):
         Menu.__init__(self, root)
@@ -69,8 +89,6 @@ class MenuBar(Menu):
     
     def loadFighter(self):
         fighterFile = askopenfile(mode="r",initialdir=settingsManager.createPath('fighters'),filetypes=[('TUSSLE Fighters','*.xml'),('Advanced Fighters', '*.py')])
-        if fighterFile.name.endswith('.py'):
-            showinfo('Advanced mode warning','Legacy Editor cannot edit Advanced Mode (.py) fighter files. The fighter will be opened in read-only mode. Depending on the fighter, there may be inconsistencies with behavior in-game compared to what you view here.')
         self.root.loadFighter(fighterFile)
         
     def saveFighter(self):
@@ -161,25 +179,60 @@ Action Selector Panel has the dropdowns to change the currently viewed action an
 class ActionSelectorPanel(Frame):
     def __init__(self,root):
         Frame.__init__(self,root, bg="purple", height=50)
+        self.root = root
         
-        currentAction = StringVar(self)
-        currentAction.set("Fighter Properties")
-        actList = []
-        for name,_ in inspect.getmembers(engine.baseActions, inspect.isclass):
-            actList.append(name)
+        self.currentAction = StringVar(self)
+        self.currentAction.set("Fighter Properties")
+        self.currentAction.trace('w', self.changeAction)
         
-        action = OptionMenu(self,currentAction,*actList)
-        action.config(width=15)
+        self.currentGroup = StringVar(self)
+        self.currentGroup.set("SetUp")
         
-        currentGroup = StringVar(self)
-        currentGroup.set("SetUp")
-        groupList = ["SetUp","TearDown","Transitions","Before Frames","After Frames","Last Frame"]
-        group = OptionMenu(self,currentGroup,*groupList)
-        group.config(width=15)
         
-        action.pack(side=LEFT)
-        group.pack(side=LEFT)
-
+        self.actList = ['Fighter Properties']
+        self.defaultGroupList = ["Properties","Set Up","Tear Down","Transitions","Before Frames","After Frames","Last Frame"] 
+        self.groupList = self.defaultGroupList[:] #have to do this to copy be value instead of reference
+        
+        self.action = OptionMenu(self,self.currentAction,*self.actList)
+        self.group = OptionMenu(self,self.currentGroup,*self.groupList)
+        
+    def loadFighter(self,fighter):
+        self.actList = ["Fighter Properties"]
+        
+        if isinstance(fighter.actions, engine.actionLoader.ActionLoader):
+            self.actList.extend(fighter.actions.getAllActions())
+        else:
+            for name,_ in inspect.getmembers(fighter.actions, inspect.isclass):
+                self.actList.append(name)
+        self.refreshDropdowns()
+        self.currentAction.set('Fighter Properties')
+        
+    def changeAction(self,*args):
+        if self.currentAction.get() == 'Fighter Properties':
+            self.group.pack_forget()
+        else:
+            self.groupList = self.defaultGroupList[:]
+            action = self.root.root.fighter.getAction(self.currentAction.get())
+            if action:
+                for i in range(0,action.lastFrame):
+                    self.groupList.append('Frame '+str(i))
+            self.refreshDropdowns()
+            self.currentGroup.set('Properties')
+            
+    def refreshDropdowns(self):
+        self.action.destroy()
+        self.action = OptionMenu(self,self.currentAction,*self.actList)
+        self.action.config(width=18)
+        
+        self.group.destroy()
+        self.group = OptionMenu(self,self.currentGroup,*self.groupList)
+        self.group.config(width=10)
+        
+        self.action.pack_forget()
+        self.group.pack_forget()
+        
+        self.action.pack(side=LEFT)
+        self.group.pack(side=LEFT)      
 """
 Subaction Panel shows the subactions in the current group
 """
@@ -188,57 +241,140 @@ class SubactionPanel(Frame):
         Frame.__init__(self,root, bg="blue")
         self.root = root
         
+        #Create scrollbars and textfield
         self.textfield = Text(self,wrap=NONE)
-        
         self.xscrollbar = Scrollbar(self.textfield, orient=HORIZONTAL, command=self.textfield.xview)
         self.yscrollbar = Scrollbar(self.textfield, orient=VERTICAL, command=self.textfield.yview)
-        
         self.textfield.configure(xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
         
+        self.showTextField()
+        
+        self.subActionList = []
+        
+        #The event listeners from the dropdowns in the selector panel
+        self.root.actionSelectorPanel.currentAction.trace('w',self.actionChanged)
+        self.root.actionSelectorPanel.currentGroup.trace('w',self.groupChanged)
+        
+        self.action = None
+        self.group = None
+        
+    """
+    When displaying text instead of a modifiable subaction list,
+    switch to the textField.
+    """
+    def showTextField(self):
         self.textfield.pack(fill=BOTH,expand=True)
         self.yscrollbar.pack(side=RIGHT, fill=Y)
         self.xscrollbar.pack(side=BOTTOM, fill=X)
+        #Hide subaction selector
+    
+    """
+    When displaying a modifiable subaction list instead of text,
+    switch to the list.
+    """
+    def showSubactionList(self):
+        #Show subaction selector
+        self.textfield.pack_forget()
+        self.yscrollbar.pack_forget()
+        self.xscrollbar.pack_forget()
+        
+    def actionChanged(self,*args):
+        newAction = self.root.actionSelectorPanel.currentAction.get()
+        if newAction == 'Fighter Properties':
+            self.showTextField()
+            self.loadText(self.root.root.getFighterProperties())
+        else:
+            self.action = self.root.root.getFighterAction(newAction)
+            self.showTextField()
+            if isinstance(self.action,engine.action.DynamicAction):
+                node = self.root.root.getFighterAction(newAction,True)
+                self.loadText(ElementTree.tostring(node))
+            else:
+                self.loadText('Advanced action from '+str(self.root.root.fighter.actions))
+            #self.showSubactionList()
+    
+    def groupChanged(self,*args):
+        self.group = self.root.actionSelectorPanel.currentGroup.get()
+        newAction = self.root.actionSelectorPanel.currentAction.get()
+        
+        if isinstance(self.action,engine.action.DynamicAction):
+            node = self.root.root.getFighterAction(newAction,True)
+            if self.group == 'Properties':
+                self.loadText(ElementTree.tostring(node))
+            elif self.group == 'Set Up':
+                try: self.loadText(ElementTree.tostring(node.find('setUp')))
+                except: self.loadText('')
+            elif self.group == 'Tear Down':
+                try: self.loadText(ElementTree.tostring(node.find('tearDown')))
+                except: self.loadText('')
+            elif self.group == 'Transitions':
+                try: self.loadText(ElementTree.tostring(node.find('transitions')))
+                except: self.loadText('')
+            elif self.group == 'Before Frames':
+                for target in node.findall("frame"):
+                    self.loadText('')
+                    if target.attrib['number'] == 'before':
+                        self.loadText(ElementTree.tostring(target))
+            elif self.group == 'After Frames':
+                self.loadText('')
+                for target in node.findall("frame"):
+                    if target.attrib['number'] == 'after':
+                        self.loadText(ElementTree.tostring(target))
+            elif self.group == 'Last Frame':
+                self.loadText('')
+                for target in node.findall("frame"):
+                    if target.attrib['number'] == 'last':
+                        self.loadText(ElementTree.tostring(target))
+            else: #It's a numbered frame
+                frameNo = self.group[6:]
+                self.loadText('')
+                for target in node.findall("frame"):
+                    if target.attrib['number'] == frameNo:
+                        self.loadText(ElementTree.tostring(target))
+
+        else:
+            self.loadText('Advanced action from '+str(self.root.root.fighter.actions))
         
     def loadText(self,text):
-        act = self.xmlToActions(text)
+        try:
+            act = self.xmlToActions(text)
+        except: #It is not XML
+            act = text
+        self.textfield.delete("1.0", END)
         self.textfield.insert(INSERT, act)
     
-    def xmlToActions(self,xml):
+    def xmlToActions(self,xml,prefix=''):
         root = ElementTree.fromstring(xml)
         text = ""
-        for child in list(root):
-            text += child.tag+': '
-            if len(list(child)) > 0: #It has child nodes
-                if len(child.attrib) > 0: #if it has attributes
-                    text += '('
-                    for name,atr in child.attrib.iteritems():
-                        text+=name+': '+str(atr)
-                        text+=','
-                    text = text[:-1] #chop off the last comma
-                    text += ')'
-                text += '\n'
-                for subchild in child:
-                    text += '  '+subchild.tag+': '
-                    text += subchild.text if subchild.text is not None else '' 
-                    if len(subchild.attrib) > 0: #if it has attributes
-                        text += '('
-                        for name,atr in subchild.attrib.iteritems():
-                            text+=name+': '+str(atr)
-                            text+=','
-                        text = text[:-1] #chop off the last comma
-                        text += ')'
-                    text += '\n'
-            else:
-                text += child.text if child.text is not None else ''
-                if len(child.attrib) > 0: #if it has attributes
-                    text += '('
-                    for name,atr in child.attrib.iteritems():
-                        text+=name+': '+str(atr)
-                        text+=','
-                    text = text[:-1] #chop off the last comma
-                    text += ')'
-                text += '\n'
+        for child in root:
+            text += self.printNode(child)
         return text
+    
+    def printNode(self,node,prefix=''):
+        text = prefix
+        text += node.tag+': '
+        text += node.text.lstrip() if node.text is not None else ''
+        if len(node.attrib) > 0: #if it has attributes
+            text += ' ('
+            for name,atr in node.attrib.iteritems():
+                text+=name+': '+str(atr)
+                text+=','
+            text = text[:-1] #chop off the last comma
+            text += ')'
+            
+        if len(list(node)) > 0: #if it has children
+            text += '\n'
+            for child in node:
+                text += self.printNode(child,'  '+prefix)
+        else: text += '\n'
+        return text
+        
+    class SubactionSelector(Label):
+        def __init__(self,root,subaction):
+            Label.__init__(self, root, text=subaction.getDisplayName(), bg="white")
+            
+            self.subaction = subaction
+            self.selected = False
 """
 Subaction Property Panel has the options for creating a subaction
 """

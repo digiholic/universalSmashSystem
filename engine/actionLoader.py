@@ -17,7 +17,13 @@ class ActionLoader():
         if self.actionsXML.find(actionName) is None:
             return False
         return True
-        
+    
+    def getAllActions(self):
+        ret = []
+        for item in list(self.actionsXML):
+            ret.append(item.tag)
+        return ret
+            
     def loadAction(self,actionName):
         #Load the action XML
         actionXML = self.actionsXML.find(actionName)

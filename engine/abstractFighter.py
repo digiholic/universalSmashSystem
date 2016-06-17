@@ -452,6 +452,15 @@ class AbstractFighter():
             class_ = getattr(self.actions,actionName)
             action = class_()
             if action.lastFrame > 0: self.changeAction(action)
+    
+    def getAction(self,actionName):
+        action = None
+        if hasattr(self.actions,'loadAction'):
+            action = self.actions.loadAction(actionName)
+        elif hasattr(self.actions, actionName):
+            class_ = getattr(self.actions,actionName)
+            action = class_()
+        return action
             
     def hasAction(self,actionName):
         if hasattr(self.actions,'hasAction'):
