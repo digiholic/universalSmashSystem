@@ -177,6 +177,7 @@ class RunPivot(action.Action):
         
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
+        actor.preferred_xspeed = 0
         #actor.flip()
         if isinstance(nextAction, Dash):
             nextAction.accel = False
@@ -185,6 +186,10 @@ class RunPivot(action.Action):
     def stateTransitions(self, actor):
         if actor.keyHeld('jump', self.frame):
             actor.doAction('Jump')
+        (key, invkey) = actor.getForwardBackwardKeys()
+        if actor.keysContain(invkey):
+            print("run pivot pivot")
+            actor.doAction('RunPivot')
         
     def update(self,actor):
         action.Action.update(self, actor)
