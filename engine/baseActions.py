@@ -613,7 +613,7 @@ class AirJump(action.Action):
                     actor.change_x = actor.facing * actor.var['maxAirSpeed']    
         if self.frame < self.lastFrame:
             self.frame += 1
-        if self.frame == self.lastFrame and not actor.keysContain('jump'):
+        if self.frame == self.lastFrame:
             actor.doAction('Fall')
         
 class Fall(action.Action):
