@@ -385,31 +385,31 @@ class SubactionPanel(Frame):
                 #except: self.loadText('')
             elif self.group == 'Tear Down':
                 for subact in self.action.tearDownActions:
-                    self.subActionList.append(self.SubactionSelector(self,subact))
+                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
                 #try: self.loadText(ElementTree.tostring(node.find('tearDown')))
                 #except: self.loadText('')
             elif self.group == 'Transitions':
                 for subact in self.action.stateTransitionActions:
-                    self.subActionList.append(self.SubactionSelector(self,subact))
+                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
                 #try: self.loadText(ElementTree.tostring(node.find('transitions')))
                 #except: self.loadText('')
             elif self.group == 'Before Frames':
                 for subact in self.action.actionsBeforeFrame:
-                    self.subActionList.append(self.SubactionSelector(self,subact))
+                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
                 #for target in node.findall("frame"):
                 #    self.loadText('')
                 #    if target.attrib['number'] == 'before':
                 #        self.loadText(ElementTree.tostring(target))
             elif self.group == 'After Frames':
                 for subact in self.action.actionsAfterFrame:
-                    self.subActionList.append(self.SubactionSelector(self,subact))
+                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
                 #self.loadText('')
                 #for target in node.findall("frame"):
                 #    if target.attrib['number'] == 'after':
                 #        self.loadText(ElementTree.tostring(target))
             elif self.group == 'Last Frame':
                 for subact in self.action.actionsAtLastFrame:
-                    self.subActionList.append(self.SubactionSelector(self,subact))
+                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
                 #self.loadText('')
                 #for target in node.findall("frame"):
                 #    if target.attrib['number'] == 'last':
@@ -417,7 +417,7 @@ class SubactionPanel(Frame):
             elif not self.group == 'Properties': #It's a numbered frame
                 frameNo = int(self.group[6:])
                 for subact in self.action.actionsAtFrame[frameNo]:
-                    self.subActionList.append(self.SubactionSelector(self,subact))
+                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
                 #self.loadText('')
                 #for target in node.findall("frame"):
                 #    if target.attrib['number'] == frameNo:
