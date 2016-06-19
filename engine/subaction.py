@@ -1,6 +1,7 @@
 import engine.hitbox
 import baseActions
 import pygame.color
+import Tkinter as tk
 
 ########################################################
 #               ABSTRACT ACTIONS                       #
@@ -166,7 +167,7 @@ class ifButton(SubAction):
         button = node.find('button').text
         if node.find('button').attrib.has_key('held'): held = True
         else: held = False
-        bufferTime = loadNodeWithDefault(node, 'buffer', 1)
+        bufferTime = int(loadNodeWithDefault(node, 'buffer', 1))
         ifActions = []
         for ifact in node.find('if'):
             if subActionDict.has_key(ifact.tag): #Subactions string to class dict
@@ -438,7 +439,7 @@ class shiftSpritePosition(SubAction):
             old_y = self.new_y
         
         actor.sprite.spriteOffset = (old_x,old_y)
-        print(actor.sprite.spriteOffset)
+        #print(actor.sprite.spriteOffset)
     
     def getDisplayName(self):
         return 'Shift Sprite: ' + str(self.new_x) + ' X, ' + str(self.new_y) + 'Y'
@@ -895,7 +896,6 @@ class doAction(SubAction):
         self.action = action
         
     def execute(self, action, actor):
-        print('changing action: ',self.action)
         actor.doAction(self.action)
         
     def getDisplayName(self):

@@ -124,7 +124,7 @@
 		<sprite>run</sprite>
 		<spriteRate>2</spriteRate>
 
-                <vars>
+		<vars>
 			<runStartFrame type="int">4</runStartFrame>
 		</vars>
 		

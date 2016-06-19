@@ -39,8 +39,8 @@ class ActionLoader():
         #Get the baseClass
         class_ = None
         if (actionXML is not None) and (actionXML.find('base') is not None):
-            if hasattr(baseActions, actionXML.find('base')): 
-                class_ = getattr(baseActions, actionXML.find('base'))
+            if hasattr(baseActions, actionXML.find('base').text): 
+                class_ = getattr(baseActions, actionXML.find('base').text)
         else:
             if hasattr(baseActions, actionName):
                 class_ = getattr(baseActions,actionName)

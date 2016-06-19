@@ -296,7 +296,7 @@ class AbstractFighter():
         self.current_action.stateTransitions(self)
         self.current_action.update(self) #update our action
         
-        if self.mask: self.mask = self.mask.update()
+        if self.mask:self.mask = self.mask.update()
         self.shieldIntegrity += 0.4
         if self.shieldIntegrity > 100: self.shieldIntegrity = 100
         
@@ -440,8 +440,8 @@ class AbstractFighter():
     """
 
     def changeAction(self,newAction):
-        newAction.setUp(self)
         self.current_action.tearDown(self,newAction)
+        newAction.setUp(self)
         self.current_action = newAction
     
     def doAction(self,actionName):
@@ -858,7 +858,7 @@ class AbstractFighter():
 
     #A key press
     def keyBuffered(self, key, distanceBack = 1, state = 0.1):
-        return any(map(lambda k: key in k and k[key] >= state, self.inputBuffer.getLastNFrames(distanceBack)))
+        return any(map(lambda k: key in k and k[key] >= state,self.inputBuffer.getLastNFrames(distanceBack)))
 
     #A key tap (press, then release)
     def keyTapped(self, key, distanceBack = 8, state = 0.1):

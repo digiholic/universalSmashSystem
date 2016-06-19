@@ -4,6 +4,7 @@ import inspect
 import sys
 import os
 import engine.baseActions
+import subactionSelector
 import xml.etree.ElementTree as ElementTree
 from Tkinter import * 
 from tkFileDialog import askopenfile
@@ -23,8 +24,8 @@ class BuilderWindow(Tk):
         self.geometry('640x480')
         self.config(menu=MenuBar(self))
         
-        self.viewerPane = ViewerPane(self)
         self.actionPane = ActionPane(self)
+        self.viewerPane = ViewerPane(self)
         
         self.viewerPane.grid(row=0,column=0,sticky=N+S+E+W)
         self.actionPane.grid(row=0,column=1,sticky=N+S+E+W)
@@ -33,9 +34,12 @@ class BuilderWindow(Tk):
         self.grid_columnconfigure(0, weight=3, uniform="column")
         self.grid_columnconfigure(1, weight=2, uniform="column")
         
+        self.actionPane.actionSelectorPanel.currentAction.trace('w',self.changeAction)
+        
         self.fighter = None
         self.fighterFile = None
         self.fighterProperties = None
+        self.action = None
         
         self.mainloop()
         
@@ -71,6 +75,11 @@ class BuilderWindow(Tk):
         if getRawXml: return self.fighter.actions.actionsXML.find(actionName)
         else: return self.fighter.getAction(actionName)
     
+    def changeAction(self,*args):
+        newAction = self.actionPane.actionSelectorPanel.currentAction.get()
+        if not newAction == 'Fighter Properties':
+            self.action = self.getFighterAction(newAction)
+            
 class MenuBar(Menu):
     def __init__(self,root):
         Menu.__init__(self, root)
@@ -101,8 +110,8 @@ class ViewerPane(Frame):
     def __init__(self,root):
         Frame.__init__(self, root)
         self.root = root
-        self.ViewerPanel = ViewerPanel(self)
         self.NavigatorPanel = NavigatorPanel(self)
+        self.ViewerPanel = ViewerPanel(self)
         
         self.ViewerPanel.pack(fill=BOTH,expand=True)
         self.NavigatorPanel.pack(fill=X)
@@ -121,7 +130,10 @@ class ViewerPanel(Frame):
         pygame.display.init()
         self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
         
+        self.root.NavigatorPanel.frame.trace('w',self.changeFrame)
+        self.root.root.actionPane.actionSelectorPanel.currentAction.trace('w',self.changeAction)
         self.fighter = None
+        self.frame = 0
         self.center = (0,0)
         self.scale = 1.0
         
@@ -136,9 +148,11 @@ class ViewerPanel(Frame):
                 if self.fighter: self.loadFighter(self.fighter)
         
         self.screen.fill(pygame.Color("pink"))
-           
+        
         if self.fighter:
+            self.fighter.mask = None #These don't work inside of the builder
             self.fighter.draw(self.screen, self.fighter.rect.topleft, self.scale)
+            
         
         pygame.display.flip()
         
@@ -149,14 +163,65 @@ class ViewerPanel(Frame):
         self.root.root.wm_title('Legacy Editor - '+self.fighter.name)
         self.fighter.rect.centerx = self.screen.get_rect().centerx + self.center[0]
         self.fighter.rect.centery = self.screen.get_rect().centery + self.center[1]
-            
+    
+    def changeFrame(self,*args):
+        self.frame = self.root.NavigatorPanel.frame.get()
+        if self.action:
+            self.action.frame = 0
+            while self.action.frame < self.frame:
+                self.action.update(self.fighter)
+                
+    
+    def changeAction(self,*args):
+        self.action = self.root.root.action
+        if self.action: self.fighter.changeAction(self.action)
+    
 """
 Navigator Panel contains the controls to step through the action
 """
 class NavigatorPanel(Frame):
     def __init__(self,root):
         Frame.__init__(self,root, bg="white",height=50)
-
+        self.root = root
+        
+        self.frameChangerPanel = Frame(self)
+        self.buttonMinus = Button(self.frameChangerPanel, text="-", command=lambda:self.changeFrame(-1),state=DISABLED)
+        self.currentFrame = Label(self.frameChangerPanel,text="0/1",state=DISABLED)
+        self.buttonPlus = Button(self.frameChangerPanel, text="+", command=lambda:self.changeFrame(1),state=DISABLED)
+        
+        self.root.root.actionPane.actionSelectorPanel.currentAction.trace('w',self.changeAction)
+        self.frame = IntVar(self)
+        self.frame.set(0)
+        self.action = None
+    
+        self.frameChangerPanel.pack()
+        
+        self.buttonMinus.grid(row=0,column=0)
+        self.currentFrame.grid(row=0,column=1)
+        self.buttonPlus.grid(row=0,column=2)
+        
+    def changeFrame(self,amt):
+        if self.action:
+            self.frame.set(self.frame.get() + amt)
+            self.currentFrame.config(text=str(self.frame.get())+"/"+str(self.action.lastFrame))
+            self.buttonMinus.config(state=NORMAL)
+            self.currentFrame.config(state=NORMAL)
+            self.buttonPlus.config(state=NORMAL)
+            if self.frame.get() == 0:
+                self.buttonMinus.config(state=DISABLED)
+            if self.frame.get() == self.action.lastFrame:
+                self.buttonPlus.config(state=DISABLED)
+        else:
+            self.buttonMinus.config(state=DISABLED)
+            self.currentFrame.config(state=DISABLED)
+            self.buttonPlus.config(state=DISABLED)
+            
+    def changeAction(self,*args):
+        self.action = self.root.root.action
+        self.frame.set(0)
+        self.changeFrame(0)
+        
+            
 """
 Action Pane is the right half of the screen, containing all of the behavior of the character
 """ 
@@ -238,7 +303,7 @@ Subaction Panel shows the subactions in the current group
 """
 class SubactionPanel(Frame):
     def __init__(self,root):
-        Frame.__init__(self,root, bg="blue")
+        Frame.__init__(self,root, bg="white")
         self.root = root
         
         #Create scrollbars and textfield
@@ -247,9 +312,11 @@ class SubactionPanel(Frame):
         self.yscrollbar = Scrollbar(self.textfield, orient=VERTICAL, command=self.textfield.yview)
         self.textfield.configure(xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
         
+        self.subActionList = []
+        
         self.showTextField()
         
-        self.subActionList = []
+        self.selected = None
         
         #The event listeners from the dropdowns in the selector panel
         self.root.actionSelectorPanel.currentAction.trace('w',self.actionChanged)
@@ -266,7 +333,7 @@ class SubactionPanel(Frame):
         self.textfield.pack(fill=BOTH,expand=True)
         self.yscrollbar.pack(side=RIGHT, fill=Y)
         self.xscrollbar.pack(side=BOTTOM, fill=X)
-        #Hide subaction selector
+        self.clearSubActList()
     
     """
     When displaying a modifiable subaction list instead of text,
@@ -278,8 +345,14 @@ class SubactionPanel(Frame):
         self.yscrollbar.pack_forget()
         self.xscrollbar.pack_forget()
         
+        for subAct in self.subActionList:
+            print(subAct)
+            subAct.pack(fill=X)
+        
     def actionChanged(self,*args):
         newAction = self.root.actionSelectorPanel.currentAction.get()
+        self.clearSubActList()
+        
         if newAction == 'Fighter Properties':
             self.showTextField()
             self.loadText(self.root.root.getFighterProperties())
@@ -293,45 +366,66 @@ class SubactionPanel(Frame):
                 self.loadText('Advanced action from '+str(self.root.root.fighter.actions))
             #self.showSubactionList()
     
+    def clearSubActList(self):
+        for subAct in self.subActionList:
+            subAct.destroy()
+        self.subActionList = []
+        
     def groupChanged(self,*args):
         self.group = self.root.actionSelectorPanel.currentGroup.get()
         newAction = self.root.actionSelectorPanel.currentAction.get()
         
         if isinstance(self.action,engine.action.DynamicAction):
+            self.clearSubActList()
             node = self.root.root.getFighterAction(newAction,True)
+            if self.group == 'Set Up':
+                for subact in self.action.setUpActions:
+                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
+                #try: self.loadText(ElementTree.tostring(node.find('setUp')))
+                #except: self.loadText('')
+            elif self.group == 'Tear Down':
+                for subact in self.action.tearDownActions:
+                    self.subActionList.append(self.SubactionSelector(self,subact))
+                #try: self.loadText(ElementTree.tostring(node.find('tearDown')))
+                #except: self.loadText('')
+            elif self.group == 'Transitions':
+                for subact in self.action.stateTransitionActions:
+                    self.subActionList.append(self.SubactionSelector(self,subact))
+                #try: self.loadText(ElementTree.tostring(node.find('transitions')))
+                #except: self.loadText('')
+            elif self.group == 'Before Frames':
+                for subact in self.action.actionsBeforeFrame:
+                    self.subActionList.append(self.SubactionSelector(self,subact))
+                #for target in node.findall("frame"):
+                #    self.loadText('')
+                #    if target.attrib['number'] == 'before':
+                #        self.loadText(ElementTree.tostring(target))
+            elif self.group == 'After Frames':
+                for subact in self.action.actionsAfterFrame:
+                    self.subActionList.append(self.SubactionSelector(self,subact))
+                #self.loadText('')
+                #for target in node.findall("frame"):
+                #    if target.attrib['number'] == 'after':
+                #        self.loadText(ElementTree.tostring(target))
+            elif self.group == 'Last Frame':
+                for subact in self.action.actionsAtLastFrame:
+                    self.subActionList.append(self.SubactionSelector(self,subact))
+                #self.loadText('')
+                #for target in node.findall("frame"):
+                #    if target.attrib['number'] == 'last':
+                #        self.loadText(ElementTree.tostring(target))
+            elif not self.group == 'Properties': #It's a numbered frame
+                frameNo = int(self.group[6:])
+                for subact in self.action.actionsAtFrame[frameNo]:
+                    self.subActionList.append(self.SubactionSelector(self,subact))
+                #self.loadText('')
+                #for target in node.findall("frame"):
+                #    if target.attrib['number'] == frameNo:
+                #        self.loadText(ElementTree.tostring(target))
+            self.showSubactionList()
             if self.group == 'Properties':
                 self.loadText(ElementTree.tostring(node))
-            elif self.group == 'Set Up':
-                try: self.loadText(ElementTree.tostring(node.find('setUp')))
-                except: self.loadText('')
-            elif self.group == 'Tear Down':
-                try: self.loadText(ElementTree.tostring(node.find('tearDown')))
-                except: self.loadText('')
-            elif self.group == 'Transitions':
-                try: self.loadText(ElementTree.tostring(node.find('transitions')))
-                except: self.loadText('')
-            elif self.group == 'Before Frames':
-                for target in node.findall("frame"):
-                    self.loadText('')
-                    if target.attrib['number'] == 'before':
-                        self.loadText(ElementTree.tostring(target))
-            elif self.group == 'After Frames':
-                self.loadText('')
-                for target in node.findall("frame"):
-                    if target.attrib['number'] == 'after':
-                        self.loadText(ElementTree.tostring(target))
-            elif self.group == 'Last Frame':
-                self.loadText('')
-                for target in node.findall("frame"):
-                    if target.attrib['number'] == 'last':
-                        self.loadText(ElementTree.tostring(target))
-            else: #It's a numbered frame
-                frameNo = self.group[6:]
-                self.loadText('')
-                for target in node.findall("frame"):
-                    if target.attrib['number'] == frameNo:
-                        self.loadText(ElementTree.tostring(target))
-
+                self.showTextField()
         else:
             self.loadText('Advanced action from '+str(self.root.root.fighter.actions))
         
@@ -369,12 +463,6 @@ class SubactionPanel(Frame):
         else: text += '\n'
         return text
         
-    class SubactionSelector(Label):
-        def __init__(self,root,subaction):
-            Label.__init__(self, root, text=subaction.getDisplayName(), bg="white")
-            
-            self.subaction = subaction
-            self.selected = False
 """
 Subaction Property Panel has the options for creating a subaction
 """
@@ -385,43 +473,3 @@ class SubactionPropertyPanel(Frame):
         
 if __name__ == '__main__': 
     BuilderWindow()
-    """
-    root = Tk()
-    root.geometry('640x480')
-    
-    #Begin defining left frame areas
-    leftFrame = Frame(root)
-    
-    grayPanel = Frame(leftFrame,bg="gray")
-    whitePanel = Frame(leftFrame,bg="white", height=50)
-    grayPanel.pack(expand=True,fill=BOTH)
-    whitePanel.pack(fill=X)
-    
-    #Begin defining right frame areas
-    rightFrame = Frame(root)
-    
-    purplePanel = Frame(rightFrame,bg="purple", height=50)
-    bluePanel = Frame(rightFrame,bg="blue")
-    redPanel = Frame(rightFrame,bg="red", height=100)
-    
-    purplePanel.pack(fill=X)
-    bluePanel.pack(expand=True,fill=BOTH)
-    redPanel.pack(fill=X)
-    
-    #create the options dropdown for purple
-    currentOption = StringVar(purplePanel)
-    currentOption.set("None")
-    optList = ["None","Some incredibly long string that breaks everything"]
-    options = OptionMenu(purplePanel,currentOption,*optList)
-    options.pack(side=LEFT)
-    
-    
-    leftFrame.grid(row=0,column=0,sticky=N+S+E+W)
-    rightFrame.grid(row=0,column=1,sticky=N+S+E+W)
-    
-    root.grid_rowconfigure(0, weight=1)
-    root.grid_columnconfigure(0, weight=3)
-    root.grid_columnconfigure(1, weight=2)
-    
-    root.mainloop()
-    """
