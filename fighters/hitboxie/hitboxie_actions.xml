@@ -670,6 +670,7 @@
 				<hitstun>2</hitstun>
 				<xDraw>0.05</xDraw>
 				<yDraw>-0.1</yDraw>
+				<base_hitstun>8</base_hitstun>
 			</createHitbox>
 			
 			<createHitbox>
