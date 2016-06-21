@@ -287,7 +287,13 @@
 	</Prone>
 	
 	<NeutralAttack>
-		<length>22</length>
+
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>NeutralAttack</action>
+		</loadCodeAction>
+
+		<!--length>22</length>
 		<sprite>neutral</sprite>
 		<spriteRate>1</spriteRate>
 		
@@ -312,7 +318,7 @@
 		</frame>
 		<frame number="9">
 			<deactivateHitbox>jab</deactivateHitbox>
-		</frame>
+		</frame-->
 	</NeutralAttack>
 	
 	<ForwardAttack>
@@ -412,7 +418,7 @@
 			<createHitbox>
 				<name>sweet</name>
 				<center>30,-20</center>
-				<size>6,10</size>
+				<size>6,20</size>
 				<damage>7</damage>
 				<baseKnockback>8</baseKnockback>
 				<knockbackGrowth>0.08</knockbackGrowth>
@@ -423,7 +429,7 @@
 			<createHitbox>
 				<name>tangy</name>
 				<center>27,-29</center>
-				<size>12,18</size>
+				<size>12,28</size>
 				<damage>5</damage>
 				<baseKnockback>7</baseKnockback>
 				<knockbackGrowth>0.08</knockbackGrowth>
@@ -434,7 +440,7 @@
 			<createHitbox>
 				<name>sour</name>
 				<center>21,-32</center>
-				<size>24,26</size>
+				<size>24,36</size>
 				<damage>3</damage>
 				<baseKnockback>6</baseKnockback>
 				<knockbackGrowth>0.08</knockbackGrowth>
@@ -617,7 +623,7 @@
 			
 			<createHitbox type="sakurai">
 				<name>rightHbox</name>
-				<center>34,26</center>
+				<center>14,0</center>
 				<size>24,52</size>
 				<damage>14</damage>
 				<baseKnockback>8</baseKnockback>
@@ -628,7 +634,7 @@
 			
 			<createHitbox type="sakurai">
 				<name>leftHbox</name>
-				<center>-34,26</center>
+				<center>-14,0</center>
 				<size>24,52</size>
 				<damage>14</damage>
 				<baseKnockback>8</baseKnockback>
@@ -642,22 +648,40 @@
 			<updateHitbox>rightHbox</updateHitbox>
 			<updateHitbox>leftHbox</updateHitbox>
 		</frame>
-		
-		<frame number="11">
-			<changeSubimage>6</changeSubimage>
+
+		<frame number="10">
 			<activateHitbox>rightHbox</activateHitbox>
 			<activateHitbox>leftHbox</activateHitbox>
 		</frame>
 		<frame number="12">
+			<modifyHitbox name="leftHbox">
+				<x_offset type="int">-24</x_offset>
+				<y_offset type="int">13</y_offset>
+			</modifyHitbox>
+			<modifyHitbox name="rightHbox">
+				<x_offset type="int">24</x_offset>
+				<y_offset type="int">13</y_offset>
+			</modifyHitbox>
+		</frame>
+		<frame number="14">
+			<modifyHitbox name="leftHbox">
+				<x_offset type="int">-34</x_offset>
+				<y_offset type="int">26</y_offset>
+			</modifyHitbox>
+			<modifyHitbox name="rightHbox">
+				<x_offset type="int">34</x_offset>
+				<y_offset type="int">26</y_offset>
+
+			</modifyHitbox>
 			<changeSubimage>7</changeSubimage>
 		</frame>
 		<frame number="14">
 			<changeSubimage>8</changeSubimage>
 		</frame>
-		<frame number="15">
+		<frame number="16">
 			<changeSubimage>9</changeSubimage>
 		</frame>
-		<frame number="16">
+		<frame number="17">
 			<changeSubimage>10</changeSubimage>
 		</frame>
 		<frame number="18">
@@ -665,14 +689,17 @@
 		</frame>
 		<frame number="20">
 			<changeSubimage>12</changeSubimage>
+		</frame>
+		<frame number="22">
+			<changeSubimage>13</changeSubimage>
 			<deactivateHitbox>rightHbox</deactivateHitbox>
 			<deactivateHitbox>leftHbox</deactivateHitbox>
 		</frame>
-		<frame number="24">
-			<changeSubimage>13</changeSubimage>
-		</frame>
-		<frame number="30">
+		<frame number="26">
 			<changeSubimage>14</changeSubimage>
+		</frame>
+		<frame number="32">
+			<changeSubimage>15</changeSubimage>
 		</frame>
 	</DownAttack>
 	
@@ -699,7 +726,7 @@
 				<hitstun>2</hitstun>
 				<xDraw>0.05</xDraw>
 				<yDraw>-0.1</yDraw>
-				<base_hitstun>8</base_hitstun>
+				<base_hitstun>4</base_hitstun>
 			</createHitbox>
 			
 			<createHitbox>
