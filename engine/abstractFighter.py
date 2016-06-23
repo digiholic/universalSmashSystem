@@ -702,7 +702,8 @@ class AbstractFighter():
 
         if hitstun_frames > 0.5:
             print(totalKB)
-            self.doHitStun(hitstun_frames,trajectory)
+            if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.lastFrame-self.current_action.frame <= hitstun_frames:
+                self.doHitStun(hitstun_frames,trajectory)
         
         self.dealDamage(damage)
         
@@ -1076,7 +1077,7 @@ class AbstractFighter():
         elif checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect):
             if intersectPoint(self.ecb.currentECB.rect, checkRect) is not None:
                 contact = intersectPoint(self.ecb.currentECB.rect, checkRect)
-                #self.rect.x += intersectPoint(self.ecb.currentECB.rect, checkRect)[0]
+                self.rect.x += intersectPoint(self.ecb.currentECB.rect, checkRect)[0]
                 self.rect.y += intersectPoint(self.ecb.currentECB.rect, checkRect)[1]
         if contact is not None and not contact == [0, 0]:
             #The contact vector is perpendicular to the axis over which the reflection should happen
@@ -1152,19 +1153,12 @@ def intersectPoint(firstRect, secondRect):
     return min(leftDist, rightDist, upDist, downDist, upLeftDist, upRightDist, downLeftDist, downRightDist, key=lambda x: math.sqrt(x[0]*x[0] + x[1]*x[1]))
 
 def checkPlatform(current, previous, platform):
-    dxLeft = -current.left+platform.right
-    dxRight = current.right-platform.left
-    dyUp = -current.top+platform.bottom
-    dyDown = current.bottom-platform.top
+    intersect = intersectPoint(current, platform)
 
-    dx = min(max(0, dxRight), max(0, dxLeft))
-    dy = min(max(0, dyUp), max(0, dyDown))
-
-    if (dy <= dx): 
-        if dyDown <= current.bottom-previous.bottom+4 and dyUp >= dyDown and current.bottom >= platform.top:
-            return True
+    if platform.top >= previous.bottom-4 and intersect[1] < 0 and current.bottom >= platform.top:
+        return True
     return False
-
+    
 def directionalDisplacement(firstPoints, secondPoints, direction):
     #Given a direction to displace in, determine the displacement needed to get it out
     firstDots = map(lambda x: x[0]*direction[0]+x[1]*direction[1], firstPoints)

@@ -364,7 +364,6 @@ class HitStun(action.Action):
     def __init__(self,hitstun=1,direction=0):
         action.Action.__init__(self, hitstun)
         self.direction = direction
-        
 
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="hitStun"

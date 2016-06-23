@@ -359,7 +359,7 @@
 				<size>120,40</size>
 				<damage>16</damage>
 				<baseKnockback>8</baseKnockback>
-				<knockbackGrowth>0.15</knockbackGrowth>
+				<knockbackGrowth>0.20</knockbackGrowth>
 				<trajectory>40</trajectory>
 				<chargeable>
 					<damage>.426</damage>
@@ -451,15 +451,41 @@
 		
 		<frame number="4">
 			<activateHitbox>sweet</activateHitbox>
+			<modifyHurtbox>
+				<center centerOn="image">0,8</center>
+				<size>64,64</size>
+			</modifyHurtbox>
+		</frame>
+
+		<frame number="5">
+			<modifyHurtbox>
+				<center centerOn="image">0,8</center>
+				<size>64,64</size>
+			</modifyHurtbox>
 		</frame>
 		
 		<frame number="6">
 			<activateHitbox>tangy</activateHitbox>
+			<modifyHurtbox>
+				<center centerOn="image">0,8</center>
+				<size>64,64</size>
+			</modifyHurtbox>
+		</frame>
+
+		<frame number="7">
+			<modifyHurtbox>
+				<center centerOn="image">0,8</center>
+				<size>64,64</size>
+			</modifyHurtbox>
 		</frame>
 		
 		<frame number="8">
 			<activateHitbox>sour</activateHitbox>
 			<deactivateHitbox>sweet</deactivateHitbox>
+			<modifyHurtbox>
+				<center centerOn="image">0,8</center>
+				<size>64,76</size>
+			</modifyHurtbox>
 		</frame>
 		
 		<frame number="12">
@@ -493,6 +519,7 @@
 				<baseKnockback>20</baseKnockback>
 				<knockbackGrowth>0</knockbackGrowth>
 				<trajectory>90</trajectory>
+				<base_hitstun>4</base_hitstun>
 			</createHitbox>
 			
 			<createHitbox>
@@ -506,6 +533,7 @@
 				<chargeable>
 					<damage>.027</damage>
 				</chargeable>
+				<base_hitstun>3</base_hitstun>
 			</createHitbox>
 			
 			<createHitbox>
@@ -519,6 +547,7 @@
 				<chargeable>
 					<damage>.027</damage>
 				</chargeable>
+				<base_hitstun>3</base_hitstun>
 			</createHitbox>
 			
 			<createHitbox>
@@ -706,6 +735,10 @@
 			<updateHitbox>spikeBox</updateHitbox>
 			<updateHitbox>rightHbox</updateHitbox>
 			<updateHitbox>leftHbox</updateHitbox>
+			<modifyHurtbox>
+				<center centerOn="image">0,0</center>
+				<size>46,37</size>
+			</modifyHurtbox>
 		</frame>
 		<!-- TODO hurtbox resize -->
 		<frame number="14">
@@ -776,7 +809,7 @@
 			<updateLandingLag>20</updateLandingLag>
 			<activateHitbox>nairBox</activateHitbox>
 		</frame>
-		<frame number="6">
+		<frame number="4">
 			<modifyHitbox name="nairBox">
 				<damage type="int">7</damage>
 				<baseKnockback type="int">5</baseKnockback>
@@ -793,6 +826,7 @@
 				<damage type="int">3</damage>
 				<baseKnockback type="int">1</baseKnockback>
 				<hitstun type="float">0.5</hitstun>
+				<base_hitstun>0</base_hitstun>
 			</modifyHitbox>
 		</frame>
 		<frame number="24">

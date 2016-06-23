@@ -1179,7 +1179,7 @@ class ForwardThrow(baseActions.BaseGrabbing):
         self.spriteRate = 0
 
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,11,12.0,0.20,40,1,hitbox.HitboxLock())
+        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,13,12.0,0.20,40,1,hitbox.HitboxLock())
 
     def tearDown(self, actor, other):
         self.fSmashHitbox.kill()
@@ -1212,7 +1212,7 @@ class DownThrow(baseActions.BaseGrabbing):
 
     def setUp(self, actor):
         actor.changeSprite("nair")
-        self.bottomHitbox = hitbox.DamageHitbox([10, 40], [30, 30], actor, 1, 3, 0, 260, 1, hitbox.HitboxLock(), 0, 1)
+        self.bottomHitbox = hitbox.DamageHitbox([10, 40], [30, 30], actor, 1, 3, 0, 260, 1, hitbox.HitboxLock(), 0, 1, 0, 0, 0, 0, 0, 4)
         actor.active_hitboxes.add(self.bottomHitbox)
         self.ecbCenter = [0,7]
         self.ecbSize = [64, 78]
@@ -1265,7 +1265,7 @@ class UpThrow(baseActions.BaseGrabbing):
             actor.calc_grav(4)
             if actor.grounded and actor.change_y >= 0:
                 if actor.isGrabbing():
-                    actor.grabbing.applyKnockback(9, 12, 0.15, actor.getForwardWithOffset(70))
+                    actor.grabbing.applyKnockback(11, 12, 0.15, actor.getForwardWithOffset(70))
                 actor.doAction('Fall')
         self.frame += 1
 
@@ -1283,7 +1283,7 @@ class BackThrow(baseActions.BaseGrabbing):
     def update(self, actor):
         baseActions.BaseGrabbing.update(self, actor)
         if self.frame == 0 and actor.isGrabbing():
-            actor.grabbing.applyKnockback(7, 10, 0.1, actor.getForwardWithOffset(170), 0.5)
+            actor.grabbing.applyKnockback(7, 18, 0.05, actor.getForwardWithOffset(170), 0.5)
         if self.frame <= 16:
             actor.changeSpriteImage(self.frame//2)
         elif self.frame == self.lastFrame: 
