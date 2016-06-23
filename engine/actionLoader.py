@@ -88,6 +88,12 @@ class ActionLoader():
                 if subaction.subActionDict.has_key(subact.tag): #Subactions string to class dict
                     stateTransitionActions.append(subaction.subActionDict[subact.tag].buildFromXml(subact))
         
+        actionsOnClank = []
+        if actionXML.find('onClank') is not None:
+            for subact in actionXML.find('onClank'):
+                if subaction.subActionDict.has_key(subact.tag): #Subactions string to class dict
+                    actionsOnClank.append(subaction.subActionDict[subact.tag].buildFromXml(subact))
+        
         #Load all of the frames
         frames = actionXML.findall('frame')
         subactionsBeforeFrame = []
@@ -137,6 +143,7 @@ class ActionLoader():
         dynAction.stateTransitionActions = stateTransitionActions
         dynAction.setUpActions = setUpActions
         dynAction.tearDownActions = tearDownActions
+        dynAction.actionsOnClank = actionsOnClank
         if spriteName: dynAction.spriteName = spriteName
         if spriteRate: dynAction.spriteRate = spriteRate
         dynAction.loop = loop
