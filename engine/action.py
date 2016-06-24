@@ -63,6 +63,7 @@ class DynamicAction(Action):
         self.actionsBeforeFrame = []
         self.actionsAfterFrame = []
         self.actionsAtLastFrame = []
+        self.actionsOnClank = []
         
         self.stateTransitionActions = []
         self.setUpActions = []
@@ -103,4 +104,6 @@ class DynamicAction(Action):
 
     def onClank(self,actor):
         Action.onClank(self, actor)
+        for act in self.actionsOnClank:
+            act.execute(self,actor)
         if self.parent: self.parent.onClank(self,actor)

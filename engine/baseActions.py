@@ -14,15 +14,13 @@ class Move(action.Action):
         action.Action.setUp(self, actor)
         self.accel = True
         self.direction = actor.facing
-
+        
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
         actor.preferred_xspeed = 0
         
     def update(self, actor):
         action.Action.update(self, actor)
-        if actor.grounded is False:
-            actor.doAction('Fall')
         actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
         actor.accel(actor.var['staticGrip'])
 
@@ -39,6 +37,8 @@ class Move(action.Action):
         
     def stateTransitions(self,actor):
         moveState(actor,self.direction)
+        if actor.grounded is False:
+            actor.doAction('Fall')
         (key,invkey) = actor.getForwardBackwardKeys()
         if self.frame > 0 and actor.keyBuffered(invkey, 0, state = 1):
             actor.doDash(-1*actor.getFacingDirection())
@@ -1037,13 +1037,13 @@ class SpotDodge(action.Action):
         actor.preferred_xspeed = 0
         if actor.invulnerable > 0:
             actor.invulnerable = 0
+        if actor.grounded is False:
+            actor.doAction('Fall')
         actor.mask = None
         
     def update(self,actor):
         action.Action.update(self, actor)
-        if actor.grounded is False:
-            actor.doAction('Fall')
-        elif actor.keyBuffered('down', 1) and self.frame > 0:
+        if actor.keyBuffered('down', 1) and self.frame > 0:
             blocks = actor.checkForGround()
             if blocks:
                 blocks = map(lambda x:x.solid,blocks)
@@ -1201,7 +1201,11 @@ class BaseAttack(action.Action):
     def tearDown(self, actor, nextAction):
         for _,hitbox in self.hitboxes.iteritems():
             hitbox.kill()
-            
+    
+    def onClank(self, actor):
+        for _,hitbox in self.hitboxes.iteritems():
+            hitbox.kill()
+                    
     def update(self, actor):
         action.Action.update(self, actor)
         if self.frame == self.lastFrame:
@@ -1221,7 +1225,11 @@ class AirAttack(BaseAttack):
         BaseAttack.setUp(self, actor)
         if not hasattr(self, 'fastFallFrame'):
             self.fastFallFrame = None
-            
+    
+    def onClank(self, actor):
+        for _,hitbox in self.hitboxes.iteritems():
+            hitbox.kill()
+                    
     def stateTransitions(self, actor):
         if self.fastFallFrame is not None and self.frame >= self.fastFallFrame:
             if actor.keysContain('down'):
