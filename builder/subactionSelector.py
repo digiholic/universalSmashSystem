@@ -14,6 +14,8 @@ class SubactionSelector(Label):
             self.unselect()
         else:
             self.select()
+        if not self.root.selected:
+            self.root.selectedString.set('')
     
     def select(self):
         self.selected = True
@@ -21,8 +23,95 @@ class SubactionSelector(Label):
         if self.root.selected:
             self.root.selected.unselect()
         self.root.selected = self
+        self.root.selectedString.set(str(self.subaction))
     
     def unselect(self):
         self.selected = False
         self.config(bg="white")
         self.root.selected = None
+
+class BasePropertiesFrame(Frame):
+    def __init__(self,root):
+        Frame.__init__(self, root, height=root.winfo_height())
+        self.root = root
+        
+        self.changed = False
+        
+    def addConfirmCancel(self):
+        confirmButton = Button(self,text="Confirm")
+        cancelButton = Button(self,text="Cancel")
+        confirmButton.pack(side="left")
+        cancelButton.pack(side="left")
+        
+class ChangeSpriteProperties(BasePropertiesFrame):
+    def __init__(self,root):
+        BasePropertiesFrame.__init__(self, root)
+        
+        spriteLabel = Label(self,text="Sprite:")
+        spriteString= StringVar(self)
+        spriteVals = ['No Sprites found']
+        if root.getFighter():
+            spriteVals = root.getFighter().sprite.imageLibrary["right"].keys()
+        sprites = OptionMenu(self,spriteString,*spriteVals)
+        sprites.config(width=18)
+        spriteLabel.grid(row=0,column=0)
+        sprites.grid(row=0,column=1)
+        
+class ChangeSubimageProperties(BasePropertiesFrame):
+    def __init__(self,root):
+        BasePropertiesFrame.__init__(self, root)
+        
+        subimageLabel = Label(self,text="Subimage:")
+        subimageValue = IntVar(self)
+        
+        if root.getAction():
+            subimageSpinner = Spinbox(self,from_=0,to=root.getAction().lastFrame,textvariable=subimageValue)
+            
+        subimageLabel.grid(row=0,column=0)
+        subimageSpinner.grid(row=0,column=1)
+    
+class ChangePreferredSpeedProperties(BasePropertiesFrame):
+    def __init__(self,root):
+        BasePropertiesFrame.__init__(self, root)
+        
+        xSpeedLabel = Label(self,text="Preferred X Speed:")
+        ySpeedLabel = Label(self,text="Preferred Y Speed:")
+        xSpeedRelative = Checkbutton(self,text="Relative?")
+        
+        xSpeedVariable = IntVar(self)
+        xSpeedField = Spinbox(self,textvariable=xSpeedVariable)
+        xSpeedField.config(width=5)
+        
+        ySpeedVariable = IntVar(self)
+        ySpeedField = Spinbox(self,textvariable=ySpeedVariable)
+        ySpeedField.config(width=5)
+        
+        xSpeedLabel.grid(row=0,column=0)
+        xSpeedField.grid(row=0,column=1)
+        xSpeedRelative.grid(row=0,column=3)
+        
+        ySpeedLabel.grid(row=1,column=0)
+        ySpeedField.grid(row=1,column=1)
+        
+class ChangeSpeedProperties(BasePropertiesFrame):
+    def __init__(self,root):
+        BasePropertiesFrame.__init__(self, root)
+        
+        xSpeedLabel = Label(self,text="X Speed:")
+        ySpeedLabel = Label(self,text="Y Speed:")
+        xSpeedRelative = Checkbutton(self,text="Relative?")
+        
+        xSpeedVariable = IntVar(self)
+        xSpeedField = Spinbox(self,textvariable=xSpeedVariable)
+        xSpeedField.config(width=5)
+        
+        ySpeedVariable = IntVar(self)
+        ySpeedField = Spinbox(self,textvariable=ySpeedVariable)
+        ySpeedField.config(width=5)
+        
+        xSpeedLabel.grid(row=0,column=0)
+        xSpeedField.grid(row=0,column=1)
+        xSpeedRelative.grid(row=0,column=3)
+        
+        ySpeedLabel.grid(row=1,column=0)
+        ySpeedField.grid(row=1,column=1)  

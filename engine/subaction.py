@@ -1,7 +1,8 @@
 import engine.hitbox
 import baseActions
 import pygame.color
-import Tkinter as tk
+import builder.subactionSelector as subactionSelector
+import xml.etree.ElementTree as ElementTree
 
 ########################################################
 #               ABSTRACT ACTIONS                       #
@@ -46,6 +47,12 @@ class SubAction():
     
     def getDisplayName(self):
         pass
+    
+    def getPropertiesPanel(self,root):
+        return subactionSelector.BasePropertiesFrame(root)
+    
+    def getXmlElement(self):
+        return ElementTree.Element(self.__class__.__name__)
     
     @staticmethod
     def buildFromXml(node):
@@ -256,7 +263,7 @@ class ifVar(SubAction):
 # ChangeFighterSprite will change the sprite of the fighter (Who knew?)
 # Optionally pass it a subImage index to start at that frame instead of 0
 class changeFighterSprite(SubAction):
-    def __init__(self,sprite,subImage = 0):
+    def __init__(self,sprite):
         SubAction.__init__(self)
         self.sprite = sprite
         
@@ -266,7 +273,15 @@ class changeFighterSprite(SubAction):
     
     def getDisplayName(self):
         return 'Change Sprite: '+self.sprite
-        
+    
+    def getPropertiesPanel(self,root):
+        return subactionSelector.ChangeSpriteProperties(root)
+    
+    def getXmlElement(self):
+        elem = SubAction.getXmlElement(self)
+        elem.text = str(self.sprite)
+        return elem
+    
     @staticmethod
     def buildFromXml(node):
         return changeFighterSprite(node.text)
@@ -284,6 +299,14 @@ class changeFighterSubimage(SubAction):
     
     def getDisplayName(self):
         return 'Change Subimage: '+str(self.index)
+    
+    def getPropertiesPanel(self, root):
+        return subactionSelector.ChangeSubimageProperties(root)
+    
+    def getXmlElement(self):
+        elem = SubAction.getXmlElement(self)
+        elem.text = str(self.index)
+        return elem
         
     @staticmethod
     def buildFromXml(node):
@@ -322,8 +345,25 @@ class changeFighterPreferredSpeed(SubAction):
                     self.pref_y = getattr(self, value)
             actor.preferred_yspeed = self.pref_y
     
+    def getPropertiesPanel(self, root):
+        return subactionSelector.ChangePreferredSpeedProperties(root)
+    
     def getDisplayName(self):
         return 'Change Preferred Speed: ' + str(self.pref_x) + ' X, ' + str(self.pref_y) + 'Y'
+    
+    def getXmlElement(self):
+        elem = SubAction.getXmlElement(self)
+        
+        xElem = ElementTree.Element('xSpeed')
+        if self.xRelative: xElem.attrib['relative'] = 'True'
+        xElem.text = str(self.pref_x)
+        
+        yElem = ElementTree.Element('ySpeed')
+        yElem.text = str(self.pref_y)
+        
+        elem.append(xElem)
+        elem.append(yElem)
+        return elem
         
     @staticmethod
     def buildFromXml(node):
@@ -362,8 +402,25 @@ class changeFighterSpeed(SubAction):
             
             actor.change_y = self.speed_y
     
+    def getPropertiesPanel(self, root):
+        return subactionSelector.ChangeSpeedProperties(root)
+    
     def getDisplayName(self):
         return 'Change Fighter Speed: ' + str(self.speed_x) + ' X, ' + str(self.speed_y) + 'Y'
+    
+    def getXmlElement(self):
+        elem = SubAction.getXmlElement(self)
+        
+        xElem = ElementTree.Element('xSpeed')
+        if self.xRelative: xElem.attrib['relative'] = 'True'
+        xElem.text = str(self.speed_x)
+        
+        yElem = ElementTree.Element('ySpeed')
+        yElem.text = str(self.speed_y)
+        
+        elem.append(xElem)
+        elem.append(yElem)
+        return elem
     
     @staticmethod
     def buildFromXml(node):
@@ -409,6 +466,21 @@ class shiftFighterPosition(SubAction):
     def getDisplayName(self):
         return 'Shift Position: ' + str(self.pref_x) + ' X, ' + str(self.pref_y) + 'Y'
     
+    def getXmlElement(self):
+        elem = SubAction.getXmlElement(self)
+        
+        xElem = ElementTree.Element('xSpeed')
+        if self.xRelative: xElem.attrib['relative'] = 'True'
+        xElem.text = str(self.new_x)
+        
+        yElem = ElementTree.Element('ySpeed')
+        if self.yRelative: yElem.attrib['relative'] = 'True'
+        yElem.text = str(self.new_y)
+        
+        elem.append(xElem)
+        elem.append(yElem)
+        return elem
+    
     @staticmethod
     def buildFromXml(node):
         new_x = loadNodeWithDefault(node, 'xPos', None)
@@ -443,6 +515,21 @@ class shiftSpritePosition(SubAction):
     
     def getDisplayName(self):
         return 'Shift Sprite: ' + str(self.new_x) + ' X, ' + str(self.new_y) + 'Y'
+    
+    def getXmlElement(self):
+        elem = SubAction.getXmlElement(self)
+        
+        xElem = ElementTree.Element('xSpeed')
+        if self.xRelative: xElem.attrib['relative'] = 'True'
+        xElem.text = str(self.new_x)
+        
+        yElem = ElementTree.Element('ySpeed')
+        if self.yRelative: yElem.attrib['relative'] = 'True'
+        yElem.text = str(self.new_y)
+        
+        elem.append(xElem)
+        elem.append(yElem)
+        return elem
         
     @staticmethod
     def buildFromXml(node):
@@ -466,7 +553,13 @@ class updateLandingLag(SubAction):
     
     def getDisplayName(self):
         return 'Update Landing Lag: ' + str(self.newLag)
-        
+    
+    def getXmlElement(self):
+        elem = SubAction.getXmlElement(self)
+        if self.reset: elem.attrib['reset'] = 'True'
+        elem.text = str(self.newLag)
+        return elem
+    
     @staticmethod
     def buildFromXml(node):
         return updateLandingLag(int(node.text),node.attrib.has_key('reset'))
@@ -501,18 +594,24 @@ class modifyActionVar(SubAction):
 class changeActionFrame(SubAction):
     def __init__(self,newFrame,relative=False):
         SubAction.__init__(self)
-        self.frame = newFrame
+        self.newFrame = newFrame
         self.relative = relative
         
     def execute(self, action, actor):
-        if self.relative: action.frame += self.frame
-        else: action.frame = self.frame
+        if self.relative: action.frame += self.newFrame
+        else: action.frame = self.newFrame
     
     def getDisplayName(self):
         if self.relative:
-            return 'Change Frame By: ' + str(self.frame)
+            return 'Change Frame By: ' + str(self.newFrame)
         else:
-            return 'Set Frame: ' + str(self.frame)
+            return 'Set Frame: ' + str(self.newFrame)
+    
+    def getXmlElement(self):
+        elem = SubAction.getXmlElement(self)
+        if self.relative: elem.attrib['relative'] = 'True'
+        elem.text = str(self.newFrame)
+        return elem
             
     @staticmethod
     def buildFromXml(node):
@@ -530,10 +629,6 @@ class nextFrame(SubAction):
     def buildFromXml(node):
         return nextFrame()
     
-# Call a fighter's do<Action> function to change the action.
-class changeAction(SubAction):
-    pass
-
 class transitionState(SubAction):
     def __init__(self,transition):
         SubAction.__init__(self)
@@ -545,7 +640,12 @@ class transitionState(SubAction):
     
     def getDisplayName(self):
         return 'Apply Transition State: ' + str(self.transition)
-        
+    
+    def getXmlElement(self):
+        elem = SubAction.getXmlElement(self)
+        elem.text = str(self.transition)
+        return elem
+    
     @staticmethod
     def buildFromXml(node):
         return transitionState(node.text)
@@ -642,7 +742,7 @@ class createHitbox(SubAction):
     
     def getDisplayName(self):
         return 'Create New Hitbox: ' + self.name
-        
+       
     @staticmethod
     def buildFromXml(node):
         SubAction.buildFromXml(node)
