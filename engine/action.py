@@ -69,6 +69,10 @@ class DynamicAction(Action):
         self.actionsAtLastFrame = []
         self.actionsOnClank = []
         
+        #Conditional Action Groups for ifs and things
+        #Dict in the form of "name" -> [Action List]
+        self.conditionalActions = dict()
+        
         self.stateTransitionActions = []
         self.setUpActions = []
         self.tearDownActions = []
@@ -93,7 +97,8 @@ class DynamicAction(Action):
     def updateAnimationOnly(self,actor):
         Action.update(self, actor)
         
-        animationActions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition)
+        animationActions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition,
+                            subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox, subaction.updateHitbox)
         for act in self.actionsBeforeFrame:
             if isinstance(act, animationActions):
                 act.execute(self,actor)

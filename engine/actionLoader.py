@@ -29,6 +29,11 @@ class ActionLoader():
         if not path: path = self.actionsXMLdata
         self.actionsXMLFull.write(path)
     
+    """
+    This function will take an action name, and a dynamicaction object,
+    and rebuild the XML of that action, and then modify that in the actionsXML
+    object of the fighter.
+    """
     def modifyAction(self,actionName,newAction):
         actionXML = self.actionsXML.find(actionName)
         self.actionsXML.remove(actionXML)
@@ -231,7 +236,15 @@ class ActionLoader():
                          
             subactionsAtFrame.append(sublist) #Put the list in, whether it's empty or not
         
-        
+        conditionalActions = dict()
+        conds = actionXML.findall('conditional')
+        for cond in conds:
+            conditionalList = []
+            for subact in cond:
+                if subaction.subActionDict.has_key(subact.tag): #Subactions string to class dict
+                    conditionalList.append(subaction.subActionDict[subact.tag].buildFromXml(subact))
+            conditionalActions[cond.attrib['name']] = conditionalList
+         
         #Create and populate the Dynamic Action
         dynAction = action.DynamicAction(length, base, actionvars, startingFrame)
         dynAction.actionsBeforeFrame = subactionsBeforeFrame
@@ -242,6 +255,7 @@ class ActionLoader():
         dynAction.setUpActions = setUpActions
         dynAction.tearDownActions = tearDownActions
         dynAction.actionsOnClank = actionsOnClank
+        dynAction.conditionalActions = conditionalActions
         if spriteName: dynAction.spriteName = spriteName
         if spriteRate: dynAction.baseSpriteRate = spriteRate
         dynAction.loop = loop

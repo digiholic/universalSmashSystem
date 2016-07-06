@@ -1144,7 +1144,7 @@ class LedgeGrab(action.Action):
         
     def tearDown(self,actor,nextAction):
         action.Action.tearDown(self, actor, nextAction)
-        self.ledge.fighterLeaves(actor)
+        if self.ledge: self.ledge.fighterLeaves(actor)
         
     def stateTransitions(self,actor):
         ledgeState(actor)
@@ -1247,7 +1247,7 @@ class AirAttack(BaseAttack):
 class ChargeAttack(BaseAttack):
     def __init__(self,length,startChargeFrame,endChargeFrame,maxCharge):
         BaseAttack.__init__(self, length)
-        self.startChargezzzzFrame = startChargeFrame
+        self.startChargeFrame = startChargeFrame
         self.endChargeFrame = endChargeFrame
         self.maxCharge = 1
         

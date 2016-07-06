@@ -31,10 +31,10 @@ class SubactionSelector(Label):
         self.root.selected = None
 
 class BasePropertiesFrame(Frame):
-    def __init__(self,root):
+    def __init__(self,root,subaction):
         Frame.__init__(self, root, height=root.winfo_height())
         self.root = root
-        
+        self.subaction = subaction
         self.changed = False
         
     def addConfirmCancel(self):
@@ -44,22 +44,29 @@ class BasePropertiesFrame(Frame):
         cancelButton.pack(side="left")
         
 class ChangeSpriteProperties(BasePropertiesFrame):
-    def __init__(self,root):
-        BasePropertiesFrame.__init__(self, root)
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root,subaction)
         
         spriteLabel = Label(self,text="Sprite:")
-        spriteString= StringVar(self)
+        self.spriteChoice = StringVar(self)
+        self.spriteChoice.set(self.subaction.sprite)
         spriteVals = ['No Sprites found']
         if root.getFighter():
             spriteVals = root.getFighter().sprite.imageLibrary["right"].keys()
-        sprites = OptionMenu(self,spriteString,*spriteVals)
+        sprites = OptionMenu(self,self.spriteChoice,*spriteVals)
         sprites.config(width=18)
         spriteLabel.grid(row=0,column=0)
         sprites.grid(row=0,column=1)
+        self.spriteChoice.trace('w', self.changeActionSprite)
+        
+    def changeActionSprite(self,*args):
+        print(self.spriteChoice.get())
+        self.subaction.sprite = self.spriteChoice.get()
+        self.root.root.actionModified()
         
 class ChangeSubimageProperties(BasePropertiesFrame):
-    def __init__(self,root):
-        BasePropertiesFrame.__init__(self, root)
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root,subaction)
         
         subimageLabel = Label(self,text="Subimage:")
         subimageValue = IntVar(self)
@@ -71,8 +78,8 @@ class ChangeSubimageProperties(BasePropertiesFrame):
         subimageSpinner.grid(row=0,column=1)
     
 class ChangePreferredSpeedProperties(BasePropertiesFrame):
-    def __init__(self,root):
-        BasePropertiesFrame.__init__(self, root)
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root,subaction)
         
         xSpeedLabel = Label(self,text="Preferred X Speed:")
         ySpeedLabel = Label(self,text="Preferred Y Speed:")
@@ -94,8 +101,8 @@ class ChangePreferredSpeedProperties(BasePropertiesFrame):
         ySpeedField.grid(row=1,column=1)
         
 class ChangeSpeedProperties(BasePropertiesFrame):
-    def __init__(self,root):
-        BasePropertiesFrame.__init__(self, root)
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self,root,subaction)
         
         xSpeedLabel = Label(self,text="X Speed:")
         ySpeedLabel = Label(self,text="Y Speed:")

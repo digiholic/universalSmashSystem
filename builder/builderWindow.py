@@ -93,7 +93,18 @@ class MainFrame(Tk):
         self.frame.trace('w',self.changeFrame)
         
         self.mainloop()
+    
+    def actionModified(self):
+        global action
+        global changedActions
         
+        if not changedActions: #if the actions are empty
+            self.wm_title(self.wm_title()+'*')
+        
+        changedActions[self.actionString.get()] = action
+        self.viewerPane.viewerPanel.reloadFrame()
+        print(changedActions)
+                
     def getFighterAction(self,actionName,getRawXml=False):
         global fighter
         if getRawXml: return fighter.actions.actionsXML.find(actionName)
@@ -164,11 +175,11 @@ class MenuBar(Menu):
     def saveFighter(self):
         global fighter
         global action
+        global changedActions
         
-        if fighter and isinstance(fighter.actions, engine.actionLoader.ActionLoader):
-            if action:
-                fighter.actions.modifyAction(self.root.actionString.get(),action)
-            #fighter.actions.saveActions()
+        for actName, newAction in changedActions.iteritems():
+            fighter.actions.modifyAction(actName, newAction) 
+        fighter.actions.saveActions()
 
     def addAction(self):
         pass
@@ -226,6 +237,9 @@ class ViewerPanel(BuilderPanel):
         if fighter:
             fighter.mask = None #These don't work inside of the builder
             fighter.draw(self.screen, fighter.rect.topleft, self.scale)
+            for hbox in fighter.active_hitboxes:
+                hbox.draw(self.screen,hbox.rect.topleft,self.scale)
+                
             
         pygame.display.flip()
         self.after(5, self.game_loop) #Loop every 5ms
@@ -234,6 +248,17 @@ class ViewerPanel(BuilderPanel):
         fighter.rect.centerx = self.screen.get_rect().centerx + self.center[0]
         fighter.rect.centery = self.screen.get_rect().centery + self.center[1]
     
+    def reloadFrame(self):
+        global fighter
+        global action
+        global frame
+        
+        if action:
+            fighter.changeAction(action)
+            action.frame = 0
+            while action.frame <= frame:
+                action.updateAnimationOnly(fighter)
+                
     ####################
     # TRACER FUNCTIONS #
     ####################
@@ -249,7 +274,7 @@ class ViewerPanel(BuilderPanel):
         if action:
             fighter.changeAction(action)
             action.frame = 0
-            while action.frame < frame:
+            while action.frame <= frame:
                 action.updateAnimationOnly(fighter)
             
     def changeAction(self,*args):
@@ -342,7 +367,7 @@ class SelectorPanel(BuilderPanel):
         #Create Group dropdown menu
         self.currentGroup = StringVar(self)
         self.currentGroup.set("SetUp")
-        self.defaultGroupList = ["Properties","Set Up","Tear Down","Transitions","Before Frames","After Frames","Last Frame"] 
+        self.defaultGroupList = ["Properties","Set Up","Tear Down","Transitions","Before Frames","After Frames","Last Frame","Current Frame"] 
         self.groupList = self.defaultGroupList[:] #have to do this to copy be value instead of reference
         self.group = OptionMenu(self,self.currentGroup,*self.groupList)
         
@@ -366,8 +391,8 @@ class SelectorPanel(BuilderPanel):
             
             self.groupList = self.defaultGroupList[:]
             if action:
-                for i in range(0,action.lastFrame):
-                    self.groupList.append('Frame '+str(i))
+                for group in action.conditionalActions.keys():
+                    self.groupList.append('Cond: '+ group)
             self.refreshDropdowns()
             self.currentGroup.set('Properties')
     
@@ -395,6 +420,7 @@ class SubactionPanel(BuilderPanel):
         self.parent.actionSelectorPanel.currentGroup.trace('w',self.groupChanged)
         
         self.subActionList = []
+        self.currentFrameSubacts = []
         
         self.textfield = Text(self,wrap=NONE)
         self.xscrollbar = Scrollbar(self.textfield, orient=HORIZONTAL, command=self.textfield.xview)
@@ -492,28 +518,27 @@ class SubactionPanel(BuilderPanel):
         
         if isinstance(action,engine.action.DynamicAction):
             self.clearSubActList()
+            subActGroup = []
             if self.group == 'Set Up':
-                for subact in action.setUpActions:
-                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
+                subActGroup = action.setUpActions
             elif self.group == 'Tear Down':
-                for subact in action.tearDownActions:
-                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
+                subActGroup = action.tearDownActions
             elif self.group == 'Transitions':
-                for subact in action.stateTransitionActions:
-                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
+                subActGroup = action.stateTransitionActions
             elif self.group == 'Before Frames':
-                for subact in action.actionsBeforeFrame:
-                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
+                subActGroup = action.actionsBeforeFrame
             elif self.group == 'After Frames':
-                for subact in action.actionsAfterFrame:
-                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
+                subActGroup = action.actionsAfterFrame
             elif self.group == 'Last Frame':
-                for subact in action.actionsAtLastFrame:
-                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
-            elif not self.group == 'Properties': #It's a numbered frame
-                frameNo = int(self.group[6:])
-                for subact in action.actionsAtFrame[frameNo]:
-                    self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
+                subActGroup = action.actionsAtLastFrame
+            elif self.group == 'Current Frame':
+                subActGroup = self.currentFrameSubacts
+            elif self.group.startswith('Cond:'):
+                subActGroup = action.conditionalActions[self.group]
+            
+            for subact in subActGroup:
+                self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
+            
             self.showSubactionList()
             if self.group == 'Properties':
                 node = self.root.getFighterAction(newAction,True)
@@ -521,7 +546,20 @@ class SubactionPanel(BuilderPanel):
                 self.showTextField()
         else:
             self.loadText('Advanced action from '+str(fighter.actions))
+        
+    def changeFrame(self, *args):
+        global frame
+        
+        self.currentFrameSubacts = []
+        for subact in action.actionsAtFrame[frame]:
+            self.currentFrameSubacts.append(subact)
+        if self.parent.actionSelectorPanel.currentGroup.get() == 'Current Frame':
+            self.clearSubActList()
+            for subact in self.currentFrameSubacts:
+                self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
+            self.showSubactionList()
             
+        
 class PropertiesPanel(BuilderPanel):
     def __init__(self,parent,root):
         BuilderPanel.__init__(self, parent, root)

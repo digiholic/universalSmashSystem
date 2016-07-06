@@ -107,16 +107,18 @@
 
 		
 		<frame number="0">
-			<ifVar var="accel">
+			<if>
+				<variable source="action">accel</variable>
 				<value type="bool">False</value>
-				<compare>
-					<changeSubimage>4</changeSubimage>
-				</compare>
-			</ifVar>
+				<pass>noAccel</pass>
+			</if>
 		</frame>
 		<frame number="last">
 			<setFrame>12</setFrame>
 		</frame>
+		<conditional name="noAccel">
+			<changeSubimage>4</changeSubimage>
+		</conditional>
 	</Move>
 	
 	<Dash>
@@ -873,14 +875,16 @@
 		<sprite>bair</sprite>
 		
 		<transitions>
-			<ifVar var="frame">
+			<if function=">=">
+				<variable source="action">frame</variable>
 				<value type="int">15</value>
-				<cond>>=</cond>
-				<compare>
-					<transitionState>airControl</transitionState>
-				</compare>
-			</ifVar>
+				<pass>transition</pass>
+			</if>
 		</transitions>
+		
+		<conditional name="transition">
+			<transitionState>airControl</transitionState>
+		</conditional>
 		
 		<setUp>
 			<createHitbox>
@@ -1210,15 +1214,19 @@
 		</frame>
 		<frame number="after">
 			<!-- hurtbox -->
-			<ifVar var="frame">
+			<if function="&lt;">
+				<variable source="action">frame</variable>
 				<value type="int">13</value>
-				<compare cond="&lt;">
-					<changeFighterSpeed>
-						<ySpeed>0</ySpeed>
-					</changeFighterSpeed>
-				</compare>
-			</ifVar>
+				<pass>stopAir</pass>
+			</if>
 		</frame>
+		
+		<conditional name="stopAir">
+			<changeFighterSpeed>
+				<ySpeed>0</ySpeed>
+			</changeFighterSpeed>
+		</conditional>
+		
 	</DownAir>
 	
 	<DashAttack>
