@@ -1,7 +1,9 @@
+import engine.subaction as subaction
+import xml.etree.ElementTree as ElementTree
+
 # The action class is used for creating attacks, movement options,
 # air dodges, rolls, and pretty much anything that happens to your
 # character. It has a length, and keeps track of its current frame.
-
 class Action():
     def __init__(self,length=0,startingFrame = 0):
         self.frame = startingFrame
@@ -10,6 +12,7 @@ class Action():
         self.var = {}
         
         self.spriteName = ""
+        self.baseSpriteRate = 1
         self.spriteRate = 1
         self.loop = False
         
@@ -37,6 +40,7 @@ class Action():
         return
     
     def setUp(self,actor):
+        self.spriteRate = self.baseSpriteRate
         actor.changeSprite(self.spriteName)
         if self.spriteRate < 0:
             actor.changeSpriteImage(len(actor.sprite.imageLibrary[actor.sprite.flip][actor.sprite.currentSheet])-1)
@@ -65,9 +69,14 @@ class DynamicAction(Action):
         self.actionsAtLastFrame = []
         self.actionsOnClank = []
         
+        #Conditional Action Groups for ifs and things
+        #Dict in the form of "name" -> [Action List]
+        self.conditionalActions = dict()
+        
         self.stateTransitionActions = []
         self.setUpActions = []
         self.tearDownActions = []
+        self.defaultVars = var
         for key,val in var.iteritems():
             setattr(self,key,val)
         
@@ -85,6 +94,29 @@ class DynamicAction(Action):
         
         if self.parent: self.parent.update(self,actor)
     
+    def updateAnimationOnly(self,actor):
+        Action.update(self, actor)
+        
+        animationActions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition,
+                            subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox, subaction.updateHitbox)
+        for act in self.actionsBeforeFrame:
+            if isinstance(act, animationActions):
+                act.execute(self,actor)
+        if self.frame < len(self.actionsAtFrame):
+            for act in self.actionsAtFrame[self.frame]:
+                if isinstance(act, animationActions):
+                    act.execute(self,actor)
+        if self.frame == self.lastFrame:
+            for act in self.actionsAtLastFrame:
+                if isinstance(act, animationActions):
+                    act.execute(self,actor)
+        for act in self.actionsAfterFrame:
+            if isinstance(act, animationActions):
+                act.execute(self,actor)
+                
+        self.frame += 1         
+        
+        
     def stateTransitions(self,actor):
         for act in self.stateTransitionActions:
             act.execute(self,actor)

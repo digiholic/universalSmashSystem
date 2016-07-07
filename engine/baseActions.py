@@ -89,7 +89,6 @@ class Pivot(action.Action):
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName = "pivot"
         action.Action.setUp(self, actor)
-        actor.flip()
         
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
@@ -111,6 +110,8 @@ class Pivot(action.Action):
         if actor.grounded is False:
             actor.doAction('Fall')
         actor.accel(actor.var['pivotGrip'])
+        if self.frame == 0:
+            actor.flip()
         if self.frame != self.lastFrame:
             self.frame += 1
             actor.preferred_xspeed = 0
@@ -1143,7 +1144,7 @@ class LedgeGrab(action.Action):
         
     def tearDown(self,actor,nextAction):
         action.Action.tearDown(self, actor, nextAction)
-        self.ledge.fighterLeaves(actor)
+        if self.ledge: self.ledge.fighterLeaves(actor)
         
     def stateTransitions(self,actor):
         ledgeState(actor)
@@ -1246,7 +1247,7 @@ class AirAttack(BaseAttack):
 class ChargeAttack(BaseAttack):
     def __init__(self,length,startChargeFrame,endChargeFrame,maxCharge):
         BaseAttack.__init__(self, length)
-        self.startChargezzzzFrame = startChargeFrame
+        self.startChargeFrame = startChargeFrame
         self.endChargeFrame = endChargeFrame
         self.maxCharge = 1
         

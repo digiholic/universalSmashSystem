@@ -8,20 +8,54 @@ class HitboxLock(object):
     # All the HitboxLock class does is serve as a dummy for refcounting
 
 class Hitbox(spriteManager.RectSprite):
-    def __init__(self,center,size,owner,hitbox_lock, transcendence=0, priority=0):
+    def __init__(self,owner,lock,variables = dict()):
+        self.owner = owner
+        
+        self.variableDict = {
+                       'center': (0,0),
+                       'size': (0,0),
+                       'damage': 0,
+                       'baseKnockback': 0,
+                       'knockbackGrowth': 0,
+                       'trajectory': 0,
+                       'hitstun': 0,
+                       'chargeDamage': 0,
+                       'chargeBKB': 0,
+                       'chargeKBG': 0,
+                       'weight_influence': 1,
+                       'shield_multiplier': 1,
+                       'transcendence': 0, 
+                       'priority_diff': 0,
+                       'base_hitstun': 1,
+                       'hitlag_multiplier': 1,
+                       'velocity_multiplier': 1,
+                       'x_bias': 0,
+                       'y_bias': 0,
+                       'x_draw': 0.1,
+                       'y_draw': 0.1,
+                       'hp': 0
+                       }
+        self.newVaraibles = variables
+        self.variableDict.update(self.newVaraibles)
+        
+        #set the variables from the dict, so that we don't lose the initial value of the dict when modifying them
+        #also lets us not have to go update all the old references. Score!
+        for key,value in self.variableDict.iteritems():
+            setattr(self, key, value)
+            
         #Flip the distance from center if the fighter is facing the other way
-        self.center = center
         if owner.facing == -1:
             self.center = (-self.center[0],self.center[1])
-        spriteManager.RectSprite.__init__(self,pygame.Rect([0,0],size),[255,0,0])
+        #offset the trajectory based on facing
+        self.trajectory = self.owner.getForwardWithOffset(self.trajectory)
+        self.hitbox_lock = lock
+        
+        spriteManager.RectSprite.__init__(self,pygame.Rect([0,0],self.size),[255,0,0])
         self.rect.center = [owner.rect.center[0] + self.center[0], owner.rect.center[1] + self.center[1]]
-        self.owner = owner
+        self.x_offset = self.center[0]
+        self.y_offset = self.center[1]
         self.article = None
-        self.hitbox_lock = hitbox_lock
-        self.x_offset = center[0]
-        self.y_offset = center[1]
-        self.transcendence = transcendence
-        self.priority = priority
+        
         
     def onCollision(self,other):
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
@@ -51,24 +85,8 @@ class InertHitbox(Hitbox):
         Hitbox.__init__(self, center, size, owner, hitbox_lock, transcendence, priority)
        
 class DamageHitbox(Hitbox):
-    def __init__(self,center,size,owner,
-                 damage,baseKnockback,knockbackGrowth,trajectory,
-                 hitstun,hitbox_lock,weight_influence=1,shield_multiplier=1,
-                 transcendence=0, priority_diff=0,
-                 chargeDamage=0,chargeBKB=0,chargeKBG=0, base_hitstun=1, hitlag_multiplier=1):
-        Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,damage+priority_diff)
-        self.damage = damage
-        self.baseKnockback = baseKnockback
-        self.knockbackGrowth = knockbackGrowth
-        self.trajectory = self.owner.getForwardWithOffset(trajectory)
-        self.hitstun = hitstun
-        self.weight_influence = weight_influence
-        self.shield_multiplier = shield_multiplier
-        self.chargeDamage = chargeDamage
-        self.chargeBKB = chargeBKB
-        self.chargeKBG = chargeKBG
-        self.base_hitstun = base_hitstun
-        self.hitlag_multiplier = hitlag_multiplier
+    def __init__(self,owner,lock,variables):
+        Hitbox.__init__(self,owner,lock,variables)
         
     def onCollision(self,other):
         Hitbox.onCollision(self, other)
@@ -92,20 +110,12 @@ class DamageHitbox(Hitbox):
         self.damage += self.chargeDamage
         self.baseKnockback += self.chargeBKB
         self.knockbackGrowth += self.chargeKBG
-    
+        print(self.damage)
+        
 class SakuraiAngleHitbox(DamageHitbox):
-    def __init__(self,center,size,owner,
-                 damage,baseKnockback,knockbackGrowth,trajectory,
-                 hitstun,hitbox_lock,weight_influence=1,shield_multiplier=1,
-                 transcendence=0,priority_diff=0,
-                 chargeDamage=0,chargeBKB=0,chargeKBG=0,
-                 base_hitstun=1, hitlag_multiplier=1):
-
-        DamageHitbox.__init__(self, center, size, owner, damage, baseKnockback, knockbackGrowth, 
-                 trajectory, hitstun, hitbox_lock, weight_influence, shield_multiplier,
-                 transcendence,priority_diff,chargeDamage,chargeBKB,chargeKBG,
-                 base_hitstun,hitlag_multiplier)
-
+    def __init__(self,owner,lock,variables):
+        DamageHitbox.__init__(self,owner,lock,variables)
+    
     def onCollision(self, other):
         Hitbox.onCollision(self, other)
         if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
@@ -132,19 +142,9 @@ class SakuraiAngleHitbox(DamageHitbox):
             self.article.onCollision(other)
 
 class AutolinkHitbox(DamageHitbox):
-    def __init__(self,center,size,owner,damage,
-                hitstun,hitbox_lock,x_bias=0,y_bias=0,shield_multiplier=1,
-                velocity_multiplier=1,transcendence=0,priority_diff=0,
-                 chargeDamage=0,chargeBKB=0,chargeKBG=0,
-                 base_hitstun=8, hitlag_multiplier=1):
-        DamageHitbox.__init__(self,center,size,owner,damage,0,0,0,hitstun,hitbox_lock,0,shield_multiplier,
-                transcendence,priority_diff,chargeDamage,chargeBKB,chargeKBG,
-                base_hitstun, hitlag_multiplier)
-
-        self.velocity_multiplier=velocity_multiplier
-        self.x_bias=x_bias
-        self.y_bias=y_bias
-
+    def __init__(self,owner,lock,variables):
+        DamageHitbox.__init__(self,owner,lock,variables)
+    
     def onCollision(self, other):
         Hitbox.onCollision(self, other)
         if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
@@ -163,18 +163,9 @@ class AutolinkHitbox(DamageHitbox):
             self.article.onCollision(other)
 
 class FunnelHitbox(DamageHitbox):
-    def __init__(self,center,size,owner,damage,knockback,trajectory,
-                hitstun,hitbox_lock,x_draw=0.1,y_draw=0.1,
-                shield_multiplier=1,transcendence=0,priority_diff=0,
-                chargeDamage=0,chargeBKB=0,chargeKBG=0,
-                base_hitstun=8, hitlag_multiplier=1):
-        DamageHitbox.__init__(self,center,size,owner,damage,knockback,0,trajectory,hitstun,hitbox_lock,0,shield_multiplier,
-                transcendence,priority_diff,chargeDamage,chargeBKB,chargeKBG,
-                base_hitstun, hitlag_multiplier)
-
-        self.x_draw=x_draw
-        self.y_draw=y_draw
-
+    def __init__(self,owner,lock,variables):
+        DamageHitbox.__init__(self,owner,lock,variables)
+        
     def onCollision(self,other):
         Hitbox.onCollision(self, other)
         if 'AbstractFighter' in list(map(lambda x:x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:

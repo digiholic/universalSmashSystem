@@ -8,9 +8,10 @@ import os
 
 class ActionLoader():
     def __init__(self,baseDir, actions):
-        actionsXMLdata = os.path.join(baseDir,actions)
+        self.actionsXMLdata = os.path.join(baseDir,actions)
         self.baseDir = baseDir
-        self.actionsXML = ElementTree.parse(actionsXMLdata).getroot()
+        self.actionsXMLFull = ElementTree.parse(self.actionsXMLdata)
+        self.actionsXML = self.actionsXMLFull.getroot()
         print('actionsXML: ' + str(self.actionsXML))
     
     def hasAction(self, actionName):
@@ -23,6 +24,108 @@ class ActionLoader():
         for item in list(self.actionsXML):
             ret.append(item.tag)
         return ret
+    
+    def saveActions(self,path=None):
+        if not path: path = self.actionsXMLdata
+        self.actionsXMLFull.write(path)
+    
+    """
+    This function will take an action name, and a dynamicaction object,
+    and rebuild the XML of that action, and then modify that in the actionsXML
+    object of the fighter.
+    """
+    def modifyAction(self,actionName,newAction):
+        actionXML = self.actionsXML.find(actionName)
+        self.actionsXML.remove(actionXML)
+        
+        elem = ElementTree.Element(actionName)
+        
+        #Set the base if it's different from normal
+        if newAction.parent:
+            #if it's base is different than its name, set base. Otherwise, no need.
+            if not newAction.parent.__name__ == actionName:
+                print(newAction.parent.__name__)
+                baseElem = ElementTree.Element('base')
+                baseElem.text = newAction.parent.__name__
+                elem.append(baseElem)
+        
+        #action variables
+        #length
+        lengthElem =  ElementTree.Element('length')
+        lengthElem.text = str(newAction.lastFrame)
+        elem.append(lengthElem)
+        #spriteName
+        sNameElem =  ElementTree.Element('sprite')
+        sNameElem.text = str(newAction.spriteName)
+        elem.append(sNameElem)
+        #spriteRate
+        sRateElem =  ElementTree.Element('spriteRate')
+        sRateElem.text = str(newAction.baseSpriteRate)
+        elem.append(sRateElem)
+        #loop
+        loopElem =  ElementTree.Element('loop')
+        loopElem.text = str(newAction.loop)
+        elem.append(loopElem)
+        
+        if newAction.defaultVars:
+            varsElem = ElementTree.Element('vars')
+            for tag,val in newAction.defaultVars.iteritems():
+                newElem = ElementTree.Element(tag)
+                newElem.attrib['type'] = type(val).__name__
+                newElem.text = str(val)
+                varsElem.append(newElem)
+            elem.append(varsElem)
+        
+        if len(newAction.setUpActions) > 0:
+            setUpElem = ElementTree.Element('setUp')
+            for subact in newAction.setUpActions:
+                setUpElem.append(subact.getXmlElement())
+            elem.append(setUpElem)
+        if len(newAction.tearDownActions) > 0:
+            tearDownElem = ElementTree.Element('tearDown')
+            for subact in newAction.tearDownActions:
+                tearDownElem.append(subact.getXmlElement())
+            elem.append(tearDownElem)
+        if len(newAction.stateTransitionActions) > 0:
+            transitionElem = ElementTree.Element('transitions')
+            for subact in newAction.stateTransitionActions:
+                transitionElem.append(subact.getXmlElement())
+            elem.append(transitionElem)
+        if len(newAction.actionsOnClank) > 0:
+            clankElem = ElementTree.Element('onClank')
+            for subact in newAction.actionsOnClank:
+                clankElem.append(subact.getXmlElement())
+            elem.append(clankElem)
+        if len(newAction.actionsBeforeFrame) > 0:
+            beforeElem = ElementTree.Element('frame')
+            beforeElem.attrib['number'] = 'before'
+            for subact in newAction.actionsBeforeFrame:
+                beforeElem.append(subact.getXmlElement())
+            elem.append(beforeElem)
+        if len(newAction.actionsAfterFrame) > 0:
+            afterElem = ElementTree.Element('frame')
+            afterElem.attrib['number'] = 'after'
+            for subact in newAction.actionsAfterFrame:
+                afterElem.append(subact.getXmlElement())
+            elem.append(afterElem)
+        if len(newAction.actionsAtLastFrame) > 0:
+            lastElem = ElementTree.Element('frame')
+            lastElem.attrib['number'] = 'last'
+            for subact in newAction.actionsAtLastFrame:
+                lastElem.append(subact.getXmlElement())
+            elem.append(lastElem)
+        
+        for i,frameList in enumerate(newAction.actionsAtFrame):
+            if len(frameList) > 0:
+                frameElem = ElementTree.Element('frame')
+                frameElem.attrib['number'] = str(i)
+                for subact in frameList:
+                    frameElem.append(subact.getXmlElement())
+                elem.append(frameElem)
+            
+        print(ElementTree.tostring(elem))
+        self.actionsXML.append(elem)
+            
             
     def loadAction(self,actionName):
         #Load the action XML
@@ -133,7 +236,15 @@ class ActionLoader():
                          
             subactionsAtFrame.append(sublist) #Put the list in, whether it's empty or not
         
-        
+        conditionalActions = dict()
+        conds = actionXML.findall('conditional')
+        for cond in conds:
+            conditionalList = []
+            for subact in cond:
+                if subaction.subActionDict.has_key(subact.tag): #Subactions string to class dict
+                    conditionalList.append(subaction.subActionDict[subact.tag].buildFromXml(subact))
+            conditionalActions[cond.attrib['name']] = conditionalList
+         
         #Create and populate the Dynamic Action
         dynAction = action.DynamicAction(length, base, actionvars, startingFrame)
         dynAction.actionsBeforeFrame = subactionsBeforeFrame
@@ -144,8 +255,9 @@ class ActionLoader():
         dynAction.setUpActions = setUpActions
         dynAction.tearDownActions = tearDownActions
         dynAction.actionsOnClank = actionsOnClank
+        dynAction.conditionalActions = conditionalActions
         if spriteName: dynAction.spriteName = spriteName
-        if spriteRate: dynAction.spriteRate = spriteRate
+        if spriteRate: dynAction.baseSpriteRate = spriteRate
         dynAction.loop = loop
         return dynAction
     
