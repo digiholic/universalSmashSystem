@@ -88,15 +88,18 @@ class SpriteHandler(Sprite):
         
     def changeSubImage(self,index,loop=False):
         if index < 0:
-            index = (len(self.imageLibrary[self.flip][self.currentSheet])) + index
+            index = self.currentAnimLength() + index
         if loop:
-            self.index = index % len(self.imageLibrary[self.flip][self.currentSheet])
+            self.index = index % self.currentAnimLength()
         else:
-            self.index = min(index, len(self.imageLibrary[self.flip][self.currentSheet])-1)
+            self.index = min(index, self.currentAnimLength()-1)
             
         self.get_image()
         self.changed = True
-
+    
+    def currentAnimLength(self):
+        return len(self.imageLibrary[self.flip][self.currentSheet])
+    
     def rotate(self,angle = 0):
         self.angle = angle
         self.changed = True
@@ -158,6 +161,7 @@ class SpriteHandler(Sprite):
 class ImageSprite(Sprite):
     def __init__(self,path):
         Sprite.__init__(self)
+        self.path = path
         self.image = pygame.image.load(path)
         self.rect = self.image.get_rect()
     

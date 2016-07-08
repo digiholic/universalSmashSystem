@@ -12,6 +12,7 @@ import actionLoader
 
 class AbstractFighter():
     def __init__(self,baseDir,playerNum):
+        self.baseDir = baseDir
         self.playerNum = playerNum
         
         """
@@ -27,6 +28,8 @@ class AbstractFighter():
         except:
             self.xmlData = ElementTree.ElementTree()
             
+        print(ElementTree.tostring(self.xmlData))
+        
         try:
             self.name = self.xmlData.find('name').text
         except:
@@ -37,12 +40,14 @@ class AbstractFighter():
         except:
             franchise_icon_path = settingsManager.createPath('sprites/default_franchise_icon.png')
         self.franchise_icon = spriteManager.ImageSprite(franchise_icon_path)
+        self.franchise_icon_path = self.xmlData.find('icon').text
         
         try:
             css_icon_path = os.path.join(baseDir,self.xmlData.find('css_icon').text)
         except:
             css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
         self.css_icon = spriteManager.ImageSprite(css_icon_path)
+        self.css_icon_path = self.xmlData.find('css_icon').text
         
         try:
             scale = float(self.xmlData.find('scale').text)
@@ -52,12 +57,12 @@ class AbstractFighter():
         self.var = {
                 'weight': 100,
                 'gravity': .5,
-                'maxFallSpeed': 20,
-                'maxGroundSpeed': 6,
-                'runSpeed': 9,
-                'maxAirSpeed': 6,
-                'crawlSpeed': 3,
-                'dodgeSpeed': 10,
+                'maxFallSpeed': 20.0,
+                'maxGroundSpeed': 6.0,
+                'runSpeed': 9.0,
+                'maxAirSpeed': 6.0,
+                'crawlSpeed': 3.0,
+                'dodgeSpeed': 10.0,
                 'friction': 0.2,
                 'staticGrip': 0.1,
                 'pivotGrip': 0.4,
@@ -67,14 +72,17 @@ class AbstractFighter():
                 'shortHopHeight': 8.5,
                 'airJumpHeight': 15,
                 'heavyLandLag': 4,
-                'fastfallMultiplier': 2,
+                'fastfallMultiplier': 2.0,
                 'hitstunElasticity': .8,
-                'shieldSize': 1
+                'shieldSize': 1.0
                 }
         
         try:
             for stat in self.xmlData.find('stats'):
-                self.var[stat.tag] = float(stat.text)
+                type = type(self.var[stat.tag]).__name__
+                if type == 'int': self.var[stat.tag] = int(stat.text)
+                if type == 'float': self.var[stat.tag] = float(stat.text)
+                
         except:
             pass
         
@@ -82,7 +90,7 @@ class AbstractFighter():
             self.article_path = os.path.join(baseDir,self.xmlData.find('article_path').text)
         except:
             self.article_path = baseDir
-        
+        self.article_path_short = self.xmlData.find('article_path').text
         #self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),'articles.py',suffix=str(playerNum))
         try:
             self.articleLoader = settingsManager.importFromURI(os.path.join(baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(playerNum))
@@ -99,6 +107,11 @@ class AbstractFighter():
             prefix = ''
             defaultSprite = 'idle'
             imgwidth = 64
+            
+        self.sprite_directory = self.xmlData.find('sprite_directory').text
+        self.sprite_prefix = prefix
+        self.default_sprite = defaultSprite
+        self.sprite_width = imgwidth
         
         self.colorPalettes = []
         try:
@@ -122,6 +135,7 @@ class AbstractFighter():
         #try:
         try:
             actions = self.xmlData.find('actions').text
+            self.action_file = actions
             if actions.endswith('.py'):
                 self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),actions,suffix=str(playerNum))
             else:
@@ -132,6 +146,44 @@ class AbstractFighter():
         #    print('unable to load actions. Loading base')
         #    self.actions = settingsManager.importFromURI(settingsManager.createPath(''),'engine/baseActions.py',suffix=str(playerNum))
     
+    
+    def saveFighter(self,path=None):
+        if not path: path = os.path.join(self.baseDir,'fighter.xml')
+        tree = ElementTree.Element('fighter')
+        
+        tree.append(self.createElement('name', self.name))
+        tree.append(self.createElement('icon', self.franchise_icon_path))
+        tree.append(self.createElement('css_icon', self.css_icon_path))
+        tree.append(self.createElement('scale', self.sprite.scale))
+        
+        tree.append(self.createElement('sprite_directory', self.sprite_directory))
+        tree.append(self.createElement('sprite_prefix', self.sprite_prefix))
+        tree.append(self.createElement('sprite_width', self.sprite_width))
+        tree.append(self.createElement('default_sprite', self.default_sprite))
+        tree.append(self.createElement('article_path', self.article_path_short))
+        tree.append(self.createElement('actions', self.action_file))
+        
+        for i,colorDict in enumerate(self.colorPalettes):
+            colorElem = ElementTree.Element('colorPalette')
+            colorElem.attrib['id'] = str(i)
+            colorElem.attrib['displayColor'] = '#000000'
+            for fromColor,toColor in colorDict.iteritems():
+                mapElem = ElementTree.Element('colorMap')
+                mapElem.attrib['fromColor'] = '#%02x%02x%02x' % fromColor
+                mapElem.attrib['toColor'] = '#%02x%02x%02x' % toColor
+                colorElem.append(mapElem)
+            tree.append(colorElem)
+        statsElem = ElementTree.Element('stats')
+        for tag,val in self.var.iteritems():
+            statsElem.append(self.createElement(tag, val))
+        tree.append(statsElem)
+        
+        ElementTree.ElementTree(tree).write(path)
+    
+    def createElement(self,tag,val):
+        elem = ElementTree.Element(tag)
+        elem.text = str(val)
+        return elem
     
     def initialize(self):      
         # Super armor variables
