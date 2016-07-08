@@ -102,8 +102,11 @@ class MainFrame(Tk):
             self.wm_title(self.wm_title()+'*')
         
         changedActions[self.actionString.get()] = action
+        
+        #update the views
         self.viewerPane.viewerPanel.reloadFrame()
-        print(changedActions)
+        for subact in self.actionPane.subactionPanel.subActionList:
+            subact.updateName()
                 
     def getFighterAction(self,actionName,getRawXml=False):
         global fighter
@@ -144,20 +147,20 @@ class MenuBar(Menu):
     def __init__(self,root):
         Menu.__init__(self, root)
         self.root = root
-        fileMenu = Menu(self,tearoff=False)
-        actionMenu = Menu(self,tearoff=False)
-        self.add_cascade(label="File", menu=fileMenu)
-        self.add_cascade(label="Action", menu=actionMenu, state=DISABLED)
+        self.fileMenu = Menu(self,tearoff=False)
+        self.actionMenu = Menu(self,tearoff=False)
+        self.add_cascade(label="File", menu=self.fileMenu)
+        self.add_cascade(label="Action", menu=self.actionMenu, state=DISABLED)
         
-        fileMenu.add_command(label="New Fighter", command=self.newFighter)
-        fileMenu.add_command(label="Load Fighter", command=self.loadFighter)
-        fileMenu.add_command(label="Save Fighter", command=self.saveFighter)
-        fileMenu.add_separator()
-        fileMenu.add_command(label="Exit", command=self.root.destroy)
+        self.fileMenu.add_command(label="New Fighter", command=self.newFighter)
+        self.fileMenu.add_command(label="Load Fighter", command=self.loadFighter)
+        self.fileMenu.add_command(label="Save Fighter", command=self.saveFighter)
+        self.fileMenu.add_separator()
+        self.fileMenu.add_command(label="Exit", command=self.root.destroy)
         
-        actionMenu.add_command(label="Add Action", command=self.addAction)
-        actionMenu.add_command(label="Save Action", command=self.saveAction)
-        actionMenu.add_command(label="Delete Action", command=self.deleteAction)
+        self.actionMenu.add_command(label="Add Action", command=self.addAction)
+        self.actionMenu.add_command(label="Save Action", command=self.saveAction, state=DISABLED)
+        self.actionMenu.add_command(label="Delete Action", command=self.deleteAction, state=DISABLED)
         
         self.root.fighterString.trace('w',self.changeFighter)
         self.root.actionString.trace('w',self.changeAction)
@@ -171,6 +174,7 @@ class MenuBar(Menu):
         self.root.fighterFile = fighterFile
         self.root.fighterProperties = fighterFile.read()
         self.root.fighterString.set(fighterFile.name)
+        self.entryconfig("Action", state=NORMAL)
         
     def saveFighter(self):
         global fighter
@@ -180,9 +184,11 @@ class MenuBar(Menu):
         for actName, newAction in changedActions.iteritems():
             fighter.actions.modifyAction(actName, newAction) 
         fighter.actions.saveActions()
-
+        
+        fighter.saveFighter()
+        
     def addAction(self):
-        pass
+        CreateActionWindow()
     
     def saveAction(self):
         pass
@@ -196,10 +202,37 @@ class MenuBar(Menu):
     def changeAction(self,*args):
         global action
         if action:
-            self.entryconfig("Action", state=NORMAL)
+            self.actionMenu.entryconfig("Save Action", state=NORMAL)
+            self.actionMenu.entryconfig("Delete Action", state=NORMAL)
     
     def changeFrame(self,*args):
         pass
+
+class CreateActionWindow(Toplevel):
+    def __init__(self):
+        Toplevel.__init__(self)
+        self.title("Create a new Action")
+        
+        nameLabel = Label(self,text="Action Name: ")
+        self.name = Entry(self)
+        nameLabel.grid(row=0,column=0)
+        self.name.grid(row=0,column=1)
+        
+        button = Button(self, text="Confirm", command=self.submit)
+        button.grid(row=1,columnspan=2)
+        
+    def submit(self,*args):
+        global fighter
+        global changedActions
+        
+        name = self.name.get()
+        print(name)
+        if name:
+            if not fighter.actions.hasAction(name): #if it doesn't already exist
+                if not changedActions.has_key(name): #and we didn't already make one
+                    print('create action')
+                    self.destroy()
+                
     
 class LeftPane(BuilderPanel):
     def __init__(self,parent,root):
@@ -207,7 +240,7 @@ class LeftPane(BuilderPanel):
         self.viewerPanel = ViewerPanel(self,root)
         self.navigatorPanel = NavigatorPanel(self,root)
         
-        self.viewerPanel.pack(fill=BOTH,expand=True)
+        self.viewerPanel.pack(fill=BOTH,expand=TRUE)
         self.navigatorPanel.pack(fill=X)
         
 class ViewerPanel(BuilderPanel):
@@ -349,7 +382,7 @@ class RightPane(BuilderPanel):
         self.subactionPropertyPanel = PropertiesPanel(self,root)
         
         self.actionSelectorPanel.pack(fill=X)
-        self.subactionPanel.pack(fill=BOTH,expand=True)
+        self.subactionPanel.pack(fill=BOTH,expand=TRUE)
         self.subactionPropertyPanel.pack(fill=X)
         
 class SelectorPanel(BuilderPanel):
@@ -367,7 +400,7 @@ class SelectorPanel(BuilderPanel):
         #Create Group dropdown menu
         self.currentGroup = StringVar(self)
         self.currentGroup.set("SetUp")
-        self.defaultGroupList = ["Properties","Set Up","Tear Down","Transitions","Before Frames","After Frames","Last Frame","Current Frame"] 
+        self.defaultGroupList = ["Properties","Current Frame","Set Up","Tear Down","Transitions","Before Frames","After Frames","Last Frame"] 
         self.groupList = self.defaultGroupList[:] #have to do this to copy be value instead of reference
         self.group = OptionMenu(self,self.currentGroup,*self.groupList)
         
@@ -386,6 +419,11 @@ class SelectorPanel(BuilderPanel):
         global action
         if self.currentAction.get() == 'Fighter Properties':
             self.group.pack_forget()
+            self.groupList = ["Fighter","Attributes"]
+            for i in range(0,8):
+                self.groupList.append("Color "+str(i))
+            self.refreshDropdowns()
+            self.currentGroup.set('Fighter')
         else:
             self.root.actionString.set(self.currentAction.get())
             
@@ -422,12 +460,15 @@ class SubactionPanel(BuilderPanel):
         self.subActionList = []
         self.currentFrameSubacts = []
         
+        self.scrollFrame = VerticalScrolledFrame(self,bg="blue")
+        self.scrollFrame.config(width=self.winfo_width())
+        
         self.textfield = Text(self,wrap=NONE)
         self.xscrollbar = Scrollbar(self.textfield, orient=HORIZONTAL, command=self.textfield.xview)
         self.yscrollbar = Scrollbar(self.textfield, orient=VERTICAL, command=self.textfield.yview)
         self.textfield.configure(xscrollcommand=self.xscrollbar.set, yscrollcommand=self.yscrollbar.set)
         
-        self.textfield.pack(fill=BOTH,expand=True)
+        self.textfield.pack(fill=BOTH,expand=TRUE)
         self.yscrollbar.pack(side=RIGHT, fill=Y)
         self.xscrollbar.pack(side=BOTTOM, fill=X)
         
@@ -439,7 +480,7 @@ class SubactionPanel(BuilderPanel):
     switch to the textField.
     """
     def showTextField(self):
-        self.textfield.pack(fill=BOTH,expand=True)
+        self.textfield.pack(fill=BOTH,expand=TRUE)
         self.yscrollbar.pack(side=RIGHT, fill=Y)
         self.xscrollbar.pack(side=BOTTOM, fill=X)
         self.clearSubActList()
@@ -454,11 +495,17 @@ class SubactionPanel(BuilderPanel):
         self.yscrollbar.pack_forget()
         self.xscrollbar.pack_forget()
         
+        self.scrollFrame.pack(fill=BOTH,expand=TRUE)
         for subAct in self.subActionList:
-            print(subAct)
             subAct.pack(fill=X)
     
     def clearSubActList(self):
+        self.scrollFrame.pack_forget()
+        
+        if self.selected:
+            self.selected.unselect()
+            self.selectedString.set('')
+            
         for subAct in self.subActionList:
             subAct.destroy()
         self.subActionList = []
@@ -499,11 +546,15 @@ class SubactionPanel(BuilderPanel):
         
            
     def changeActionDropdown(self, *args):
-        self.selected = None
+        global fighter
+        
+        if self.selected:
+            self.selected.unselect()
+            self.selectedString.set('')
+            
         newAction = self.parent.actionSelectorPanel.currentAction.get()
         if newAction == 'Fighter Properties':
-            self.textfield.delete("1.0", END)
-            self.textfield.insert(INSERT, self.root.fighterProperties)
+            self.groupChanged()
         else:
             self.textfield.delete("1.0", END)
             self.textfield.insert(INSERT, str(action))
@@ -511,13 +562,56 @@ class SubactionPanel(BuilderPanel):
     def groupChanged(self,*args):
         global fighter
         global action
-        
-        self.selected = None
+            
         self.group = self.parent.actionSelectorPanel.currentGroup.get()
         newAction = self.parent.actionSelectorPanel.currentAction.get()
         
-        if isinstance(action,engine.action.DynamicAction):
-            self.clearSubActList()
+        self.clearSubActList()
+        if self.group == "Fighter":
+            namePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Name','string',fighter,'name')],'Name: ' + fighter.name)
+            
+            iconPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Icon',
+                                                                   ('file',[('Image Files','*.png')]),
+                                                                   fighter,
+                                                                   'franchise_icon_path')],
+                                                            'Franchise Icon')
+            cssIconPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('CSS Icon',
+                                                                     ('file',[('Image Files','*.png')]),
+                                                                     fighter,
+                                                                     'css_icon_path')],
+                                                               'CSS Icon')
+            scalePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('scale','float',fighter.sprite,'scale')],'Sprite Scale')
+            spriteDirectoryPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Sprite Directory',
+                                                                          ('dir',[]),
+                                                                          fighter,
+                                                                          'sprite_directory')],
+                                                                       'Sprite Directory')
+            spriteWidthPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Sprite Width','int',fighter,'sprite_width')],'Sprite Width')
+            defaultSpritePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Default Sprite','string',fighter,'default_sprite')],'Default Sprite')
+            articlePathPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Article Path',('dir',[]),fighter,'article_path_short')],'Article Path')
+            actionsPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Actions File',
+                                                                      ('file',[('TUSSLE ActionScript files','*.xml'),
+                                                                               ('Python Files','*.py')]),
+                                                                      fighter,
+                                                                      'action_file')],'Actions')
+            self.subActionList.append(namePanel)
+            self.subActionList.append(iconPanel)
+            self.subActionList.append(cssIconPanel)
+            self.subActionList.append(scalePanel)
+            self.subActionList.append(spriteDirectoryPanel)
+            self.subActionList.append(spriteWidthPanel)
+            self.subActionList.append(defaultSpritePanel)
+            self.subActionList.append(articlePathPanel)
+            self.subActionList.append(actionsPanel)
+            
+            self.showSubactionList()
+        elif self.group == 'Attributes':
+            for tag,val in fighter.var.iteritems():
+                panel = subactionSelector.SubactionSelector(self.scrollFrame,[(tag,type(val).__name__,fighter.var,tag)],tag+': '+str(val))
+                self.subActionList.append(panel)
+            
+            self.showSubactionList()
+        elif isinstance(action,engine.action.DynamicAction):
             subActGroup = []
             if self.group == 'Set Up':
                 subActGroup = action.setUpActions
@@ -537,7 +631,9 @@ class SubactionPanel(BuilderPanel):
                 subActGroup = action.conditionalActions[self.group]
             
             for subact in subActGroup:
-                self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
+                selector = subactionSelector.SubactionSelector(self.scrollFrame,subact)
+                selector.updateName()
+                self.subActionList.append(selector)
             
             self.showSubactionList()
             if self.group == 'Properties':
@@ -556,7 +652,9 @@ class SubactionPanel(BuilderPanel):
         if self.parent.actionSelectorPanel.currentGroup.get() == 'Current Frame':
             self.clearSubActList()
             for subact in self.currentFrameSubacts:
-                self.subActionList.append(subactionSelector.SubactionSelector(self,subact))
+                selector = subactionSelector.SubactionSelector(self.scrollFrame,subact)
+                selector.updateName()
+                self.subActionList.append(selector)
             self.showSubactionList()
             
         
@@ -571,21 +669,56 @@ class PropertiesPanel(BuilderPanel):
         
     def onSelect(self,*args):
         self.selected = self.parent.subactionPanel.selected
-        rowNo = 0
-        self.subframe.destroy()
-        print('subframe',self.subframe)
-
+        self.subframe.pack_forget()
+        
         if self.selected:
-            print(self.selected.subaction)
-            """
-            for key,value in self.selected.subaction.variableMap.iteritems():
-                newLabel = Label(self,text=key)
-                #TODO: Case statement on value
-                newValue = Label(self,text=str(getattr(self.selected.subaction,key)))
-                newLabel.grid(row=rowNo,column=0)
-                newValue.grid(row=rowNo,column=1)
-                rowNo += 1
-            """
-            self.subframe = self.selected.subaction.getPropertiesPanel(self)
-            self.subframe.pack(fill=BOTH)
+            if self.selected.propertyFrame:
+                print(self.selected.propertyFrame)
+                self.subframe = self.selected.propertyFrame
+                self.subframe.pack(fill=BOTH)
+            
+"""
+Scrolling frame, since TKinter doesn't do this for some reason.
+Source: http://tkinter.unpythonic.net/wiki/VerticalScrolledFrame
+"""
+class VerticalScrolledFrame(Frame):
+    def __init__(self, parent, *args, **kw):
+        Frame.__init__(self, parent, *args, **kw)            
+        self.parent = parent
+        
+        # create a canvas object and a vertical scrollbar for scrolling it
+        vscrollbar = Scrollbar(self, orient=VERTICAL)
+        vscrollbar.pack(fill=Y, side=RIGHT, expand=FALSE)
+        canvas = Canvas(self, bd=0, highlightthickness=0,
+                        yscrollcommand=vscrollbar.set,bg="green")
+        canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+        vscrollbar.config(command=canvas.yview)
+
+        # reset the view
+        canvas.xview_moveto(0)
+        canvas.yview_moveto(0)
+
+        # create a frame inside the canvas which will be scrolled with it
+        self.interior = interior = Frame(canvas)
+        interior_id = canvas.create_window(0, 0, window=interior,
+                                           anchor=NW)
+
+        # track changes to the canvas and frame width and sync them,
+        # also updating the scrollbar
+        def _configure_interior(event):
+            # update the scrollbars to match the size of the inner frame
+            size = (interior.winfo_reqwidth(), interior.winfo_reqheight())
+            canvas.config(scrollregion="0 0 %s %s" % size)
+            if interior.winfo_reqwidth() != canvas.winfo_width():
+                # update the canvas's width to fit the inner frame
+                canvas.config(width=interior.winfo_reqwidth())
+        interior.bind('<Configure>', _configure_interior)
+
+        def _configure_canvas(event):
+            if interior.winfo_reqwidth() != canvas.winfo_width():
+                # update the inner frame's width to fill the canvas
+                canvas.itemconfigure(interior_id, width=canvas.winfo_width())
+        canvas.bind('<Configure>', _configure_canvas)
+
+        return
 if __name__=='__main__': MainFrame()

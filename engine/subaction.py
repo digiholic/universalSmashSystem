@@ -120,6 +120,7 @@ class If(SubAction):
             if self.elseActions and action.conditionalActions.has_key(self.ifActions):
                 for act in action.conditionalActions[self.ifActions]:
                     act.execute(action,actor)
+                    
     def getDisplayName(self):
         return 'If ' + self.source + ' ' + self.variable
     
