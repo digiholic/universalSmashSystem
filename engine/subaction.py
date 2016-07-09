@@ -544,15 +544,32 @@ class updateLandingLag(SubAction):
 ########################################################
 
 # Change a fighter attribute, for example, weight or remaining jumps
-class modifyAttribute(SubAction):
+class modifyFighterVar(SubAction):
     def __init__(self,attr,val):
         SubAction.__init__(self)
         self.attr = attr
         self.val = val
         
     def execute(self, action, actor):
-        actor.var[self.attr] = self.val
+        if actor.var.has_key(self.attr):
+            actor.var[self.attr] = self.val
+        else: setattr(actor,self.attr,self.val)
         
+    @staticmethod
+    def buildFromXml(node):
+        attr = node.attrib['var']
+        value = node.find('value').text
+        if value.attrib.has_key('type'):
+            vartype = value.attrib['type']
+        else: vartype = 'string'
+        if vartype == 'int':
+            value = int(value)
+        elif vartype == 'float':
+            value = float(value)
+        elif vartype == 'bool':
+            value = bool(value)
+        return modifyFighterVar(attr,value)
+    
 # Modify a variable in the action, such as a conditional flag of some sort.
 class modifyActionVar(SubAction):
     def __init__(self,var,val):
@@ -1023,6 +1040,7 @@ class debugAction(SubAction):
         return debugAction(node.text)
         
 subActionDict = {
+                 'setFighterVar': modifyFighterVar,
                  'changeSprite': changeFighterSprite,
                  'changeSubimage': changeFighterSubimage,
                  'changeFighterSpeed': changeFighterSpeed,

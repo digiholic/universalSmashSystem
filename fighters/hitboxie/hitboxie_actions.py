@@ -225,7 +225,14 @@ class NeutralAttack(action.Action):
     # Since this hitbox if specifically for this attack, we can hard code in the values.
     class outwardHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
-            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 3, 8, 0.02, 0, 1, hitbox.HitboxLock())
+            variables = {'center': [0,0],
+                         'size': [80,80],
+                         'damage': 3,
+                         'baseKnockback':8,
+                         'knockbackGrowth':0.02,
+                         'trajectory':20
+                         }
+            hitbox.DamageHitbox.__init__(self, actor, hitbox.HitboxLock(), variables)
             
         def onCollision(self,other):
             hitbox.Hitbox.onCollision(self, other)
