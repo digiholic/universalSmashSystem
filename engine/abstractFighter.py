@@ -22,14 +22,11 @@ class AbstractFighter():
         prefix = ''
         defaultSprite = 'idle'
         imgwidth = '64'
-        print('base',baseDir)
         try:
             self.xmlData = ElementTree.parse(os.path.join(baseDir,'fighter.xml')).getroot()
         except:
             self.xmlData = ElementTree.ElementTree()
             
-        print(ElementTree.tostring(self.xmlData))
-        
         try:
             self.name = self.xmlData.find('name').text
         except:
@@ -70,7 +67,7 @@ class AbstractFighter():
                 'jumps': 1,
                 'jumpHeight': 12.5,
                 'shortHopHeight': 8.5,
-                'airJumpHeight': 15,
+                'airJumpHeight': 15.0,
                 'heavyLandLag': 4,
                 'fastfallMultiplier': 2.0,
                 'hitstunElasticity': .8,
@@ -79,12 +76,22 @@ class AbstractFighter():
         
         try:
             for stat in self.xmlData.find('stats'):
-                type = type(self.var[stat.tag]).__name__
-                if type == 'int': self.var[stat.tag] = int(stat.text)
-                if type == 'float': self.var[stat.tag] = float(stat.text)
+                vartype = type(self.var[stat.tag]).__name__
+                if vartype == 'int': self.var[stat.tag] = int(stat.text)
+                if vartype == 'float': self.var[stat.tag] = float(stat.text)
                 
-        except:
-            pass
+        except: pass
+        
+        try:
+            for var in self.xmlData.find('variables'):
+                vartype = 'string'
+                if var.attrib.has_key('type'): vartype = var.attrib['type']
+                val = var.text
+                if vartype == 'int': val = int(val)
+                elif vartype == 'float': val = float(val)
+                elif vartype == 'bool': val = bool(val)
+                setattr(self, var.tag, val)
+        except: pass
         
         try:
             self.article_path = os.path.join(baseDir,self.xmlData.find('article_path').text)
@@ -185,7 +192,7 @@ class AbstractFighter():
         elem.text = str(val)
         return elem
     
-    def initialize(self):      
+    def initialize(self):     
         # Super armor variables
         # Set with attacks to make them super armored
         # Remember to set them back at some point
