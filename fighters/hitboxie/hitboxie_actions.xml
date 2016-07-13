@@ -4,8 +4,16 @@
 		<sprite>idle</sprite>
 		<spriteRate>0</spriteRate>
 		
+		<frame number="0">
+			<setFighterVar var="sideSpecialUses">
+				<value type="int">1</value>
+			</setFighterVar>
+		</frame>
 		<frame number="1">
 			<setFrame>1</setFrame>
+			<setFighterVar var="sideSpecialUses">
+				<value type="int">1</value>
+			</setFighterVar>
 		</frame>
 	</NeutralAction>
 	
@@ -80,12 +88,22 @@
 		<length>6</length>
 		<sprite>land</sprite>
 		<spriteRate>3</spriteRate>
+		<frame number="0">
+			<setFighterVar var="sideSpecialUses">
+				<value type="int">1</value>
+			</setFighterVar>
+		</frame>
 	</Land>
 	
 	<HelplessLand>
 		<length>6</length>
 		<sprite>land</sprite>
 		<spriteRate>3</spriteRate>
+		<frame number="0">
+			<setFighterVar var="sideSpecialUses">
+				<value type="int">1</value>
+			</setFighterVar>
+		</frame>
 	</HelplessLand>
 	
 	<PlatformDrop>
@@ -268,6 +286,11 @@
 		<length>1</length>
 		<sprite>jump</sprite>
 		<spriteRate>0</spriteRate>
+		<frame number="0">
+			<setFighterVar var="sideSpecialUses">
+				<value type="int">1</value>
+			</setFighterVar>
+		</frame>
 	</LedgeGrab>
 	
 	
@@ -275,17 +298,26 @@
 		<length>1</length>
 		<sprite>jump</sprite>
 		
+		<frame number="0">
+			<setFighterVar var="sideSpecialUses">
+				<value type="int">1</value>
+			</setFighterVar>
+		</frame>
 	</HitStun>
 	
 	<Prone>
 		<length>360</length>
 		<sprite>land</sprite>
 		<spriteRate>2</spriteRate>
+		<frame number="0">
+			<setFighterVar var="sideSpecialUses">
+				<value type="int">1</value>
+			</setFighterVar>
+		</frame>
 		
 		<frame number="6">
 			<changeSubimage>3</changeSubimage>
 		</frame>
-		
 	</Prone>
 	
 	<NeutralAttack>
@@ -457,33 +489,65 @@
 			<updateHitbox>sour</updateHitbox>
 		</frame>
 		
+		<frame number="0">
+			<activateHitbox>sweet</activateHitbox>
+			<modifyHurtbox>
+				<center centerOn="image">0,16</center>
+				<size>64,32</size>
+			</modifyHurtbox>
+		</frame>
+		
+		<frame number="1">
+			<activateHitbox>sweet</activateHitbox>
+			<modifyHurtbox>
+				<center centerOn="image">0,16</center>
+				<size>64,32</size>
+			</modifyHurtbox>
+		</frame>
+		
+		<frame number="2">
+			<activateHitbox>sweet</activateHitbox>
+			<modifyHurtbox>
+				<center centerOn="image">0,16</center>
+				<size>64,32</size>
+			</modifyHurtbox>
+		</frame>
+		
+		<frame number="3">
+			<activateHitbox>sweet</activateHitbox>
+			<modifyHurtbox>
+				<center centerOn="image">0,16</center>
+				<size>64,32</size>
+			</modifyHurtbox>
+		</frame>
+		
 		<frame number="4">
 			<activateHitbox>sweet</activateHitbox>
 			<modifyHurtbox>
-				<center centerOn="image">0,8</center>
-				<size>64,64</size>
+				<center centerOn="image">0,16</center>
+				<size>64,32</size>
 			</modifyHurtbox>
 		</frame>
 
 		<frame number="5">
 			<modifyHurtbox>
-				<center centerOn="image">0,8</center>
-				<size>64,64</size>
+				<center centerOn="image">0,24</center>
+				<size>64,32</size>
 			</modifyHurtbox>
 		</frame>
 		
 		<frame number="6">
 			<activateHitbox>tangy</activateHitbox>
 			<modifyHurtbox>
-				<center centerOn="image">0,8</center>
-				<size>64,64</size>
+				<center centerOn="image">0,24</center>
+				<size>64,32</size>
 			</modifyHurtbox>
 		</frame>
 
 		<frame number="7">
 			<modifyHurtbox>
-				<center centerOn="image">0,8</center>
-				<size>64,64</size>
+				<center centerOn="image">0,24</center>
+				<size>64,32</size>
 			</modifyHurtbox>
 		</frame>
 		
@@ -491,8 +555,8 @@
 			<activateHitbox>sour</activateHitbox>
 			<deactivateHitbox>sweet</deactivateHitbox>
 			<modifyHurtbox>
-				<center centerOn="image">0,8</center>
-				<size>64,76</size>
+				<center centerOn="image">0,24</center>
+				<size>64,32</size>
 			</modifyHurtbox>
 		</frame>
 		
@@ -503,8 +567,6 @@
 		<frame number="16">
 			<deactivateHitbox>sour</deactivateHitbox>
 		</frame>
-		
-		<!--TODO: Hurtbox updates missing -->
 	</UpAttack>
 	
 	<UpSmash>
