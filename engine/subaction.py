@@ -559,8 +559,8 @@ class modifyFighterVar(SubAction):
     def buildFromXml(node):
         attr = node.attrib['var']
         value = node.find('value').text
-        if value.attrib.has_key('type'):
-            vartype = value.attrib['type']
+        if node.find('value').attrib.has_key('type'):
+            vartype = node.find('value').attrib['type']
         else: vartype = 'string'
         if vartype == 'int':
             value = int(value)
@@ -652,10 +652,10 @@ class createHitbox(SubAction):
     def __init__(self, name, hitboxType, hitboxLock, variables):
         SubAction.__init__(self)
         
-        self.name = name
+        self.hitboxName = name
         self.hitboxType = hitboxType if hitboxType is not None else "damage"
         self.hitboxLock = hitboxLock
-        self.variables = variables
+        self.hitboxVars = variables
         
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
@@ -663,18 +663,18 @@ class createHitbox(SubAction):
         if self.hitboxLock and action.hitboxLocks.has_key(self.hitboxLock):
             hitboxLock = action.hitboxLocks[self.hitboxLock]
         else:
-            hitboxLock = engine.hitbox.HitboxLock()
+            hitboxLock = engine.hitbox.HitboxLock(self.hitboxLock)
             action.hitboxLocks[self.hitboxLock] = hitboxLock
         
         #Create the hitbox of the right type    
         if self.hitboxType == "damage":
-            hitbox = engine.hitbox.DamageHitbox(actor,hitboxLock,self.variables)
+            hitbox = engine.hitbox.DamageHitbox(actor,hitboxLock,self.hitboxVars)
         elif self.hitboxType == "sakurai":
-            hitbox = engine.hitbox.SakuraiAngleHitbox(actor,hitboxLock,self.variables)
+            hitbox = engine.hitbox.SakuraiAngleHitbox(actor,hitboxLock,self.hitboxVars)
         elif self.hitboxType == "autolink":
-            hitbox = engine.hitbox.AutolinkHitbox(actor,hitboxLock,self.variables)
+            hitbox = engine.hitbox.AutolinkHitbox(actor,hitboxLock,self.hitboxVars)
         elif self.hitboxType == "funnel":
-            hitbox = engine.hitbox.FunnelHitbox(actor,hitboxLock,self.variables)
+            hitbox = engine.hitbox.FunnelHitbox(actor,hitboxLock,self.hitboxVars)
         elif self.hitboxType == "grab":
             pass
         elif self.hitboxType == "reflector":
@@ -682,18 +682,21 @@ class createHitbox(SubAction):
                                                    hitboxLock,
                                                    self.damageMultiplier, self.velocityMultiplier,
                                                    self.hp, self.trajectory, self.transcendence)
-        action.hitboxes[self.name] = hitbox
+        action.hitboxes[self.hitboxName] = hitbox
     
     def getDisplayName(self):
-        return 'Create New Hitbox: ' + self.name
+        return 'Create New Hitbox: ' + self.hitboxName
+    
+    def getPropertiesPanel(self, root):
+        return subactionSelector.ModifyHitboxProperties(root,self,newHitbox=True)
        
     def getXmlElement(self):
         elem = ElementTree.Element('createHitbox')
         elem.attrib['type'] = self.hitboxType
         nameElem = ElementTree.Element('name')
-        nameElem.text = self.name
+        nameElem.text = self.hitboxName
         elem.append(nameElem)
-        for tag,value in self.variables.iteritems():
+        for tag,value in self.hitboxVars.iteritems():
             newElem = ElementTree.Element(tag)
             newElem.text = str(value)
             elem.append(newElem)
@@ -726,7 +729,6 @@ class createHitbox(SubAction):
             elif tag == 'hitboxLock':
                 hitboxLock = val
             elif tag in tupleType:
-                print(make_tuple(val))
                 variables[tag] = make_tuple(val)
             elif tag in floatType:
                 variables[tag] = float(val)
@@ -754,6 +756,9 @@ class modifyHitbox(SubAction):
     def getDisplayName(self):
         return 'Modify Hitbox: ' + str(self.hitboxName)
     
+    def getPropertiesPanel(self, root):
+        return subactionSelector.ModifyHitboxProperties(root,self,newHitbox=False)
+        
     def getXmlElement(self):
         elem = ElementTree.Element('modifyHitbox')
         elem.attrib['name'] = self.hitboxName
@@ -768,14 +773,24 @@ class modifyHitbox(SubAction):
         SubAction.buildFromXml(node)
         hitboxName = node.attrib['name']
         hitboxVars = {}
-        for var in node:
-            t = var.attrib['type'] if var.attrib.has_key('type') else None
-            if t and t == 'int':
-                hitboxVars[var.tag] = int(var.text)
-            elif t and t == 'float':
-                hitboxVars[var.tag] = float(var.text)
-            else: hitboxVars[var.tag] = var.text
-        print(hitboxVars)
+        
+        tupleType = ['center','size']
+        floatType = ['damage','baseKnockback','knockbackGrowth','hitsun','damageMultiplier','velocityMultiplier',
+                     'weightInfluence','shieldMultiplier','priorityDiff','chargeDamage','chargeBKB','chargeKBG',
+                     'xBias','yBias','xDraw','yDraw','hitlag_multiplier']
+        intType = ['trajectory','hp','transcendence','base_hitstun','x_offset','y_offset','width','height']
+        
+        for child in node:
+            tag = child.tag
+            val = child.text
+            #special cases
+            if tag in tupleType:
+                hitboxVars[tag] = make_tuple(val)
+            elif tag in floatType:
+                hitboxVars[tag] = float(val)
+            elif tag in intType:
+                hitboxVars[tag] = int(val)
+        
         return modifyHitbox(hitboxName,hitboxVars)
         
 class activateHitbox(SubAction):

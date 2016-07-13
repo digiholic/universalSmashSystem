@@ -309,6 +309,8 @@ class ViewerPanel(BuilderPanel):
             action.frame = 0
             while action.frame <= frame:
                 action.updateAnimationOnly(fighter)
+        for hbox in fighter.active_hitboxes:
+            print(hbox.center,hbox.x_offset)
             
     def changeAction(self,*args):
         global action
@@ -690,7 +692,7 @@ class VerticalScrolledFrame(Frame):
         vscrollbar = Scrollbar(self, orient=VERTICAL)
         vscrollbar.pack(fill=Y, side=RIGHT, expand=FALSE)
         canvas = Canvas(self, bd=0, highlightthickness=0,
-                        yscrollcommand=vscrollbar.set,bg="green")
+                        yscrollcommand=vscrollbar.set,bg="blue")
         canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
         vscrollbar.config(command=canvas.yview)
 

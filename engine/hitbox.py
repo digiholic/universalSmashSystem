@@ -3,13 +3,15 @@ import pygame
 import spriteManager
 
 class HitboxLock(object):
-    pass
+    def __init__(self,lockName=''):
+        self.lockName = lockName
     # Yes, it's that goddamn simple. 
     # All the HitboxLock class does is serve as a dummy for refcounting
 
 class Hitbox(spriteManager.RectSprite):
     def __init__(self,owner,lock,variables = dict()):
         self.owner = owner
+        self.hitboxType = 'hitbox'
         
         self.variableDict = {
                        'center': (0,0),
@@ -63,11 +65,16 @@ class Hitbox(spriteManager.RectSprite):
             other.hitboxContact.add(self)
     
     def update(self):
+        self.x_offset = self.center[0]
+        self.y_offset = self.center[1]
+        self.rect.width = self.size[0]
+        self.rect.height = self.size[1]
         if self.article is None:
             self.rect.center = [self.owner.rect.center[0] + self.x_offset*self.owner.facing, self.owner.rect.center[1] + self.y_offset]
         else:
             self.rect.center = [self.article.rect.center[0] + self.x_offset, self.article.rect.center[1] + self.y_offset]
-
+        
+        
     def compareTo(self, other):
         if (hasattr(other, 'transcendence') and hasattr(other, 'priority')) and not isinstance(other, InertHitbox):
             if self.transcendence+other.transcendence <= 0:
@@ -83,10 +90,12 @@ class Hurtbox(spriteManager.RectSprite):
 class InertHitbox(Hitbox):
     def __init__(self, center, size, owner, hitbox_lock, transcendence=0, priority=0):
         Hitbox.__init__(self, center, size, owner, hitbox_lock, transcendence, priority)
-       
+        self.hitboxType = 'inert'
+        
 class DamageHitbox(Hitbox):
     def __init__(self,owner,lock,variables):
         Hitbox.__init__(self,owner,lock,variables)
+        self.hitboxType = 'damage'
         
     def onCollision(self,other):
         Hitbox.onCollision(self, other)
@@ -115,7 +124,8 @@ class DamageHitbox(Hitbox):
 class SakuraiAngleHitbox(DamageHitbox):
     def __init__(self,owner,lock,variables):
         DamageHitbox.__init__(self,owner,lock,variables)
-    
+        self.hitboxType = 'sakurai'
+        
     def onCollision(self, other):
         Hitbox.onCollision(self, other)
         if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
@@ -144,7 +154,8 @@ class SakuraiAngleHitbox(DamageHitbox):
 class AutolinkHitbox(DamageHitbox):
     def __init__(self,owner,lock,variables):
         DamageHitbox.__init__(self,owner,lock,variables)
-    
+        self.hitboxType = 'autolink'
+        
     def onCollision(self, other):
         Hitbox.onCollision(self, other)
         if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
@@ -165,6 +176,7 @@ class AutolinkHitbox(DamageHitbox):
 class FunnelHitbox(DamageHitbox):
     def __init__(self,owner,lock,variables):
         DamageHitbox.__init__(self,owner,lock,variables)
+        self.hitboxType = 'funnel'
         
     def onCollision(self,other):
         Hitbox.onCollision(self, other)
@@ -193,6 +205,7 @@ class GrabHitbox(Hitbox):
     def __init__(self,center,size,owner,hitbox_lock, height=0, transcendence=-1, priority=0):
         Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,priority)
         self.height = height;
+        self.hitboxType = 'grab'
 
     def onCollision(self,other):
         Hitbox.onCollision(self, other)
@@ -216,6 +229,7 @@ class ReflectorHitbox(InertHitbox):
         self.damage_multiplier = damage_multiplier
         self.velocity_multiplier = velocity_multiplier
         self.angle = angle
+        self.hitboxType = 'reflector'
 
     def compareTo(self, other):
         if self.owner.lockHitbox(other) and other.article != None and other.article.owner != self.owner and hasattr(other.article, 'tags') and 'reflectable' in other.article.tags:
@@ -250,6 +264,7 @@ class ReflectorHitbox(InertHitbox):
 class ShieldHitbox(Hitbox):
     def __init__(self, center, size, owner, hitbox_lock):
         Hitbox.__init__(self, center, size, owner, hitbox_lock, -5, owner.shieldIntegrity-8)
+        self.hitboxType = 'shield'
 
     def update(self):
         self.priority = self.owner.shieldIntegrity-8
@@ -270,6 +285,7 @@ class ShieldHitbox(Hitbox):
 class PerfectShieldHitbox(Hitbox):
     def __init__(self, center, size, owner, hitbox_lock):
         Hitbox.__init__(self,center,size,owner,hitbox_lock,-5,float("inf"))
+        self.hitboxType = 'perfectShield'
 
     def update(self):
         self.rect.width = self.owner.shieldIntegrity*self.owner.var['shieldSize']

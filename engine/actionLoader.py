@@ -44,7 +44,6 @@ class ActionLoader():
         if newAction.parent:
             #if it's base is different than its name, set base. Otherwise, no need.
             if not newAction.parent.__name__ == actionName:
-                print(newAction.parent.__name__)
                 baseElem = ElementTree.Element('base')
                 baseElem.text = newAction.parent.__name__
                 elem.append(baseElem)
@@ -123,7 +122,6 @@ class ActionLoader():
                     frameElem.append(subact.getXmlElement())
                 elem.append(frameElem)
             
-        print(ElementTree.tostring(elem))
         self.actionsXML.append(elem)
             
             
