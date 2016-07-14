@@ -11,14 +11,10 @@ class ForwardSpecial(action.Action):
         action.Action.__init__(self, 100)
         self.spriteImage = 0
         self.spriteRate = 0
+        self.shouldContinue = True
 
     def setUp(self, actor):
-        actor.sideSpecialUses -= 1
         #TODO Attribute checking
-        actor.change_x = 0
-        actor.preferred_xspeed = 0
-        actor.flinch_knockback_threshold = 4
-        actor.changeSprite("nair",0)
         variables = {'center': [0,0],
                      'size': [80,80],
                      'damage': 1,
@@ -35,6 +31,15 @@ class ForwardSpecial(action.Action):
         self.numFrames = 0
         self.ecbCenter = [0,7]
         self.ecbSize = [64, 78]
+        if actor.sideSpecialUses == 1:
+            actor.sideSpecialUses = 0
+        else:
+            self.shouldContinue = False
+            return
+        actor.change_x = 0
+        actor.preferred_xspeed = 0
+        actor.flinch_knockback_threshold = 4
+        actor.changeSprite("nair",0)
     
     def onClank(self,actor):
         actor.landingLag = 30
@@ -67,7 +72,9 @@ class ForwardSpecial(action.Action):
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
     def stateTransitions(self, actor):
-        if actor.change_x//actor.facing <= 0 and self.frame >= 17:
+        if not self.shouldContinue:
+            actor.doAction('Fall')
+        if actor.grounded == False and self.frame >= 17:
             baseActions.grabLedges(actor)
 
     def tearDown(self, actor, newAction):
@@ -77,6 +84,8 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
 
     def update(self, actor):
+        if not self.shouldContinue:
+            return
         if actor.grounded:
             actor.sideSpecialUses = 1
         actor.changeSpriteImage(self.spriteImage%16)
