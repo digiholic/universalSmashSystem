@@ -19,7 +19,18 @@ class ForwardSpecial(action.Action):
         actor.preferred_xspeed = 0
         actor.flinch_knockback_threshold = 4
         actor.changeSprite("nair",0)
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0], [80,80], actor, 1, 0, hitbox.HitboxLock(), 0, -1.5, 1, 1, -1, -7)
+        variables = {'center': [0,0],
+                     'size': [80,80],
+                     'damage': 1,
+                     'hitstun': 0,
+                     'x_bias': 0,
+                     'y_bias': -1.5,
+                     'shield_multiplier': 1,
+                     'velocity_multiplier': 1,
+                     'transcendence': -1,
+                     'priority': -7
+                     }
+        self.chainHitbox = hitbox.AutolinkHitbox(actor, hitbox.HitboxLock(), variables)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
         self.ecbCenter = [0,7]
@@ -31,8 +42,17 @@ class ForwardSpecial(action.Action):
     
     class sideSpecialHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
-            hitbox.DamageHitbox.__init__(self, [0,0], [80,80], actor, 6, 4, .1, 300, 1, hitbox.HitboxLock(), 1, 10, 0, 0, 1, 2)
-
+            variables = {'center':[0,0],
+                         'size':[80,80],
+                         'damage':6,
+                         'baseKnockback':4,
+                         'knockbackGrowth':0.1,
+                         'trajectory':300,
+                         'shield_multiplier':10,
+                         'hitlag_multiplier':2
+                         }
+            hitbox.DamageHitbox.__init__(self, actor, hitbox.HitboxLock(), variables)
+            
         def onCollision(self, other):
             hitbox.Hitbox.onCollision(self, other)
             if 'AbstractFighter' in list(map(lambda x:x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
