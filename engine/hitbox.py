@@ -27,7 +27,7 @@ class Hitbox(spriteManager.RectSprite):
                        'weight_influence': 1,
                        'shield_multiplier': 1,
                        'transcendence': 0, 
-                       'priority_diff': 0,
+                       'priority': 0,
                        'base_hitstun': 1,
                        'hitlag_multiplier': 1,
                        'velocity_multiplier': 1,
