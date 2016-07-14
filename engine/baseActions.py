@@ -663,7 +663,7 @@ class Land(action.Action):
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="land"
         action.Action.setUp(self, actor)
-        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
 
     def tearDown(self, actor, nextAction):
@@ -672,6 +672,7 @@ class Land(action.Action):
 
     def update(self,actor):
         action.Action.update(self, actor)
+        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
         if self.frame == 0:
             actor.preferred_yspeed = actor.var['maxFallSpeed']
             self.lastFrame = actor.landingLag
@@ -703,11 +704,12 @@ class HelplessLand(action.Action):
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="helplessLand"
         action.Action.setUp(self, actor)
-        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
 
     def update(self,actor):
         action.Action.update(self, actor)
+        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
         if self.frame == 0:
             actor.change_y = 0
             actor.preferred_yspeed = actor.var['maxFallSpeed']

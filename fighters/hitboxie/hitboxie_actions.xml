@@ -155,29 +155,6 @@
 		</frame>
 	</Dash>
 	
-	<!--Run>
-		<length>2</length>
-		<sprite>run</sprite>
-		<spriteRate>0</spriteRate>
-		
-		<setUp>
-			<changeSubimage>4</changeSubimage>
-		</setUp>
-		
-		<frame number="0">
-			<ifVar var="accel">
-				<value type="bool">False</value>
-				<compare>
-					<changeSubimage>4</changeSubimage>
-				</compare>
-			</ifVar>
-		</frame>
-		
-		<frame number="last">
-			<setFrame>1</setFrame>
-		</frame>
-	</Run-->
-	
 	<Pivot>
 		<length>10</length>
 		<sprite>pivot</sprite>
@@ -828,10 +805,9 @@
 			<updateHitbox>leftHbox</updateHitbox>
 			<modifyHurtbox>
 				<center centerOn="image">0,0</center>
-				<size>46,37</size>
+				<size>46,36</size>
 			</modifyHurtbox>
 		</frame>
-		<!-- TODO hurtbox resize -->
 		<frame number="14">
 			<activateHitbox>spikeBox</activateHitbox>
 		</frame>
@@ -897,7 +873,7 @@
 			</modifyHurtbox>
 		</frame>
 		<frame number="2">
-			<updateLandingLag>20</updateLandingLag>
+			<updateLandingLag>15</updateLandingLag>
 			<activateHitbox>nairBox</activateHitbox>
 		</frame>
 		<frame number="4">
@@ -928,7 +904,7 @@
 			</modifyHitbox>
 		</frame>
 		<frame number="30">
-			<updateLandingLag>12</updateLandingLag>
+			<updateLandingLag>9</updateLandingLag>
 		</frame>
 	</NeutralAir>
 	
@@ -964,7 +940,7 @@
 			<updateHitbox>bairBox</updateHitbox>
 		</frame>
 		<frame number="2">
-			<updateLandingLag>18</updateLandingLag>
+			<updateLandingLag>14</updateLandingLag>
 			<changeFighterSpeed>
 				<xSpeed>0</xSpeed>
 			</changeFighterSpeed>
@@ -1033,7 +1009,7 @@
 			<updateHitbox>sweetSpot</updateHitbox>
 		</frame>
 		<frame number="0">
-			<updateLandingLag>26</updateLandingLag>
+			<updateLandingLag>20</updateLandingLag>
 		</frame>
 		<frame number="12">
 			<activateHitbox>sourSpot</activateHitbox>
@@ -1121,7 +1097,7 @@
 			<updateHitbox>sweet</updateHitbox>
 		</frame>
 		<frame number="0">
-			<updateLandingLag>20</updateLandingLag>
+			<updateLandingLag>16</updateLandingLag>
 		</frame>
 		<frame number="6">
 			<activateHitbox>sour</activateHitbox>
@@ -1139,10 +1115,10 @@
 		<frame number="21">
 			<changeSubimage>4</changeSubimage>
 			<deactivateHitbox>sour</deactivateHitbox>
-                        <updateLandingLag reset="True">12</updateLandingLag>
+                        <updateLandingLag reset="True">8</updateLandingLag>
 		</frame>
 		<frame number="last">
-			<updateLandingLag reset="True">12</updateLandingLag>
+			<updateLandingLag reset="True">8</updateLandingLag>
 		</frame>
 	</UpAir>
 	
@@ -1436,7 +1412,7 @@
 	</NeutralAirSpecial>
 	
 	<DownSpecial>
-		<length>32</length>
+		<length>24</length>
 		<sprite>getup</sprite>
 		<spriteRate>0</spriteRate>
 		
@@ -1483,7 +1459,7 @@
 				<ySpeed>0</ySpeed>
 			</changeFighterSpeed>
 			<changeFighterPreferredSpeed>
-				<ySpeed>2</ySpeed>
+				<ySpeed>1</ySpeed>
 			</changeFighterPreferredSpeed>
 			<changeSubimage>12</changeSubimage>
 			<activateArticle>shine</activateArticle>
