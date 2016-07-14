@@ -1249,9 +1249,7 @@
 			<!-- if keysContainAttack frame -1 -->
 			<ifButton>
 				<button held="true">attack</button>
-				<if>
-					<setFrame relative="true">-1</setFrame>
-				</if>
+				<pass>frameHold</pass>
 			</ifButton>
 		</frame>
 		<frame number="31">
@@ -1288,7 +1286,9 @@
 				<ySpeed>0</ySpeed>
 			</changeFighterSpeed>
 		</conditional>
-		
+		<conditional name="frameHold">
+			<setFrame relative="true">-1</setFrame>
+		</conditional>
 	</DownAir>
 	
 	<DashAttack>
@@ -1370,9 +1370,7 @@
 		<frame number="18">
 			<ifButton>
 				<button held="true">special</button>
-				<if>
-					<doAction>NeutralGroundSpecial</doAction>
-				</if>
+				<pass>repeatAttack</pass>
 			</ifButton>
 		</frame>
 		<frame number="20">
@@ -1384,6 +1382,10 @@
 		<frame number="32">
 			<changeSubimage>10</changeSubimage>
 		</frame>
+		
+		<conditional name="repeatAttack">
+			<doAction>NeutralGroundSpecial</doAction>
+		</conditional>
 	</NeutralGroundSpecial>
 	
 	<NeutralAirSpecial>
@@ -1412,9 +1414,7 @@
 		<frame number="15">
 			<ifButton>
 				<button held="true">special</button>
-				<if>
-					<doAction>NeutralAirSpecial</doAction>
-				</if>
+				<pass>repeatAttack</pass>
 			</ifButton>
 		</frame>
 		
@@ -1430,6 +1430,9 @@
 		<frame number="last">
 			<updateLandingLag reset="true">12</updateLandingLag>
 		</frame>
+		<conditional name="repeatAttack">
+			<doAction>NeutralAirSpecial</doAction>
+		</conditional>
 	</NeutralAirSpecial>
 	
 	<DownSpecial>
@@ -1498,9 +1501,7 @@
 		<frame number="12">
 			<ifButton>
 				<button held="true">special</button>
-				<if>
-					<setFrame relative="true">-1</setFrame>
-				</if>
+				<pass>frameHold</pass>
 			</ifButton>
 			<changeFighterPreferredSpeed>
 				<ySpeed><var from="actor">maxFallSpeed</var></ySpeed>
@@ -1511,6 +1512,9 @@
 			<deactivateHitbox>reflect</deactivateHitbox>
 			<removeMask></removeMask>
 		</frame>
+		<conditional name="frameHold">
+			<setFrame relative="true">-1</setFrame>
+		</conditional>
 	</DownSpecial>
 	
 	<!-- Code Actions, TODO: pls fix -->

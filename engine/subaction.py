@@ -114,7 +114,6 @@ class If(SubAction):
         if cond:
             if self.ifActions and action.conditionalActions.has_key(self.ifActions):
                 for act in action.conditionalActions[self.ifActions]:
-                    print(act)
                     act.execute(action,actor)
         else:
             if self.elseActions and action.conditionalActions.has_key(self.ifActions):
@@ -157,9 +156,6 @@ class If(SubAction):
         else:
             function = '=='
         
-        #build the actual function
-        
-            
         #get the variable and source
         variable = node.find('variable').text
         if node.find('variable').attrib.has_key('source'):
@@ -183,7 +179,7 @@ class If(SubAction):
         return If(variable,source,function,value,ifActions,elseActions)
 
 class ifButton(SubAction):
-    def __init__(self,button,held,bufferTime=0,ifActions = [],elseActions = []):
+    def __init__(self,button,held,bufferTime,ifActions,elseActions):
         self.button = button
         self.held = held
         self.bufferTime = bufferTime
@@ -196,14 +192,40 @@ class ifButton(SubAction):
         else:
             cond = actor.keyBuffered(self.button, self.bufferTime)
         if cond:
-            for act in self.ifActions:
-                act.execute(action,actor)
+            if self.ifActions and action.conditionalActions.has_key(self.ifActions):
+                for act in action.conditionalActions[self.ifActions]:
+                    act.execute(action,actor)
         else:
-            for act in self.elseActions:
-                act.execute(action,actor)
+            if self.elseActions and action.conditionalActions.has_key(self.elseActions):
+                for act in action.conditionalActions[self.elseActions]:
+                    act.execute(action,actor)
     
     def getDisplayName(self):
         return 'If Button'
+    
+    def getXmlElement(self):
+        elem = ElementTree.Element('ifButton')
+        
+        buttonElem = ElementTree.Element('button')
+        if self.held: buttonElem.attrib['held'] = True
+        buttonElem.text = str(self.button)
+        elem.append(buttonElem)
+        
+        bufferElem = ElementTree.Element('buffer')
+        bufferElem.text = str(self.bufferTime)
+        elem.append(bufferElem)
+        
+        if self.ifActions:
+            passElem = ElementTree.Element('pass')
+            passElem.text = self.ifActions
+            elem.append(passElem)
+        if self.elseActions:
+            failElem = ElementTree.Element('fail')
+            failElem.text = self.elseActions
+            elem.append(failElem)
+        
+        return elem
+    
     
     @staticmethod
     def buildFromXml(node):
@@ -211,18 +233,9 @@ class ifButton(SubAction):
         if node.find('button').attrib.has_key('held'): held = True
         else: held = False
         bufferTime = int(loadNodeWithDefault(node, 'buffer', 1))
-        ifActions = []
-        for ifact in node.find('if'):
-            if subActionDict.has_key(ifact.tag): #Subactions string to class dict
-                ifActions.append(subActionDict[ifact.tag].buildFromXml(ifact))
-        #print(ifActions)
         
-        elseActions = []
-        if node.find('else') is not None:
-            for elseact in node.find('else'):
-                if subActionDict.has_key(elseact.tag): #Subactions string to class dict
-                    elseActions.append(subActionDict[elseact.tag].buildFromXml(elseact))
-        #print(elseActions)
+        ifActions = loadNodeWithDefault(node, 'pass', None)
+        elseActions = loadNodeWithDefault(node, 'fail', None)
         
         return ifButton(button, held, bufferTime, ifActions, elseActions)
                   
