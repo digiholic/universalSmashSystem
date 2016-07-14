@@ -13,7 +13,7 @@ class ForwardSpecial(action.Action):
         self.spriteRate = 0
 
     def setUp(self, actor):
-        #actor.sideSpecialUses -= 1
+        actor.sideSpecialUses -= 1
         #TODO Attribute checking
         actor.change_x = 0
         actor.preferred_xspeed = 0
