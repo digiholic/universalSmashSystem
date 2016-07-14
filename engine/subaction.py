@@ -678,10 +678,8 @@ class createHitbox(SubAction):
         elif self.hitboxType == "grab":
             pass
         elif self.hitboxType == "reflector":
-            hitbox = engine.hitbox.ReflectorHitbox(self.center, self.size, actor,
-                                                   hitboxLock,
-                                                   self.damageMultiplier, self.velocityMultiplier,
-                                                   self.hp, self.trajectory, self.transcendence)
+            print(self.hitboxVars)
+            hitbox = engine.hitbox.ReflectorHitbox(actor,hitboxLock,self.hitboxVars)
         action.hitboxes[self.hitboxName] = hitbox
     
     def getDisplayName(self):
@@ -715,7 +713,7 @@ class createHitbox(SubAction):
         variables = {}
         #these lists let the code know which keys should be which types.
         tupleType = ['center','size']
-        floatType = ['damage','baseKnockback','knockbackGrowth','hitsun','damageMultiplier','velocityMultiplier',
+        floatType = ['damage','baseKnockback','knockbackGrowth','hitsun','damage_multiplier','velocity_multiplier',
                      'weightInfluence','shieldMultiplier','priorityDiff','chargeDamage','chargeBKB','chargeKBG',
                      'xBias','yBias','xDraw','yDraw','hitlag_multiplier']
         intType = ['trajectory','hp','transcendence','base_hitstun',]

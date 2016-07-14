@@ -149,8 +149,24 @@ class UpSpecial(action.Action):
     def setUp(self, actor):
         action.Action.setUp(self,actor)
         sharedLock = hitbox.HitboxLock()
-        self.launchHitbox = hitbox.DamageHitbox([0,0], [64,64], actor, 14, 12, 0.1, 90, 1.5, sharedLock)
-        self.flyingHitbox = hitbox.DamageHitbox([0,0],[64,64], actor, 8, 10, 0.05, 90, 1, sharedLock)
+        self.launchHitbox = hitbox.DamageHitbox(actor,sharedLock,
+                                                {'center':[0,0],
+                                                 'size':[64,64],
+                                                 'damage':14,
+                                                 'baseKnockback':12,
+                                                 'knockbackGrowth':0.1,
+                                                 'trajectory': 90,
+                                                 'hitstun':1.5                                                 
+                                                 })
+        self.flyingHitbox = hitbox.DamageHitbox(actor,sharedLock,
+                                                {'center':[0,0],
+                                                 'size':[64,64],
+                                                 'damage':8,
+                                                 'baseKnockback':10,
+                                                 'knockbackGrowth':0.05,
+                                                 'trajectory': 90,
+                                                 'hitstun':1                                                 
+                                                 })
         actor.changeSprite('dtilt')
         actor.changeSpriteImage(4)
         

@@ -1431,10 +1431,11 @@
 				<name>reflect</name>
 				<center>0,0</center>
 				<size>92,92</size>
-				<damageMultiplier>1.3</damageMultiplier>
-				<velocityMultiplier>1.1</velocityMultiplier>
+				<damage_multiplier>1.3</damage_multiplier>
+				<velocity_multiplier>1.1</velocity_multiplier>
 				<hp>100</hp>
 				<trajectory>90</trajectory>
+				<transcendence>2</transcendence>
 			</createHitbox>
 		</setUp>
 		
