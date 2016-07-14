@@ -48,6 +48,7 @@ class Hitbox(spriteManager.RectSprite):
         #Flip the distance from center if the fighter is facing the other way
         if owner.facing == -1:
             self.center = (-self.center[0],self.center[1])
+            
         #offset the trajectory based on facing
         self.trajectory = self.owner.getForwardWithOffset(self.trajectory)
         self.hitbox_lock = lock
@@ -88,8 +89,8 @@ class Hurtbox(spriteManager.RectSprite):
         spriteManager.RectSprite.__init__(self, rect, color)
 
 class InertHitbox(Hitbox):
-    def __init__(self, center, size, owner, hitbox_lock, transcendence=0, priority=0):
-        Hitbox.__init__(self, center, size, owner, hitbox_lock, transcendence, priority)
+    def __init__(self, owner, hitbox_lock, hitboxVars):
+        Hitbox.__init__(self, owner, hitbox_lock, hitboxVars)
         self.hitboxType = 'inert'
         
 class DamageHitbox(Hitbox):
@@ -224,25 +225,22 @@ class GrabHitbox(Hitbox):
         return Hitbox.compareTo(self, other)
 
 class ReflectorHitbox(InertHitbox):
-    def __init__(self, center, size, owner, hitbox_lock, damage_multiplier, velocity_multiplier, hp, angle=90, transcendence=2):
-        InertHitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,hp)
-        self.damage_multiplier = damage_multiplier
-        self.velocity_multiplier = velocity_multiplier
-        self.angle = angle
+    def __init__(self,owner,hitbox_lock,hitboxVars):
+        InertHitbox.__init__(self,owner,hitbox_lock,hitboxVars)
         self.hitboxType = 'reflector'
-
+        
     def compareTo(self, other):
         if self.owner.lockHitbox(other) and other.article != None and other.article.owner != self.owner and hasattr(other.article, 'tags') and 'reflectable' in other.article.tags:
             if hasattr(other.article, 'changeOwner'):
                 other.article.changeOwner(self.owner)
             if hasattr(other.article, 'change_x') and hasattr(other.article, 'change_y'):
                 v_other = [other.article.change_x, other.article.change_y]
-                v_self = getXYFromDM(self.angle, 1.0)
+                v_self = getXYFromDM(self.trajectory, 1.0)
                 dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
                 normsqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
                 ratio = 1 if normsqr == 0 else dot/normsqr
                 projection = [v_self[0]*ratio, v_self[1]*ratio]
-                (other.article.change_x, other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), self.velocity_multiplier*(2*projection[1]-v_other[1]))
+                (other.article.change_x, other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), -1*self.velocity_multiplier*(2*projection[1]-v_other[1]))
             if hasattr(other, 'damage') and hasattr(other, 'shield_multiplier'):
                 self.priority -= other.damage*other.shield_multiplier
                 other.damage *= other.damage*self.damage_multiplier
@@ -263,7 +261,11 @@ class ReflectorHitbox(InertHitbox):
 
 class ShieldHitbox(Hitbox):
     def __init__(self, center, size, owner, hitbox_lock):
-        Hitbox.__init__(self, center, size, owner, hitbox_lock, -5, owner.shieldIntegrity-8)
+        Hitbox.__init__(self,owner,hitbox_lock,{'center':center,
+                                                'size':size,
+                                                'transcendence':-5,
+                                                'priority':owner.shieldIntegrity-8
+                                                })
         self.hitboxType = 'shield'
 
     def update(self):
@@ -284,7 +286,11 @@ class ShieldHitbox(Hitbox):
 
 class PerfectShieldHitbox(Hitbox):
     def __init__(self, center, size, owner, hitbox_lock):
-        Hitbox.__init__(self,center,size,owner,hitbox_lock,-5,float("inf"))
+        Hitbox.__init__(self,owner,hitbox_lock,{'center':center,
+                                                'size':size,
+                                                'transcendence':-5,
+                                                'priority':float("inf")
+                                                })
         self.hitboxType = 'perfectShield'
 
     def update(self):
