@@ -39,6 +39,8 @@ class CSSScreen():
         musicManager.getMusicManager().stopMusic(100)
         
         while status == 0:
+            music = musicManager.getMusicManager()
+            music.doMusicEvent()
             if not musicManager.getMusicManager().isPlaying():
                 musicManager.getMusicManager().rollMusic('css')
             
@@ -47,6 +49,7 @@ class CSSScreen():
                 bindings.passInputs()
                 
             for event in pygame.event.get():
+                
                 for bindings in self.playerControls:
                     k = bindings.getInputs(event)
                     if k == 'attack':

@@ -62,6 +62,8 @@ class SubMenu():
             self.controls.append(settingsManager.getControls(i))
         
         while self.status == 0:
+            music = musicManager.getMusicManager()
+            music.doMusicEvent()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: #Quitting the game should close it out completely
                     self.status = -1
@@ -119,6 +121,8 @@ class StartScreen(SubMenu):
         clock = pygame.time.Clock()
         while self.status == 0:
             self.update(screen)
+            music = musicManager.getMusicManager()
+            music.doMusicEvent()
             
             for event in pygame.event.get():
                 if event.type == KEYDOWN or event.type == pygame.JOYBUTTONDOWN:
@@ -451,6 +455,8 @@ class GamepadMenu(SubMenu):
         status = 0
         ready = False
         while status == 0:
+            music = musicManager.getMusicManager()
+            music.doMusicEvent()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return -1
@@ -640,6 +646,8 @@ class PlayerControlsMenu(SubMenu):
         status = 0
         ready = False
         while status == 0:
+            music = musicManager.getMusicManager()
+            music.doMusicEvent()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     return -1
@@ -985,6 +993,8 @@ class GameSettingsMenu(SubMenu):
         
         while self.status == 0:
             self.update(screen)
+            music = musicManager.getMusicManager()
+            music.doMusicEvent()
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
                     holding[controls.get(event.key)] = True
@@ -1190,6 +1200,8 @@ class RebindMenu(SubMenu):
         self.menuText[2].changeText('Press '+ toBind)
         
         while self.status == 0:
+            music = musicManager.getMusicManager()
+            music.doMusicEvent()
             currentString = ''
             for i in range(0,len(bindings)):
                 currentString += self.KeyIdMap[bindings[i]][2:]
@@ -1243,6 +1255,8 @@ class RebindIndividual(SubMenu):
         
         while self.status == 0:
             self.update(screen)
+            music = musicManager.getMusicManager()
+            music.doMusicEvent()
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
                     holding[controls.get(event.key)] = True

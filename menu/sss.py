@@ -38,8 +38,11 @@ class StageScreen():
         status = 0
         
         while status == 0:
+            music = musicManager.getMusicManager()
+            music.doMusicEvent()
             #Start event loop
             for event in pygame.event.get():
+                
                 for bindings in self.playerControls:
                     k = bindings.getInputs(event,False,False)
                     if k == 'left':
@@ -69,7 +72,6 @@ class StageScreen():
                             currentBattle = battle.Battle(self.rules,self.fighters,stage.getStage())
                             currentBattle.startBattle(screen)
                             status = 1
-                            return
                             #do something with battle result
                     
                     elif k == 'jump':
