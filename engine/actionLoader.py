@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ElementTree
 import engine.subaction as subaction
 import engine.action as action
 import settingsManager
+import xml.dom.minidom as minidom
 import os
 
 class ActionLoader():
@@ -30,13 +31,13 @@ class ActionLoader():
         self.actionsXMLFull.write(path)
     
     """
-    This function will take an action name, and a dynamicaction object,
+    This function will take an action name, and a dynamicAction object,
     and rebuild the XML of that action, and then modify that in the actionsXML
     object of the fighter.
     """
     def modifyAction(self,actionName,newAction):
         actionXML = self.actionsXML.find(actionName)
-        self.actionsXML.remove(actionXML)
+        if actionXML:self.actionsXML.remove(actionXML)
         
         elem = ElementTree.Element(actionName)
         
@@ -121,9 +122,11 @@ class ActionLoader():
                 for subact in frameList:
                     frameElem.append(subact.getXmlElement())
                 elem.append(frameElem)
-            
-        self.actionsXML.append(elem)
-            
+        
+        rough_string = ElementTree.tostring(elem, 'utf-8')
+        reparsed = minidom.parseString(rough_string)
+        data = reparsed.toprettyxml(indent="\t")
+        self.actionsXML.append(ElementTree.fromstring(data))
             
     def loadAction(self,actionName):
         #Load the action XML
@@ -135,7 +138,6 @@ class ActionLoader():
             actionName = actionXML.find('loadCodeAction').find('action').text
             newaction = settingsManager.importFromURI(os.path.join(self.baseDir,fileName), fileName)
             return getattr(newaction, actionName)()
-        
         
         #Get the baseClass
         class_ = None

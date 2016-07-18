@@ -42,6 +42,7 @@ class Action():
     def setUp(self,actor):
         self.spriteRate = self.baseSpriteRate
         actor.changeSprite(self.spriteName)
+        print('sprite: '+self.spriteName)
         if self.spriteRate < 0:
             actor.changeSpriteImage(len(actor.sprite.imageLibrary[actor.sprite.flip][actor.sprite.currentSheet])-1)
     
@@ -57,7 +58,7 @@ The Dynamic Action is created by the Builder. It contains most things that an ac
 need, but anything more than that can still be defined as above.
 """
 class DynamicAction(Action):
-    def __init__(self,length,parent=None,var=None,startingFrame=0):
+    def __init__(self,length,parent=None,var=dict(),startingFrame=0):
         Action.__init__(self,length,startingFrame)
         if parent:
             DynamicAction.__bases__ += (parent,)
@@ -95,8 +96,6 @@ class DynamicAction(Action):
         if self.parent: self.parent.update(self,actor)
     
     def updateAnimationOnly(self,actor):
-        Action.update(self, actor)
-        
         animationActions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition,
                             subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox, subaction.updateHitbox)
         for act in self.actionsBeforeFrame:
@@ -113,8 +112,10 @@ class DynamicAction(Action):
         for act in self.actionsAfterFrame:
             if isinstance(act, animationActions):
                 act.execute(self,actor)
+        Action.update(self, actor)
                 
         self.frame += 1         
+        
         
         
     def stateTransitions(self,actor):

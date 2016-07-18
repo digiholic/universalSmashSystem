@@ -4,10 +4,12 @@ import settingsManager
 import inspect
 import engine.abstractFighter
 import subactionSelector
+import engine.subaction
 import xml.etree.ElementTree as ElementTree
 from Tkinter import *
 from tkFileDialog import askopenfile
 from tkMessageBox import showinfo
+import ttk
 
 """
 These are the global variables that multiple panels will need.
@@ -104,14 +106,21 @@ class MainFrame(Tk):
         changedActions[self.actionString.get()] = action
         
         #update the views
+        self.actionPane.actionSelectorPanel.refreshDropdowns()
         self.viewerPane.viewerPanel.reloadFrame()
         for subact in self.actionPane.subactionPanel.subActionList:
             subact.updateName()
                 
     def getFighterAction(self,actionName,getRawXml=False):
         global fighter
-        if getRawXml: return fighter.actions.actionsXML.find(actionName)
+        if getRawXml:return fighter.actions.actionsXML.find(actionName)
         else: return fighter.getAction(actionName)
+    
+    def addAction(self,actionName):
+        global fighter
+        changedActions[actionName] = engine.action.DynamicAction(1)
+        fighter.actions.modifyAction(actionName, changedActions[actionName])
+        self.actionPane.actionSelectorPanel.refreshDropdowns()
     
     def changeFighter(self,*args):
         global fighter
@@ -161,6 +170,9 @@ class MenuBar(Menu):
         self.actionMenu.add_command(label="Add Action", command=self.addAction)
         self.actionMenu.add_command(label="Save Action", command=self.saveAction, state=DISABLED)
         self.actionMenu.add_command(label="Delete Action", command=self.deleteAction, state=DISABLED)
+        self.actionMenu.add_separator()
+        self.actionMenu.add_command(label="Add Conditional", command=self.addConditional, state=DISABLED)
+        
         
         self.root.fighterString.trace('w',self.changeFighter)
         self.root.actionString.trace('w',self.changeAction)
@@ -188,7 +200,10 @@ class MenuBar(Menu):
         fighter.saveFighter()
         
     def addAction(self):
-        CreateActionWindow()
+        CreateActionWindow(self.root)
+    
+    def addConditional(self):
+        AddConditionalWindow(self.root)
     
     def saveAction(self):
         pass
@@ -204,15 +219,16 @@ class MenuBar(Menu):
         if action:
             self.actionMenu.entryconfig("Save Action", state=NORMAL)
             self.actionMenu.entryconfig("Delete Action", state=NORMAL)
+            self.actionMenu.entryconfig("Add Conditional", state=NORMAL)
     
     def changeFrame(self,*args):
         pass
 
 class CreateActionWindow(Toplevel):
-    def __init__(self):
+    def __init__(self,root):
         Toplevel.__init__(self)
         self.title("Create a new Action")
-        
+        self.root = root
         nameLabel = Label(self,text="Action Name: ")
         self.name = Entry(self)
         nameLabel.grid(row=0,column=0)
@@ -231,9 +247,32 @@ class CreateActionWindow(Toplevel):
             if not fighter.actions.hasAction(name): #if it doesn't already exist
                 if not changedActions.has_key(name): #and we didn't already make one
                     print('create action')
+                    self.root.addAction(name)
                     self.destroy()
                 
-    
+class AddConditionalWindow(Toplevel):
+    def __init__(self,root):
+        Toplevel.__init__(self)
+        self.title("Create a new Conditional Group")
+        self.root = root
+        nameLabel = Label(self,text="Conditional Name: ")
+        self.name = Entry(self)
+        nameLabel.grid(row=0,column=0)
+        self.name.grid(row=0,column=1)
+        
+        button = Button(self, text="Confirm", command=self.submit)
+        button.grid(row=1,columnspan=2)
+        
+    def submit(self,*args):
+        global fighter
+        global action
+        
+        name = self.name.get()
+        if name and not action.conditionalActions.has_key(name):
+            action.conditionalActions[name] = []
+            self.root.actionModified()
+            self.destroy()
+        
 class LeftPane(BuilderPanel):
     def __init__(self,parent,root):
         BuilderPanel.__init__(self, parent, root)
@@ -428,15 +467,22 @@ class SelectorPanel(BuilderPanel):
             self.currentGroup.set('Fighter')
         else:
             self.root.actionString.set(self.currentAction.get())
-            
-            self.groupList = self.defaultGroupList[:]
-            if action:
-                for group in action.conditionalActions.keys():
-                    self.groupList.append('Cond: '+ group)
             self.refreshDropdowns()
             self.currentGroup.set('Properties')
     
     def refreshDropdowns(self):
+        global changedActions
+        global action
+        
+        for changedaction in changedActions.keys():
+            if not changedaction in self.actList:
+                self.actList.append(changedaction)
+        
+        self.groupList = self.defaultGroupList[:]
+        if action:
+            for group in action.conditionalActions.keys():
+                self.groupList.append('Cond: '+ group)
+                        
         self.action.destroy()
         self.action = OptionMenu(self,self.currentAction,*self.actList)
         self.action.config(width=18)
@@ -504,10 +550,6 @@ class SubactionPanel(BuilderPanel):
     def clearSubActList(self):
         self.scrollFrame.pack_forget()
         
-        if self.selected:
-            self.selected.unselect()
-            self.selectedString.set('')
-            
         for subAct in self.subActionList:
             subAct.destroy()
         self.subActionList = []
@@ -556,7 +598,7 @@ class SubactionPanel(BuilderPanel):
             
         newAction = self.parent.actionSelectorPanel.currentAction.get()
         if newAction == 'Fighter Properties':
-            self.groupChanged()
+            self.parent.actionSelectorPanel.currentGroup.set('Fighter')
         else:
             self.textfield.delete("1.0", END)
             self.textfield.insert(INSERT, str(action))
@@ -568,6 +610,10 @@ class SubactionPanel(BuilderPanel):
         self.group = self.parent.actionSelectorPanel.currentGroup.get()
         newAction = self.parent.actionSelectorPanel.currentAction.get()
         
+        if self.selected:
+            self.selected.unselect()
+            self.selectedString.set('')
+            
         self.clearSubActList()
         if self.group == "Fighter":
             namePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Name','string',fighter,'name')],'Name: ' + fighter.name)
@@ -630,24 +676,47 @@ class SubactionPanel(BuilderPanel):
             elif self.group == 'Current Frame':
                 subActGroup = self.currentFrameSubacts
             elif self.group.startswith('Cond:'):
-                subActGroup = action.conditionalActions[self.group]
+                subActGroup = action.conditionalActions[self.group[6:]]
             
             for subact in subActGroup:
                 selector = subactionSelector.SubactionSelector(self.scrollFrame,subact)
                 selector.updateName()
                 self.subActionList.append(selector)
             
+            
             self.showSubactionList()
             if self.group == 'Properties':
-                node = self.root.getFighterAction(newAction,True)
-                self.loadText(ElementTree.tostring(node))
-                self.showTextField()
+                lengthPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Length','int',action,'lastFrame')],'Length: '+str(action.lastFrame))
+                spritePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Sprite','sprite',action,'spriteName')],'Sprite Name: '+str(action.spriteName))
+                spriteRatePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Sprite Rate','int',action,'spriteRate')],'Sprite Rate: '+str(action.spriteRate))
+                loopPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Loop','bool',action,'loop')],'Loop:'+str(action.loop))
+                
+                self.subActionList.append(lengthPanel)
+                self.subActionList.append(spritePanel)
+                self.subActionList.append(spriteRatePanel)
+                self.subActionList.append(loopPanel)
+                
+                self.showSubactionList()
+                #node = self.root.getFighterAction(newAction,True)
+                #self.loadText(ElementTree.tostring(node))
+                #self.showTextField()
+                
         else:
             self.loadText('Advanced action from '+str(fighter.actions))
+    
+    def addSubactionPanel(self,subact):
+        selector = subactionSelector.SubactionSelector(self.scrollFrame,subact)
+        selector.updateName()
+        self.subActionList.append(selector)
+        selector.pack(fill=X)
         
     def changeFrame(self, *args):
         global frame
         
+        if self.selected:
+            self.selected.unselect()
+            self.selectedString.set('')
+            
         self.currentFrameSubacts = []
         for subact in action.actionsAtFrame[frame]:
             self.currentFrameSubacts.append(subact)
@@ -665,19 +734,82 @@ class PropertiesPanel(BuilderPanel):
         BuilderPanel.__init__(self, parent, root)
         self.config(bg="red",height=200)
         self.selected = None
-        self.subframe = Frame(self)
         self.parent.subactionPanel.selectedString.trace('w',self.onSelect)
+        
+        self.newSubactionFrame = ttk.Notebook(self)
+        
+        self.controlWindow = ttk.Frame(self.newSubactionFrame)
+        self.spriteWindow = ttk.Frame(self.newSubactionFrame)
+        self.behaviorWindow = ttk.Frame(self.newSubactionFrame)
+        self.hitboxWindow = ttk.Frame(self.newSubactionFrame)
+        self.articleWindow = ttk.Frame(self.newSubactionFrame)
+        
+        subactWindows = {'Control': self.controlWindow,
+                         'Sprite': self.spriteWindow,
+                         'Behavior': self.behaviorWindow,
+                         'Hitbox': self.hitboxWindow,
+                         'Article': self.articleWindow
+                         }
+        
+        for name,window in subactWindows.iteritems():
+            self.newSubactionFrame.add(window,text=name)
+            
+        subactionLists = {'Control':[],
+                          'Sprite':[],
+                          'Behavior':[],
+                          'Hitbox':[],
+                          'Article':[]}
+        
+        for name,subact in engine.subaction.subActionDict.iteritems():
+            if subact.subactGroup in subactWindows.keys():
+                shortname = (name[:19] + '..') if len(name) > 22 else name
+                button = Button(subactWindows[subact.subactGroup],text=shortname,command=lambda subaction=subact: self.addSubaction(subaction))
+                subactionLists[subact.subactGroup].append(button)
+                
+        for group in subactionLists.values():
+            x = 0
+            y = 0
+            for button in group:
+                button.grid(row=y,column=x,sticky=E+W)
+                x += 1
+                if x > 1:
+                    y += 1
+                    x = 0
+        
+        self.subframe = self.newSubactionFrame
         self.subframe.pack(fill=BOTH)
         
+    def addSubaction(self,subAction):
+        global action
+        global frame
+        
+        groupToAction = {'Current Frame': action.actionsAtFrame[frame],
+                         'Set Up': action.setUpActions,
+                         'Tear Down': action.tearDownActions,
+                         'Transitions': action.stateTransitionActions,
+                         'Before Frames': action.actionsBeforeFrame,
+                         'After Frames': action.actionsAfterFrame,
+                         'Last Frame': action.actionsAtLastFrame}
+        group = self.parent.actionSelectorPanel.currentGroup.get()
+        if groupToAction.has_key(group) or group.startswith('Cond:'):
+            subact = subAction()
+            if group.startswith('Cond:'):
+                action.conditionalActions[group[6:]].append(subact)
+            else: groupToAction[group].append(subact)
+            self.root.actionModified()
+            self.parent.subactionPanel.addSubactionPanel(subact)
+                    
     def onSelect(self,*args):
         self.selected = self.parent.subactionPanel.selected
         self.subframe.pack_forget()
         
         if self.selected:
             if self.selected.propertyFrame:
-                print(self.selected.propertyFrame)
                 self.subframe = self.selected.propertyFrame
                 self.subframe.pack(fill=BOTH)
+        else:
+            self.subframe = self.newSubactionFrame
+            self.subframe.pack(fill=BOTH)
             
 """
 Scrolling frame, since TKinter doesn't do this for some reason.

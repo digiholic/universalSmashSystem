@@ -71,7 +71,7 @@ class ChangeAttributeFrame(Frame):
                 attribEntry = Frame(self)
                 
                 fileName = Entry(attribEntry,textvariable=attribVar,state=DISABLED)
-                loadFileButton = Button(attribEntry,text='...',command=lambda: self.pickFile(attribVar, vartype))
+                loadFileButton = Button(attribEntry,text='...',command=lambda resultVar=attribVar,fileTuple=vartype: self.pickFile(resultVar,fileTuple))
                 fileName.pack(side=LEFT,fill=X)
                 loadFileButton.pack(side=RIGHT)
                 
@@ -87,6 +87,15 @@ class ChangeAttributeFrame(Frame):
                 attribVar = DoubleVar(self)
                 attribVar.set(float(self.getFromAttrib(obj, prop)))
                 attribEntry = Spinbox(self,from_=-255,to=255,textvariable=attribVar,increment=0.01,format='%.2f')
+            elif vartype == 'bool':
+                attribVar = BooleanVar(self)
+                attribVar.set(bool(self.getFromAttrib(obj, prop)))
+                attribEntry = Checkbutton(self,variable=attribVar)
+            elif vartype == 'sprite':
+                attribVar = StringVar(self)
+                attribVar.set(self.getFromAttrib(obj, prop))
+                attribEntry = OptionMenu(self,attribVar,*self.root.getFighter().sprite.imageLibrary["right"].keys())
+                
             attribLabel.grid(row=currentRow,column=0)
             attribEntry.grid(row=currentRow,column=1)
             self.data.append((attrib,attribVar))
@@ -137,10 +146,123 @@ class BasePropertiesFrame(Frame):
         self.root = root
         self.subaction = subaction
         self.changed = False
+        self.variableList = {}
+    
+    def addVariable(self,varType,name):
+        var = varType(self)
+        self.variableList[name] = var
+        
+    def getVar(self,name):
+        return self.variableList[name]
+    
+    def initVars(self):
+        for (val,var) in self.variableList.iteritems():
+            var.set(getattr(self.subaction,val))
+            var.trace('w',lambda name1, name2, op, variable=var, varname=val: self.variableChanged(variable, varname, name1, name2, op))
                 
+    def variableChanged(self,var,varname,*args):
+        setattr(self.subaction, varname, var.get())
+        self.root.root.actionModified()
+
+class IfProperties(BasePropertiesFrame):
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root, subaction)
+        
+        #Create Variables
+        self.addVariable(StringVar, 'variable')
+        self.addVariable(StringVar, 'source')
+        self.addVariable(StringVar, 'function')
+        self.addVariable(StringVar, 'ifActions')
+        self.addVariable(StringVar, 'elseActions')
+        #Value is special, so they need to be made differently
+        self.valueVar = StringVar(self)
+        self.valueVar.set(subaction.value)
+        self.valueTypeVar = StringVar(self)
+        self.valueTypeVar.set(type(subaction.value).__name__)
+        self.valueVar.trace('w', self.valueChanged)
+        self.valueTypeVar.trace('w', self.valueChanged)
+        
+        variableLabel = Label(self,text="Variable:")
+        sourceLabel = Label(self,text="Source:")
+        valueLabel = Label(self,text="Value:")
+        ifLabel = Label(self,text="Pass:")
+        elseLabel = Label(self,text="Fail:")
+        
+        variableEntry = Entry(self,textvariable=self.getVar('variable'))
+        sourceEntry = OptionMenu(self,self.getVar('source'),*['action','fighter'])
+        functionEntry = OptionMenu(self,self.getVar('function'),*['==','!=','>','<','>=','<='])
+        valueEntry = Entry(self,textvariable=self.valueVar)
+        valueTypeEntry = OptionMenu(self,self.valueTypeVar,*['string','int','float','bool'])
+        
+        conditionals = ['']
+        conditionals.extend(root.getAction().conditionalActions.keys())
+        ifEntry = OptionMenu(self,self.getVar('ifActions'),*conditionals)
+        elseEntry = OptionMenu(self,self.getVar('elseActions'),*conditionals)
+        
+        self.initVars()
+        
+        sourceLabel.grid(row=0,column=0,sticky=E)
+        sourceEntry.grid(row=0,column=1,columnspan=2,sticky=E+W)
+        variableLabel.grid(row=1,column=0,sticky=E)
+        variableEntry.grid(row=1,column=1,sticky=E+W)
+        functionEntry.grid(row=1,column=2,sticky=E+W)
+        valueLabel.grid(row=2,column=0,sticky=E)
+        valueEntry.grid(row=2,column=1,sticky=E+W)
+        valueTypeEntry.grid(row=2,column=2,sticky=E+W)
+        ifLabel.grid(row=3,column=0,sticky=E)
+        ifEntry.grid(row=3,column=1,columnspan=2,sticky=E+W)
+        elseLabel.grid(row=4,column=0,sticky=E)
+        elseEntry.grid(row=4,column=1,columnspan=2,sticky=E+W)
+            
+    def valueChanged(self,*args):
+        value = self.valueVar.get()
+        valtype = self.valueTypeVar.get()
+        if valtype == 'int': self.subaction.value = int(value)
+        elif valtype == 'float': self.subaction.value = float(value)
+        elif valtype == 'bool': self.subaction.value = bool(value)
+        else: self.subaction.value = value
+        self.root.root.actionModified()
+
+class IfButtonProperties(BasePropertiesFrame):
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root, subaction)
+        
+        #Create Variables
+        self.addVariable(StringVar, 'button')
+        self.addVariable(BooleanVar, 'held')
+        self.addVariable(IntVar, 'bufferTime')
+        self.addVariable(StringVar, 'ifActions')
+        self.addVariable(StringVar, 'elseActions')
+        
+        buttonLabel = Label(self,text="Button:")
+        bufferLabel = Label(self,text="Buffer:")
+        ifLabel = Label(self,text="Pass:")
+        elseLabel = Label(self,text="Fail:")
+        
+        buttonEntry = OptionMenu(self,self.getVar('button'),*['left','right','up','down','attack','jump','special','shield'])
+        heldEntry = Checkbutton(self,text="Held?",variable=self.getVar('held'))
+        bufferEntry = Spinbox(self,textvariable=self.getVar('bufferTime'),from_=0,to=255)
+        
+        conditionals = ['']
+        conditionals.extend(root.getAction().conditionalActions.keys())
+        ifEntry = OptionMenu(self,self.getVar('ifActions'),*conditionals)
+        elseEntry = OptionMenu(self,self.getVar('elseActions'),*conditionals)
+        
+        self.initVars()
+        
+        buttonLabel.grid(row=0,column=0,sticky=E)
+        buttonEntry.grid(row=0,column=1,sticky=E+W)
+        heldEntry.grid(row=0,column=2)
+        bufferLabel.grid(row=1,column=0,sticky=E)
+        bufferEntry.grid(row=1,column=1,columnspan=2,sticky=E+W)
+        ifLabel.grid(row=2,column=0,sticky=E)
+        ifEntry.grid(row=2,column=1,columnspan=2,sticky=E+W)
+        elseLabel.grid(row=3,column=0,sticky=E)
+        elseEntry.grid(row=3,column=1,columnspan=2,sticky=E+W)
+              
 class ChangeSpriteProperties(BasePropertiesFrame):
     def __init__(self,root,subaction):
-        BasePropertiesFrame.__init__(self, root,subaction)
+        BasePropertiesFrame.__init__(self, root, subaction)
         
         spriteLabel = Label(self,text="Sprite:")
         self.spriteChoice = StringVar(self)
@@ -180,57 +302,363 @@ class ChangeSubimageProperties(BasePropertiesFrame):
         self.subaction.index = self.subimageValue.get()
         self.root.root.actionModified()
         
-class ChangePreferredSpeedProperties(BasePropertiesFrame):
+class ChangeSpeedProperties(BasePropertiesFrame):
     def __init__(self,root,subaction):
         BasePropertiesFrame.__init__(self, root,subaction)
         
-        xSpeedLabel = Label(self,text="Preferred X Speed:")
-        ySpeedLabel = Label(self,text="Preferred Y Speed:")
-        xSpeedRelative = Checkbutton(self,text="Relative?")
-        
-        xSpeedVariable = IntVar(self)
-        xSpeedField = Spinbox(self,textvariable=xSpeedVariable)
-        xSpeedField.config(width=5)
-        
-        ySpeedVariable = IntVar(self)
-        ySpeedField = Spinbox(self,textvariable=ySpeedVariable)
-        ySpeedField.config(width=5)
-        
-        xSpeedLabel.grid(row=0,column=0)
-        xSpeedField.grid(row=0,column=1)
-        xSpeedRelative.grid(row=0,column=3)
-        
-        ySpeedLabel.grid(row=1,column=0)
-        ySpeedField.grid(row=1,column=1)
-        
-class ChangeSpeedProperties(BasePropertiesFrame):
-    def __init__(self,root,subaction):
-        BasePropertiesFrame.__init__(self,root,subaction)
-        
         xSpeedLabel = Label(self,text="X Speed:")
         ySpeedLabel = Label(self,text="Y Speed:")
-        xSpeedRelative = Checkbutton(self,text="Relative?")
         
-        xSpeedVariable = IntVar(self)
-        xSpeedField = Spinbox(self,textvariable=xSpeedVariable)
-        xSpeedField.config(width=5)
+        self.addVariable(IntVar, 'speed_x')
+        self.addVariable(IntVar, 'speed_y')
+        self.addVariable(BooleanVar, 'xRelative')
         
-        ySpeedVariable = IntVar(self)
-        ySpeedField = Spinbox(self,textvariable=ySpeedVariable)
-        ySpeedField.config(width=5)
+        self.xUnchanged=BooleanVar(self)
+        self.yUnchanged=BooleanVar(self)
+        self.xUnchanged.set(not bool(self.subaction.speed_x))
+        self.yUnchanged.set(not bool(self.subaction.speed_y))
+        self.xUnchanged.trace('w', self.xUnchangedChanged)
+        self.yUnchanged.trace('w', self.yUnchangedChanged)
         
-        xSpeedLabel.grid(row=0,column=0)
-        xSpeedField.grid(row=0,column=1)
-        xSpeedRelative.grid(row=0,column=3)
+        self.xSpeedEntry = Spinbox(self,textvariable=self.getVar('speed_x'),from_=-255,to=255)
+        self.xSpeedEntry.config(width=4)
+        self.ySpeedEntry = Spinbox(self,textvariable=self.getVar('speed_y'),from_=-255,to=255)
+        self.ySpeedEntry.config(width=4)
         
-        ySpeedLabel.grid(row=1,column=0)
-        ySpeedField.grid(row=1,column=1)
+        self.xSpeedRelative = Checkbutton(self,variable=self.getVar('xRelative'),text="Relative?")
+        xUnchangedEntry = Checkbutton(self,variable=self.xUnchanged,text="Leave X Unchanged")
+        yUnchangedEntry = Checkbutton(self,variable=self.yUnchanged,text="Leave Y Unchanged")
+        
+        if self.xUnchanged.get():
+            self.xSpeedEntry.config(state=DISABLED)
+            self.xSpeedRelative.config(state=DISABLED)
+        else:
+            self.xSpeedEntry.config(state=NORMAL)
+            self.xSpeedRelative.config(state=NORMAL)
+            
+        if self.yUnchanged.get(): self.ySpeedEntry.config(state=DISABLED)
+        else: self.ySpeedEntry.config(state=NORMAL)
+            
+        self.initVars()
+        
+        xUnchangedEntry.grid(row=0,column=0, columnspan=3)
+        xSpeedLabel.grid(row=1,column=0,sticky=E)
+        self.xSpeedEntry.grid(row=1,column=1,sticky=E+W)
+        self.xSpeedRelative.grid(row=1,column=2)
+        yUnchangedEntry.grid(row=2,column=0, columnspan=3)
+        ySpeedLabel.grid(row=3,column=0,sticky=E)
+        self.ySpeedEntry.grid(row=3,column=1,columnspan=2,sticky=E+W)
+    
+    def xUnchangedChanged(self,*args): #boy this function's name is silly
+        if self.xUnchanged.get():
+            self.xSpeedEntry.config(state=DISABLED)
+            self.xSpeedRelative.config(state=DISABLED)
+            self.getVar('speed_x').set(0)
+            self.subaction.speed_x = None
+            self.root.root.actionModified()
+        else:
+            self.xSpeedEntry.config(state=NORMAL)
+            self.xSpeedRelative.config(state=NORMAL)
+            self.subaction.speed_x = self.getVar('speed_x').get()
+            self.root.root.actionModified()
+    
+    def yUnchangedChanged(self,*args):
+        if self.yUnchanged.get():
+            self.ySpeedEntry.config(state=DISABLED)
+            self.getVar('speed_y').set(0)
+            self.subaction.speed_y = None
+            self.root.root.actionModified()
+        else:
+            self.ySpeedEntry.config(state=NORMAL)
+            self.subaction.speed_y = self.getVar('speed_y').get()
+            self.root.root.actionModified()
+            
+    def initVars(self):
+        for (val,var) in self.variableList.iteritems():
+            newval = getattr(self.subaction,val)
+            if newval is None: var.set(0)
+            else: var.set(newval)
+            var.trace('w',lambda name1, name2, op, variable=var, varname=val: self.variableChanged(variable, varname, name1, name2, op))
+    
+    def variableChanged(self,var,varname,*args):
+        print(var,var.get(),varname)
+        if varname == 'speed_x' and self.xUnchanged.get(): return
+        if varname == 'speed_y' and self.yUnchanged.get(): return
+        setattr(self.subaction, varname, var.get())
+        self.root.root.actionModified()
+        
+class ShiftPositionProperties(BasePropertiesFrame):
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root,subaction)
+        
+        xSpeedLabel = Label(self,text="New X:")
+        ySpeedLabel = Label(self,text="New Y:")
+        
+        self.addVariable(IntVar, 'new_x')
+        self.addVariable(IntVar, 'new_y')
+        self.addVariable(BooleanVar, 'xRelative')
+        self.addVariable(BooleanVar, 'yRelative')
+        
+        self.xUnchanged=BooleanVar(self)
+        self.yUnchanged=BooleanVar(self)
+        self.xUnchanged.set(not bool(self.subaction.speed_x))
+        self.yUnchanged.set(not bool(self.subaction.speed_y))
+        self.xUnchanged.trace('w', self.xUnchangedChanged)
+        self.yUnchanged.trace('w', self.yUnchangedChanged)
+        
+        self.xSpeedEntry = Spinbox(self,textvariable=self.getVar('new_x'),from_=-255,to=255)
+        self.xSpeedEntry.config(width=4)
+        self.ySpeedEntry = Spinbox(self,textvariable=self.getVar('new_y'),from_=-255,to=255)
+        self.ySpeedEntry.config(width=4)
+        
+        self.xSpeedRelative = Checkbutton(self,variable=self.getVar('xRelative'),text="Relative?")
+        self.ySpeedRelative = Checkbutton(self,variable=self.getVar('yRelative'),text="Relative?")
+        xUnchangedEntry = Checkbutton(self,variable=self.xUnchanged,text="Leave X Unchanged")
+        yUnchangedEntry = Checkbutton(self,variable=self.yUnchanged,text="Leave Y Unchanged")
+        
+        if self.xUnchanged.get():
+            self.xSpeedEntry.config(state=DISABLED)
+            self.xSpeedRelative.config(state=DISABLED)
+        else:
+            self.xSpeedEntry.config(state=NORMAL)
+            self.xSpeedRelative.config(state=NORMAL)
+            
+        if self.yUnchanged.get():
+            self.ySpeedEntry.config(state=DISABLED)
+            self.ySpeedRelative.config(state=DISABLED)
+        else:
+            self.ySpeedEntry.config(state=NORMAL)
+            self.ySpeedRelative.config(state=NORMAL)
+            
+        self.initVars()
+        
+        xUnchangedEntry.grid(row=0,column=0, columnspan=3)
+        xSpeedLabel.grid(row=1,column=0,sticky=E)
+        self.xSpeedEntry.grid(row=1,column=1,sticky=E+W)
+        self.xSpeedRelative.grid(row=1,column=2)
+        yUnchangedEntry.grid(row=2,column=0, columnspan=3)
+        ySpeedLabel.grid(row=3,column=0,sticky=E)
+        self.ySpeedEntry.grid(row=3,column=1,sticky=E+W)
+        self.ySpeedRelative.grid(row=3,column=2)
+        
+    def xUnchangedChanged(self,*args): #boy this function's name is silly
+        if self.xUnchanged.get():
+            self.xSpeedEntry.config(state=DISABLED)
+            self.xSpeedRelative.config(state=DISABLED)
+            self.getVar('speed_x').set(0)
+            self.subaction.speed_x = None
+            self.root.root.actionModified()
+        else:
+            self.xSpeedEntry.config(state=NORMAL)
+            self.xSpeedRelative.config(state=NORMAL)
+            self.subaction.speed_x = self.getVar('speed_x').get()
+            self.root.root.actionModified()
+    
+    def yUnchangedChanged(self,*args):
+        if self.yUnchanged.get():
+            self.ySpeedEntry.config(state=DISABLED)
+            self.ySpeedRelative.config(state=DISABLED)
+            self.getVar('speed_y').set(0)
+            self.subaction.speed_y = None
+            self.root.root.actionModified()
+        else:
+            self.ySpeedEntry.config(state=NORMAL)
+            self.ySpeedRelative.config(state=NORMAL)
+            self.subaction.speed_y = self.getVar('speed_y').get()
+            self.root.root.actionModified()
+            
+    def initVars(self):
+        for (val,var) in self.variableList.iteritems():
+            newval = getattr(self.subaction,val)
+            if newval is None: var.set(0)
+            else: var.set(newval)
+            var.trace('w',lambda name1, name2, op, variable=var, varname=val: self.variableChanged(variable, varname, name1, name2, op))
+    
+    def variableChanged(self,var,varname,*args):
+        print(var,var.get(),varname)
+        if varname == 'speed_x' and self.xUnchanged.get(): return
+        if varname == 'speed_y' and self.yUnchanged.get(): return
+        setattr(self.subaction, varname, var.get())
+        self.root.root.actionModified()
+
+class ShiftSpriteProperties(BasePropertiesFrame):
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root,subaction)
+        
+        xSpeedLabel = Label(self,text="X Pos:")
+        ySpeedLabel = Label(self,text="Y Pos:")
+        
+        self.addVariable(IntVar, 'new_x')
+        self.addVariable(IntVar, 'new_y')
+        self.addVariable(BooleanVar, 'xRelative')
+        
+        self.xUnchanged=BooleanVar(self)
+        self.yUnchanged=BooleanVar(self)
+        self.xUnchanged.set(not bool(self.subaction.new_x))
+        self.yUnchanged.set(not bool(self.subaction.new_y))
+        self.xUnchanged.trace('w', self.xUnchangedChanged)
+        self.yUnchanged.trace('w', self.yUnchangedChanged)
+        
+        self.xSpeedEntry = Spinbox(self,textvariable=self.getVar('new_x'),from_=-255,to=255)
+        self.xSpeedEntry.config(width=4)
+        self.ySpeedEntry = Spinbox(self,textvariable=self.getVar('new_y'),from_=-255,to=255)
+        self.ySpeedEntry.config(width=4)
+        
+        self.xSpeedRelative = Checkbutton(self,variable=self.getVar('xRelative'),text="Relative?")
+        xUnchangedEntry = Checkbutton(self,variable=self.xUnchanged,text="Leave X Unchanged")
+        yUnchangedEntry = Checkbutton(self,variable=self.yUnchanged,text="Leave Y Unchanged")
+        
+        if self.xUnchanged.get():
+            self.xSpeedEntry.config(state=DISABLED)
+            self.xSpeedRelative.config(state=DISABLED)
+        else:
+            self.xSpeedEntry.config(state=NORMAL)
+            self.xSpeedRelative.config(state=NORMAL)
+            
+        if self.yUnchanged.get(): self.ySpeedEntry.config(state=DISABLED)
+        else: self.ySpeedEntry.config(state=NORMAL)
+            
+        self.initVars()
+        
+        xUnchangedEntry.grid(row=0,column=0, columnspan=3)
+        xSpeedLabel.grid(row=1,column=0,sticky=E)
+        self.xSpeedEntry.grid(row=1,column=1,sticky=E+W)
+        self.xSpeedRelative.grid(row=1,column=2)
+        yUnchangedEntry.grid(row=2,column=0, columnspan=3)
+        ySpeedLabel.grid(row=3,column=0,sticky=E)
+        self.ySpeedEntry.grid(row=3,column=1,columnspan=2,sticky=E+W)
+    
+    def xUnchangedChanged(self,*args): #boy this function's name is silly
+        if self.xUnchanged.get():
+            self.xSpeedEntry.config(state=DISABLED)
+            self.xSpeedRelative.config(state=DISABLED)
+            self.getVar('new_x').set(0)
+            self.subaction.new_x = None
+            self.root.root.actionModified()
+        else:
+            self.xSpeedEntry.config(state=NORMAL)
+            self.xSpeedRelative.config(state=NORMAL)
+            self.subaction.new_x = self.getVar('new_x').get()
+            self.root.root.actionModified()
+    
+    def yUnchangedChanged(self,*args):
+        if self.yUnchanged.get():
+            self.ySpeedEntry.config(state=DISABLED)
+            self.getVar('new_y').set(0)
+            self.subaction.new_y = None
+            self.root.root.actionModified()
+        else:
+            self.ySpeedEntry.config(state=NORMAL)
+            self.subaction.new_y = self.getVar('new_y').get()
+            self.root.root.actionModified()
+            
+    def initVars(self):
+        for (val,var) in self.variableList.iteritems():
+            newval = getattr(self.subaction,val)
+            if newval is None: var.set(0)
+            else: var.set(newval)
+            var.trace('w',lambda name1, name2, op, variable=var, varname=val: self.variableChanged(variable, varname, name1, name2, op))
+    
+    def variableChanged(self,var,varname,*args):
+        print(var,var.get(),varname)
+        if varname == 'new_x' and self.xUnchanged.get(): return
+        if varname == 'new_y' and self.yUnchanged.get(): return
+        setattr(self.subaction, varname, var.get())
+        self.root.root.actionModified()
+    
+class UpdateLandingLagProperties(BasePropertiesFrame):
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root, subaction)
+        
+        self.addVariable(IntVar, 'newLag')
+        self.addVariable(BooleanVar, 'reset')
+        
+        lagLabel = Label(self,text="New Lag:")
+        
+        lagEntry = Spinbox(self,textvariable=self.getVar('newLag'),from_=0,to=255)
+        resetButton = Checkbutton(self,variable=self.getVar('reset'),text="Reset even if lower?")
+        
+        self.initVars()
+        
+        lagLabel.grid(row=0,column=0,sticky=E)
+        lagEntry.grid(row=0,column=1,sticky=E+W)
+        resetButton.grid(row=1,column=0,columnspan=2)
+
+class ModifyFighterVarProperties(BasePropertiesFrame):
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root, subaction)
+        
+        self.addVariable(StringVar, 'attr')
+        
+        attrLabel = Label(self,text="Variable:")
+        valueLabel = Label(self,text="Value:")
+            
+        self.valueVar = StringVar(self)
+        self.valueTypeVar = StringVar(self)
+        self.valueVar.set(subaction.val)
+        self.valueTypeVar.set(type(subaction.value).__name__)
+        self.valueVar.trace('w', self.valueChanged)
+        self.valueTypeVar.trace('w', self.valueChanged)
+        
+        attrEntry = Entry(self,textvariable=self.getVar('attr'))
+        valueEntry = Entry(self,textvariable=self.valueVar)
+        valueTypeEntry = OptionMenu(self,self.valueTypeVar,*['string','int','float','bool'])
+        
+        self.initVars()
+        
+        attrLabel.grid(row=0,column=0,sticky=E)
+        attrEntry.grid(row=0,column=1,columnspan=2,sticky=E+W)
+        valueLabel.grid(row=0,column=0,sticky=E)
+        valueEntry.grid(row=0,column=1,sticky=E+W)
+        valueTypeEntry.grid(row=0,column=2,sticky=E+W)
+        
+    def valueChanged(self,*args):
+        value = self.valueVar.get()
+        valtype = self.valueTypeVar.get()
+        if valtype == 'int': self.subaction.value = int(value)
+        elif valtype == 'float': self.subaction.value = float(value)
+        elif valtype == 'bool': self.subaction.value = bool(value)
+        else: self.subaction.val = value
+        self.root.root.actionModified()
+ 
+class ChangeFrameProperties(BasePropertiesFrame):
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root, subaction)
+        
+        self.addVariable(IntVar, 'newFrame')
+        self.addVariable(BooleanVar, 'relative')
+        
+        frameLabel = Label(self,text="Frame:")
+        
+        frameEntry = Spinbox(self,textvariable=self.getVar('newFrame'),from_=-255,to=255)
+        relativeEntry = Checkbutton(self,variable=self.getVar('relative'),text="Relative?")
+        
+        self.initVars()
+        
+        frameLabel.grid(row=0,column=0,sticky=E)
+        frameEntry.grid(row=0,column=1,sticky=E+W)
+        relativeEntry.grid(row=0,column=2)
+        
+class TransitionProperties(BasePropertiesFrame):
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root, subaction)
+        
+        self.addVariable(StringVar, 'transition')
+        transitionLabel = Label(self,text='Transition State:')
+        transitionEntry = OptionMenu(self,self.getVar('transition'),*engine.baseActions.stateDict.keys())
+        
+        self.initVars()
+        
+        transitionLabel.grid(row=0,column=0,sticky=E)
+        transitionEntry.grid(row=0,column=1,sticky=E+W)
         
 class ModifyHitboxProperties(BasePropertiesFrame):
     def __init__(self,root,subaction,newHitbox=False):
         BasePropertiesFrame.__init__(self, root, subaction)
         
-        self.hitbox = root.getAction().hitboxes[self.subaction.hitboxName]
+        if root.getAction().hitboxes.has_key(self.subaction.hitboxName):
+            self.hitbox = root.getAction().hitboxes[self.subaction.hitboxName]
+        else: self.hitbox = engine.hitbox.Hitbox(root.getFighter(),engine.hitbox.HitboxLock())
         self.variableList = []
         
         mainFrame = ttk.Notebook(self)
@@ -352,6 +780,8 @@ class HitboxPropertiesFrame(ttk.Frame):
         self.hitboxType.set(self.hitbox.hitboxType)
         self.hitboxLock.set(self.hitbox.hitbox_lock.lockName)
         
+        self.name = self.hitboxName.get()
+        
         center = self.populateHitboxVariable('center')
         self.centerX.set(center[0])
         self.centerY.set(center[1])
@@ -373,6 +803,10 @@ class HitboxPropertiesFrame(ttk.Frame):
             nameEntry = OptionMenu(self,self.hitboxName,*hitboxVals)
             typeEntry = Entry(self,textvariable=self.hitboxType,state=DISABLED)
             lockEntry = Entry(self,textvariable=self.hitboxLock,state=DISABLED)
+        
+        self.hitboxName.trace('w',self.nameChanged)
+        self.hitboxType.trace('w',self.typeChanged)
+        self.hitboxLock.trace('w',self.lockChanged)
         
         centerXEntry = Spinbox(self,from_=-255,to=255,textvariable=self.centerX,width=4)
         centerYEntry = Spinbox(self,from_=-255,to=255,textvariable=self.centerY,width=4)
@@ -397,8 +831,31 @@ class HitboxPropertiesFrame(ttk.Frame):
         sizeXEntry.grid(row=4,column=1)
         sizeYEntry.grid(row=4,column=2)
     
+    def nameChanged(self,*args):
+        oldName = self.name
+        newName = self.hitboxName.get()
+        self.name = newName
+        self.subaction.hitboxName = newName
+        
+        #we need something in the action so that we can select it from a dropdown later
+        if not self.parent.root.getAction().hitboxes.has_key(newName): #Set our working Hitbox to the action
+            self.parent.root.getAction().hitboxes[newName] = self.hitbox
+        if self.parent.root.getAction().hitboxes.has_key(oldName): #Set it to the Old one if it exists
+            self.parent.root.getAction().hitboxes[newName] = self.parent.root.getAction().hitboxes[oldName]
+            del(self.parent.root.getAction().hitboxes[oldName])
+        self.parent.root.root.actionModified()
+        
+    def typeChanged(self,*args):
+        newType = self.hitboxType.get()
+        self.subaction.hitboxType = newType
+        self.parent.root.root.actionModified()
+        
+    def lockChanged(self,*args):
+        newLock = self.hitboxLock.get()
+        self.subaction.hitboxLock = newLock
+        self.parent.root.root.actionModified()
+        
     def centerChanged(self,*args):
-        print(args)
         center = (self.centerX.get(),self.centerY.get())
         hitboxVars = {"center": center}
         self.subaction.hitboxVars.update(hitboxVars)
@@ -414,3 +871,21 @@ class HitboxPropertiesFrame(ttk.Frame):
         if self.subaction.hitboxVars.has_key(variable):
             return self.subaction.hitboxVars[variable]
         else: return getattr(self.hitbox,variable)
+        
+class UpdateHitboxProperties(BasePropertiesFrame):
+    def __init__(self,root,subaction):
+        BasePropertiesFrame.__init__(self, root, subaction)
+        
+        self.addVariable(StringVar, 'hitboxName')
+        
+        hitboxVals = ['No Hitboxes found']
+        if root.getAction():
+            hitboxVals = root.getAction().hitboxes.keys()
+        
+        hitboxLabel = Label(self,text="Hitbox:")
+        hitboxEntry = OptionMenu(self,self.getVar('hitboxName'),*hitboxVals)
+        
+        self.initVars()
+        
+        hitboxLabel.grid(row=0,column=0,sticky=E)
+        hitboxEntry.grid(row=0,column=1,sticky=E+W)

@@ -40,6 +40,8 @@ def loadValueOrVariable(node, subnode, type="string", default=""):
     
 # SubActions are a single part of an Action, such as moving a fighter, or tweaking a sprite.
 class SubAction():
+    subactGroup = 'None'
+    
     def __init__(self):
         pass
     
@@ -59,28 +61,13 @@ class SubAction():
     def buildFromXml(node):
         pass
     
-# Conditional Subactions contain lists of other subactions they will run if the condition is true or false.
-class ConditionalAction(SubAction):
-    def __init__(self,cond):
-        SubAction.__init__(self)
-        self.ifActions = []
-        self.elseActions = []
-        self.cond = cond
-        
-    def execute(self, action, actor):
-        if self.cond:
-            for act in self.ifActions:
-                act.execute(actor)
-        else:
-            for act in self.elseActions:
-                act.execute(actor)
-
-
 ########################################################
 #                 CONDITIONALS                         #
 ########################################################
 class If(SubAction):
-    def __init__(self,variable,source,function,value,ifActions,elseActions):
+    subactGroup = 'Control'
+    
+    def __init__(self,variable='',source='action',function='==',value='True',ifActions='',elseActions=''):
         self.variable = variable
         self.source = source
         self.function = function
@@ -89,6 +76,7 @@ class If(SubAction):
         self.elseActions = elseActions
         
     def execute(self, action, actor):
+        if self.variable == '': return
         if self.source == 'fighter':
             if actor.attr.has_key(self.variable):
                 variable = actor.attr[self.variable]
@@ -119,9 +107,12 @@ class If(SubAction):
             if self.elseActions and action.conditionalActions.has_key(self.ifActions):
                 for act in action.conditionalActions[self.ifActions]:
                     act.execute(action,actor)
+    
+    def getPropertiesPanel(self, root):
+        return subactionSelector.IfProperties(root,self)
                     
     def getDisplayName(self):
-        return 'If ' + self.source + ' ' + self.variable
+        return 'If '+self.source+' '+self.variable+' '+str(self.function)+' '+str(self.value)+': '+self.ifActions
     
     def getXmlElement(self):
         elem = ElementTree.Element('If')
@@ -179,7 +170,9 @@ class If(SubAction):
         return If(variable,source,function,value,ifActions,elseActions)
 
 class ifButton(SubAction):
-    def __init__(self,button,held,bufferTime,ifActions,elseActions):
+    subactGroup = 'Control'
+    
+    def __init__(self,button='',held=False,bufferTime=0,ifActions='',elseActions=''):
         self.button = button
         self.held = held
         self.bufferTime = bufferTime
@@ -187,6 +180,7 @@ class ifButton(SubAction):
         self.elseActions = elseActions
         
     def execute(self, action, actor):
+        if self.button == '': return
         if self.held:
             cond = self.button in actor.keysHeld
         else:
@@ -200,8 +194,12 @@ class ifButton(SubAction):
                 for act in action.conditionalActions[self.elseActions]:
                     act.execute(action,actor)
     
+    def getPropertiesPanel(self, root):
+        return subactionSelector.IfButtonProperties(root,self)
+    
     def getDisplayName(self):
-        return 'If Button'
+        pressedText = 'is held: ' if self.held else 'was pressed within '+str(self.bufferTime)+' frames: '
+        return 'If '+self.button+' '+pressedText+self.ifActions
     
     def getXmlElement(self):
         elem = ElementTree.Element('ifButton')
@@ -246,7 +244,9 @@ class ifButton(SubAction):
 # ChangeFighterSprite will change the sprite of the fighter (Who knew?)
 # Optionally pass it a subImage index to start at that frame instead of 0
 class changeFighterSprite(SubAction):
-    def __init__(self,sprite):
+    subactGroup = 'Sprite'
+    
+    def __init__(self,sprite='idle'):
         SubAction.__init__(self)
         self.sprite = sprite
         
@@ -271,7 +271,9 @@ class changeFighterSprite(SubAction):
         
 # ChangeFighterSubimage will change the subimage of a sheetSprite without changing the sprite.
 class changeFighterSubimage(SubAction):
-    def __init__(self,index):
+    subactGroup = 'Sprite'
+    
+    def __init__(self,index=0):
         SubAction.__init__(self)
         self.index = index
         
@@ -302,50 +304,55 @@ class changeFighterSubimage(SubAction):
 # The preferred speed is what a fighter will accelerate/decelerate to. Use this action if you
 # want the fighter to gradually speed up to a point (for accelerating), or slow down to a point (for deccelerating)
 class changeFighterPreferredSpeed(SubAction):
-    def __init__(self,pref_x = None, pref_y = None, xRelative = False):
+    subactGroup = 'Behavior'
+    
+    def __init__(self,speed_x = None, speed_y = None, xRelative = False):
         SubAction.__init__(self)
-        self.pref_x = pref_x
-        self.pref_y = pref_y
+        self.speed_x = speed_x
+        self.speed_y = speed_y
         self.xRelative = xRelative
         
     def execute(self, action, actor):
-        if self.pref_x is not None:
-            if type(self.pref_x) is tuple:
-                owner,value = self.pref_x
+        if self.speed_x is not None:
+            if type(self.speed_x) is tuple:
+                owner,value = self.speed_x
                 if owner == 'actor':
-                    self.pref_x = actor.var[value]
+                    self.speed_x = actor.var[value]
                 elif owner == 'action':
-                    self.pref_x = getattr(self, value)
-            if self.xRelative: actor.preferred_xspeed = self.pref_x*actor.facing
-            else: actor.preferred_xspeed = self.pref_x
+                    self.speed_x = getattr(self, value)
+            if self.xRelative: actor.preferred_xspeed = self.speed_x*actor.facing
+            else: actor.preferred_xspeed = self.speed_x
             
-        if self.pref_y is not None:
-            if type(self.pref_y) is tuple:
-                owner,value = self.pref_y
+        if self.speed_y is not None:
+            if type(self.speed_y) is tuple:
+                owner,value = self.speed_y
                 if owner == 'actor':
-                    self.pref_y = actor.var[value]
+                    self.speed_y = actor.var[value]
                 elif owner == 'action':
-                    self.pref_y = getattr(self, value)
-            actor.preferred_yspeed = self.pref_y
+                    self.speed_y = getattr(self, value)
+            actor.preferred_yspeed = self.speed_y
     
     def getPropertiesPanel(self, root):
-        return subactionSelector.ChangePreferredSpeedProperties(root,self)
+        return subactionSelector.ChangeSpeedProperties(root,self)
     
     def getDisplayName(self):
-        return 'Change Preferred Speed: ' + str(self.pref_x) + ' X, ' + str(self.pref_y) + 'Y'
+        xstr = str(self.speed_x)+' X' if self.speed_x is not None else ''
+        sepstr = ', ' if self.speed_x and self.speed_y else ''
+        ystr = str(self.speed_y)+' Y' if self.speed_y is not None else ''
+        return 'Change Preferred Speed: '+xstr+sepstr+ystr
     
     def getXmlElement(self):
         elem = ElementTree.Element('changeFighterPreferredSpeed')
         
-        if self.pref_x is not None:
+        if self.speed_x is not None:
             xElem = ElementTree.Element('xSpeed')
             if self.xRelative: xElem.attrib['relative'] = 'True'
-            xElem.text = str(self.pref_x)
+            xElem.text = str(self.speed_x)
             elem.append(xElem)
         
-        if self.pref_y is not None:
+        if self.speed_y is not None:
             yElem = ElementTree.Element('ySpeed')
-            yElem.text = str(self.pref_y)
+            yElem.text = str(self.speed_y)
             elem.append(yElem)
         return elem
         
@@ -359,6 +366,8 @@ class changeFighterPreferredSpeed(SubAction):
         
 # ChangeFighterSpeed changes the speed directly, with no acceleration/deceleration.
 class changeFighterSpeed(SubAction):
+    subactGroup = 'Behavior'
+    
     def __init__(self,speed_x = None, speed_y = None, xRelative = False):
         SubAction.__init__(self)
         self.speed_x = speed_x
@@ -390,7 +399,10 @@ class changeFighterSpeed(SubAction):
         return subactionSelector.ChangeSpeedProperties(root,self)
     
     def getDisplayName(self):
-        return 'Change Fighter Speed: ' + str(self.speed_x) + ' X, ' + str(self.speed_y) + 'Y'
+        xstr = str(self.speed_x)+' X' if self.speed_x is not None else ''
+        sepstr = ', ' if self.speed_x and self.speed_y else ''
+        ystr = str(self.speed_y)+' Y' if self.speed_y is not None else ''
+        return 'Change Fighter Speed: '+xstr+sepstr+ystr
     
     def getXmlElement(self):
         elem = ElementTree.Element('changeFighterSpeed')
@@ -434,6 +446,8 @@ class applyForceVector(SubAction):
 # Don't use this for ordinary movement unless you're totally sure what you're doing.
 # A good use for this is to jitter a hit opponent during hitlag, just make sure to put them back where they should be before actually launching.
 class shiftFighterPosition(SubAction):
+    subactGroup = 'Behavior'
+    
     def __init__(self,new_x = None, new_y = None, xRelative = False, yRelative = False):
         SubAction.__init__(self)
         self.new_x = new_x
@@ -450,7 +464,10 @@ class shiftFighterPosition(SubAction):
             else: actor.rect.y = self.new_y
     
     def getDisplayName(self):
-        return 'Shift Position: ' + str(self.pref_x) + ' X, ' + str(self.pref_y) + 'Y'
+        return 'Shift Position: ' + str(self.new_x) + ' X, ' + str(self.new_y) + 'Y'
+    
+    def getPropertiesPanel(self, root):
+        return subactionSelector.ShiftPositionProperties(root,self)
     
     def getXmlElement(self):
         elem = ElementTree.Element('shiftPosition')
@@ -484,6 +501,8 @@ class shiftFighterPosition(SubAction):
         return shiftFighterPosition(new_x,new_y,xRel,yRel)
 
 class shiftSpritePosition(SubAction):
+    subactGroup = 'Sprite'
+    
     def __init__(self,new_x = None, new_y = None, xRelative = False):
         SubAction.__init__(self)
         self.new_x = new_x
@@ -500,6 +519,9 @@ class shiftSpritePosition(SubAction):
         
         actor.sprite.spriteOffset = (old_x,old_y)
         #print(actor.sprite.spriteOffset)
+    
+    def getPropertiesPanel(self, root):
+        return subactionSelector.ShiftSpriteProperties(root,self)
     
     def getDisplayName(self):
         return 'Shift Sprite: ' + str(self.new_x) + ' X, ' + str(self.new_y) + 'Y'
@@ -533,15 +555,22 @@ class shiftSpritePosition(SubAction):
         return shiftSpritePosition(new_x,new_y,xRel)
     
 class updateLandingLag(SubAction):
-    def __init__(self,newLag,reset = False):
+    subactGroup = 'Behavior'
+    
+    def __init__(self,newLag=0,reset = False):
         self.newLag = newLag
         self.reset = reset
         
     def execute(self, action, actor):
         actor.updateLandingLag(self.newLag,self.reset)
     
+    def getPropertiesPanel(self, root):
+        return subactionSelector.UpdateLandingLagProperties(root,self)
+    
     def getDisplayName(self):
-        return 'Update Landing Lag: ' + str(self.newLag)
+        if self.reset: startstr = 'Reset '
+        else: startstr = 'Update '
+        return startstr+'Landing Lag: ' + str(self.newLag)
     
     def getXmlElement(self):
         elem = ElementTree.Element('updateLandingLag')
@@ -558,16 +587,39 @@ class updateLandingLag(SubAction):
 
 # Change a fighter attribute, for example, weight or remaining jumps
 class modifyFighterVar(SubAction):
-    def __init__(self,attr,val):
+    subactGroup = 'Control'
+    
+    def __init__(self,attr='',val=None):
         SubAction.__init__(self)
         self.attr = attr
         self.val = val
         
     def execute(self, action, actor):
-        if actor.var.has_key(self.attr):
-            actor.var[self.attr] = self.val
-        else: setattr(actor,self.attr,self.val)
+        if not self.attr =='':
+            if actor.var.has_key(self.attr):
+                actor.var[self.attr] = self.val
+            else: setattr(actor,self.attr,self.val)
+    
+    def getPropertiesPanel(self, root):
+        return subactionSelector.ModifyFighterVarProperties(root,self)
+    
+    def getDisplayName(self):
+        return 'Set fighter '+self.attr+' to '+str(self.val)
+    
+    def getXmlElement(self):
+        elem = ElementTree.Element('setFighterVar')
         
+        varElem = ElementTree.Element('var')
+        varElem.text = str(self.attr)
+        elem.append(varElem)
+        
+        valueElem = ElementTree.Element('value')
+        valueElem.attrib['type'] = type(self.value).__name__
+        valueElem.text = str(self.value)
+        elem.append(valueElem)
+        
+        return elem
+    
     @staticmethod
     def buildFromXml(node):
         attr = node.attrib['var']
@@ -598,7 +650,9 @@ class modifyActionVar(SubAction):
                    
 # Change the frame of the action to a value.
 class changeActionFrame(SubAction):
-    def __init__(self,newFrame,relative=False):
+    subactGroup = 'Control'
+    
+    def __init__(self,newFrame=0,relative=False):
         SubAction.__init__(self)
         self.newFrame = newFrame
         self.relative = relative
@@ -606,6 +660,9 @@ class changeActionFrame(SubAction):
     def execute(self, action, actor):
         if self.relative: action.frame += self.newFrame
         else: action.frame = self.newFrame
+    
+    def getPropertiesPanel(self, root):
+        return subactionSelector.ChangeFrameProperties(root,self)
     
     def getDisplayName(self):
         if self.relative:
@@ -625,24 +682,35 @@ class changeActionFrame(SubAction):
         
 # Go to the next frame in the action
 class nextFrame(SubAction):
+    subactGroup = 'Control'
+    
     def execute(self, action, actor):
         action.frame += 1
     
     def getDisplayName(self):
         return 'Next Frame'
     
+    def getXmlElement(self):
+        return ElementTree.Element('nextFrame')
+        
     @staticmethod
     def buildFromXml(node):
         return nextFrame()
     
 class transitionState(SubAction):
-    def __init__(self,transition):
+    subactGroup = 'Control'
+    
+    def __init__(self,transition=''):
         SubAction.__init__(self)
         self.transition = transition
     
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
-        baseActions.stateDict[self.transition](actor)
+        if baseActions.stateDict.has_key(self.transition):
+            baseActions.stateDict[self.transition](actor)
+    
+    def getPropertiesPanel(self, root):
+        return subactionSelector.TransitionProperties(root,self)
     
     def getDisplayName(self):
         return 'Apply Transition State: ' + str(self.transition)
@@ -662,7 +730,9 @@ class transitionState(SubAction):
 
 # Create a new hitbox
 class createHitbox(SubAction):
-    def __init__(self, name, hitboxType, hitboxLock, variables):
+    subactGroup = 'Hitbox'
+    
+    def __init__(self, name='', hitboxType='damage', hitboxLock='', variables={}):
         SubAction.__init__(self)
         
         self.hitboxName = name
@@ -672,6 +742,7 @@ class createHitbox(SubAction):
         
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
+        if self.hitboxName == '': return #Don't make a hitbox without a name or we'll lose it
         #Use an existing hitbox lock by name, or create a new one
         if self.hitboxLock and action.hitboxLocks.has_key(self.hitboxLock):
             hitboxLock = action.hitboxLocks[self.hitboxLock]
@@ -751,19 +822,22 @@ class createHitbox(SubAction):
         
 # Change the properties of an existing hitbox, such as position, or power
 class modifyHitbox(SubAction):
-    def __init__(self,hitboxName,hitboxVars):
+    subactGroup = 'Hitbox'
+    
+    def __init__(self,hitboxName='',hitboxVars={}):
         SubAction.__init__(self)
         self.hitboxName = hitboxName
         self.hitboxVars = hitboxVars
         
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
-        hitbox = action.hitboxes[self.hitboxName]
-        if hitbox:
-            for name,value in self.hitboxVars.iteritems():
-                if hasattr(hitbox, name):
-                    setattr(hitbox, name, value)
-    
+        if action.hitboxes.has_key(self.hitboxName):
+            hitbox = action.hitboxes[self.hitboxName]
+            if hitbox:
+                for name,value in self.hitboxVars.iteritems():
+                    if hasattr(hitbox, name):
+                        setattr(hitbox, name, value)
+        
     def getDisplayName(self):
         return 'Modify Hitbox: ' + str(self.hitboxName)
     
@@ -805,13 +879,19 @@ class modifyHitbox(SubAction):
         return modifyHitbox(hitboxName,hitboxVars)
         
 class activateHitbox(SubAction):
-    def __init__(self,hitboxName):
+    subactGroup = 'Hitbox'
+    
+    def __init__(self,hitboxName=''):
         SubAction.__init__(self)
         self.hitboxName = hitboxName
     
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
-        actor.active_hitboxes.add(action.hitboxes[self.hitboxName])
+        if action.hitboxes.has_key(self.hitboxName):
+            actor.active_hitboxes.add(action.hitboxes[self.hitboxName])
+    
+    def getPropertiesPanel(self, root):
+        return subactionSelector.UpdateHitboxProperties(root,self)
     
     def getDisplayName(self):
         return 'Activate Hitbox: ' + self.hitboxName
@@ -826,13 +906,19 @@ class activateHitbox(SubAction):
         return activateHitbox(node.text)
     
 class deactivateHitbox(SubAction):
-    def __init__(self,hitboxName):
+    subactGroup = 'Hitbox'
+    
+    def __init__(self,hitboxName=''):
         SubAction.__init__(self)
         self.hitboxName = hitboxName
     
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
-        action.hitboxes[self.hitboxName].kill()
+        if action.hitboxes.has_key(self.hitboxName):
+            action.hitboxes[self.hitboxName].kill()
+    
+    def getPropertiesPanel(self, root):
+        return subactionSelector.UpdateHitboxProperties(root,self)
     
     def getDisplayName(self):
         return 'Deactivate Hitbox: ' + self.hitboxName
@@ -847,13 +933,19 @@ class deactivateHitbox(SubAction):
         return deactivateHitbox(node.text)
 
 class updateHitbox(SubAction):
-    def __init__(self,hitboxName):
+    subactGroup = 'Hitbox'
+    
+    def __init__(self,hitboxName=''):
         SubAction.__init__(self)
         self.hitboxName = hitboxName
     
+    def getPropertiesPanel(self, root):
+        return subactionSelector.UpdateHitboxProperties(root,self)
+    
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
-        action.hitboxes[self.hitboxName].update()
+        if action.hitboxes.has_key(self.hitboxName):
+            action.hitboxes[self.hitboxName].update()
     
     def getDisplayName(self):
         return 'Update Hitbox Position: ' + self.hitboxName
@@ -869,13 +961,19 @@ class updateHitbox(SubAction):
 
 
 class unlockHitbox(SubAction):
-    def __init__(self,hitboxName):
+    subactGroup = 'Hitbox'
+    
+    def __init__(self,hitboxName=''):
         SubAction.__init__(self)
         self.hitboxName = hitboxName
         
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
-        action.hitboxes[self.hitboxName].hitbox_lock = engine.hitbox.HitboxLock()
+        if action.hitboxes.has_key(self.hitboxName):
+            action.hitboxes[self.hitboxName].hitbox_lock = engine.hitbox.HitboxLock()
+    
+    def getPropertiesPanel(self, root):
+        return subactionSelector.UpdateHitboxProperties(root,self)
     
     def getDisplayName(self):
         return 'Unlock Hitbox: ' + self.hitboxName
@@ -893,7 +991,9 @@ class unlockHitbox(SubAction):
 # This is not done automatically when sprites change, so if your sprite takes the fighter out of his usual bounding box, make sure to change it.
 # If a hurtbox overlaps a hitbox, the hitbox will be resolved first, so the fighter won't take damage in the case of clashes.
 class modifyHurtBox(SubAction):
-    def __init__(self,center,size,imageCenter = False):
+    subactGroup = 'Behavior'
+    
+    def __init__(self,center=[0,0],size=[0,0],imageCenter = False):
         SubAction.__init__(self)
         self.center = center
         self.size = size
@@ -922,7 +1022,9 @@ class modifyHurtBox(SubAction):
         return modifyHurtBox(center,size,imageCenter)
 
 class changeECB(SubAction):
-    def __init__(self,center,size,ecbOffset):
+    subactGroup = 'Behavior'
+    
+    def __init__(self,center=[0,0],size=[0,0],ecbOffset=[0,0]):
         SubAction.__init__(self)
         self.center = center
         self.size = size
@@ -951,15 +1053,18 @@ class changeECB(SubAction):
         return changeECB(center,size,ecbOffset)
 
 class loadArticle(SubAction):
-    def __init__(self,article,name):
+    subactGroup = 'Article'
+    
+    def __init__(self,article=None,name=''):
         SubAction.__init__(self)
         self.article = article
         self.name = name
         
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
-        action.articles[self.name] = actor.loadArticle(self.article)
-        print(action.articles)
+        if self.article:
+            action.articles[self.name] = actor.loadArticle(self.article)
+            print(action.articles)
     
     def getDisplayName(self):
         return 'Load Article: ' + self.name
@@ -969,12 +1074,15 @@ class loadArticle(SubAction):
         return loadArticle(node.text,node.attrib['name'])
         
 class activateArticle(SubAction):
-    def __init__(self,name):
+    subactGroup = 'Article'
+    
+    def __init__(self,name=''):
         SubAction.__init__(self)
         self.name = name
         
     def execute(self, action, actor):
-        action.articles[self.name].activate()
+        if action.articles.has_key(self.name):
+            action.articles[self.name].activate()
     
     def getDisplayName(self):
         return 'Activate Article: ' + self.name
@@ -984,12 +1092,15 @@ class activateArticle(SubAction):
         return activateArticle(node.text)
     
 class deactivateArticle(SubAction):
-    def __init__(self,name):
+    subactGroup = 'Article'
+    
+    def __init__(self,name=''):
         SubAction.__init__(self)
         self.name = name
         
     def execute(self, action, actor):
-        action.articles[self.name].deactivate()
+        if action.articles.has_key(self.name):
+            action.articles[self.name].deactivate()
     
     def getDisplayName(self):
         return 'Deactivate Article: ' + self.name
@@ -999,7 +1110,9 @@ class deactivateArticle(SubAction):
         return deactivateArticle(node.text)
 
 class doAction(SubAction):
-    def __init__(self,action):
+    subactGroup = 'Control'
+    
+    def __init__(self,action='NeutralAction'):
         SubAction.__init__(self)
         self.action = action
         
@@ -1009,12 +1122,18 @@ class doAction(SubAction):
     def getDisplayName(self):
         return 'Change Action: ' + self.action
     
+    def getXmlElement(self):
+        elem = ElementTree.Element('doAction')
+        elem.text = self.action
+        return elem
     @staticmethod
     def buildFromXml(node):
         return doAction(node.text)
 
-class createMask(SubAction):        
-    def __init__(self,color,duration,pulseLength):
+class createMask(SubAction):
+    subactGroup = 'Behavior'
+         
+    def __init__(self,color=pygame.color.Color('white'),duration=0,pulseLength=0):
         SubAction.__init__(self)
         self.color = color
         self.duration = duration
@@ -1036,6 +1155,8 @@ class createMask(SubAction):
         return createMask(color,duration,pulseLength)
 
 class removeMask(SubAction):
+    subactGroup = 'Behavior'
+    
     def __init__(self):
         SubAction.__init__(self)
     
@@ -1056,42 +1177,68 @@ class debugAction(SubAction):
         
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
-        print(self.statement)
+        if isinstance(self.statement, tuple):
+            source,name = self.statement
+            if source == 'action':
+                print('action.'+name+': '+str(getattr(action, name)))
+            else:
+                if actor.var.has_key(name):
+                    print('fighter['+name+']: '+str(actor.var[name]))
+                else:
+                    print('fighter.'+name+': '+str(getattr(actor, name)))
+        else:
+            print(self.statement)
     
     def getDisplayName(self):
         return 'Print Debug'
     
     @staticmethod
     def buildFromXml(node):
+        if node.find('var') is not None:
+            if node.find('var').attrib.has_key('source'):
+                source = node.find('var').attrib['source']
+            else: source = 'action'
+            name = node.find('var').text
+            return debugAction((source,name))
         return debugAction(node.text)
         
 subActionDict = {
-                 'setFighterVar': modifyFighterVar,
-                 'changeSprite': changeFighterSprite,
-                 'changeSubimage': changeFighterSubimage,
-                 'changeFighterSpeed': changeFighterSpeed,
-                 'changeFighterPreferredSpeed': changeFighterPreferredSpeed,
-                 'shiftPosition': shiftFighterPosition,
-                 'shiftSprite': shiftSpritePosition,
+                 #Control Flow
                  'setFrame': changeActionFrame,
                  'nextFrame': nextFrame,
                  'if': If,
                  'ifButton': ifButton,
-                 'modifyHurtbox': modifyHurtBox,
+                 'transitionState': transitionState,
+                 'doAction': doAction,
+                 'setFighterVar': modifyFighterVar,
+                 
+                 #Sprite Modifiers
+                 'changeSprite': changeFighterSprite,
+                 'changeSubimage': changeFighterSubimage,
+                 'shiftSprite': shiftSpritePosition,
+                 
+                 #Behavior
+                 'shiftPosition': shiftFighterPosition,
+                 'changeFighterSpeed': changeFighterSpeed,
+                 'changeFighterPreferredSpeed': changeFighterPreferredSpeed,
                  'changeECB': changeECB,
+                 'modifyHurtbox': modifyHurtBox,
+                 'updateLandingLag': updateLandingLag,
+                 'createMask': createMask,
+                 'removeMask': removeMask,
+                 
+                 #Hitbox Manipulation
                  'createHitbox': createHitbox,
                  'activateHitbox': activateHitbox,
                  'deactivateHitbox': deactivateHitbox,
                  'updateHitbox': updateHitbox,
                  'modifyHitbox': modifyHitbox,
                  'unlockHitbox': unlockHitbox,
+                 
+                 #Articles
                  'loadArticle': loadArticle,
                  'activateArticle': activateArticle,
                  'deactivateArticle': deactivateArticle,
-                 'transitionState': transitionState,
-                 'updateLandingLag': updateLandingLag,
-                 'doAction': doAction,
-                 'createMask': createMask,
-                 'removeMask': removeMask,
+                 
                  'print': debugAction
                  }
