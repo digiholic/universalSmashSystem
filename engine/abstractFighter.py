@@ -421,8 +421,8 @@ class AbstractFighter():
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
         if not block is None:
             self.rect.x += block.change_x
-            #if self.rect.bottom > block.rect.bottom and self.rect.centerx > block.rect.left and self.rect.centery < block.rect.right:
-            #    self.rect.bottom = block.rect.bottom
+            if self.rect.bottom > block.rect.bottom+block.change_y and self.change_y > block.change_y and self.rect.centerx > block.rect.left and self.rect.centery < block.rect.right:
+                self.change_y = block.change_y
             self.change_y -= self.var['gravity']
 
         self.sprite.updatePosition(self.rect)
@@ -1125,6 +1125,8 @@ class AbstractFighter():
         checkRect = other.rect.copy()
         #checkRect.centerx -= other.change_x
         #checkRect.centery -= other.change_y
+        newPrev = self.ecb.currentECB.rect.copy()
+        newPrev.center = self.ecb.previousECB.rect.center
         
         contact = None
         
