@@ -668,11 +668,11 @@ class Land(action.Action):
 
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
-        actor.preferred_xspeed = 0
+        #actor.preferred_xspeed = 0
 
     def update(self,actor):
         action.Action.update(self, actor)
-        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
         if self.frame == 0:
             actor.preferred_yspeed = actor.var['maxFallSpeed']
             self.lastFrame = actor.landingLag
@@ -709,7 +709,7 @@ class HelplessLand(action.Action):
 
     def update(self,actor):
         action.Action.update(self, actor)
-        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
         if self.frame == 0:
             actor.change_y = 0
             actor.preferred_yspeed = actor.var['maxFallSpeed']
