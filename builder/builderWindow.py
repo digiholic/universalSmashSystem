@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import pygame
 import settingsManager
