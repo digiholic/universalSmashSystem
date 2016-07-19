@@ -273,6 +273,7 @@ class AbstractFighter():
         
         #facing right = 1, left = -1
         self.facing = 1
+        if self.sprite.flip == 'left': self.sprite.flipX()
         
         #list of all of the other things to worry about
         self.gameState = None
@@ -395,7 +396,7 @@ class AbstractFighter():
         for block in block_hit_list:
             if self.catchMovement(block) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t:
                 t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect)
-
+                
         self.rect.y += self.change_y*t
         self.rect.x += self.change_x*t
         self.ecb.normalize()
@@ -1340,7 +1341,8 @@ class ECB():
         self.actor = actor
 
         self.currentECB = spriteManager.RectSprite(self.actor.sprite.boundingRect.copy(), pygame.Color('#ECB134'))
-        self.currentECB.rect.center = self.actor.sprite.boundingRect.center
+        self.originalsize = self.currentECB.rect.size
+        self.currentECB.rect.midbottom = self.actor.sprite.boundingRect.midbottom
 
         self.previousECB = spriteManager.RectSprite(self.currentECB.rect.copy(), pygame.Color('#EA6F1C'))
         
@@ -1374,21 +1376,23 @@ class ECB():
     Set the ECB's height and width to the sprite's, and centers it
     """
     def normalize(self):
-        center = (self.actor.sprite.boundingRect.centerx + self.actor.current_action.ecbCenter[0],self.actor.sprite.boundingRect.centery + self.actor.current_action.ecbCenter[1])
+        #center = (self.actor.sprite.boundingRect.centerx + self.actor.current_action.ecbCenter[0],self.actor.sprite.boundingRect.centery + self.actor.current_action.ecbCenter[1])
         sizes = self.actor.current_action.ecbSize
         offsets = self.actor.current_action.ecbOffset
         
         
         if sizes[0] == 0: 
-            self.currentECB.rect.width = self.actor.sprite.boundingRect.width
+            self.currentECB.rect.width = self.originalsize[0]
         else:
             self.currentECB.rect.width = sizes[0]
         if sizes[1] == 0: 
-            self.currentECB.rect.height = self.actor.sprite.boundingRect.height
+            self.currentECB.rect.width = self.originalsize[1]
         else:
             self.currentECB.rect.height = sizes[1]
         
-        self.currentECB.rect.center = center
+        self.currentECB.rect.midbottom = self.actor.rect.midbottom
+        self.currentECB.rect.x += offsets[0]
+        self.currentECB.rect.y += offsets[1]
         
     def draw(self,screen,offset,scale):
         self.currentECB.draw(screen,self.actor.gameState.stageToScreen(self.currentECB.rect),scale)
