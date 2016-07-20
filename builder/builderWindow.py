@@ -1,12 +1,12 @@
 #!/usr/bin/env python
+import sys
 import os
 import pygame
-import settingsManager
 import inspect
-import engine.abstractFighter
 import subactionSelector
-import engine.subaction
 import xml.etree.ElementTree as ElementTree
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import settingsManager
 from Tkinter import *
 from tkFileDialog import askopenfile
 from tkMessageBox import showinfo
@@ -135,6 +135,7 @@ class MainFrame(Tk):
                 showinfo('Error loading fighter','File does not contain a fighter. Are you sure you are loading the right Python file?')
                 return
         else:
+            import engine.abstractFighter
             newfighter = engine.abstractFighter.AbstractFighter(dirname,0)
         newfighter.initialize()
         fighter = newfighter
@@ -761,6 +762,7 @@ class PropertiesPanel(BuilderPanel):
                           'Hitbox':[],
                           'Article':[]}
         
+        import engine.subaction
         for name,subact in engine.subaction.subActionDict.iteritems():
             if subact.subactGroup in subactWindows.keys():
                 shortname = (name[:19] + '..') if len(name) > 22 else name
@@ -856,4 +858,6 @@ class VerticalScrolledFrame(Frame):
         canvas.bind('<Configure>', _configure_canvas)
 
         return
+
+
 if __name__=='__main__': MainFrame()
