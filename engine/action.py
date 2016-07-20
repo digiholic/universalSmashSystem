@@ -42,7 +42,6 @@ class Action():
     def setUp(self,actor):
         self.spriteRate = self.baseSpriteRate
         actor.changeSprite(self.spriteName)
-        print('sprite: '+self.spriteName)
         if self.spriteRate < 0:
             actor.changeSpriteImage(len(actor.sprite.imageLibrary[actor.sprite.flip][actor.sprite.currentSheet])-1)
     

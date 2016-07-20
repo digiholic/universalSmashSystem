@@ -182,6 +182,8 @@ class Settings():
         self.setting['presetLists'] = presets
         preset = self.parser.get('game','rulePreset')
         
+        self.newGamepads = []
+        
         self.loadGameSettings(preset)
         self.loadControls()
         
@@ -268,8 +270,26 @@ class Settings():
         
             padBindings = engine.controller.PadBindings(controllerName,jid,axes,buttons)
             return engine.controller.GamepadController(padBindings)
-        
-        return None
+        else:
+            joystick = None
+            for pad in range(pygame.joystick.get_count()):
+                joy = pygame.joystick.Joystick(pad)
+                if joy.get_name() == controllerName:
+                    joystick = joy
+                    joystick.init()
+            
+            if joystick:
+                jid = joystick.get_id()
+            else:
+                jid = None
+            
+            axes = dict()
+            buttons = dict()
+            
+            padBindings = engine.controller.PadBindings(controllerName,jid,axes,buttons)
+            self.setting[joystick.get_name()] = padBindings
+            
+            return engine.controller.GamepadController(padBindings)
     
     def getGamepadList(self,store=False):
         controllerParser = SafeConfigParser()
@@ -280,8 +300,10 @@ class Settings():
             controls = self.loadGamepad(control)
             controllerList.append(controls)
             if store: self.setting[control] = controls
-        
-        return controllerParser.sections()
+            
+        retlist = controllerParser.sections()
+        retlist.extend(self.newGamepads)
+        return retlist
     
     def getGamepadByName(self,joyName):
         for i in range(pygame.joystick.get_count()):
@@ -346,7 +368,8 @@ def saveGamepad(settings):
     parser = SafeConfigParser()
     for controllerName in getSetting().getGamepadList():
         gamepad = getSetting(controllerName)
-        parser.add_section(controllerName)
+        if not parser.has_section(controllerName):
+            parser.add_section(controllerName)
         
         for key,value in gamepad.padBindings.axisBindings.iteritems():
             neg,pos = value
