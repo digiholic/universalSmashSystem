@@ -203,9 +203,9 @@ class FunnelHitbox(DamageHitbox):
             self.article.onCollision(other)
 
 class GrabHitbox(Hitbox):
-    def __init__(self,center,size,owner,hitbox_lock, height=0, transcendence=-1, priority=0):
-        Hitbox.__init__(self,center,size,owner,hitbox_lock,transcendence,priority)
-        self.height = height;
+    def __init__(self,owner,lock,variables):
+        Hitbox.__init__(self, owner, lock, variables)
+        
         self.hitboxType = 'grab'
 
     def onCollision(self,other):

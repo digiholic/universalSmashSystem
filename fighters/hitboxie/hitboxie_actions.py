@@ -313,8 +313,10 @@ class GroundGrab(action.Action):
         self.spriteRate = 0
 
     def setUp(self, actor):
-        self.grabHitbox = hitbox.GrabHitbox([30,0], [30,30], actor, hitbox.HitboxLock(), 30)
-
+        self.grabHitbox = hitbox.GrabHitbox(actor,hitbox.HitboxLock(),{'center':[30,0],
+                                                                       'size': [30,30],
+                                                                       'height': 30
+                                                                       })
     def tearDown(self, actor, other):
         self.grabHitbox.kill()
 
@@ -424,8 +426,14 @@ class ForwardThrow(baseActions.BaseGrabbing):
         self.spriteRate = 0
 
     def setUp(self,actor):
-        self.fSmashHitbox = hitbox.DamageHitbox([20,0],[120,40],actor,13,12.0,0.20,40,1,hitbox.HitboxLock())
-
+        self.fSmashHitbox = hitbox.DamageHitbox(actor, hitbox.HitboxLock(),{
+                                                                            'center': [20,0],
+                                                                            'size': [120,40],
+                                                                            'damage': 13,
+                                                                            'baseKnockback': 12,
+                                                                            'knockbackGrowth': 0.2,
+                                                                            'trajectory': 40,
+                                                                            })
     def tearDown(self, actor, other):
         self.fSmashHitbox.kill()
         baseActions.BaseGrabbing.tearDown(self, actor, other)
@@ -457,7 +465,14 @@ class DownThrow(baseActions.BaseGrabbing):
 
     def setUp(self, actor):
         actor.changeSprite("nair")
-        self.bottomHitbox = hitbox.DamageHitbox([10, 40], [30, 30], actor, 1, 3, 0, 260, 1, hitbox.HitboxLock(), 0, 1)
+        self.bottomHitbox = hitbox.DamageHitbox(actor, hitbox.HitboxLock(),{
+                                                                            'center': [10,40],
+                                                                            'size': [30,30],
+                                                                            'damage': 1,
+                                                                            'baseKnockback': 3,
+                                                                            'knockbackGrowth': 0,
+                                                                            'trajectory': 260,
+                                                                            })
         actor.active_hitboxes.add(self.bottomHitbox)
         self.ecbCenter = [0,7]
         self.ecbSize = [64, 78]
