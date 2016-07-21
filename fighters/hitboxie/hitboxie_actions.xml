@@ -883,6 +883,7 @@
 			</modifyHitbox>
 		</frame>
 		<frame number="12">
+			<updateLandingLag reset="true">6</updateLandingLag>
 			<modifyHitbox name="nairBox">
 				<damage type="int">5</damage>
 				<baseKnockback type="int">2</baseKnockback>
@@ -902,9 +903,10 @@
 				<baseKnockback type="int">0</baseKnockback>
 				<hitstun type="float">0</hitstun>
 			</modifyHitbox>
+			<updateLandingLag reset="true">2</updateLandingLag>
 		</frame>
-		<frame number="30">
-			<updateLandingLag>9</updateLandingLag>
+		<frame number="28">
+			<updateLandingLag>10</updateLandingLag>
 		</frame>
 	</NeutralAir>
 	
@@ -1045,6 +1047,12 @@
 		</frame>
 		<frame number="26">
 			<changeSprite>jump</changeSprite>
+		</frame>
+		<frame number="33">
+			<updateLandingLag reset="true">10</updateLandingLag>
+		</frame>
+		<frame number="36">
+			<updateLandingLag>16</updateLandingLag>
 		</frame>
 	</ForwardAir>
 	
@@ -1246,7 +1254,7 @@
 			<changeSubimage>0</changeSubimage>
 		</frame>
 		<frame number="last">
-			<updateLandingLag>8</updateLandingLag>
+			<updateLandingLag reset="true">8</updateLandingLag>
 		</frame>
 		<frame number="after">
 			<!-- hurtbox -->
