@@ -1,6 +1,4 @@
 from Tkinter import *
-import settingsManager
-import engine
 import os
 from tkFileDialog import askopenfile, askdirectory
 import ttk
@@ -19,6 +17,7 @@ class SubactionSelector(Label):
         
         self.data = data
         
+        import engine
         if isinstance(data, engine.subaction.SubAction):
             self.propertyFrame = data.getPropertiesPanel(self.root.parent.subactionPropertyPanel)
         else:
@@ -130,6 +129,7 @@ class ChangeAttributeFrame(Frame):
     
     def pickFile(self,resultVar,fileTuple):
         filetype,extensions = fileTuple
+        import settingsManager
         if filetype == 'file':
             loadedFile = askopenfile(mode="r",
                                initialdir=settingsManager.createPath('fighters'),
@@ -645,6 +645,7 @@ class TransitionProperties(BasePropertiesFrame):
         
         self.addVariable(StringVar, 'transition')
         transitionLabel = Label(self,text='Transition State:')
+        import engine
         transitionEntry = OptionMenu(self,self.getVar('transition'),*engine.baseActions.stateDict.keys())
         
         self.initVars()
@@ -656,6 +657,7 @@ class ModifyHitboxProperties(BasePropertiesFrame):
     def __init__(self,root,subaction,newHitbox=False):
         BasePropertiesFrame.__init__(self, root, subaction)
         
+        import engine
         if root.getAction().hitboxes.has_key(self.subaction.hitboxName):
             self.hitbox = root.getAction().hitboxes[self.subaction.hitboxName]
         else: self.hitbox = engine.hitbox.Hitbox(root.getFighter(),engine.hitbox.HitboxLock())
