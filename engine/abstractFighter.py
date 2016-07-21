@@ -115,6 +115,7 @@ class AbstractFighter():
             imgwidth = int(self.xmlData.find('sprite_width').text)
             self.sprite_directory = self.xmlData.find('sprite_directory').text
         except:
+            print('Could not load sprites')
             directory = settingsManager.createPath('sprites')
             prefix = ''
             defaultSprite = 'sandbag_idle'

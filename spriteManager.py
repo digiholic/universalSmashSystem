@@ -322,7 +322,7 @@ class ImageLibrary():
         self.directory = os.path.join(os.path.dirname(__file__).replace('main.exe',''),directory)
         self.imageDict = {}
         supportedFileTypes = [".jpg",".png",".gif",".bmp",".pcx",".tga",".tif",".lbm",".pbm",".xpm"]
-             
+        
         for f in os.listdir(self.directory):
             fname, ext = os.path.splitext(f)
             if fname.startswith(prefix) and supportedFileTypes.count(ext):
