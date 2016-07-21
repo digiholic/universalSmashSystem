@@ -474,9 +474,10 @@ class Tumble(action.Action):
         
     def update(self, actor):
         action.Action.update(self, actor)
+        if self.techCooldown > 0: self.techCooldown -= 1
         
 class Prone(action.Action):
-    def __init__(self,length=360):
+    def __init__(self,length=120):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
@@ -494,7 +495,8 @@ class Prone(action.Action):
         
     def stateTransitions(self, actor):
         action.Action.stateTransitions(self, actor)
-        proneState(actor)
+        if self.frame == self.lastFrame:
+            proneState(actor)
         
 class Trip(action.Action):
     def __init__(self,length=0,direction=0):

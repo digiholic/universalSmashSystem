@@ -353,7 +353,8 @@ class AbstractFighter():
                 (direct,_) = self.getDirectionMagnitude()
                 print('Ground tech!')
                 self.unRotate()
-                self.doAction('Prone', 1) #TODO fix this trip call
+                self.doAction('Prone') #TODO fix this trip call
+                self.current_action.frame=self.current_action.lastFrame
             self.techWindow -= 1
                 
         # We set the hurbox to be the Bounding Rect of the sprite.
