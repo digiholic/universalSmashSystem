@@ -836,7 +836,7 @@ class Trip(baseActions.Trip):
 
 class Prone(baseActions.Prone):
     def __init__(self):
-        baseActions.Prone.__init__(self, 360)
+        baseActions.Prone.__init__(self, 60)
         self.spriteName = 'land'
         self.spriteRate = 2
         

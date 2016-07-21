@@ -283,7 +283,7 @@
 	</HitStun>
 	
 	<Prone>
-		<length>360</length>
+		<length>60</length>
 		<sprite>land</sprite>
 		<spriteRate>2</spriteRate>
 		<frame number="0">
@@ -688,6 +688,7 @@
 		<frame number="before">
 			<updateHitbox>rightHbox</updateHitbox>
 			<updateHitbox>leftHbox</updateHitbox>
+
 		</frame>
 
 		<frame number="10">
@@ -716,16 +717,16 @@
 			</modifyHitbox>
 			<changeSubimage>7</changeSubimage>
 		</frame>
-		<frame number="14">
+		<frame number="16">
 			<changeSubimage>8</changeSubimage>
 		</frame>
-		<frame number="16">
+		<frame number="17">
 			<changeSubimage>9</changeSubimage>
 		</frame>
-		<frame number="17">
+		<frame number="18">
 			<changeSubimage>10</changeSubimage>
 		</frame>
-		<frame number="18">
+		<frame number="19">
 			<changeSubimage>11</changeSubimage>
 		</frame>
 		<frame number="20">

@@ -477,7 +477,7 @@ class Tumble(action.Action):
         if self.techCooldown > 0: self.techCooldown -= 1
         
 class Prone(action.Action):
-    def __init__(self,length=120):
+    def __init__(self,length=60):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
@@ -495,7 +495,7 @@ class Prone(action.Action):
         
     def stateTransitions(self, actor):
         action.Action.stateTransitions(self, actor)
-        if self.frame == self.lastFrame:
+        if self.frame >= self.lastFrame:
             proneState(actor)
         
 class Trip(action.Action):
@@ -511,7 +511,7 @@ class Trip(action.Action):
     def update(self, actor):
         if actor.grounded is False:
             actor.doHitStun(self.lastFrame-self.frame, self.direction)
-        if self.frame >= self.lastFrame + 180: #You aren't up yet?
+        if self.frame >= self.lastFrame + 60: #You aren't up yet?
             actor.doGetup(self.direction)
         self.frame += 1
 
@@ -1445,7 +1445,7 @@ def tumbleState(actor):
 def moveState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
     if actor.keyHeld('shield') and actor.keyHeld('attack'):
-        actor.doAction('GroundGrab')()
+        actor.doAction('GroundGrab')
     elif actor.keyHeld('attack'):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
