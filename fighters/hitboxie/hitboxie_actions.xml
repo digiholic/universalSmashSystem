@@ -382,7 +382,7 @@
 					<damage>.426</damage>
 					<baseKnockback>0.04</baseKnockback>
 				</chargeable>
-				<hitstun>0.8</hitstun>
+				<hitstun>4</hitstun>
 			</createHitbox>
 		</setUp>
 		
@@ -764,7 +764,7 @@
 				<damage>1</damage>
 				<baseKnockback>2</baseKnockback>
 				<trajectory>270</trajectory>
-				<hitstun>2</hitstun>
+				<hitstun>10</hitstun>
 				<xDraw>0.05</xDraw>
 				<yDraw>-0.1</yDraw>
 				<base_hitstun>4</base_hitstun>
@@ -893,7 +893,7 @@
 			<modifyHitbox name="nairBox">
 				<damage type="int">3</damage>
 				<baseKnockback type="int">1</baseKnockback>
-				<hitstun type="float">0.5</hitstun>
+				<hitstun>3</hitstun>
 				<base_hitstun>0</base_hitstun>
 			</modifyHitbox>
 		</frame>
@@ -901,7 +901,7 @@
 			<modifyHitbox name="nairBox">
 				<damage type="int">1</damage>
 				<baseKnockback type="int">0</baseKnockback>
-				<hitstun type="float">0</hitstun>
+				<hitstun>1</hitstun>
 			</modifyHitbox>
 			<updateLandingLag reset="true">2</updateLandingLag>
 		</frame>
@@ -1434,7 +1434,7 @@
 				<baseKnockback>9</baseKnockback>
 				<knockbackGrowth>0.1</knockbackGrowth>
 				<trajectory>330</trajectory>
-				<hitstun>1.5</hitstun>
+				<hitstun>7</hitstun>
 				<transcendence>2</transcendence>
 			</createHitbox>
 			
