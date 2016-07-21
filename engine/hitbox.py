@@ -20,7 +20,7 @@ class Hitbox(spriteManager.RectSprite):
                        'baseKnockback': 0,
                        'knockbackGrowth': 0,
                        'trajectory': 0,
-                       'hitstun': 0,
+                       'hitstun': 15,
                        'chargeDamage': 0,
                        'chargeBKB': 0,
                        'chargeKBG': 0,

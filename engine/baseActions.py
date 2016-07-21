@@ -369,14 +369,14 @@ class HitStun(action.Action):
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="hitStun"
         action.Action.setUp(self, actor)
-        self.techCooldown = 0
+        self.techCooldown = 5
         actor.elasticity = actor.var['hitstunElasticity']
         
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
         if actor.keyBuffered('shield', 1) and self.techCooldown == 0 and not actor.grounded:
             print('Try tech')
-            actor.techWindow = 20
+            actor.techWindow = 7
             self.techCooldown = 40
             
         if self.frame == self.lastFrame:

@@ -345,7 +345,7 @@ class AbstractFighter():
                 (direct,_) = self.getDirectionMagnitude()
                 print('Ground tech!')
                 self.unRotate()
-                self.doTrip(-175, direct) #TODO fix this trip call
+                self.doAction('Prone', 1) #TODO fix this trip call
             self.techWindow -= 1
                 
         # We set the hurbox to be the Bounding Rect of the sprite.
@@ -751,7 +751,7 @@ class AbstractFighter():
         DI_multiplier = 1+dot*.12
         trajectory += cross*15
 
-        hitstun_frames = math.floor(totalKB*3*hitstun_multiplier+base_hitstun) #Tweak this constant
+        hitstun_frames = math.floor(totalKB*hitstun_multiplier+base_hitstun) #Tweak this constant
         print(hitstun_frames)
 
         if self.no_flinch_hits > 0:

@@ -18,7 +18,7 @@ class ForwardSpecial(action.Action):
         variables = {'center': [0,0],
                      'size': [80,80],
                      'damage': 1,
-                     'hitstun': 0,
+                     'hitstun': 15,
                      'x_bias': 0,
                      'y_bias': -1.5,
                      'shield_multiplier': 1,
@@ -165,7 +165,7 @@ class UpSpecial(action.Action):
                                                  'baseKnockback':12,
                                                  'knockbackGrowth':0.1,
                                                  'trajectory': 90,
-                                                 'hitstun':1.5                                                 
+                                                 'hitstun':22                                                 
                                                  })
         self.flyingHitbox = hitbox.DamageHitbox(actor,sharedLock,
                                                 {'center':[0,0],
@@ -174,7 +174,7 @@ class UpSpecial(action.Action):
                                                  'baseKnockback':10,
                                                  'knockbackGrowth':0.05,
                                                  'trajectory': 90,
-                                                 'hitstun':1                                                 
+                                                 'hitstun':15                                                
                                                  })
         actor.changeSprite('dtilt')
         actor.changeSpriteImage(4)
