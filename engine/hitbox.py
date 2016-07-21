@@ -46,8 +46,8 @@ class Hitbox(spriteManager.RectSprite):
             setattr(self, key, value)
             
         #Flip the distance from center if the fighter is facing the other way
-        if owner.facing == -1:
-            self.center = (-self.center[0],self.center[1])
+        #if owner.facing == -1:
+        #    self.center = (-self.center[0],self.center[1])
             
         #offset the trajectory based on facing
         self.trajectory = self.owner.getForwardWithOffset(self.trajectory)
