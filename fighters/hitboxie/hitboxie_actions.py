@@ -849,9 +849,24 @@ class GetupAttack(action.Action):
         actor.changeSprite("nair")
         self.ecbCenter = [0,7]
         self.ecbSize = [64, 78]
-        self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,5,0.1,20,1,hitbox.HitboxLock())
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,-1,1,1.5)
-
+        self.dashHitbox = hitbox.DamageHitbox(actor,hitbox.HitboxLock(),{
+                                                                         'center': [0,0],
+                                                                         'size': [70,70],
+                                                                         'damage': 2,
+                                                                         'baseKnockback': 5,
+                                                                         'knockbackGrowth': 0.1,
+                                                                         'trajectory': 20,
+                                                                         'hitstun': 1
+                                                                         })
+        self.chainHitbox = hitbox.AutolinkHitbox(actor,hitbox.HitboxLock(),{
+                                                                         'center': [0,0],
+                                                                         'size': [70,70],
+                                                                         'damage': 2,
+                                                                         'hitstun': 1,
+                                                                         'x_bias': 0,
+                                                                         'y_bias': -1,
+                                                                         'velocity_multiplier': 1.5
+                                                                         })
     def onClank(self,actor):
         actor.doAction('NeutralAction')
 
@@ -1105,9 +1120,24 @@ class LedgeAttack(baseActions.LedgeGetup):
         baseActions.LedgeGetup.setUp(self, actor)
         actor.invincibility = 24
         actor.createMask([255,255,255], 24, True, 24)
-        self.dashHitbox = hitbox.DamageHitbox([0,0],[70,70],actor,2,8,0.2,20,1,hitbox.HitboxLock())
-        self.chainHitbox = hitbox.AutolinkHitbox([0,0],[70,70],actor,2,1,hitbox.HitboxLock(),0,-1,1,1.5)
-
+        self.dashHitbox = hitbox.DamageHitbox(actor,hitbox.HitboxLock(),{
+                                                                         'center': [0,0],
+                                                                         'size': [70,70],
+                                                                         'damage': 2,
+                                                                         'baseKnockback': 8,
+                                                                         'knockbackGrowth': 0.2,
+                                                                         'trajectory': 20,
+                                                                         'hitstun': 1
+                                                                         })
+        self.chainHitbox = hitbox.AutolinkHitbox(actor,hitbox.HitboxLock(),{
+                                                                         'center': [0,0],
+                                                                         'size': [70,70],
+                                                                         'damage': 2,
+                                                                         'hitstun': 1,
+                                                                         'x_bias': 0,
+                                                                         'y_bias': -1,
+                                                                         'velocity_multiplier': 1.5
+                                                                         })
     def tearDown(self,actor,other):
         self.dashHitbox.kill()
         self.chainHitbox.kill()

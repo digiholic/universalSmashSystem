@@ -34,17 +34,20 @@ class AbstractFighter():
         
         try:
             franchise_icon_path = os.path.join(baseDir,self.xmlData.find('icon').text)
+            self.franchise_icon_path = self.xmlData.find('icon').text
         except:
             franchise_icon_path = settingsManager.createPath('sprites/default_franchise_icon.png')
+            self.franchise_icon_path = settingsManager.createPath('sprites/default_franchise_icon.png')
+        
         self.franchise_icon = spriteManager.ImageSprite(franchise_icon_path)
-        self.franchise_icon_path = self.xmlData.find('icon').text
         
         try:
             css_icon_path = os.path.join(baseDir,self.xmlData.find('css_icon').text)
+            self.css_icon_path = self.xmlData.find('css_icon').text
         except:
             css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
+            self.css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
         self.css_icon = spriteManager.ImageSprite(css_icon_path)
-        self.css_icon_path = self.xmlData.find('css_icon').text
         
         try:
             scale = float(self.xmlData.find('scale').text)
@@ -95,9 +98,10 @@ class AbstractFighter():
         
         try:
             self.article_path = os.path.join(baseDir,self.xmlData.find('article_path').text)
+            self.article_path_short = self.xmlData.find('article_path').text
         except:
             self.article_path = baseDir
-        self.article_path_short = self.xmlData.find('article_path').text
+            self.article_path_short = ''
         #self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),'articles.py',suffix=str(playerNum))
         try:
             self.articleLoader = settingsManager.importFromURI(os.path.join(baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(playerNum))
@@ -109,13 +113,15 @@ class AbstractFighter():
             prefix = self.xmlData.find('sprite_prefix').text
             defaultSprite = self.xmlData.find('default_sprite').text
             imgwidth = int(self.xmlData.find('sprite_width').text)
+            self.sprite_directory = self.xmlData.find('sprite_directory').text
         except:
-            directory = os.path.join(baseDir,'sprites')
+            print('Could not load sprites')
+            directory = settingsManager.createPath('sprites')
             prefix = ''
-            defaultSprite = 'idle'
+            defaultSprite = 'sandbag_idle'
             imgwidth = 64
+            self.sprite_directory = settingsManager.createPath('sprites')
             
-        self.sprite_directory = self.xmlData.find('sprite_directory').text
         self.sprite_prefix = prefix
         self.default_sprite = defaultSprite
         self.sprite_width = imgwidth
@@ -130,14 +136,14 @@ class AbstractFighter():
                     colorDict[(fromColor.r, fromColor.g, fromColor.b)] = (toColor.r, toColor.g, toColor.b)
                 
                 self.colorPalettes.append(colorDict)
-        except:
-            while len(self.colorPalettes) < 4:
-                self.colorPalettes.append({})
+        except: pass
+        
+        while len(self.colorPalettes) < 4:
+            self.colorPalettes.append({})
         
         color = self.colorPalettes[self.playerNum] #TODO: Pick colors
         
         self.sprite = spriteManager.SpriteHandler(directory,prefix,defaultSprite,imgwidth,color,scale)
-        
         
         #try:
         try:
@@ -149,6 +155,8 @@ class AbstractFighter():
                 self.actions = actionLoader.ActionLoader(baseDir,actions)
         except:
             self.actions = baseActions
+            self.action_file = baseActions.__file__
+            
         #except:
         #    print('unable to load actions. Loading base')
         #    self.actions = settingsManager.importFromURI(settingsManager.createPath(''),'engine/baseActions.py',suffix=str(playerNum))

@@ -37,7 +37,7 @@ class ActionLoader():
     """
     def modifyAction(self,actionName,newAction):
         actionXML = self.actionsXML.find(actionName)
-        if actionXML:self.actionsXML.remove(actionXML)
+        if actionXML is not None:self.actionsXML.remove(actionXML)
         
         elem = ElementTree.Element(actionName)
         
@@ -122,6 +122,14 @@ class ActionLoader():
                 for subact in frameList:
                     frameElem.append(subact.getXmlElement())
                 elem.append(frameElem)
+        
+        for cond,condList in newAction.conditionalActions.iteritems():
+            if len(condList) > 0:
+                condElem = ElementTree.Element('conditional')
+                condElem.attrib['name'] = str(cond)
+                for subact in condList:
+                    condElem.append(subact.getXmlElement())
+                elem.append(condElem)
         
         rough_string = ElementTree.tostring(elem, 'utf-8')
         reparsed = minidom.parseString(rough_string)

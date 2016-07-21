@@ -263,7 +263,7 @@ class NeutralAction(action.Action):
         self.frame += 1
 
 class Crouch(action.Action):
-    def __init__(self, length):
+    def __init__(self, length=1):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
@@ -731,7 +731,7 @@ class HelplessLand(action.Action):
         self.frame += 1
 
 class PlatformDrop(action.Action):
-    def __init__(self, length, phaseFrame, phaseLength):
+    def __init__(self, length=1, phaseFrame=1, phaseLength=1):
         action.Action.__init__(self, length)
         self.phaseFrame = phaseFrame
         self.phaseLength = phaseLength
@@ -822,7 +822,7 @@ class Shield(action.Action):
         if self.down_last > 0: self.down_last -= 1
 
 class ShieldStun(action.Action):
-    def __init__(self, length):
+    def __init__(self, length=1):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
@@ -845,7 +845,7 @@ class ShieldStun(action.Action):
         self.frame += 1
 
 class Stunned(action.Action):
-    def __init__(self, length):
+    def __init__(self, length=1):
         action.Action.__init__(self, length)
         if self.spriteName=="": self.spriteName ="stunned"
     
@@ -859,7 +859,7 @@ class Stunned(action.Action):
         self.frame += 1
 
 class Trapped(action.Action):
-    def __init__(self, length):
+    def __init__(self, length=1):
         action.Action.__init__(self, length)
         self.time = 0
         self.lastPosition = [0,0]
@@ -883,7 +883,7 @@ class Trapped(action.Action):
         print(self.frame, self.time)
 
 class Grabbed(Trapped):
-    def __init__(self,height):
+    def __init__(self,height=1):
         Trapped.__init__(self, 40)
         self.height = height
         
@@ -1198,7 +1198,7 @@ class LedgeGetup(action.Action):
 #                    ATTACK ACTIONS                    #
 ########################################################
 class BaseAttack(action.Action):
-    def __init__(self, length):
+    def __init__(self, length=1):
         action.Action.__init__(self, length)
         
     def tearDown(self, actor, nextAction):
@@ -1220,7 +1220,7 @@ class BaseAttack(action.Action):
         self.frame += 1
 
 class AirAttack(BaseAttack):
-    def __init__(self, length):
+    def __init__(self, length=1):
         BaseAttack.__init__(self, length)
         self.fastFallFrame = None
     
@@ -1247,7 +1247,7 @@ class AirAttack(BaseAttack):
         BaseAttack.update(self, actor)
             
 class ChargeAttack(BaseAttack):
-    def __init__(self,length,startChargeFrame,endChargeFrame,maxCharge):
+    def __init__(self,length=1,startChargeFrame=1,endChargeFrame=1,maxCharge=0):
         BaseAttack.__init__(self, length)
         self.startChargeFrame = startChargeFrame
         self.endChargeFrame = endChargeFrame

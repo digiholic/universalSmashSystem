@@ -25,7 +25,21 @@ class Action():
         self.hitboxes = {}
         self.hitboxLocks = {}
         self.articles = {}
-    
+        
+        
+        """
+        Empty constructors only used by DynamicActions
+        """
+        self.actionsAtFrame = [[]]
+        self.actionsBeforeFrame = []
+        self.actionsAfterFrame = []
+        self.actionsAtLastFrame = []
+        self.actionsOnClank = []
+        self.conditionalActions = dict()
+        self.stateTransitionActions = []
+        self.setUpActions = []
+        self.tearDownActions = []
+        
     # The update skeleton function. You must implement it for every action or you will get
     # an error.
     def update(self,actor):
@@ -35,7 +49,10 @@ class Action():
                     actor.changeSpriteImage((self.frame / self.spriteRate)-1, loop=self.loop)
                 else:
                     actor.changeSpriteImage(self.frame / self.spriteRate, loop=self.loop)
-            
+    
+    def updateAnimationOnly(self,actor):
+        self.update(actor) #If it's not a dynamic action, we're SOL on this one, so just let it go however it wants
+                
     def stateTransitions(self,actor):
         return
     

@@ -1,16 +1,17 @@
-#!/usr/bin/env python
-import sys
 import os
 import pygame
-import inspect
-import subactionSelector
-import xml.etree.ElementTree as ElementTree
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import settingsManager
+import inspect
+import engine.abstractFighter
+import subactionSelector
+import engine.subaction
+import xml.etree.ElementTree as ElementTree
 from Tkinter import *
 from tkFileDialog import askopenfile
 from tkMessageBox import showinfo
+from shutil import copyfile
 import ttk
+from engine.abstractFighter import AbstractFighter
 
 """
 These are the global variables that multiple panels will need.
@@ -135,7 +136,6 @@ class MainFrame(Tk):
                 showinfo('Error loading fighter','File does not contain a fighter. Are you sure you are loading the right Python file?')
                 return
         else:
-            import engine.abstractFighter
             newfighter = engine.abstractFighter.AbstractFighter(dirname,0)
         newfighter.initialize()
         fighter = newfighter
@@ -181,7 +181,7 @@ class MenuBar(Menu):
         self.root.frame.trace('w',self.changeFrame)
         
     def newFighter(self):
-        pass
+        CreateFighterWindow(self.root)
     
     def loadFighter(self):
         fighterFile = askopenfile(mode="r",initialdir=settingsManager.createPath('fighters'),filetypes=[('TUSSLE Fighters','*.xml'),('Advanced Fighters', '*.py')])
@@ -233,11 +233,30 @@ class CreateActionWindow(Toplevel):
         self.root = root
         nameLabel = Label(self,text="Action Name: ")
         self.name = Entry(self)
+        button = Button(self, text="Confirm", command=self.submit)
+        
+        sep = ttk.Separator(self,orient=HORIZONTAL)
+        septext = Label(self,text="Or choose a Basic Action to implement:")
+        
+        basicList = []
+        for name, obj in inspect.getmembers(sys.modules[engine.baseActions.__name__]):
+            if inspect.isclass(obj):
+                if not name in self.root.actionPane.actionSelectorPanel.actList:
+                    basicList.append(name)
+        
+        self.basicChoice = StringVar(self)
+        basicBox = OptionMenu(self,self.basicChoice,*basicList)
+        basicButton = Button(self,text="Confirm",command=self.submitBasic)
+        
         nameLabel.grid(row=0,column=0)
         self.name.grid(row=0,column=1)
+        button.grid(row=0,column=2)
+        sep.grid(row=1,columnspan=3,sticky=E+W)
+        septext.grid(row=1,columnspan=3)
+        basicBox.grid(row=2,columnspan=2,sticky=E+W)
+        basicButton.grid(row=2,column=2)
         
-        button = Button(self, text="Confirm", command=self.submit)
-        button.grid(row=1,columnspan=2)
+        
         
     def submit(self,*args):
         global fighter
@@ -248,7 +267,19 @@ class CreateActionWindow(Toplevel):
         if name:
             if not fighter.actions.hasAction(name): #if it doesn't already exist
                 if not changedActions.has_key(name): #and we didn't already make one
-                    print('create action')
+                    print('create action: ' + name)
+                    self.root.addAction(name)
+                    self.destroy()
+    
+    def submitBasic(self,*args):
+        global fighter
+        global changedActions
+        
+        name = self.basicChoice.get()
+        if name:
+            if not fighter.actions.hasAction(name): #if it doesn't already exist
+                if not changedActions.has_key(name): #and we didn't already make one
+                    print('create action: ' + name)
                     self.root.addAction(name)
                     self.destroy()
                 
@@ -274,7 +305,57 @@ class AddConditionalWindow(Toplevel):
             action.conditionalActions[name] = []
             self.root.actionModified()
             self.destroy()
+ 
+class CreateFighterWindow(Toplevel):
+    def __init__(self,root):
+        Toplevel.__init__(self)
         
+        # Labels
+        folderNameLabel = Label(self,text='Folder Name')
+        confirmButtom = Button(self,text='Confirm',command=self.submit)
+        
+        # Variables
+        self.folderNameVar = StringVar(self)
+        self.generateActionXmlVar = BooleanVar(self)
+        self.generateActionPyVar = BooleanVar(self)
+        
+        # Setters
+        folderNameEntry = Entry(self,textvariable = self.folderNameVar)
+        generateActionXmlEntry = Checkbutton(self,variable=self.generateActionXmlVar,text="Generate Actions XML File")
+        generateActionPyEntry = Checkbutton(self,variable=self.generateActionPyVar,text="Generate Actions PY File")
+        
+        # Placement
+        folderNameLabel.grid(row=0,column=0,sticky=E)
+        folderNameEntry.grid(row=0,column=1,sticky=E+W)
+        generateActionXmlEntry.grid(row=1,column=0)
+        generateActionPyEntry.grid(row=1,column=1)
+        confirmButtom.grid(row=2,columnspan=2)
+        
+        """
+        TODO: Allow this to be made with icons and stuff chosen ahead of time.
+        Use file pickers to choose locations and copy them over.
+        """
+        
+    def submit(self):
+        if os.path.exists(settingsManager.createPath('fighters/'+self.folderNameVar.get())):
+            print('path exists')
+            self.destroy()
+        else:
+            path = settingsManager.createPath('fighters/'+self.folderNameVar.get())
+            os.makedirs(path)
+            newFighter = engine.abstractFighter.AbstractFighter(path,0)
+            #create sprite dir
+            spritePath = os.path.join(path,'sprites')
+            os.makedirs(spritePath)
+            copyfile(settingsManager.createPath('sprites/sandbag_idle.png'), os.path.join(spritePath,'sandbag_idle.png'))
+            copyfile(settingsManager.createPath('sprites/default_franchise_icon.png'), os.path.join(spritePath,'franchise_icon.png'))
+            
+            #create __init__.py
+            #check for and create actions files
+            #copy over icons?
+            newFighter.saveFighter()
+            
+            
 class LeftPane(BuilderPanel):
     def __init__(self,parent,root):
         BuilderPanel.__init__(self, parent, root)
@@ -480,11 +561,17 @@ class SelectorPanel(BuilderPanel):
             if not changedaction in self.actList:
                 self.actList.append(changedaction)
         
-        self.groupList = self.defaultGroupList[:]
-        if action:
-            for group in action.conditionalActions.keys():
-                self.groupList.append('Cond: '+ group)
-                        
+        if self.currentAction.get() == 'Fighter Properties':
+            self.groupList = ["Fighter","Attributes"]
+            for i in range(0,8):
+                self.groupList.append("Color "+str(i))
+            self.currentGroup.set('Fighter')
+        else:
+            self.groupList = self.defaultGroupList[:]
+            if action and isinstance(action, engine.action.DynamicAction):
+                for group in action.conditionalActions.keys():
+                    self.groupList.append('Cond: '+ group)
+                            
         self.action.destroy()
         self.action = OptionMenu(self,self.currentAction,*self.actList)
         self.action.config(width=18)
@@ -762,7 +849,6 @@ class PropertiesPanel(BuilderPanel):
                           'Hitbox':[],
                           'Article':[]}
         
-        import engine.subaction
         for name,subact in engine.subaction.subActionDict.iteritems():
             if subact.subactGroup in subactWindows.keys():
                 shortname = (name[:19] + '..') if len(name) > 22 else name
@@ -858,6 +944,4 @@ class VerticalScrolledFrame(Frame):
         canvas.bind('<Configure>', _configure_canvas)
 
         return
-
-
 if __name__=='__main__': MainFrame()
