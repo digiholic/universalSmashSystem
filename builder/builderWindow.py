@@ -72,7 +72,10 @@ class MainFrame(Tk):
         self.width = 640
         self.height = 480
         self.wm_title('Legacy Editor')
-        self.iconbitmap(settingsManager.createPath('editor.ico'))
+        if "nt" == os.name:
+            self.iconbitmap(settingsManager.createPath('editor.ico'))
+        else:
+            self.iconbitmap(settingsManager.createPath('editor.xbm'))
         self.geometry('640x480')
         
         # Variable Declaration
