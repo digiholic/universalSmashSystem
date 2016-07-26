@@ -76,13 +76,13 @@ class MainFrame(Tk):
         self.width = 640
         self.height = 480
         self.wm_title('Legacy Editor')
-        program_directory=sys.path[0]
-        self.iconphoto(True, PhotoImage(file=settingsManager.createPath('editor-0.png'))
+        #program_directory=sys.path[0]
+        #self.iconphoto(True, PhotoImage(file=settingsManager.createPath('editor-0.png')))
         #self.iconbitmap(settingsManager.createPath('editor.ico'))
-        #if "nt" == os.name:
-        #    self.iconbitmap(settingsManager.createPath('editor.ico'))
-        #else:
-        #    self.iconbitmap(settingsManager.createPath('editor.xbm'))
+        if "nt" == os.name:
+            self.iconbitmap(settingsManager.createPath('editor.ico'))
+        else:
+            self.iconbitmap('@'+settingsManager.createPath('editor.xbm'))
         self.geometry('640x480')
         
         # Variable Declaration
