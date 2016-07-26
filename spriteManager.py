@@ -282,7 +282,7 @@ class MaskSprite(ImageSprite):
                     self.pulseSize = -self.pulseSize
                 elif self.alpha < 16:
                     self.alpha = 16
-                    self.pulseSize = -self.pulseSize 
+                    self.pulseSize = -self.pulseSize
             self.duration -= 1
             self.image = self.parentSprite.image.copy()
             self.color_surface(self.color)
