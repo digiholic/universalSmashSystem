@@ -392,7 +392,7 @@ class AbstractFighter():
         # TODO: Crush death if loopcount reaches the 100 resolution attempt ceiling
 
         self.ecb.normalize()
-        self.ecb.store()
+        #self.ecb.store()
 
         futureRect = self.ecb.currentECB.rect.copy()
         futureRect.x += self.change_x
@@ -409,6 +409,7 @@ class AbstractFighter():
         self.rect.y += self.change_y*t
         self.rect.x += self.change_x*t
         self.ecb.normalize()
+        self.ecb.store()
         
         loopCount = 0
         while loopCount < 10:
@@ -424,15 +425,12 @@ class AbstractFighter():
             loopCount += 1
         # TODO: Crush death if loopcount reaches the 100 resolution attempt ceiling
         
-
         groundBlocks = self.checkForGround()
 
         # Move with the platform
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
         if not block is None:
             self.rect.x += block.change_x
-            if self.rect.bottom > block.rect.bottom+block.change_y and self.change_y > block.change_y and self.rect.centerx > block.rect.left and self.rect.centery < block.rect.right:
-                self.change_y = block.change_y
             self.change_y -= self.var['gravity']
 
         self.sprite.updatePosition(self.rect)
@@ -477,7 +475,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 4+self.change_y
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB.rect.bottom-self.change_y <= block.rect.top+block.change_y+4:
+                if self.ecb.previousECB.rect.bottom-self.change_y <= block.rect.top-block.change_y+4:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -773,10 +771,9 @@ class AbstractFighter():
             print(totalKB)
             if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.lastFrame-self.current_action.frame <= hitstun_frames:
                 self.doHitStun(hitstun_frames,trajectory)
+                self.setSpeed(totalKB*DI_multiplier, trajectory)
         
         self.dealDamage(damage)
-        
-        self.setSpeed(totalKB*DI_multiplier, trajectory)
 
         return math.floor(totalKB*DI_multiplier)
 
@@ -1161,6 +1158,8 @@ class AbstractFighter():
             elasticity = self.ground_elasticity if contact[1] < 0 else self.elasticity
             if dot <= 0:
                 (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
+        elif contact is not None and contact == [0, 0] and self.change_y >= other.change_y:
+            self.change_y = other.change_y+self.ground_elasticity*(self.change_y-other.change_y)
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
@@ -1189,30 +1188,10 @@ def getDirectionBetweenPoints(p1, p2):
     return (180 * math.atan2(dy, dx)) / math.pi 
 
 def intersectPoint(firstRect, secondRect): 
-    """
-    dxLeft = -firstRect.centerx+secondRect.right
-    dxRight = firstRect.centerx-secondRect.left
-    dyUp = -firstRect.centery+secondRect.bottom
-    dyDown = firstRect.centery-secondRect.top
-
-    dx = min(max(0, dxRight), max(0, dxLeft))
-    dy = min(max(0, dyUp), max(0, dyDown))
-        
-    if dx <= dy:
-        if dxLeft >= dxRight:
-            return [-firstRect.right+secondRect.left, 0]
-        elif dxRight >= dxLeft:
-            return [-firstRect.left+secondRect.right, 0]
-    if dy <= dx:
-        if dyUp >= dyDown:
-            return [0, -firstRect.bottom+secondRect.top]
-        elif dyDown >= dyUp:
-            return [0, -firstRect.top+secondRect.bottom]
-    return None
-    """
-
     firstPoints = [firstRect.midtop, firstRect.midbottom, firstRect.midleft, firstRect.midright]
+    #prevPoints = [prevRect.midtop, prevRect.midbottom, prevRect.midleft, prevRect.midright]
     secondPoints = [secondRect.topleft, secondRect.topright, secondRect.bottomleft, secondRect.bottomright]
+
     leftDist = directionalDisplacement(firstPoints, secondPoints, [-1, 0])
     rightDist = directionalDisplacement(firstPoints, secondPoints, [1, 0])
     upDist = directionalDisplacement(firstPoints, secondPoints, [0, -1])
@@ -1221,12 +1200,14 @@ def intersectPoint(firstRect, secondRect):
     upRightDist = directionalDisplacement(firstPoints, secondPoints, [firstRect.height, -firstRect.width])
     downLeftDist = directionalDisplacement(firstPoints, secondPoints, [-firstRect.height, firstRect.width])
     downRightDist = directionalDisplacement(firstPoints, secondPoints, [firstRect.height, firstRect.width])
+
     return min(leftDist, rightDist, upDist, downDist, upLeftDist, upRightDist, downLeftDist, downRightDist, key=lambda x: math.sqrt(x[0]*x[0] + x[1]*x[1]))
 
 def checkPlatform(current, previous, platform):
     intersect = intersectPoint(current, platform)
 
-    if platform.top >= previous.bottom-4 and intersect[1] < 0 and current.bottom >= platform.top:
+    if platform.top >= previous.bottom-4 and intersect[1] < 0 and (current.bottom >= platform.top or True):
+        print(platform.top-previous.bottom)
         return True
     return False
     
@@ -1391,15 +1372,15 @@ class ECB():
         
         
         if sizes[0] == 0: 
-            self.currentECB.rect.width = self.originalsize[0]
+            self.currentECB.rect.width = self.actor.sprite.boundingRect.width
         else:
             self.currentECB.rect.width = sizes[0]
         if sizes[1] == 0: 
-            self.currentECB.rect.width = self.originalsize[1]
+            self.currentECB.rect.height = self.actor.sprite.boundingRect.height
         else:
             self.currentECB.rect.height = sizes[1]
         
-        self.currentECB.rect.midbottom = self.actor.rect.midbottom
+        self.currentECB.rect.midbottom = self.actor.sprite.boundingRect.midbottom
         self.currentECB.rect.x += offsets[0]
         self.currentECB.rect.y += offsets[1]
         
