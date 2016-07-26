@@ -101,7 +101,6 @@ class MainFrame(Tk):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=3, uniform="column")
         self.grid_columnconfigure(1, weight=2, uniform="column")
-        
         self.fighterString.trace('w',self.changeFighter)
         self.actionString.trace('w',self.changeAction)
         self.frame.trace('w',self.changeFrame)
