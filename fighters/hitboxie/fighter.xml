@@ -44,7 +44,7 @@
 	
 	<stats>
 		<weight>100</weight>
-		<gravity>.5</gravity>
+		<gravity>0.5</gravity>
 		<maxFallSpeed>20</maxFallSpeed>
 		<maxGroundSpeed>6</maxGroundSpeed>
 		<runSpeed>9</runSpeed>
@@ -52,9 +52,9 @@
 		<crawlSpeed>3</crawlSpeed>
 		<dodgeSpeed>10</dodgeSpeed>
 		<friction>0.2</friction>
-		<staticGrip>0.1</staticGrip>
-                <pivotGrip>0.4</pivotGrip>
-		<airControl>0.6</airControl>
+		<staticGrip>0.4</staticGrip>
+                <pivotGrip>0.6</pivotGrip>
+		<airControl>0.4</airControl>
 		<jumps>1</jumps>
 		<jumpHeight>12.5</jumpHeight>
 		<shortHopHeight>8.5</shortHopHeight>
