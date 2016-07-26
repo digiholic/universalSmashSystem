@@ -656,7 +656,8 @@ class Helpless(action.Action):
     def update(self, actor):
         actor.grounded = False
         if self.frame == 0:
-            actor.createMask([191, 63, 191], 99999, True, 8)
+            actor.createMask([191, 63, 191], 99999, True, 16)
+        self.frame += 1
             
 class Land(action.Action):
     def __init__(self):
@@ -854,8 +855,15 @@ class Stunned(action.Action):
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="stunned"
         action.Action.setUp(self, actor)
+    
+    def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)    
+        actor.mask = None
         
     def update(self, actor):
+        action.Action.update(self, actor)
+        if self.frame == 0:
+            actor.createMask([255, 0, 255], 99999, True, 8)
         if self.frame == self.lastFrame:
             actor.doAction('NeutralAction')
         self.frame += 1
@@ -1218,7 +1226,8 @@ class BaseAttack(action.Action):
                 actor.doAction('NeutralAction')
             else:
                 actor.doAction('Fall')
-        
+        for hitbox in self.hitboxes.values():
+            hitbox.update()
         self.frame += 1
 
 class AirAttack(BaseAttack):
