@@ -1,5 +1,9 @@
+#!/usr/bin/env python
 import os
 import pygame
+import sys
+sys.path.insert(0, '../')
+
 import settingsManager
 import inspect
 import engine.abstractFighter
@@ -72,7 +76,9 @@ class MainFrame(Tk):
         self.width = 640
         self.height = 480
         self.wm_title('Legacy Editor')
-        self.iconbitmap(settingsManager.createPath('editor.ico'))
+        program_directory=sys.path[0]
+        self.iconphoto(True, PhotoImage(file=settingsManager.createPath('editor-0.png'))
+        #self.iconbitmap(settingsManager.createPath('editor.ico'))
         self.geometry('640x480')
         
         # Variable Declaration
