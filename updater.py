@@ -28,6 +28,7 @@ def recursive_overwrite(src, dest, ignore=None):
         shutil.copyfile(src, dest)
         
 def main():
+    print('Downloading Update from HEAD...')
     #Need the cert to access github
     os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(os.getcwd(), "cacert.pem")
     
@@ -43,9 +44,12 @@ def main():
     updatezip = zipfile.ZipFile(settingsManager.createPath('update.zip'))
     updatezip.extractall('tmp')
     
+    print('Copying files into game directory...')
     #Copy the files upward, then remove the tmp files
     tmp_path = settingsManager.createPath('tmp'+os.sep+'universalSmashSystem-master'+os.sep)
     recursive_overwrite(tmp_path, settingsManager.createPath(''))
     shutil.rmtree(tmp_path)
+    os.remove(settingsManager.createPath('update.zip'))
     
+    print('Done!')
 if __name__ == '__main__': main()
