@@ -382,6 +382,8 @@ class ViewerPanel(BuilderPanel):
         os.environ['SDL_WINDOWID'] = str(self.winfo_id())
         if sys.platform == "win32":
             os.environ['SDL_VIDEODRIVER'] = 'windib'
+        else:
+            os.environ['SDL_VIDEODRIVER'] = 'x11'
         pygame.display.init()
         self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
         self.center = (0,0)
