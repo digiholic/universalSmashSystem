@@ -697,22 +697,18 @@
 		</frame>
 		<frame number="12">
 			<modifyHitbox name="leftHbox">
-				<x_offset type="int">-24</x_offset>
-				<y_offset type="int">13</y_offset>
+				<center>(-24, 13)</center>
 			</modifyHitbox>
 			<modifyHitbox name="rightHbox">
-				<x_offset type="int">24</x_offset>
-				<y_offset type="int">13</y_offset>
+				<center>(24, 13)</center>
 			</modifyHitbox>
 		</frame>
 		<frame number="14">
 			<modifyHitbox name="leftHbox">
-				<x_offset type="int">-34</x_offset>
-				<y_offset type="int">26</y_offset>
+				<center>(-34, 26)</center>
 			</modifyHitbox>
 			<modifyHitbox name="rightHbox">
-				<x_offset type="int">34</x_offset>
-				<y_offset type="int">26</y_offset>
+				<center>(34, 26)</center>
 
 			</modifyHitbox>
 			<changeSubimage>7</changeSubimage>
@@ -1019,28 +1015,24 @@
 		</frame>
 		<frame number="14">
 			<modifyHitbox name="sourSpot">
-				<x_offset type="int">-14</x_offset>
-				<y_offset type="int">-20</y_offset>
+				<center>(-14, -20)</center>
 			</modifyHitbox>
 		</frame>
 		<frame number="16">
 			<modifyHitbox name="sourSpot">
-				<x_offset type="int">9</x_offset>
-				<y_offset type="int">-26</y_offset>
+				<center>(9, -26)</center>
 			</modifyHitbox>
 			<activateHitbox>sweetSpot</activateHitbox>
 		</frame>
 		<frame number="18">
 			<modifyHitbox name="sourSpot">
-				<x_offset type="int">23</x_offset>
-				<y_offset type="int">-12</y_offset>
+				<center>(23, -12)</center>
 			</modifyHitbox>
 			<deactivateHitbox>sweetSpot</deactivateHitbox>
 		</frame>
 		<frame number="20">
 			<modifyHitbox name="sourSpot">
-				<x_offset type="int">30</x_offset>
-				<y_offset type="int">10</y_offset>
+				<center>(30, 10)</center>
 			</modifyHitbox>
 		</frame>
 		<frame number="22">

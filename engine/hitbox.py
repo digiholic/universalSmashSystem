@@ -55,8 +55,6 @@ class Hitbox(spriteManager.RectSprite):
         
         spriteManager.RectSprite.__init__(self,pygame.Rect([0,0],self.size),[255,0,0])
         self.rect.center = [owner.rect.center[0] + self.center[0], owner.rect.center[1] + self.center[1]]
-        self.x_offset = self.center[0]
-        self.y_offset = self.center[1]
         self.article = None
         
         
@@ -66,14 +64,12 @@ class Hitbox(spriteManager.RectSprite):
             other.hitboxContact.add(self)
     
     def update(self):
-        self.x_offset = self.center[0]
-        self.y_offset = self.center[1]
         self.rect.width = self.size[0]
         self.rect.height = self.size[1]
         if self.article is None:
-            self.rect.center = [self.owner.rect.center[0] + self.x_offset*self.owner.facing, self.owner.rect.center[1] + self.y_offset]
+            self.rect.center = [self.owner.rect.center[0] + self.center[0]*self.owner.facing, self.owner.rect.center[1] + self.center[1]]
         else:
-            self.rect.center = [self.article.rect.center[0] + self.x_offset, self.article.rect.center[1] + self.y_offset]
+            self.rect.center = [self.article.rect.center[0] + self.center[0], self.article.rect.center[1] + self.center[1]]
         
         
     def compareTo(self, other):
