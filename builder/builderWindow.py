@@ -955,4 +955,3 @@ class VerticalScrolledFrame(Frame):
         canvas.bind('<Configure>', _configure_canvas)
 
         return
-if __name__=='__main__': MainFrame()
