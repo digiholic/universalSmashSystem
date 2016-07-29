@@ -49,6 +49,7 @@
 		<maxGroundSpeed>6</maxGroundSpeed>
 		<runSpeed>9</runSpeed>
 		<maxAirSpeed>6</maxAirSpeed>
+		<aerialTransitionSpeed>7.5</aerialTransitionSpeed>
 		<crawlSpeed>3</crawlSpeed>
 		<dodgeSpeed>10</dodgeSpeed>
 		<friction>0.2</friction>
@@ -60,8 +61,10 @@
 		<shortHopHeight>8.5</shortHopHeight>
 		<airJumpHeight>15</airJumpHeight>
 		<heavyLandLag>4</heavyLandLag>
+		<wavedashLag>8</wavedashLag>
 		<fastfallMultiplier>2</fastfallMultiplier>
 		<hitstunElasticity>.8</hitstunElasticity>
+		<shieldSize>1</shieldSize>
 	</stats>
 	
 	<variables>

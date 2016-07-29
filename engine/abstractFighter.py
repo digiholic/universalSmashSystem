@@ -61,17 +61,19 @@ class AbstractFighter():
                 'maxGroundSpeed': 6.0,
                 'runSpeed': 9.0,
                 'maxAirSpeed': 6.0,
+                'aerialTransitionSpeed': 7.5,
                 'crawlSpeed': 3.0,
                 'dodgeSpeed': 10.0,
                 'friction': 0.2,
-                'staticGrip': 0.1,
-                'pivotGrip': 0.4,
-                'airControl': 0.6,
+                'staticGrip': 0.4,
+                'pivotGrip': 0.6,
+                'airControl': 0.4,
                 'jumps': 1,
                 'jumpHeight': 12.5,
                 'shortHopHeight': 8.5,
                 'airJumpHeight': 15.0,
                 'heavyLandLag': 4,
+                'wavedashLag': 8,
                 'fastfallMultiplier': 2.0,
                 'hitstunElasticity': .8,
                 'shieldSize': 1.0
@@ -270,8 +272,8 @@ class AbstractFighter():
         self.rect = self.sprite.rect
         self.jumps = self.var['jumps']
         self.damage = 0
-        self.landingLag = 6
-        self.platformPhase = 0
+        self.landingLag = 0
+        self.platformPhase = 6
         self.techWindow = 0
         
         self.change_x = 0
@@ -392,7 +394,6 @@ class AbstractFighter():
         # TODO: Crush death if loopcount reaches the 100 resolution attempt ceiling
 
         self.ecb.normalize()
-        #self.ecb.store()
 
         futureRect = self.ecb.currentECB.rect.copy()
         futureRect.x += self.change_x
@@ -403,13 +404,13 @@ class AbstractFighter():
 
         block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
-            if self.catchMovement(block) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t:
+            if self.catchMovement(block) and (block.solid or self.platformPhase <= 0) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t:
                 t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect)
                 
         self.rect.y += self.change_y*t
         self.rect.x += self.change_x*t
         self.ecb.normalize()
-        self.ecb.store()
+        self.ecb.store() #This is the only place I can store that doesn't cause additional bugs
         
         loopCount = 0
         while loopCount < 10:
@@ -424,6 +425,8 @@ class AbstractFighter():
                     break
             loopCount += 1
         # TODO: Crush death if loopcount reaches the 100 resolution attempt ceiling
+
+        self.ecb.normalize()
         
         groundBlocks = self.checkForGround()
 
@@ -1101,11 +1104,15 @@ class AbstractFighter():
         newPrev = self.ecb.currentECB.rect.copy()
         newPrev.center = self.ecb.previousECB.rect.center
         collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(newPrev))
+        collideSprite.rect.centerx += self.change_x
+        collideSprite.rect.centery += self.change_y
         return filter(lambda r: pathRectIntersects(newPrev, self.ecb.currentECB.rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(newPrev, self.ecb.currentECB.rect, q.rect)))
 
     def getSizeCollisionsWith(self,spriteGroup):
         self.sprite.updatePosition(self.rect)
         collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(self.ecb.previousECB.rect))
+        collideSprite.rect.centerx += self.change_x
+        collideSprite.rect.centery += self.change_y
         return filter(lambda r: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, q.rect)))
 
     def catchMovement(self, other):
@@ -1206,8 +1213,8 @@ def intersectPoint(firstRect, secondRect):
 def checkPlatform(current, previous, platform):
     intersect = intersectPoint(current, platform)
 
-    if platform.top >= previous.bottom-4 and intersect[1] < 0 and (current.bottom >= platform.top or True):
-        print(platform.top-previous.bottom)
+    if (platform.top >= previous.bottom-8 or True) and intersect[1] < 0 and current.bottom >= platform.top:
+        print((platform.top-current.bottom, platform.top-previous.bottom, current.centery-previous.centery))
         return True
     return False
     
