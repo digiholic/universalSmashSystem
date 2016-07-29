@@ -18,7 +18,7 @@ def getStagePreview():
     return None
 
 def getMusicList():
-    return [(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'music','Character Lobby.ogg'),1,"Character Lobby")]
+    return [(settingsManager.createPath('music/Character Lobby.ogg'),1,"Character Lobby")]
 
 class TrainingStage(stage.Stage):
     def __init__(self):

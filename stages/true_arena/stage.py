@@ -18,8 +18,8 @@ def getStagePreview():
     return None
 
 def getMusicList():
-    return [(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'music','Laszlo - Fall To Light.ogg'),1,"Laszlo - Fall To Light (NCS Release)"),
-            (os.path.join(os.path.dirname(__file__).replace('main.exe',''),'music','Autumn Warriors.ogg'),1,"Autumn Warriors")]
+    return [(settingsManager.createPath('music/Laszlo - Fall To Light.ogg'),1,"Laszlo - Fall To Light (NCS Release)"),
+            (settingsManager.createPath('music/Autumn Warriors.ogg'),1,"Autumn Warriors")]
 
 class wrapArticle(article.Article):
     def __init__(self,spritePath, center, speed):

@@ -79,9 +79,9 @@ class MainFrame(Tk):
         #self.iconphoto(True, PhotoImage(file=settingsManager.createPath('editor-0.png')))
         #self.iconbitmap(settingsManager.createPath('editor.ico'))
         if "nt" == os.name:
-            self.iconbitmap(settingsManager.createPath('editor.ico'))
+            self.iconbitmap(settingsManager.createPath('sprites/editor.ico'))
         else:
-            self.iconbitmap('@'+settingsManager.createPath('editor.xbm'))
+            self.iconbitmap('@'+settingsManager.createPath('sprites/editor.xbm'))
         self.geometry('640x480')
         
         # Variable Declaration
