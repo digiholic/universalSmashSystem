@@ -272,8 +272,8 @@ class AbstractFighter():
         self.rect = self.sprite.rect
         self.jumps = self.var['jumps']
         self.damage = 0
-        self.landingLag = 0
-        self.platformPhase = 6
+        self.landingLag = 6
+        self.platformPhase = 0
         self.techWindow = 0
         
         self.change_x = 0
@@ -553,11 +553,6 @@ class AbstractFighter():
         if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
             self.flip()
         self.doAction('Dash')
-        
-    #def doRun(self,direction):
-    #    if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
-    #        self.flip()
-    #    self.doAction('Run')
         
     def doGroundAttack(self):
         (key, invkey) = self.getForwardBackwardKeys()
@@ -1111,8 +1106,8 @@ class AbstractFighter():
     def getSizeCollisionsWith(self,spriteGroup):
         self.sprite.updatePosition(self.rect)
         collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(self.ecb.previousECB.rect))
-        collideSprite.rect.centerx += self.change_x
-        collideSprite.rect.centery += self.change_y
+        #collideSprite.rect.centerx += self.change_x
+        #collideSprite.rect.centery += self.change_y
         return filter(lambda r: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, q.rect)))
 
     def catchMovement(self, other):
@@ -1213,7 +1208,7 @@ def intersectPoint(firstRect, secondRect):
 def checkPlatform(current, previous, platform):
     intersect = intersectPoint(current, platform)
 
-    if (platform.top >= previous.bottom-8 or True) and intersect[1] < 0 and current.bottom >= platform.top:
+    if platform.top >= previous.bottom-8 and intersect[1] < 0 and current.bottom >= platform.top:
         print((platform.top-current.bottom, platform.top-previous.bottom, current.centery-previous.centery))
         return True
     return False
