@@ -1,5 +1,6 @@
 import engine.stage as stage
 import pygame
+import settingsManager
 import spriteManager
 import os
 
@@ -16,8 +17,8 @@ def getStagePreview():
     return None
 
 def getMusicList():
-    return [(os.path.join(os.path.dirname(__file__).replace('main.exe',''),'music','Laszlo - Fall To Light.ogg'),1,"Laszlo - Fall To Light (NCS Release)"),
-            (os.path.join(os.path.dirname(__file__).replace('main.exe',''),'music','Autumn Warriors.ogg'),1,"Autumn Warriors")]
+    return [(settingsManager.createPath('music/Laszlo - Fall To Light.ogg'),1,"Laszlo - Fall To Light (NCS Release)"),
+            (settingsManager.createPath('music/Autumn Warriors.ogg'),1,"Autumn Warriors")]
 
 class ArenaMovingPlatform(stage.Stage):
     def __init__(self):

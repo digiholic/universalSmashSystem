@@ -8,17 +8,16 @@ buildOptions = dict(packages = ['numpy', 'pygame', 'requests', 'xml', 'Tkinter']
                     include_files = ['rexlia rg.ttf', 'full Pack 2025.ttf', 'settingsManager.py',
                                      'battle.py', 'main.py', 'musicManager.py', 'spriteManager.py',
                                      'engine/', 'fighters/', 'menu/', 'music/', 'settings/', 'sfx/',
-                                     'builder/', 'sprites/', 'stages/', 'cacert.pem', 'editor.ico',
-                                     'editor.xbm'])
+                                     'builder/', 'sprites/', 'stages/', 'cacert.pem'])
 
 base_b = None
 if sys.platform == "win32":
     base_b = "Win32GUI"
 
 executables = [
-    Executable('main.py', base = base_b, targetName = 'TUSSLE.exe', icon='tussle.ico'),
-    Executable('updater.py', 'console', targetName = 'updater.exe'),
-    Executable('builderMain.py', base = base_b, targetName='LegacyEditor.exe', icon='editor.ico')
+    Executable('main.py', base = base_b, targetName = 'TUSSLE.exe', icon='sprites/tussle.ico'),
+    Executable('updater.py', 'console', targetName = 'updater.exe', icon='sprites/downloader.ico'),
+    Executable('builderMain.py', base = base_b, targetName='LegacyEditor.exe', icon='sprites/editor.ico')
 ]
 
 setup(name='TUSSLE',
