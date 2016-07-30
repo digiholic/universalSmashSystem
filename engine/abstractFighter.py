@@ -145,6 +145,7 @@ class AbstractFighter():
         
         color = self.colorPalettes[self.playerNum] #TODO: Pick colors
         
+        print(directory,prefix,defaultSprite,imgwidth,color,scale)
         self.sprite = spriteManager.SpriteHandler(directory,prefix,defaultSprite,imgwidth,color,scale)
         
         #try:

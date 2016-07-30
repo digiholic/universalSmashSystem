@@ -145,6 +145,7 @@ class MainFrame(Tk):
                 return
         else:
             newfighter = engine.abstractFighter.AbstractFighter(dirname,0)
+            
         newfighter.initialize()
         fighter = newfighter
         self.wm_title('Legacy Editor - '+fighter.name)        
@@ -189,7 +190,7 @@ class MenuBar(Menu):
         self.root.frame.trace('w',self.changeFrame)
         
     def newFighter(self):
-        CreateFighterWindow(self.root)
+        CreateFighterWindow(self)
     
     def loadFighter(self):
         fighterFile = askopenfile(mode="r",initialdir=settingsManager.createPath('fighters'),filetypes=[('TUSSLE Fighters','*.xml'),('Advanced Fighters', '*.py')])
@@ -315,8 +316,10 @@ class AddConditionalWindow(Toplevel):
             self.destroy()
  
 class CreateFighterWindow(Toplevel):
-    def __init__(self,root):
+    def __init__(self,parent):
         Toplevel.__init__(self)
+        self.parent = parent
+        self.root = parent.root
         
         # Labels
         folderNameLabel = Label(self,text='Folder Name')
@@ -345,11 +348,12 @@ class CreateFighterWindow(Toplevel):
         """
         
     def submit(self):
-        if os.path.exists(settingsManager.createPath('fighters/'+self.folderNameVar.get())):
+        path = settingsManager.createPath('fighters/'+self.folderNameVar.get())
+            
+        if os.path.exists(path):
             print('path exists')
             self.destroy()
         else:
-            path = settingsManager.createPath('fighters/'+self.folderNameVar.get())
             os.makedirs(path)
             newFighter = engine.abstractFighter.AbstractFighter(path,0)
             #create sprite dir
@@ -359,9 +363,26 @@ class CreateFighterWindow(Toplevel):
             copyfile(settingsManager.createPath('sprites/default_franchise_icon.png'), os.path.join(spritePath,'franchise_icon.png'))
             
             #create __init__.py
+            initpy = open(os.path.join(path,'__init__.py'),'w+')
+            initpy.close()
+            
             #check for and create actions files
+            if self.generateActionXmlVar.get():
+                actionxml = open(os.path.join(path,self.folderNameVar.get()+'_actions.xml'),'w+')
+                actionxml.close()
+            if self.generateActionPyVar.get():
+                actionpy = open(os.path.join(path,self.folderNameVar.get()+'_actions.py'),'w+')
+                actionpy.close()
+                
             #copy over icons?
             newFighter.saveFighter()
+            self.destroy()
+            
+        fighterFile = open(os.path.join(path,'fighter.xml'),'r')
+        self.root.fighterFile = fighterFile
+        self.root.fighterProperties = fighterFile.read()
+        self.root.fighterString.set(fighterFile.name)
+        self.parent.entryconfig("Action", state=NORMAL)
             
             
 class LeftPane(BuilderPanel):
