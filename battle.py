@@ -213,23 +213,23 @@ class Battle():
                             if isinstance(hbox, hitbox.DamageHitbox):
                                 hbox.owner.applyPushback(hbox.damage/4.0, hbox.trajectory+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
                             else:
-                                hbox.owner.hitstop += 6
+                                hbox.owner.hitstop = 8
                             hbox.owner.current_action.onClank(hbox.owner)
                         if otherClank:
                             if isinstance(other, hitbox.DamageHitbox):
                                 other.owner.applyPushback(other.damage/4.0, other.trajectory+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
                             else:
-                                other.owner.hitstop += 6
+                                other.owner.hitstop = 8
                             other.owner.current_action.onClank(other.owner)
                     elif hboxClank and otherClank:
                         if isinstance(hbox, hitbox.DamageHitbox):
                             hbox.owner.applyPushback(hbox.damage/4.0, hbox.trajectory+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
                         else:
-                            hbox.owner.hitstop += 6
+                            hbox.owner.hitstop = 8
                         if isinstance(other, hitbox.DamageHitbox):
                             other.owner.applyPushback(other.damage/4.0, other.trajectory+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
                         else:
-                            other.owner.hitstop += 6
+                            other.owner.hitstop = 8
                             
             for hbox in hurtbox_hits:
                 #then, hurtbox collisions

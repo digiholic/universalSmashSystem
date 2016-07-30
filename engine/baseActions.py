@@ -477,7 +477,7 @@ class Tumble(action.Action):
         if self.techCooldown > 0: self.techCooldown -= 1
         
 class Prone(action.Action):
-    def __init__(self,length=60):
+    def __init__(self,length=40):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
@@ -563,10 +563,10 @@ class Jump(action.Action):
             if actor.keysContain('jump'):
                 actor.change_y = -actor.var['jumpHeight']
             else: actor.change_y = -actor.var['shortHopHeight']
-            if actor.change_x > actor.var['maxAirSpeed']:
-                actor.change_x = actor.var['maxAirSpeed']
-            elif actor.change_x < -actor.var['maxAirSpeed']:
-                actor.change_x = -actor.var['maxAirSpeed']
+            if actor.change_x > actor.var['aerialTransitionSpeed']:
+                actor.change_x = actor.var['aerialTransitionSpeed']
+            elif actor.change_x < -actor.var['aerialTransitionSpeed']:
+                actor.change_x = -actor.var['aerialTransitionSpeed']
         if self.frame < self.lastFrame:
             self.frame += 1
         if self.frame == self.lastFrame and not actor.keysContain('jump'):
@@ -612,7 +612,7 @@ class AirJump(action.Action):
             elif actor.keysContain('right'):
                 if actor.facing == -1:
                     actor.flip()
-                    actor.change_x = actor.facing * actor.var['maxAirSpeed']    
+                    actor.change_x = actor.facing * actor.var['maxAirSpeed']
         if self.frame < self.lastFrame:
             self.frame += 1
         if self.frame == self.lastFrame:
@@ -694,7 +694,7 @@ class Land(action.Action):
             #actor.articles.add(article.LandingArticle(actor)) #this looks awful don't try it
             pass
         if self.frame == self.lastFrame:
-            actor.landingLag = actor.var['heavyLandLag']
+            actor.landingLag = 0
             actor.doAction('NeutralAction')
             actor.platformPhase = 0
             actor.preferred_xspeed = 0
@@ -727,7 +727,7 @@ class HelplessLand(action.Action):
                 if not any(blocks):
                     actor.doAction('PlatformDrop')
         if self.frame >= self.lastFrame:
-            actor.landingLag = actor.var['heavyLandLag']
+            actor.landingLag = 0
             actor.doAction('NeutralAction')
             actor.platformPhase = 0
             actor.preferred_xspeed = 0
@@ -954,8 +954,8 @@ class Released(action.Action):
         if actor.grounded and actor.ground_elasticity == 0:
             actor.preferred_xspeed = 0
             actor.preferred_yspeed = actor.var['maxFallSpeed']
-            #actor.doTrip(-175, 90)
             actor.doAction('Prone')
+            actor.current_action.lastFrame = 15 - self.lastFrame
 
         grabLedges(actor)
         
@@ -1088,7 +1088,7 @@ class AirDodge(action.Action):
         self.move_vec = [0,0]
         
         if settingsManager.getSetting('enableWavedash'):
-            actor.updateLandingLag(8,True)
+            actor.updateLandingLag(actor.var['wavedashLag'])
         else:
             actor.updateLandingLag(24)
         if settingsManager.getSetting('airDodgeType') == 'directional':
@@ -1190,7 +1190,7 @@ class LedgeGetup(action.Action):
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="ledgeGetup"
         action.Action.setUp(self, actor)
-        actor.invincibility = 24
+        actor.invincibility = 12
         if actor.facing == 1:
             actor.rect.left -= actor.rect.width//2
         else:
@@ -1199,7 +1199,7 @@ class LedgeGetup(action.Action):
     def update(self,actor):
         action.Action.update(self, actor)
         if self.frame == 0:
-            actor.createMask([255,255,255], 24, True, 24)
+            actor.createMask([255,255,255], 12, True, 24)
         if self.frame >= self.lastFrame:
             actor.doAction('NeutralAction')
         self.frame += 1
@@ -1445,7 +1445,7 @@ def tumbleState(actor):
         actor.doAirAttack()
     elif actor.keyHeld('special'):
         actor.doAirSpecial()
-    elif actor.keyHeld('jump', 8, 1) and actor.jumps > 0:
+    elif actor.keyHeld('jump') and actor.jumps > 0:
         actor.doAirJump()
     elif actor.keysContain('down'):
         actor.platformPhase = 1
@@ -1493,27 +1493,6 @@ def dashState(actor, direction):
     elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
         actor.doAction('RunStop')
 
-"""
-def runState(actor, direction):
-    (key,invkey) = actor.getForwardBackwardKeys()
-    if actor.keysContain('shield') and actor.keyHeld('attack'):
-        actor.doAction('DashGrab')
-    elif actor.keyHeld('attack'):
-        actor.doAction('DashAttack')
-    elif actor.keyHeld('special'):
-        actor.doGroundSpecial()
-    elif actor.keyHeld('jump'):
-        actor.doAction('Jump')
-    elif actor.keysContain('down', 0.5):
-        actor.doAction('RunStop')
-    elif not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('down'):
-        actor.doAction('RunStop')
-    elif actor.preferred_xspeed < 0 and not actor.keysContain('left',1) and actor.keysContain('right',1):
-        actor.doAction('RunStop')
-    elif actor.preferred_xspeed > 0 and not actor.keysContain('right',1) and actor.keysContain('left',1):
-        actor.doAction('RunStop')
-"""
-
 def jumpState(actor):
     airControl(actor)
     if actor.keyHeld('shield'):
@@ -1531,7 +1510,7 @@ def shieldState(actor):
         actor.doAction('GroundGrab')
     elif actor.keyHeld('special'):
         actor.doGroundSpecial()
-    elif actor.keyHeld('jump', 8, 1):
+    elif actor.keyHeld('jump'):
         actor.doAction('Jump')
 
 def ledgeState(actor):
@@ -1545,18 +1524,18 @@ def ledgeState(actor):
         actor.doAction('LedgeAttack')
     elif actor.keyHeld('jump'):
         actor.ledgeLock = True
-        actor.invincible = 10
+        actor.invincible = 6
         actor.doAction('Jump')
     elif actor.keyBuffered(key):
         actor.ledgeLock = True
         actor.doAction('LedgeGetup')
     elif actor.keyBuffered(invkey):
         actor.ledgeLock = True
-        actor.invincible = 10
+        actor.invincible = 6
         actor.doAction('Fall')
     elif actor.keyBuffered('down'):
         actor.ledgeLock = True
-        actor.invincible = 10
+        actor.invincible = 6
         actor.doAction('Fall')
 
 def grabbingState(actor):
@@ -1659,7 +1638,6 @@ stateDict = {
             "airState": airState,
             "moveState": moveState,
             "dashState": dashState,
-            #"runState": runState,
             "jumpState": jumpState,
             "shieldState": shieldState,
             "ledgeState": ledgeState,

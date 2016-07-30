@@ -31,8 +31,10 @@
 		<weight>200</weight>
 		<gravity>1.0</gravity>
 		<maxFallSpeed>20</maxFallSpeed>
+		<maxGroundSpeed>4.5</maxGroundSpeed>
 		<runSpeed>5</runSpeed>
 		<maxAirSpeed>4</maxAirSpeed>
+		<aerialTransitionSpeed>4.5</aerialTransitionSpeed>
 		<crawlSpeed>0</crawlSpeed>
 		<dodgeSpeed>10</dodgeSpeed>
 		<friction>1.0</friction>
@@ -44,7 +46,9 @@
 		<shortHopHeight>4</shortHopHeight>
 		<airJumpHeight>10</airJumpHeight>
 		<heavyLandLag>4</heavyLandLag>
+		<wavedashLag>8</wavedashLag>
 		<fastfallMultiplier>2</fastfallMultiplier>
 		<hitstunElasticity>.8</hitstunElasticity>
+		<shieldSize>1</shieldSize>
 	</stats>
 </fighter>
