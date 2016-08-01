@@ -405,7 +405,7 @@ class AbstractFighter():
 
         block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
-            if self.catchMovement(block) and (block.solid or self.platformPhase <= 0) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t:
+            if self.catchMovement(block) and (block.solid or self.platformPhase <= 0) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) > 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t:
                 t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect)
                 
         self.rect.y += self.change_y*t
@@ -473,13 +473,13 @@ class AbstractFighter():
     def checkForGround(self):
         self.ecb.normalize()
         self.grounded = False
-        self.ecb.currentECB.rect.y += 4+self.change_y
+        self.ecb.currentECB.rect.y += 4
         groundBlock = pygame.sprite.Group()
         block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
-        self.ecb.currentECB.rect.y -= 4+self.change_y
+        self.ecb.currentECB.rect.y -= 4
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB.rect.bottom-self.change_y <= block.rect.top-block.change_y+4:
+                if self.ecb.previousECB.rect.bottom <= block.rect.top-block.change_y+4:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -1097,12 +1097,11 @@ class AbstractFighter():
     """
     def getMovementCollisionsWith(self,spriteGroup):
         self.sprite.updatePosition(self.rect)
-        newPrev = self.ecb.currentECB.rect.copy()
-        newPrev.center = self.ecb.previousECB.rect.center
-        collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(newPrev))
-        collideSprite.rect.centerx += self.change_x
-        collideSprite.rect.centery += self.change_y
-        return filter(lambda r: pathRectIntersects(newPrev, self.ecb.currentECB.rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(newPrev, self.ecb.currentECB.rect, q.rect)))
+        futureRect = self.ecb.currentECB.rect.copy()
+        futureRect.x += self.change_x
+        futureRect.y += self.change_y
+        collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(futureRect))
+        return filter(lambda r: pathRectIntersects(self.ecb.currentECB.rect, futureRect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.currentECB.rect, futureRect, q.rect)))
 
     def getSizeCollisionsWith(self,spriteGroup):
         self.sprite.updatePosition(self.rect)
@@ -1165,8 +1164,8 @@ class AbstractFighter():
             elasticity = self.ground_elasticity if contact[1] < 0 else self.elasticity
             if dot <= 0:
                 (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
-        elif contact is not None and contact == [0, 0] and self.change_y >= other.change_y:
-            self.change_y = other.change_y+self.ground_elasticity*(self.change_y-other.change_y)
+        #elif contact is not None and contact == [0, 0] and self.change_y >= other.change_y:
+        #    self.change_y = other.change_y+self.ground_elasticity*(self.change_y-other.change_y)
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
