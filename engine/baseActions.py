@@ -1163,6 +1163,7 @@ class LedgeGrab(action.Action):
         
     def update(self,actor):
         action.Action.update(self, actor)
+    
         actor.jumps = actor.var['jumps']
         if self.ledge.side == 'left':
             if actor.facing == -1:
@@ -1177,6 +1178,7 @@ class LedgeGrab(action.Action):
             actor.hurtbox.rect.top = self.ledge.rect.top + self.sweetSpotY
             actor.rect.center = actor.hurtbox.rect.center
         actor.setSpeed(0, actor.getFacingDirection())
+        self.frame += 1
         
 
 class LedgeGetup(action.Action):
@@ -1191,10 +1193,6 @@ class LedgeGetup(action.Action):
         if self.spriteName=="": self.spriteName ="ledgeGetup"
         action.Action.setUp(self, actor)
         actor.invincibility = 12
-        if actor.facing == 1:
-            actor.rect.left -= actor.rect.width//2
-        else:
-            actor.rect.right += actor.rect.width//2
     
     def update(self,actor):
         action.Action.update(self, actor)
