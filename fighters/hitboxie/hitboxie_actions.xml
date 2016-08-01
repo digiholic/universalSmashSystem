@@ -378,10 +378,8 @@
 				<baseKnockback>8</baseKnockback>
 				<knockbackGrowth>0.20</knockbackGrowth>
 				<trajectory>40</trajectory>
-				<chargeable>
-					<damage>.426</damage>
-					<baseKnockback>0.04</baseKnockback>
-				</chargeable>
+				<chargeDamage>.426</chargeDamage>
+				<chargeBKB>0.04</chargeBKB>
 				<hitstun type="float">1.6</hitstun>
 			</createHitbox>
 		</setUp>
@@ -577,9 +575,7 @@
 				<baseKnockback>5</baseKnockback>
 				<knockbackGrowth>0</knockbackGrowth>
 				<trajectory>150</trajectory>
-				<chargeable>
-					<damage>.027</damage>
-				</chargeable>
+				<chargeDamage>.027</chargeDamage>
 				<base_hitstun>3</base_hitstun>
 			</createHitbox>
 			
@@ -591,9 +587,7 @@
 				<baseKnockback>5</baseKnockback>
 				<knockbackGrowth>0</knockbackGrowth>
 				<trajectory>30</trajectory>
-				<chargeable>
-					<damage>.027</damage>
-				</chargeable>
+				<chargeDamage>.027</chargeDamage>
 				<base_hitstun>3</base_hitstun>
 			</createHitbox>
 			
@@ -605,10 +599,8 @@
 				<baseKnockback>2</baseKnockback>
 				<knockbackGrowth>0.25</knockbackGrowth>
 				<trajectory>80</trajectory>
-				<chargeable>
-					<damage>.1</damage>
-					<baseKnockback>0.02</baseKnockback>
-				</chargeable>
+				<chargeDamage>.1</chargeDamage>
+				<chargeBKB>0.02</chargeBKB>
 			</createHitbox>
 		</setUp>
 		
@@ -776,9 +768,7 @@
 				<knockbackGrowth>0.3</knockbackGrowth>
 				<trajectory>20</trajectory>
 				<hitboxLock>main</hitboxLock>
-				<chargeable>
-					<damage>.292</damage>
-				</chargeable>
+				<chargeDamage>.292</chargeDamage>
 			</createHitbox>
 			
 			<createHitbox>
@@ -790,9 +780,7 @@
 				<knockbackGrowth>0.3</knockbackGrowth>
 				<trajectory>160</trajectory>
 				<hitboxLock>main</hitboxLock>
-				<chargeable>
-					<damage>.292</damage>
-				</chargeable>
+				<chargeDamage>.292</chargeDamage>
 			</createHitbox>
 		</setUp>
 		
