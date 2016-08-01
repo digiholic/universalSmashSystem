@@ -1196,7 +1196,6 @@ def getDirectionBetweenPoints(p1, p2):
 
 def intersectPoint(firstRect, secondRect): 
     firstPoints = [firstRect.midtop, firstRect.midbottom, firstRect.midleft, firstRect.midright]
-    #prevPoints = [prevRect.midtop, prevRect.midbottom, prevRect.midleft, prevRect.midright]
     secondPoints = [secondRect.topleft, secondRect.topright, secondRect.bottomleft, secondRect.bottomright]
 
     leftDist = directionalDisplacement(firstPoints, secondPoints, [-1, 0])
@@ -1386,7 +1385,7 @@ class ECB():
         else:
             self.currentECB.rect.height = sizes[1]
         
-        self.currentECB.rect.midbottom = self.actor.sprite.boundingRect.midbottom
+        self.currentECB.rect.center = self.actor.sprite.boundingRect.center
         self.currentECB.rect.x += offsets[0]
         self.currentECB.rect.y += offsets[1]
         

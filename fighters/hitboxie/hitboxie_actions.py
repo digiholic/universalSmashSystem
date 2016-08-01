@@ -29,7 +29,7 @@ class ForwardSpecial(action.Action):
         self.chainHitbox = hitbox.AutolinkHitbox(actor, hitbox.HitboxLock(), variables)
         self.flingHitbox = self.sideSpecialHitbox(actor)
         self.numFrames = 0
-        self.ecbCenter = [0,7]
+        self.ecbOffset = [0,7]
         self.ecbSize = [64, 78]
         if actor.sideSpecialUses == 1:
             actor.sideSpecialUses = 0
@@ -474,7 +474,7 @@ class DownThrow(baseActions.BaseGrabbing):
                                                                             'trajectory': 260,
                                                                             })
         actor.active_hitboxes.add(self.bottomHitbox)
-        self.ecbCenter = [0,7]
+        self.ecbOffset = [0,7]
         self.ecbSize = [64, 78]
 
     def tearDown(self, actor, nextAction):
@@ -862,7 +862,7 @@ class GetupAttack(action.Action):
     def setUp(self, actor):
         actor.preferred_xspeed = 0
         actor.changeSprite("nair")
-        self.ecbCenter = [0,7]
+        self.ecbOffset = [0,7]
         self.ecbSize = [64, 78]
         self.dashHitbox = hitbox.DamageHitbox(actor,hitbox.HitboxLock(),{
                                                                          'center': [0,0],

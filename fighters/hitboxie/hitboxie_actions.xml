@@ -827,7 +827,7 @@
 		
 		<setUp>
 			<changeECB>
-				<center>0,7</center>
+				<offset>0,7</offset>
 				<size>64,78</size>
 			</changeECB>
 			<changeFighterPreferredSpeed>
@@ -1263,7 +1263,7 @@
 		
 		<setUp>
 			<changeECB>
-				<center>0,7</center>
+				<offset>0,7</offset>
 				<size>64,78</size>
 			</changeECB>
 			<createHitbox>
