@@ -2,7 +2,6 @@ import os
 import pygame
 import sys
 sys.path.insert(0, '../')
-
 import settingsManager
 import inspect
 import engine.abstractFighter
