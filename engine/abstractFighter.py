@@ -1118,16 +1118,20 @@ class AbstractFighter():
         #checkRect.centery -= other.change_y
         newPrev = self.ecb.currentECB.rect.copy()
         newPrev.center = self.ecb.previousECB.rect.center
-        t = pathRectIntersects(newPrev, self.ecb.currentECB.rect, checkRect)
+
+        futureRect = self.ecb.currentECB.rect.copy()
+        futureRect.x += self.change_x
+        futureRect.y += self.change_y
+        t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, checkRect)
 
         myRect = self.ecb.currentECB.rect.copy()
-        myRect.x += t*(self.ecb.currentECB.rect.x-newPrev.x)
-        myRect.y += t*(self.ecb.currentECB.rect.y-newPrev.y)
+        myRect.x += t*(futureRect.x-self.ecb.currentECB.rect.x)
+        myRect.y += t*(futureRect.y-self.ecb.currentECB.rect.y)
 
         if other.solid:
             return intersectPoint(myRect, checkRect) is not None
         else:
-            return checkPlatform(myRect, newPrev, checkRect)
+            return checkPlatform(myRect, self.ecb.currentECB.rect, checkRect)
         
 
     def eject(self, other):
@@ -1209,8 +1213,7 @@ def intersectPoint(firstRect, secondRect):
 def checkPlatform(current, previous, platform):
     intersect = intersectPoint(current, platform)
 
-    if platform.top >= previous.bottom-8 and intersect[1] < 0 and current.bottom >= platform.top:
-        print((platform.top-current.bottom, platform.top-previous.bottom, current.centery-previous.centery))
+    if platform.top >= previous.bottom-8 or True and intersect[1] < 0 and current.bottom >= platform.top:
         return True
     return False
     
