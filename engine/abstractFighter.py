@@ -9,6 +9,7 @@ import weakref
 import xml.etree.ElementTree as ElementTree
 import os
 import actionLoader
+import numpy
 
 class AbstractFighter():
     def __init__(self,baseDir,playerNum):
@@ -319,6 +320,7 @@ class AbstractFighter():
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
             loopCount = 0
             while loopCount < 10:
+                self.sprite.updatePosition(self.rect)
                 self.ecb.normalize()
                 block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
                 if not block_hit_list:
@@ -359,7 +361,7 @@ class AbstractFighter():
                 self.doAction('Prone')
                 self.current_action.frame = self.current_action.lastFrame
             self.techWindow -= 1
-                
+
         # We set the hurbox to be the Bounding Rect of the sprite.
         # It is done here, so that the hurtbox can be changed by the action.
         self.hurtbox.rect = self.sprite.boundingRect.copy()
@@ -375,6 +377,7 @@ class AbstractFighter():
         for art in self.articles:
             art.update()
 
+        self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
 
         # Gravity
@@ -382,6 +385,7 @@ class AbstractFighter():
 
         loopCount = 0
         while loopCount < 10:
+            self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
             block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
             if not block_hit_list:
@@ -394,6 +398,8 @@ class AbstractFighter():
             loopCount += 1
         # TODO: Crush death if loopcount reaches the 100 resolution attempt ceiling
 
+
+        self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
 
         futureRect = self.ecb.currentECB.rect.copy()
@@ -404,15 +410,18 @@ class AbstractFighter():
         toBounceBlock = None
 
         block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
+        contactBlock = None
         for block in block_hit_list:
-            if self.catchMovement(block) and (block.solid or self.platformPhase <= 0) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) > 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t:
+            if self.catchMovement(block) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) > 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t:
                 t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect)
+                contactBlock = block
                 
         self.rect.y += self.change_y*t
         self.rect.x += self.change_x*t
         self.ecb.normalize()
         self.ecb.store() #This is the only place I can store that doesn't cause additional bugs
         
+        """
         loopCount = 0
         while loopCount < 10:
             self.ecb.normalize()
@@ -428,12 +437,13 @@ class AbstractFighter():
         # TODO: Crush death if loopcount reaches the 100 resolution attempt ceiling
 
         self.ecb.normalize()
+        """
         
         groundBlocks = self.checkForGround()
 
         # Move with the platform
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
-        if not block is None:
+        if not block is None and (block.solid or self.platformPhase <= 0):
             self.rect.x += block.change_x
             self.change_y -= self.var['gravity']
 
@@ -447,6 +457,7 @@ class AbstractFighter():
             self.platformPhase -= 1
 
         self.ecb.normalize()
+        print(self.ecb.currentECB.rect.bottom - self.sprite.boundingRect.bottom)
         
     """
     Change speed to get closer to the preferred speed without going over.
@@ -471,6 +482,7 @@ class AbstractFighter():
         if self.grounded: self.jumps = self.var['jumps']
 
     def checkForGround(self):
+        self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         self.grounded = False
         self.ecb.currentECB.rect.y += 4
@@ -479,7 +491,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 4
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.previousECB.rect.bottom <= block.rect.top-block.change_y+4:
+                if self.ecb.currentECB.rect.bottom <= block.rect.top + 4:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -751,11 +763,8 @@ class AbstractFighter():
 
         trajectory_vec = [math.cos(trajectory/180*math.pi), math.sin(trajectory/180*math.pi)]
 
-        dot = di_vec[0]*trajectory_vec[0]+di_vec[1]*trajectory_vec[1]
-        cross = di_vec[0]*trajectory_vec[1]-di_vec[1]*trajectory_vec[0]
-
-        DI_multiplier = 1+dot*.12
-        trajectory += cross*15
+        DI_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.12
+        trajectory += numpy.cross(di_vec, trajectory_vec)*15
 
         hitstun_frames = math.floor(totalKB*hitstun_multiplier+base_hitstun) #Tweak this constant
         print(hitstun_frames)
@@ -769,7 +778,7 @@ class AbstractFighter():
         if hitstun_frames > 0.5:
             print(totalKB)
             if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.lastFrame-self.current_action.frame <= hitstun_frames:
-                self.doHitStun(hitstun_frames,trajectory)
+                self.doHitStun(hitstun_frames, trajectory)
                 self.setSpeed(totalKB*DI_multiplier, trajectory)
         
         self.dealDamage(damage)
@@ -860,7 +869,7 @@ class AbstractFighter():
         else:
             self.change_y = -15
             self.invincible = 20
-            self.doStunned(200)
+            self.doStunned(400)
     
     def updateLandingLag(self,lag,reset=False):
         if reset: self.landingLag = lag
@@ -997,7 +1006,7 @@ class AbstractFighter():
                 ySmooth = 0.98
             elif (workingY < 0 and smoothedY > 0) or (workingY > 0 and smoothedY < 0):
                 ySmooth = 0.6
-            magnitude = math.sqrt(workingX**2 + workingY**2)
+            magnitude = numpy.linalg.norm([workingX, workingY])
             if magnitude > maxMagnitude:
                 workingX /= magnitude/maxMagnitude
                 workingY /= magnitude/maxMagnitude
@@ -1005,7 +1014,7 @@ class AbstractFighter():
             smoothedY *= ySmooth
             smoothedX += workingX*2
             smoothedY += workingY*2
-        finalMagnitude = math.sqrt(smoothedX**2+smoothedY**2)
+        finalMagnitude = numpy.linalg.norm([smoothedX, smoothedY])
         if finalMagnitude > maxMagnitude:
             smoothedX /= finalMagnitude/maxMagnitude
             smoothedY /= finalMagnitude/maxMagnitude
@@ -1086,7 +1095,7 @@ class AbstractFighter():
         direction = math.degrees(direction)
         if direction < 0: direction = 180 + direction
         direction = round(direction)
-        magnitude = math.sqrt(math.pow(self.change_x, 2) + math.pow(-self.change_y, 2))
+        magnitude = numpy.linalg.norm([self.change_x, self.change_y])
         
         return (direction,magnitude)
         
@@ -1097,6 +1106,7 @@ class AbstractFighter():
     """
     def getMovementCollisionsWith(self,spriteGroup):
         self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
         futureRect = self.ecb.currentECB.rect.copy()
         futureRect.x += self.change_x
         futureRect.y += self.change_y
@@ -1104,17 +1114,13 @@ class AbstractFighter():
         return filter(lambda r: pathRectIntersects(self.ecb.currentECB.rect, futureRect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.currentECB.rect, futureRect, q.rect)))
 
     def getSizeCollisionsWith(self,spriteGroup):
-        self.sprite.updatePosition(self.rect)
         collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(self.ecb.previousECB.rect))
         return filter(lambda r: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.previousECB.rect, self.ecb.currentECB.rect, q.rect)))
 
     def catchMovement(self, other):
+        self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         checkRect = other.rect.copy()
-        #checkRect.centerx -= other.change_x
-        #checkRect.centery -= other.change_y
-        newPrev = self.ecb.currentECB.rect.copy()
-        newPrev.center = self.ecb.previousECB.rect.center
 
         futureRect = self.ecb.currentECB.rect.copy()
         futureRect.x += self.change_x
@@ -1127,11 +1133,14 @@ class AbstractFighter():
 
         if other.solid:
             return intersectPoint(myRect, checkRect) is not None
-        else:
+        elif self.platformPhase <= 0:
             return checkPlatform(myRect, self.ecb.currentECB.rect, checkRect)
+        else:
+            return False
         
 
     def eject(self, other):
+        self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         checkRect = other.rect.copy()
         #checkRect.centerx -= other.change_x
@@ -1155,15 +1164,14 @@ class AbstractFighter():
             #The contact vector is perpendicular to the axis over which the reflection should happen
             v_vel = [self.change_x-other.change_x, self.change_y-other.change_y]
             v_norm = [contact[1], -contact[0]]
-            dot = v_norm[0]*v_vel[0]+v_norm[1]*v_vel[1]
-            normsqr = v_norm[0]*v_norm[0]+v_norm[1]*v_norm[1]
+            dot = numpy.dot(v_norm, v_vel)
+            normsqr = numpy.linalg.norm(v_norm)
+            normsqr *= normsqr
             ratio = 1 if normsqr == 0 else dot/normsqr
             projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
             elasticity = self.ground_elasticity if contact[1] < 0 else self.elasticity
             if dot <= 0:
                 (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
-        #elif contact is not None and contact == [0, 0] and self.change_y >= other.change_y:
-        #    self.change_y = other.change_y+self.ground_elasticity*(self.change_y-other.change_y)
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
@@ -1204,39 +1212,41 @@ def intersectPoint(firstRect, secondRect):
     downLeftDist = directionalDisplacement(firstPoints, secondPoints, [-firstRect.height, firstRect.width])
     downRightDist = directionalDisplacement(firstPoints, secondPoints, [firstRect.height, firstRect.width])
 
-    return min(leftDist, rightDist, upDist, downDist, upLeftDist, upRightDist, downLeftDist, downRightDist, key=lambda x: math.sqrt(x[0]*x[0] + x[1]*x[1]))
+    return min(leftDist, rightDist, upDist, downDist, upLeftDist, upRightDist, downLeftDist, downRightDist, key=lambda x: numpy.linalg.norm(x))
 
 def checkPlatform(current, previous, platform):
     intersect = intersectPoint(current, platform)
 
-    if platform.top >= previous.bottom-8 or True and intersect[1] < 0 and current.bottom >= platform.top:
+    if (platform.top >= previous.bottom-4 or True) and intersect[1] < 0 and current.bottom >= platform.top:
+        #print(platform.top-previous.bottom)
         return True
     return False
     
 def directionalDisplacement(firstPoints, secondPoints, direction):
     #Given a direction to displace in, determine the displacement needed to get it out
-    firstDots = map(lambda x: x[0]*direction[0]+x[1]*direction[1], firstPoints)
-    secondDots = map(lambda x: x[0]*direction[0]+x[1]*direction[1], secondPoints)
+    firstDots = map(lambda x: numpy.dot(x, direction), firstPoints)
+    secondDots = map(lambda x: numpy.dot(x, direction), secondPoints)
     projectedDisplacement = max(secondDots)-min(firstDots)
-    normsqr = direction[0]*direction[0]+direction[1]*direction[1]
-    normsqr = 1.0 if normsqr == 0 else normsqr+0.0
+    normsqr = numpy.linalg.norm(direction)
+    normsqr *= normsqr
+    normsqr = 1.0 if normsqr == 0 else float(normsqr)
     return [projectedDisplacement/normsqr*direction[0], projectedDisplacement/normsqr*direction[1]]
 
 # Returns a 2-entry array representing a range of time when the points and the rect intersect
 # If the range's min is greater than its max, it represents an empty interval
 def projectionIntersects(startPoints, endPoints, rectPoints, vector):
-    startDots = map(lambda x: x[0]*vector[0]+x[1]*vector[1], startPoints)
-    endDots = map(lambda x: x[0]*vector[0]+x[1]*vector[1], endPoints)
-    rectDots = map(lambda x: x[0]*vector[0]+x[1]*vector[1], rectPoints)
+    startDots = map(lambda x: numpy.dot(x, vector), startPoints)
+    endDots = map(lambda x: numpy.dot(x, vector), endPoints)
+    rectDots = map(lambda x: numpy.dot(x, vector), rectPoints)
     if min(startDots) == min(endDots):
         if min(startDots) <= max(rectDots): #.O.|...
             t_mins = [float("-inf"), float("inf")]
         else:                               #...|.O.
             t_mins = [float("inf"), float("-inf")]
     elif min(startDots) > min(endDots):
-        t_mins = [(max(rectDots)-min(startDots)+0.0)/(min(endDots)-min(startDots)), float("inf")]
+        t_mins = [float(max(rectDots)-min(startDots))/(min(endDots)-min(startDots)), float("inf")]
     else:
-        t_mins = [float("-inf"), (max(rectDots)-min(startDots)+0.0)/(min(endDots)-min(startDots))]
+        t_mins = [float("-inf"), float(max(rectDots)-min(startDots))/(min(endDots)-min(startDots))]
 
     if max(startDots) == max(endDots):
         if max(startDots) >= min(rectDots): #...|.O.
@@ -1244,9 +1254,9 @@ def projectionIntersects(startPoints, endPoints, rectPoints, vector):
         else:                               #.O.|...
             t_maxs = [float("inf"), float("-inf")]
     elif max(startDots) < max(endDots):
-        t_maxs = [(min(rectDots)-max(startDots)+0.0)/(max(endDots)-max(startDots)), float("inf")]
+        t_maxs = [float(min(rectDots)-max(startDots))/(max(endDots)-max(startDots)), float("inf")]
     else:
-        t_maxs = [float("-inf"), (min(rectDots)-max(startDots)+0.0)/(max(endDots)-max(startDots))]
+        t_maxs = [float("-inf"), float(min(rectDots)-max(startDots))/(max(endDots)-max(startDots))]
 
     if max(endDots)-max(startDots) == min(endDots)-min(startDots):
         if max(startDots) > min(startDots):
@@ -1334,7 +1344,7 @@ class ECB():
 
         self.currentECB = spriteManager.RectSprite(self.actor.sprite.boundingRect.copy(), pygame.Color('#ECB134'))
         self.originalsize = self.currentECB.rect.size
-        self.currentECB.rect.midbottom = self.actor.sprite.boundingRect.midbottom
+        self.currentECB.rect.center = self.actor.sprite.boundingRect.center
 
         self.previousECB = spriteManager.RectSprite(self.currentECB.rect.copy(), pygame.Color('#EA6F1C'))
         

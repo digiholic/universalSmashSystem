@@ -76,7 +76,7 @@ class SpriteHandler(Sprite):
         return boundingRect
     
     def updatePosition(self,rect):
-        self.rect = rect
+        self.rect = rect.copy()
         self.boundingRect = self.getBoundingBox()
         self.changed = True
                 
@@ -112,7 +112,7 @@ class SpriteHandler(Sprite):
             self.image = self.imageLibrary[self.flip][self.startingImage][0]
             self.currentSheet = self.startingImage
             
-        self.rect = self.image.get_rect(midtop=self.rect.midtop)
+        self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
         self.boundingRect = self.getBoundingBox()
         return self.image
     
