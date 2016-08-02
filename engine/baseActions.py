@@ -20,6 +20,9 @@ class Move(action.Action):
         actor.preferred_xspeed = 0
         
     def update(self, actor):
+        print('walking',self.lastFrame,self.spriteName,self.frame)
+        print(actor.sprite.index)
+        
         action.Action.update(self, actor)
         actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
         actor.accel(actor.var['staticGrip'])
@@ -32,8 +35,10 @@ class Move(action.Action):
             if not actor.keysContain(key):
                 actor.flip()
         
+        
         self.frame += 1
-        if self.frame > self.lastFrame: self.frame = 1
+        
+        if self.frame > self.lastFrame: self.frame = 0
         
     def stateTransitions(self,actor):
         moveState(actor,self.direction)
@@ -74,11 +79,11 @@ class Dash(action.Action):
                 self.pivoted = True
         actor.accel(actor.var['staticGrip'])
 
-        if self.frame > self.lastFrame: 
-            self.frame = self.runStartFrame
-
         self.frame += 1
         
+        if self.frame > self.lastFrame: 
+            self.frame = self.runStartFrame
+            
     def stateTransitions(self,actor):
         dashState(actor,self.direction)
         
