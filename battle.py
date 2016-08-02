@@ -105,7 +105,7 @@ class Battle():
         current_stage.initializeCamera()
             
         clock = pygame.time.Clock()
-        clock_speed = 30
+        clock_speed = 60
         debug_mode = False
         debug_pass = False
         """
