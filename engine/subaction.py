@@ -456,13 +456,14 @@ class shiftFighterPosition(SubAction):
         self.yRelative = yRelative
         
     def execute(self, action, actor):
+        print(actor.rect)
         if self.new_x:
             if self.xRelative: actor.rect.x += self.new_x * actor.facing
             else: actor.rect.x = self.new_x
         if self.new_y:
             if self.yRelative: actor.rect.y += self.new_y
             else: actor.rect.y = self.new_y
-    
+        print(actor.rect)
     def getDisplayName(self):
         return 'Shift Position: ' + str(self.new_x) + ' X, ' + str(self.new_y) + 'Y'
     
@@ -473,13 +474,13 @@ class shiftFighterPosition(SubAction):
         elem = ElementTree.Element('shiftPosition')
         
         if self.new_x is not None:
-            xElem = ElementTree.Element('xSpeed')
+            xElem = ElementTree.Element('xPos')
             if self.xRelative: xElem.attrib['relative'] = 'True'
             xElem.text = str(self.new_x)
             elem.append(xElem)
         
         if self.new_y is not None:
-            yElem = ElementTree.Element('ySpeed')
+            yElem = ElementTree.Element('yPos')
             if self.yRelative: yElem.attrib['relative'] = 'True'
             yElem.text = str(self.new_y)
             elem.append(yElem)

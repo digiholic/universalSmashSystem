@@ -2,6 +2,7 @@ from Tkinter import *
 import os
 from tkFileDialog import askopenfile, askdirectory
 import ttk
+import settingsManager
 
 class SubactionSelector(Label):
     def __init__(self,root,data,name=''):
@@ -17,14 +18,21 @@ class SubactionSelector(Label):
         
         self.data = data
         
+        self.deleteImage = PhotoImage(file=settingsManager.createPath('sprites/icons/red-x.gif'))
+        self.confirmButton = PhotoImage(file=settingsManager.createPath('sprites/icons/green-check.gif'))
+        self.deleteButton = Button(self,image=self.deleteImage,command=self.deleteSubaction)
+        
         import engine
         if isinstance(data, engine.subaction.SubAction):
             self.propertyFrame = data.getPropertiesPanel(self.root.parent.subactionPropertyPanel)
+            self.deleteButton.pack(side=RIGHT)
         else:
             self.propertyFrame = ChangeAttributeFrame(self.root.parent.subactionPropertyPanel,data)
             
         self.selected = False
         self.bind("<Button-1>", self.onclick)
+        
+        
         
     def onclick(self,*args):
         if self.selected:
@@ -52,6 +60,14 @@ class SubactionSelector(Label):
         if string: self.displayName.set(string)
         else: self.displayName.set(self.data.getDisplayName())
 
+    def deleteSubaction(self,*args):
+        action = self.root.getAction()
+        print(action)
+        print(self.root.group)
+        if self.root.group == 'Set Up':
+            action.setUpActions.remove(self.subaction)
+            print(action.setUpActions)
+        
 class ChangeAttributeFrame(Frame):
     def __init__(self,root,attribSet):
         Frame.__init__(self,root,height=root.winfo_height())
@@ -147,7 +163,7 @@ class BasePropertiesFrame(Frame):
         self.subaction = subaction
         self.changed = False
         self.variableList = {}
-    
+        
     def addVariable(self,varType,name):
         var = varType(self)
         self.variableList[name] = var
@@ -162,8 +178,8 @@ class BasePropertiesFrame(Frame):
                 
     def variableChanged(self,var,varname,*args):
         setattr(self.subaction, varname, var.get())
-        self.root.root.actionModified()
-
+        self.root.root.actionModified()    
+    
 class IfProperties(BasePropertiesFrame):
     def __init__(self,root,subaction):
         BasePropertiesFrame.__init__(self, root, subaction)

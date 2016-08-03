@@ -20,6 +20,9 @@ class Move(action.Action):
         actor.preferred_xspeed = 0
         
     def update(self, actor):
+        print('walking',self.lastFrame,self.spriteName,self.frame)
+        print(actor.sprite.index)
+        
         action.Action.update(self, actor)
         actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
         actor.accel(actor.var['staticGrip'])
@@ -32,8 +35,10 @@ class Move(action.Action):
             if not actor.keysContain(key):
                 actor.flip()
         
+        
         self.frame += 1
-        if self.frame > self.lastFrame: self.frame = 1
+        
+        if self.frame > self.lastFrame: self.frame = 0
         
     def stateTransitions(self,actor):
         moveState(actor,self.direction)
@@ -74,11 +79,11 @@ class Dash(action.Action):
                 self.pivoted = True
         actor.accel(actor.var['staticGrip'])
 
-        if self.frame > self.lastFrame: 
-            self.frame = self.runStartFrame
-
         self.frame += 1
         
+        if self.frame > self.lastFrame: 
+            self.frame = self.runStartFrame
+            
     def stateTransitions(self,actor):
         dashState(actor,self.direction)
         
@@ -1163,6 +1168,7 @@ class LedgeGrab(action.Action):
         
     def update(self,actor):
         action.Action.update(self, actor)
+    
         actor.jumps = actor.var['jumps']
         if self.ledge.side == 'left':
             if actor.facing == -1:
@@ -1177,6 +1183,7 @@ class LedgeGrab(action.Action):
             actor.hurtbox.rect.top = self.ledge.rect.top + self.sweetSpotY
             actor.rect.center = actor.hurtbox.rect.center
         actor.setSpeed(0, actor.getFacingDirection())
+        self.frame += 1
         
 
 class LedgeGetup(action.Action):
@@ -1191,10 +1198,6 @@ class LedgeGetup(action.Action):
         if self.spriteName=="": self.spriteName ="ledgeGetup"
         action.Action.setUp(self, actor)
         actor.invincibility = 12
-        if actor.facing == 1:
-            actor.rect.left -= actor.rect.width//2
-        else:
-            actor.rect.right += actor.rect.width//2
     
     def update(self,actor):
         action.Action.update(self, actor)

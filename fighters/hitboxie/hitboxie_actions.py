@@ -1104,6 +1104,13 @@ class LedgeGetup(baseActions.LedgeGetup):
         baseActions.LedgeGetup.__init__(self,27)
         self.spriteRate = 0
 
+    def setUp(self, actor):
+        baseActions.LedgeGetup.setUp(self, actor)
+        if actor.facing == 1:
+            actor.rect.left -= actor.rect.width//2
+        else:
+            actor.rect.right += actor.rect.width//2
+            
     def update(self,actor):
         if self.frame == 0:
             actor.changeSprite("getup",0)
