@@ -408,9 +408,11 @@ class AbstractFighter():
 
         t = 1
 
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
         block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
-            if self.catchMovement(block) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t: 
+            if self.catchMovement(block) and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) > 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t: 
                 t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect)
                 if t == 0:
                     break
@@ -422,9 +424,7 @@ class AbstractFighter():
         #self.ecb.normalize()
 
         loopCount = 0
-        while loopCount < 10:
-            if self.change_x == 0 and self.change_y == 0:
-                break
+        while loopCount < 1:
             #self.sprite.updatePosition(self.rect)
             #self.ecb.normalize()
             block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
@@ -481,13 +481,13 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         self.grounded = False
-        self.ecb.currentECB.rect.y += 4
+        self.ecb.currentECB.rect.y += 4+self.change_y
         groundBlock = pygame.sprite.Group()
         block_hit_list = pygame.sprite.spritecollide(self.ecb.currentECB, self.gameState.platform_list, False)
-        self.ecb.currentECB.rect.y -= 4
+        self.ecb.currentECB.rect.y -= 4+self.change_y
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.currentECB.rect.bottom <= block.rect.top+4:
+                if self.ecb.currentECB.rect.bottom <= block.rect.top+8+self.change_y:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -1099,8 +1099,6 @@ class AbstractFighter():
     that collide with the fighter, not counting transparency.
     """
     def getMovementCollisionsWith(self,spriteGroup):
-        self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
         futureRect = self.ecb.currentECB.rect.copy()
         futureRect.x += self.change_x
         futureRect.y += self.change_y
@@ -1167,7 +1165,7 @@ class AbstractFighter():
             ratio = 1 if norm == 0 else dot/(norm*norm)
             projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
             elasticity = self.ground_elasticity if contact[1] < 0 else self.elasticity
-            if dot <= 0:
+            if numpy.cross(v_vel, v_norm) >= 0:
                 (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
         
 ########################################################
@@ -1223,6 +1221,8 @@ def directionalDisplacement(firstPoints, secondPoints, direction):
     firstDots = map(lambda x: numpy.dot(x, direction), firstPoints)
     secondDots = map(lambda x: numpy.dot(x, direction), secondPoints)
     projectedDisplacement = max(secondDots)-min(firstDots)
+    if (projectedDisplacement < 0):
+        return [0, 0]
     norm = numpy.linalg.norm(direction)
     normsqr = 1.0 if norm == 0 else float(norm*norm)
     return [projectedDisplacement/normsqr*direction[0], projectedDisplacement/normsqr*direction[1]]
@@ -1266,8 +1266,8 @@ def projectionIntersects(startPoints, endPoints, rectPoints, vector):
     return [max(t_mins[0], t_maxs[0], t_open[0]), min(t_mins[1], t_maxs[1], t_open[1])]
 
 def pathRectIntersects(startRect, endRect, rect):
-    if startRect.colliderect(rect):
-        return 0
+    #if startRect.colliderect(rect):
+    #    return 0
     startCorners = [startRect.midtop, startRect.midbottom, startRect.midleft, startRect.midright]
     endCorners = [endRect.midtop, endRect.midbottom, endRect.midleft, endRect.midright]
     rectCorners = [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]
