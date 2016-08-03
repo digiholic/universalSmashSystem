@@ -1407,7 +1407,7 @@ class ECB():
         else:
             self.currentECB.rect.height = sizes[1]
         
-        self.currentECB.rect.midbottom = self.actor.sprite.boundingRect.midbottom
+        self.currentECB.rect.center = self.actor.sprite.boundingRect.center
         self.currentECB.rect.x += offsets[0]
         self.currentECB.rect.y += offsets[1]
         
