@@ -434,8 +434,17 @@ class sfxLibrary():
                 self.sounds["base_" + fname] = pygame.mixer.Sound(os.path.join(directory,f)) 
                 
     def playSound(self,name,category = "base"):
-        self.sounds[category + "_" + name].set_volume(getSetting().setting['sfxVolume'] / 100)
+        print(category,name,getSetting().setting['sfxVolume'])
+        self.sounds[category + "_" + name].set_volume(getSetting().setting['sfxVolume'])
         self.sounds[category + "_" + name].play()
+    
+    """
+    Check if a sound exists.
+    @_name - the name of the sound to play
+    @_category - the category of the sound
+    """
+    def hasSound(self,_name,_category):
+        return self.sounds.has_key(_category+"_"+_name)
                 
     """
     This is called to add a directory of sound effects to the library.
@@ -446,6 +455,7 @@ class sfxLibrary():
             fname, ext = os.path.splitext(f)
             if self.supportedFileTypes.count(ext):
                 self.sounds[category + "_" + fname] = pygame.mixer.Sound(os.path.join(path,f))
+                print(category + "_" + fname,self.sounds[category + "_" + fname])
                 
     
 ########################################################
