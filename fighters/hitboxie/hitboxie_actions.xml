@@ -668,7 +668,7 @@
 				<name>rightHbox</name>
 				<center>14,0</center>
 				<size>24,52</size>
-				<damage>14</damage>
+				<damage>12</damage>
 				<baseKnockback>8</baseKnockback>
 				<knockbackGrowth>0.075</knockbackGrowth>
 				<trajectory>40</trajectory>
@@ -679,7 +679,7 @@
 				<name>leftHbox</name>
 				<center>-14,0</center>
 				<size>24,52</size>
-				<damage>14</damage>
+				<damage>12</damage>
 				<baseKnockback>8</baseKnockback>
 				<knockbackGrowth>0.075</knockbackGrowth>
 				<trajectory>140</trajectory>
