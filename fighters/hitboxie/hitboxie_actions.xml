@@ -571,7 +571,7 @@
 				<center>0,0</center>
 				<size>100,100</size>
 				<damage>0</damage>
-				<baseKnockback>20</baseKnockback>
+				<baseKnockback>10</baseKnockback>
 				<knockbackGrowth>0</knockbackGrowth>
 				<trajectory>90</trajectory>
 				<base_hitstun>4</base_hitstun>

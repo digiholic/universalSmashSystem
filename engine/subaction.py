@@ -739,12 +739,14 @@ class createHitbox(SubAction):
         self.hitboxName = name
         self.hitboxType = hitboxType if hitboxType is not None else "damage"
         self.hitboxLock = hitboxLock
+        print(hitboxLock)
         self.hitboxVars = variables
         
     def execute(self, action, actor):
         SubAction.execute(self, action, actor)
         if self.hitboxName == '': return #Don't make a hitbox without a name or we'll lose it
         #Use an existing hitbox lock by name, or create a new one
+        
         if self.hitboxLock and action.hitboxLocks.has_key(self.hitboxLock):
             hitboxLock = action.hitboxLocks[self.hitboxLock]
         else:
@@ -802,11 +804,13 @@ class createHitbox(SubAction):
                      'weightInfluence','shieldMultiplier','priorityDiff','chargeDamage','chargeBKB','chargeKBG',
                      'xBias','yBias','xDraw','yDraw','hitlag_multiplier']
         intType = ['trajectory','hp','transcendence','base_hitstun',]
+        hitboxLock = None
+            
         for child in node:
             tag = child.tag
             val = child.text
+            
             #special cases
-            hitboxLock = None
             if tag == 'name':
                 name = val
             elif tag == 'hitboxLock':
