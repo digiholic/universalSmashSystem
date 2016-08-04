@@ -435,7 +435,6 @@ class HitStun(action.Action):
         if self.frame == self.lastFrame:
             actor.unRotate()
             actor.doAction('Tumble')
-            #Tumbling continues indefinetely, but can be cancelled out of
 
         self.frame += 1
 
@@ -554,10 +553,13 @@ class Jump(action.Action):
     def stateTransitions(self, actor):
         if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jumpFrame:
             print("Jump cancelled into up smash")
-            actor.doGroundAttack()
+            actor.doAction('UpSmash')
         elif actor.keyHeld('special') and actor.checkSmash('up') and self.frame < self.jumpFrame:
             print("Jump cancelled into up special")
-            actor.doGroundAttack()
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
+            else:
+                self.doAction('UpGroundSpecial')
         elif self.frame > self.jumpFrame+2:
             jumpState(actor)
         
@@ -590,10 +592,13 @@ class AirJump(action.Action):
     def stateTransitions(self, actor):
         if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jumpFrame:
             print("Jump cancelled into up aerial")
-            actor.doGroundAttack()
+            actor.doAction('UpAir')
         elif actor.keyHeld('special') and actor.checkSmash('up') and self.frame < self.jumpFrame:
             print("Jump cancelled into up special")
-            actor.doGroundAttack()
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
+            else:
+                self.doAction('UpAirSpecial')
         else: 
             jumpState(actor)
 
@@ -751,10 +756,13 @@ class PlatformDrop(action.Action):
     def stateTransitions(self, actor):
         if actor.keyHeld('attack') and actor.checkSmash('down') and self.frame < self.phaseFrame:
             print("Platform drop cancelled into down smash")
-            actor.doGroundAttack()
+            actor.doAction('DownSmash')
         elif actor.keyHeld('special') and actor.checkSmash('down') and self.frame < self.phaseFrame:
             print("Platform drop cancelled into down special")
-            actor.doGroundSpecial()
+            if self.hasAction('DownSpecial'):
+                self.doAction('DownSpecial')
+            else:
+                self.doAction('DownGroundSpecial')
         if self.frame > self.phaseFrame:
             airControl(actor)
         
@@ -1442,8 +1450,6 @@ def airState(actor):
 
 def tumbleState(actor):
     airControl(actor)
-    if actor.keyHeld('shield'):
-        actor.doTechDodge()
     elif actor.keyHeld('attack'):
         actor.doAirAttack()
     elif actor.keyHeld('special'):
@@ -1456,8 +1462,8 @@ def tumbleState(actor):
             
 def moveState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
-    if actor.keyHeld('shield') and actor.keyHeld('attack'):
-        actor.doAction('GroundGrab')
+    if actor.keyHeld('shield'):
+        actor.doShield(True)
     elif actor.keyHeld('attack'):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
@@ -1480,7 +1486,7 @@ def dashState(actor, direction):
     elif actor.keyHeld('attack'):
         if actor.checkSmash(key):
             print("Dash cancelled into forward smash")
-            actor.doGroundAttack()
+            actor.doAction('ForwardSmash')
         else:
             actor.doAction('DashAttack')
     elif actor.keyHeld('special'):
