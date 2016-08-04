@@ -786,9 +786,9 @@ class AbstractFighter():
 
         if hitstun_frames > 0.5:
             print(totalKB)
-            if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.lastFrame-self.current_action.frame <= hitstun_frames:
-                self.doHitStun(hitstun_frames, trajectory)
+            if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.lastFrame-self.current_action.frame <= hitstun_frames+15:
                 self.setSpeed(totalKB*DI_multiplier, trajectory)
+                self.doHitStun(hitstun_frames, trajectory)
         
         self.dealDamage(damage)
 
