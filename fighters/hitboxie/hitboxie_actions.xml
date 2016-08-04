@@ -208,6 +208,9 @@
 			<changeSubimage>1</changeSubimage>
 		</setUp>
 		
+		<frame number="2">
+			<playSound>dashroll</playSound>
+		</frame>
 		<frame number="34">
 			<changeSubimage>0</changeSubimage>
 		</frame>
@@ -222,6 +225,9 @@
 			<changeSubimage>1</changeSubimage>
 		</setUp>
 		
+		<frame number="2">
+			<playSound>dashroll</playSound>
+		</frame>
 		<frame number="34">
 			<changeSubimage>0</changeSubimage>
 		</frame>
@@ -349,6 +355,9 @@
 			</createHitbox>
 		</setUp>
 		
+		<frame number="10">
+			<playSound>ftilt</playSound>
+		</frame>
 		<frame number="14">
 			<updateHitbox>fTilt0</updateHitbox>
 			<activateHitbox>fTilt0</activateHitbox>
@@ -465,6 +474,7 @@
 		</frame>
 		
 		<frame number="0">
+			<playSound>utilt</playSound>
 			<activateHitbox>sweet</activateHitbox>
 			<modifyHurtbox>
 				<center centerOn="image">0,16</center>
@@ -682,7 +692,9 @@
 			<updateHitbox>leftHbox</updateHitbox>
 
 		</frame>
-
+		<frame number="8">
+			<playSound>dtilt</playSound>
+		</frame>
 		<frame number="10">
 			<activateHitbox>rightHbox</activateHitbox>
 			<activateHitbox>leftHbox</activateHitbox>
@@ -793,6 +805,9 @@
 				<size>46,36</size>
 			</modifyHurtbox>
 		</frame>
+		<frame number="8">
+			<playSound>dsmash</playSound>
+		</frame>
 		<frame number="14">
 			<activateHitbox>spikeBox</activateHitbox>
 		</frame>
@@ -858,6 +873,7 @@
 			</modifyHurtbox>
 		</frame>
 		<frame number="2">
+			<playSound>nair</playSound>
 			<updateLandingLag>15</updateLandingLag>
 			<activateHitbox>nairBox</activateHitbox>
 		</frame>
@@ -938,6 +954,7 @@
 		</frame>
 		<frame number="6">
 			<changeSubimage>4</changeSubimage>
+			<playSound>bair</playSound>
 		</frame>
 		<frame number="8">
 			<changeSubimage>5</changeSubimage>
@@ -997,7 +1014,9 @@
 		</frame>
 		<frame number="0">
 			<updateLandingLag>20</updateLandingLag>
+			<playSound>fair</playSound>
 		</frame>
+		
 		<frame number="12">
 			<activateHitbox>sourSpot</activateHitbox>
 		</frame>
@@ -1087,6 +1106,7 @@
 		</frame>
 		<frame number="0">
 			<updateLandingLag>16</updateLandingLag>
+			<playSound>uair</playSound>	
 		</frame>
 		<frame number="6">
 			<activateHitbox>sour</activateHitbox>
@@ -1324,6 +1344,9 @@
 			</changeFighterPreferredSpeed>
 		</setUp>
 		
+		<frame number="6">
+			<playSound>laser</playSound>
+		</frame>
 		<frame number="12">
 			<activateArticle>projectile</activateArticle>
 		</frame>
@@ -1368,6 +1391,9 @@
 		
 		<frame number="0">
 			<updateLandingLag>18</updateLandingLag>
+		</frame>
+		<frame number="6">
+			<playSound>laser</playSound>
 		</frame>
 		<frame number="12">
 			<activateArticle>projectile</activateArticle>
@@ -1459,6 +1485,7 @@
 				<duration>-1</duration>
 				<pulse>8</pulse>
 			</createMask>
+			<playSound>shine</playSound>
 		</frame>
 		<frame number="1">
 			<deactivateHitbox>damage</deactivateHitbox>

@@ -1170,7 +1170,24 @@ class removeMask(SubAction):
     @staticmethod
     def buildFromXml(node):
         return removeMask()
-            
+
+class playSound(SubAction):
+    subactGroup = 'Control'
+    
+    def __init__(self,_sound):
+        SubAction.__init__(self)
+        self.sound = _sound
+        
+    def execute(self, action, actor):
+        actor.playSound(self.sound)
+        
+    def getDisplayName(self):
+        return 'Play Sound: '+str(self.sound)
+    
+    @staticmethod
+    def buildFromXml(node):
+        return playSound(node.text)
+    
 class debugAction(SubAction):
     def __init__(self,statement):
         SubAction.__init__(self)
@@ -1240,6 +1257,8 @@ subActionDict = {
                  'loadArticle': loadArticle,
                  'activateArticle': activateArticle,
                  'deactivateArticle': deactivateArticle,
+                 
+                 'playSound': playSound,
                  
                  'print': debugAction
                  }

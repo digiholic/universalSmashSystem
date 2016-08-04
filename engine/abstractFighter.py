@@ -105,6 +105,12 @@ class AbstractFighter():
         except:
             self.article_path = baseDir
             self.article_path_short = ''
+        try:
+            self.sound_path = os.path.join(baseDir,self.xmlData.find('sound_path').text)
+            self.sound_path_short = self.xmlData.find('sound_path').text
+        except:
+            self.sound_path = None
+            self.sound_path_short = ''
         #self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),'articles.py',suffix=str(playerNum))
         try:
             self.articleLoader = settingsManager.importFromURI(os.path.join(baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(playerNum))
@@ -180,6 +186,7 @@ class AbstractFighter():
         tree.append(self.createElement('sprite_width', self.sprite_width))
         tree.append(self.createElement('default_sprite', self.default_sprite))
         tree.append(self.createElement('article_path', self.article_path_short))
+        tree.append(self.createElement('sound_path', self.sound_path_short))
         tree.append(self.createElement('actions', self.action_file))
         
         for i,colorDict in enumerate(self.colorPalettes):
@@ -242,6 +249,8 @@ class AbstractFighter():
         
         self.active_hitboxes = pygame.sprite.Group()
         self.articles = pygame.sprite.Group()
+        if self.sound_path:
+            settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
         
         self.shield = False
         self.shieldIntegrity = 100
@@ -834,6 +843,17 @@ class AbstractFighter():
         
     def changeSpriteImage(self,frame,loop=False):
         self.sprite.changeSubImage(frame,loop)
+    
+    """
+    Play a sound effect. If the sound is not in the fighter's SFX library, it will play the base sound.
+    @_sound - the name of the sound to be played 
+    """
+    def playSound(self,_sound):
+        sfxlib = settingsManager.getSfx()
+        if sfxlib.hasSound(_sound, self.name):
+            sfxlib.playSound(_sound, self.name)
+        else:
+            sfxlib.playSound(_sound,'base')
     
     """
     This will "lock" the hitbox so that another hitbox with the same ID from the same fighter won't hit again.
