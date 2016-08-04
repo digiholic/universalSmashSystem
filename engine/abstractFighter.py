@@ -431,6 +431,7 @@ class AbstractFighter():
         #self.sprite.updatePosition(self.rect)
         #self.ecb.normalize()
 
+        """
         loopCount = 0
         while loopCount < 1:
             #self.sprite.updatePosition(self.rect)
@@ -440,9 +441,10 @@ class AbstractFighter():
                 break
             for block in block_hit_list:
                 if self.catchMovement(block):
-                    self.eject(block)
+                    self.reflect(block)
                     break
             loopCount += 1
+        """
 
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
@@ -1152,7 +1154,7 @@ class AbstractFighter():
             v_vel = [self.change_x-other.change_x, self.change_y-other.change_y]
             return numpy.dot(contact, v_vel) <= 0
         elif self.platformPhase <= 0:
-            return checkPlatform(myRect, self.ecb.currentECB.rect, checkRect)
+            return checkPlatform(myRect, self.ecb.currentECB.rect, checkRect, self.change_y)
         else:
             return False
         
@@ -1173,7 +1175,7 @@ class AbstractFighter():
                 self.rect.x += contact[0]
                 self.rect.y += contact[1]
                 bump = True
-        elif self.platformPhase <= 0 and checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect):
+        elif self.platformPhase <= 0 and checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect, self.change_y):
             if contact != [0, 0]:
                 self.rect.x += contact[0]
                 self.rect.y += contact[1]
@@ -1232,9 +1234,9 @@ def intersectPoint(firstRect, secondRect):
 
     return min(leftDist, rightDist, upDist, downDist, upLeftDist, upRightDist, downLeftDist, downRightDist, key=lambda x: numpy.linalg.norm(x))
 
-def checkPlatform(current, previous, platform):
+def checkPlatform(current, previous, platform, yvel):
     intersect = intersectPoint(current, platform)
-    if (platform.top >= previous.bottom-4 or True) and intersect[1] < 0 and current.bottom >= platform.top:
+    if platform.top >= previous.bottom-4-yvel and intersect[1] < 0 and current.bottom >= platform.top:
         print(platform.top-previous.bottom)
         return True
     return False
