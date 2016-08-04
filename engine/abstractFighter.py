@@ -337,7 +337,6 @@ class AbstractFighter():
 
             #Update Sprite
             self.ecb.normalize()
-            self.ecb.store()
             return
         elif self.hitstop == 0 and not self.hitstopVibration == (0,0):
             #self.hitstopVibration = False #Lolwut?
@@ -435,6 +434,9 @@ class AbstractFighter():
                     self.eject(block)
                     break
             loopCount += 1
+
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
         
         groundBlocks = self.checkForGround()
 
@@ -481,13 +483,13 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         self.grounded = False
-        self.ecb.currentECB.rect.y += 4+self.change_y
+        self.ecb.currentECB.rect.y += 4
         groundBlock = pygame.sprite.Group()
         block_hit_list = pygame.sprite.spritecollide(self.ecb.currentECB, self.gameState.platform_list, False)
-        self.ecb.currentECB.rect.y -= 4+self.change_y
+        self.ecb.currentECB.rect.y -= 4
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.currentECB.rect.bottom <= block.rect.top+8+self.change_y:
+                if self.ecb.currentECB.rect.bottom <= block.rect.top+4:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -1125,12 +1127,10 @@ class AbstractFighter():
 
         if other.solid:
             contact = intersectPoint(myRect, checkRect)
-            if contact != [0, 0]:
+            if contact == [0, 0]:
                 return False
             v_vel = [self.change_x-other.change_x, self.change_y-other.change_y]
-            v_norm = [contact[1], -contact[0]]
-            dot = numpy.dot(v_norm, v_vel)
-            return dot < 0
+            return numpy.dot(contact, v_vel) <= 0
         elif self.platformPhase <= 0:
             return checkPlatform(myRect, self.ecb.currentECB.rect, checkRect)
         else:
@@ -1146,26 +1146,29 @@ class AbstractFighter():
         newPrev = self.ecb.currentECB.rect.copy()
         newPrev.center = self.ecb.previousECB.rect.center
         contact = intersectPoint(self.ecb.currentECB.rect, checkRect)
+        bump = False
         
         if other.solid:
             if contact != [0, 0]:
                 self.rect.x += contact[0]
                 self.rect.y += contact[1]
-        elif checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect):
+                bump = True
+        elif self.platformPhase <= 0 and checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect):
             if contact != [0, 0]:
                 self.rect.x += contact[0]
                 self.rect.y += contact[1]
+                bump = True
 
-        if contact != [0, 0]:
+        if bump:
             #The contact vector is perpendicular to the axis over which the reflection should happen
             v_vel = [self.change_x-other.change_x, self.change_y-other.change_y]
-            v_norm = [contact[1], -contact[0]]
-            dot = numpy.dot(v_norm, v_vel)
-            norm = numpy.linalg.norm(v_norm)
-            ratio = 1 if norm == 0 else dot/(norm*norm)
-            projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
-            elasticity = self.ground_elasticity if contact[1] < 0 else self.elasticity
-            if numpy.cross(v_vel, v_norm) >= 0:
+            if numpy.dot(v_vel, contact) <= 0:
+                v_norm = [contact[1], -contact[0]]
+                dot = numpy.dot(v_norm, v_vel)
+                norm = numpy.linalg.norm(v_norm)
+                ratio = 1 if norm == 0 else dot/(norm*norm)
+                projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
+                elasticity = self.ground_elasticity if contact[1] < 0 else self.elasticity
                 (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
         
 ########################################################
@@ -1211,8 +1214,8 @@ def intersectPoint(firstRect, secondRect):
 
 def checkPlatform(current, previous, platform):
     intersect = intersectPoint(current, platform)
-
-    if platform.top >= previous.bottom-4 and intersect[1] < 0 and current.bottom >= platform.top:
+    if (platform.top >= previous.bottom-4 or True) and intersect[1] < 0 and current.bottom >= platform.top:
+        print(platform.top-previous.bottom)
         return True
     return False
     
@@ -1221,8 +1224,8 @@ def directionalDisplacement(firstPoints, secondPoints, direction):
     firstDots = map(lambda x: numpy.dot(x, direction), firstPoints)
     secondDots = map(lambda x: numpy.dot(x, direction), secondPoints)
     projectedDisplacement = max(secondDots)-min(firstDots)
-    if (projectedDisplacement < 0):
-        return [0, 0]
+    #if (projectedDisplacement < 0):
+    #    return [0, 0]
     norm = numpy.linalg.norm(direction)
     normsqr = 1.0 if norm == 0 else float(norm*norm)
     return [projectedDisplacement/normsqr*direction[0], projectedDisplacement/normsqr*direction[1]]
