@@ -389,7 +389,7 @@
 				<size>120,40</size>
 				<damage>16</damage>
 				<baseKnockback>8</baseKnockback>
-				<knockbackGrowth>0.20</knockbackGrowth>
+				<knockbackGrowth>0.23</knockbackGrowth>
 				<trajectory>40</trajectory>
 				<chargeDamage>.426</chargeDamage>
 				<chargeBKB>0.04</chargeBKB>
@@ -789,6 +789,7 @@
 				<xDraw>0.05</xDraw>
 				<yDraw>-0.1</yDraw>
 				<base_hitstun>4</base_hitstun>
+				<chargeDamage>.0125</chargeDamage>
 			</createHitbox>
 			
 			<createHitbox>
@@ -797,10 +798,10 @@
 				<size>46,40</size>
 				<damage>8</damage>
 				<baseKnockback>8</baseKnockback>
-				<knockbackGrowth>0.3</knockbackGrowth>
+				<knockbackGrowth>0.2</knockbackGrowth>
 				<trajectory>20</trajectory>
 				<hitboxLock>main</hitboxLock>
-				<chargeDamage>.292</chargeDamage>
+				<chargeDamage>.1</chargeDamage>
 			</createHitbox>
 			
 			<createHitbox>
@@ -809,10 +810,10 @@
 				<size>46,40</size>
 				<damage>8</damage>
 				<baseKnockback>8</baseKnockback>
-				<knockbackGrowth>0.3</knockbackGrowth>
+				<knockbackGrowth>0.2</knockbackGrowth>
 				<trajectory>160</trajectory>
 				<hitboxLock>main</hitboxLock>
-				<chargeDamage>.292</chargeDamage>
+				<chargeDamage>.1</chargeDamage>
 			</createHitbox>
 		</setUp>
 
@@ -1574,31 +1575,6 @@
 		</loadCodeAction>
 	</Pummel>
 	
-	<!--ForwardThrow>
-		<length>24</length>
-		<sprite>fsmash</sprite>
-		<spriteRate>2</spriteRate>
-		
-		<setUp>
-			<createHitbox type="damage">
-				<name>fTilt0</name>
-				<center>20,0</center>
-				<size>120,40</size>
-				<damage>13</damage>
-				<baseKnockback>12</baseKnockback>
-				<knockbackGrowth>0.2</knockbackGrowth>
-				<trajectory>40</trajectory>
-			</createHitbox>
-		</setUp>
-		<frame number="14">
-			<updateHitbox>fTilt0</updateHitbox>
-			<activateHitbox>fTilt0</activateHitbox>
-		</frame>
-		<frame number="16">
-			<deactivateHitbox>fTilt0</deactivateHitbox>
-		</frame>
-	</ForwardThrow-->
-	
 	<ForwardThrow>
 		<length>20</length>
 		<sprite>fsmash</sprite>
@@ -1633,8 +1609,8 @@
 		<setUp>
 			<createHitbox>
 				<name>throwBox</name>
-				<center>(10,40)</center>
-				<size>(30,30)</size>
+				<center>(20,20)</center>
+				<size>(50,50)</size>
 				<damage>1</damage>
 				<baseKnockback>3</baseKnockback>
 				<knockbackGrowth>0</knockbackGrowth>

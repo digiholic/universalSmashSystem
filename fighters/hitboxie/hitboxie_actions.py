@@ -53,7 +53,7 @@ class ForwardSpecial(action.Action):
                          'baseKnockback':4,
                          'knockbackGrowth':0.1,
                          'trajectory':300,
-                         'shield_multiplier':8,
+                         'shield_multiplier':10,
                          'hitlag_multiplier':2
                          }
             hitbox.DamageHitbox.__init__(self, actor, hitbox.HitboxLock(), variables)
@@ -67,7 +67,7 @@ class ForwardSpecial(action.Action):
                     if other.grounded:
                         other.applyKnockback(self.damage, 0, 0, 0, 1, 1)
                         (otherDirect,_) = other.getDirectionMagnitude()
-                        other.doTrip(35, other.getForwardWithOffset(otherDirect))
+                        other.doTrip(50, other.getForwardWithOffset(otherDirect))
                     else:
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
@@ -142,10 +142,10 @@ class ForwardSpecial(action.Action):
             self.chainHitbox.kill()
             if self.frame >= self.lastFrame:
                 if actor.grounded:
-                    actor.landingLag = 10
+                    actor.landingLag = 25
                     actor.doAction('Land')
                 else:
-                    actor.landingLag = 10
+                    actor.landingLag = 25
                     actor.doAction('Fall')
 
         self.frame += 1
