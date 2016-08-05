@@ -65,10 +65,11 @@ class AbstractFighter():
                 'aerialTransitionSpeed': 7.5,
                 'crawlSpeed': 3.0,
                 'dodgeSpeed': 10.0,
-                'friction': 0.2,
-                'staticGrip': 0.4,
+                'friction': 0.3,
+                'staticGrip': 0.3,
                 'pivotGrip': 0.6,
-                'airControl': 0.4,
+                'airResistance': 0.2,
+                'airControl': 0.2,
                 'jumps': 1,
                 'jumpHeight': 12.5,
                 'shortHopHeight': 8.5,
@@ -354,7 +355,7 @@ class AbstractFighter():
             self.ecb.normalize()
         #Step two, accelerate/decelerate
         if self.grounded: self.accel(self.var['friction'])
-        else: self.accel(self.var['airControl'])
+        else: self.accel(self.var['airResistance'])
         
         if self.ledgeLock:
             ledges = pygame.sprite.spritecollide(self, self.gameState.platform_ledges, False)
@@ -470,7 +471,7 @@ class AbstractFighter():
         
     """
     Change speed to get closer to the preferred speed without going over.
-    xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['airControl']
+    xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['airResistance']
     """
     def accel(self,xFactor):
         if self.change_x > self.preferred_xspeed: #if we're going too fast

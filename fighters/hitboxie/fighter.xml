@@ -53,10 +53,11 @@
 		<aerialTransitionSpeed>7.5</aerialTransitionSpeed>
 		<crawlSpeed>3</crawlSpeed>
 		<dodgeSpeed>10</dodgeSpeed>
-		<friction>0.2</friction>
-		<staticGrip>0.4</staticGrip>
+		<friction>0.3</friction>
+		<staticGrip>0.3</staticGrip>
                 <pivotGrip>0.6</pivotGrip>
-		<airControl>0.4</airControl>
+		<airResistance>0.2</airResistance>
+		<airControl>0.2</airControl>
 		<jumps>1</jumps>
 		<jumpHeight>12.5</jumpHeight>
 		<shortHopHeight>8.5</shortHopHeight>

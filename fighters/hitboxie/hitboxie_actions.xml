@@ -1123,6 +1123,10 @@
 			</createHitbox>
 		</setUp>
 		
+		<transitions>
+			<transitionState>airControl</transitionState>
+		</transitions>
+		
 		<frame number="before">
 			<updateHitbox>sour</updateHitbox>
 			<updateHitbox>tangy</updateHitbox>

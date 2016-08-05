@@ -40,7 +40,8 @@
 		<friction>1.0</friction>
 		<staticGrip>1.0</staticGrip>
                 <pivotGrip>2.0</pivotGrip>
-		<airControl>0.2</airControl>
+		<airResistance>0.1</airResistance>
+		<airControl>0.1</airControl>
 		<jumps>1</jumps>
 		<jumpHeight>8</jumpHeight>
 		<shortHopHeight>4</shortHopHeight>

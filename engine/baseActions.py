@@ -232,6 +232,7 @@ class RunStop(action.Action):
     def stateTransitions(self, actor):
         if actor.grounded is False:
             actor.doAction('Fall')
+        actor.accel(actor.var['staticGrip'])
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.keyHeld(key,self.frame):
             print("run")
@@ -1495,7 +1496,7 @@ def airState(actor):
 
 def tumbleState(actor):
     airControl(actor)
-    elif actor.keyHeld('attack'):
+    if actor.keyHeld('attack'):
         actor.doAirAttack()
     elif actor.keyHeld('special'):
         actor.doAirSpecial()
@@ -1636,8 +1637,11 @@ def airControl(actor):
     
     if (actor.change_x < 0) and not actor.keysContain('left'):
         actor.preferred_xspeed = 0
-    elif (actor.change_x > 0) and not actor.keysContain('right'):
+    if (actor.change_x > 0) and not actor.keysContain('right'):
         actor.preferred_xspeed = 0
+
+    if not (actor.change_x < -actor.var['maxAirSpeed'] and actor.keysContain('left')) or not (actor.change_x > actor.var['maxAirSpeed'] and actor.keysContain('right')):
+        actor.accel(actor.var['airControl'])
 
     if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:
         actor.landingLag = actor.var['heavyLandLag']
@@ -1657,6 +1661,9 @@ def helplessControl(actor):
         actor.preferred_xspeed = 0
     elif (actor.change_x > 0) and not actor.keysContain('right'):
         actor.preferred_xspeed = 0
+
+    if not (actor.change_x < -actor.var['maxAirSpeed'] and actor.keysContain('left')) or not (actor.change_x > actor.var['maxAirSpeed'] and actor.keysContain('right')):
+        actor.accel(actor.var['airControl'])
 
     if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:
         actor.landingLag = actor.var['heavyLandLag']
