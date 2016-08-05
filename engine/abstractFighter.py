@@ -837,6 +837,7 @@ class AbstractFighter():
             self.ecb.store()
             self.createMask([255,255,255], 120, True, 12)
             self.invulnerable = 120
+            self.doAction('Respawn')
         
     def changeSprite(self,newSprite,frame=0):
         self.sprite.changeImage(newSprite)

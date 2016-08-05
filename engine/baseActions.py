@@ -267,6 +267,32 @@ class NeutralAction(action.Action):
             self.frame = 0
         self.frame += 1
 
+class Respawn(action.Action):
+    def __init__(self,length=120):
+        action.Action.__init__(self, length)
+        
+    def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="neutralAction"
+        action.Action.setUp(self, actor)
+        self.respawnArticle = article.RespawnPlatformArticle(actor)
+        
+    def stateTransitions(self, actor):
+        neutralState(actor)
+    
+    def tearDown(self, actor, nextAction):
+        action.Action.tearDown(self, actor, nextAction)
+        self.respawnArticle.kill()
+        
+    def update(self,actor):
+        action.Action.update(self, actor)
+        actor.ground = True
+        actor.change_y = 0
+        if self.frame == 0:
+            actor.articles.add(self.respawnArticle)
+        if self.frame == self.lastFrame:
+            actor.doAction('Fall')
+        self.frame += 1
+        
 class Crouch(action.Action):
     def __init__(self, length=1):
         action.Action.__init__(self, length)
