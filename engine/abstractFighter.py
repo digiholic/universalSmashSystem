@@ -772,8 +772,8 @@ class AbstractFighter():
 
         trajectory_vec = [math.cos(trajectory/180*math.pi), math.sin(trajectory/180*math.pi)]
 
-        DI_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.12
-        trajectory += numpy.cross(di_vec, trajectory_vec)*15
+        DI_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
+        trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
 
         hitstun_frames = math.floor(totalKB*hitstun_multiplier+base_hitstun) #Tweak this constant
         print(hitstun_frames)
