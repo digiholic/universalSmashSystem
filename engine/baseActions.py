@@ -20,9 +20,6 @@ class Move(action.Action):
         actor.preferred_xspeed = 0
         
     def update(self, actor):
-        print('walking',self.lastFrame,self.spriteName,self.frame)
-        print(actor.sprite.index)
-        
         action.Action.update(self, actor)
         actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
         actor.accel(actor.var['staticGrip'])
@@ -370,9 +367,14 @@ class BaseGrabbing(action.Action):
         action.Action.setUp(self, actor)
         
     def tearDown(self, actor, nextAction):
+        print(self.hitboxes)
         action.Action.tearDown(self, actor, nextAction)
         if not isinstance(nextAction, BaseGrabbing) and actor.isGrabbing():
             actor.grabbing.doReleased()
+
+    def update(self, actor):
+        action.Action.update(self, actor)
+        self.frame += 1
 
 class Grabbing(BaseGrabbing):
     def __init__(self,length=0):
@@ -1313,7 +1315,16 @@ class ChargeAttack(BaseAttack):
         
         if self.frame == (self.endChargeFrame+1):
             actor.mask = None
-          
+
+class BaseThrow(BaseGrabbing):
+    def __init__(self,length=1):
+        BaseGrabbing.__init__(self, length)
+        
+    def update(self, actor):
+        if self.frame == self.lastFrame:
+            if actor.grounded: actor.doAction('NeutralAction')
+            else: actor.doAction('Fall')
+        BaseGrabbing.update(self, actor)          
 class NeutralAttack(BaseAttack):
     def __init__(self, length=0):
         BaseAttack.__init__(self, length)
@@ -1413,7 +1424,15 @@ class DownGroundSpecial(BaseAttack):
 class DownAirSpecial(AirAttack):
     def __init__(self,length=0):
         AirAttack.__init__(self, length)
-        
+
+class ForwardThrow(BaseThrow):
+    def __init__(self,length=0):
+        BaseGrabbing.__init__(self, length)
+
+class DownThrow(BaseThrow):
+    def __init__(self,length=0):
+        BaseGrabbing.__init__(self, length)
+       
 ########################################################
 #               TRANSITION STATES                      #
 ########################################################

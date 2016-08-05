@@ -37,13 +37,14 @@ class Article(spriteManager.ImageSprite):
         self.kill()
          
 class AnimatedArticle(spriteManager.SheetSprite):
-    def __init__(self, sprite, owner, origin, imageWidth, length=1):
+    def __init__(self, sprite, owner, origin, imageWidth, length=1, drawDepth=1):
         spriteManager.SheetSprite.__init__(self, pygame.image.load(sprite), imageWidth)
         self.rect.center = origin
         self.owner = owner
         self.frame = 0
         self.lastFrame = length
         self.tags = []
+        self.drawDepth = drawDepth
     
     def update(self):
         self.getImageAtIndex(self.frame)
