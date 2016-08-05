@@ -14,13 +14,14 @@ length - if this article has logic or animation, you can set this to be used in 
 """
 import settingsManager
 class Article(spriteManager.ImageSprite):
-    def __init__(self, spritePath, owner, origin, length=1):
+    def __init__(self, spritePath, owner, origin, length=1, drawDepth = 1):
         spriteManager.ImageSprite.__init__(self,spritePath)
         self.rect.center = origin
         self.owner = owner
         self.frame = 0
         self.lastFrame = length
         self.tags = []
+        self.drawDepth = drawDepth
         
     def update(self):
         pass
@@ -36,13 +37,14 @@ class Article(spriteManager.ImageSprite):
         self.kill()
          
 class AnimatedArticle(spriteManager.SheetSprite):
-    def __init__(self, sprite, owner, origin, imageWidth, length=1):
+    def __init__(self, sprite, owner, origin, imageWidth, length=1, drawDepth=1):
         spriteManager.SheetSprite.__init__(self, pygame.image.load(sprite), imageWidth)
         self.rect.center = origin
         self.owner = owner
         self.frame = 0
         self.lastFrame = length
         self.tags = []
+        self.drawDepth = drawDepth
     
     def update(self):
         self.getImageAtIndex(self.frame)
@@ -115,3 +117,15 @@ class LandingArticle(AnimatedArticle):
         
     def draw(self, screen, offset, scale):
         return AnimatedArticle.draw(self, screen, offset, scale * self.scaleRatio)
+
+class RespawnPlatformArticle(Article):
+    def __init__(self,owner):
+        width, height = (256,69)
+        scaledWidth = owner.rect.width
+        #self.scaleRatio = float(scaledWidth) / float(width)
+        self.scaleRatio = 1
+        Article.__init__(self, settingsManager.createPath('sprites/platform.png'), owner, owner.rect.midbottom, 120, drawDepth = -1)
+        self.rect.bottom += self.rect.height / 4
+    
+    def draw(self, screen, offset, scale):
+        return Article.draw(self, screen, offset, scale * self.scaleRatio)

@@ -63,7 +63,7 @@ class Action():
             actor.changeSpriteImage(len(actor.sprite.imageLibrary[actor.sprite.flip][actor.sprite.currentSheet])-1)
     
     def tearDown(self,actor,nextAction):
-        for hitbox in self.hitboxes:
+        for hitbox in self.hitboxes.values():
             hitbox.kill()
     
     def onClank(self,actor):

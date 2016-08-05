@@ -1596,17 +1596,88 @@
 	</ForwardThrow-->
 	
 	<ForwardThrow>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>ForwardThrow</action>
-		</loadCodeAction>
+		<length>20</length>
+		<sprite>fsmash</sprite>
+		<spriteRate>2</spriteRate>
+		
+		<setUp>
+			<createHitbox>
+				<name>throwBox</name>
+				<center>(20,0)</center>
+				<size>(120,40)</size>
+				<damage>13</damage>
+				<baseKnockback>12</baseKnockback>
+				<knockbackGrowth>0.2</knockbackGrowth>
+				<trajectory>40</trajectory>
+			</createHitbox>
+		</setUp>
+		
+		<frame number="14">
+			<activateHitbox>throwBox</activateHitbox>
+		</frame>
+		<frame number="16">
+			<deactivateHitbox>throwBox</deactivateHitbox>
+		</frame>
 	</ForwardThrow>
 	
 	<DownThrow>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>DownThrow</action>
-		</loadCodeAction>
+		<length>32</length>
+		<sprite>nair</sprite>
+		<spriteRate>1</spriteRate>
+		<loop>True</loop>
+		
+		<setUp>
+			<createHitbox>
+				<name>throwBox</name>
+				<center>(10,40)</center>
+				<size>(30,30)</size>
+				<damage>1</damage>
+				<baseKnockback>3</baseKnockback>
+				<knockbackGrowth>0</knockbackGrowth>
+				<trajectory>260</trajectory>
+			</createHitbox>
+			<changeECB>
+				<offset>0,7</offset>
+				<size>64,78</size>
+			</changeECB>
+		</setUp>
+		
+		<frame number="before">
+			<modifyHurtbox>
+				<center centerOn="image">0,16</center>
+				<size>64,64</size>
+			</modifyHurtbox>
+		</frame>
+		<frame number="0">
+			<activateHitbox>throwBox</activateHitbox>
+		</frame>
+		<frame number="4">
+			<unlockHitbox>throwBox</unlockHitbox>
+		</frame>
+		<frame number="8">
+			<unlockHitbox>throwBox</unlockHitbox>
+		</frame>
+		<frame number="12">
+			<unlockHitbox>throwBox</unlockHitbox>
+		</frame>
+		<frame number="16">
+			<unlockHitbox>throwBox</unlockHitbox>
+		</frame>
+		<frame number="20">
+			<unlockHitbox>throwBox</unlockHitbox>
+		</frame>
+		<frame number="24">
+			<unlockHitbox>throwBox</unlockHitbox>
+		</frame>
+		<frame number="28">
+			<unlockHitbox>throwBox</unlockHitbox>
+			<modifyHitbox name="throwBox">
+				<baseKnockback>10</baseKnockback>
+				<trajectory>90</trajectory>
+				<knockbackGrowth>0.12</knockbackGrowth>
+				<weight_influence>1</weight_influence>
+			</modifyHitbox>
+		</frame>
 	</DownThrow>
 	
 	<UpThrow>

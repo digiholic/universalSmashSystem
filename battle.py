@@ -164,24 +164,37 @@ class Battle():
             
             for obj in gameObjects:
                 obj.update()
+                
+                foreground_articles = []
+                if hasattr(obj, 'articles'):
+                    for art in obj.articles:
+                        if art.drawDepth == -1:
+                            offset = current_stage.stageToScreen(art.rect)
+                            scale =  current_stage.getScale()
+                            drawRect = art.draw(screen,offset,scale)
+                            if drawRect: self.dirty_rects.append(drawRect)
+                        else: foreground_articles.append(art)
+                
                 if hasattr(obj,'active_hitboxes'):
                     active_hitboxes.add(obj.active_hitboxes)
                 if hasattr(obj, 'hurtbox'):
                     active_hurtboxes.add(obj.hurtbox)
+                
                 offset = current_stage.stageToScreen(obj.rect)
                 scale =  current_stage.getScale()
                 drawRect = obj.draw(screen,offset,scale)
                 if drawRect: self.dirty_rects.append(drawRect)
+                
+                for art in foreground_articles:
+                    offset = current_stage.stageToScreen(art.rect)
+                    scale =  current_stage.getScale()
+                    drawRect = art.draw(screen,offset,scale)
+                    if drawRect: self.dirty_rects.append(drawRect)
+                
                 if hasattr(obj, 'hurtbox'):
                     if (self.settings['showHurtboxes']): 
                         offset = current_stage.stageToScreen(obj.hurtbox.rect)
                         drawRect = obj.hurtbox.draw(screen,offset,scale)
-                        if drawRect: self.dirty_rects.append(drawRect)
-                if hasattr(obj, 'articles'):
-                    for art in obj.articles:
-                        offset = current_stage.stageToScreen(art.rect)
-                        scale =  current_stage.getScale()
-                        drawRect = art.draw(screen,offset,scale)
                         if drawRect: self.dirty_rects.append(drawRect)
                 if (self.settings['showHitboxes']):
                     for hbox in active_hitboxes:
