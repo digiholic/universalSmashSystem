@@ -1132,7 +1132,7 @@ class AirDodge(action.Action):
         if settingsManager.getSetting('enableWavedash'):
             actor.updateLandingLag(actor.var['wavedashLag'])
         else:
-            actor.updateLandingLag(24)
+            actor.updateLandingLag(20)
         if settingsManager.getSetting('airDodgeType') == 'directional':
             self.move_vec = actor.getSmoothedInput()
             actor.change_x = self.move_vec[0]*actor.var['dodgeSpeed']
@@ -1170,9 +1170,10 @@ class AirDodge(action.Action):
         if self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255],16,True,24)
             actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
-            actor.updateLandingLag(24)
+        elif self.frame == self.startInvulnFrame+2:
+            actor.updateLandingLag(20)
         elif self.frame == self.endInvulnFrame:
-            actor.landingLag = 24
+            actor.landingLag = 20
         elif self.frame == self.lastFrame:
             if settingsManager.getSetting('freeDodgeSpecialFall'):
                 actor.doAction('Helpless')
