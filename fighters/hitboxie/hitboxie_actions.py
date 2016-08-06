@@ -67,7 +67,7 @@ class ForwardSpecial(action.Action):
                     if other.grounded:
                         other.applyKnockback(self.damage, 0, 0, 0, 1, 1)
                         (otherDirect,_) = other.getDirectionMagnitude()
-                        other.doTrip(55, other.getForwardWithOffset(otherDirect))
+                        other.doTrip(50, other.getForwardWithOffset(otherDirect))
                     else:
                         other.applyKnockback(self.damage, self.baseKnockback, self.knockbackGrowth, self.trajectory, self.weight_influence, self.hitstun)
                             
@@ -92,6 +92,7 @@ class ForwardSpecial(action.Action):
         actor.hurtbox.rect.width = 64
         actor.hurtbox.rect.height = 64
         actor.hurtbox.rect.center = actor.sprite.boundingRect.center
+        actor.accel(actor.var['airControl'])
         if self.frame <= self.lastFrame-2:
             self.spriteImage += 1
             if self.frame <= 16:
@@ -141,10 +142,10 @@ class ForwardSpecial(action.Action):
             self.chainHitbox.kill()
             if self.frame >= self.lastFrame:
                 if actor.grounded:
-                    actor.landingLag = 30
+                    actor.landingLag = 25
                     actor.doAction('Land')
                 else:
-                    actor.landingLag = 30
+                    actor.landingLag = 25
                     actor.doAction('Fall')
 
         self.frame += 1
@@ -198,9 +199,11 @@ class UpSpecial(action.Action):
             baseActions.airControl(actor)
     
     def update(self,actor):
-        actor.landingLag = 20
+        actor.landingLag = 10
         if actor.grounded:
             actor.accel(actor.var['staticGrip'])
+        else:
+            actor.accel(actor.var['airControl'])
         if self.frame <= 19:
             actor.unRotate()
             actor.change_x = 0

@@ -354,6 +354,10 @@
 				<trajectory>40</trajectory>
 			</createHitbox>
 		</setUp>
+
+		<onClank>
+			<doAction>NeutralAction</doAction>
+		</onClank>
 		
 		<frame number="10">
 			<playSound>ftilt</playSound>
@@ -385,13 +389,17 @@
 				<size>120,40</size>
 				<damage>16</damage>
 				<baseKnockback>8</baseKnockback>
-				<knockbackGrowth>0.20</knockbackGrowth>
+				<knockbackGrowth>0.23</knockbackGrowth>
 				<trajectory>40</trajectory>
 				<chargeDamage>.426</chargeDamage>
 				<chargeBKB>0.04</chargeBKB>
 				<hitstun type="float">1.6</hitstun>
 			</createHitbox>
 		</setUp>
+
+		<onClank>
+			<doAction>NeutralAction</doAction>
+		</onClank>
 		
 		<frame number="2">
 			<changeSubimage>1</changeSubimage>
@@ -466,6 +474,10 @@
 				<hitboxLock>main</hitboxLock>
 			</createHitbox>
 		</setUp>
+
+		<onClank>
+			<doAction>NeutralAction</doAction>
+		</onClank>
 		
 		<frame number="before">
 			<updateHitbox>sweet</updateHitbox>
@@ -613,6 +625,10 @@
 				<chargeBKB>0.02</chargeBKB>
 			</createHitbox>
 		</setUp>
+
+		<onClank>
+			<doAction>NeutralAction</doAction>
+		</onClank>
 		
 		<frame number="12">
 			<changeSubimage>5</changeSubimage>
@@ -686,6 +702,10 @@
 				<hitboxLock>main</hitboxLock>
 			</createHitbox>
 		</setUp>
+
+		<onClank>
+			<doAction>NeutralAction</doAction>
+		</onClank>
 		
 		<frame number="before">
 			<updateHitbox>rightHbox</updateHitbox>
@@ -769,6 +789,7 @@
 				<xDraw>0.05</xDraw>
 				<yDraw>-0.1</yDraw>
 				<base_hitstun>4</base_hitstun>
+				<chargeDamage>.0125</chargeDamage>
 			</createHitbox>
 			
 			<createHitbox>
@@ -777,10 +798,10 @@
 				<size>46,40</size>
 				<damage>8</damage>
 				<baseKnockback>8</baseKnockback>
-				<knockbackGrowth>0.3</knockbackGrowth>
+				<knockbackGrowth>0.2</knockbackGrowth>
 				<trajectory>20</trajectory>
 				<hitboxLock>main</hitboxLock>
-				<chargeDamage>.292</chargeDamage>
+				<chargeDamage>.1</chargeDamage>
 			</createHitbox>
 			
 			<createHitbox>
@@ -789,12 +810,16 @@
 				<size>46,40</size>
 				<damage>8</damage>
 				<baseKnockback>8</baseKnockback>
-				<knockbackGrowth>0.3</knockbackGrowth>
+				<knockbackGrowth>0.2</knockbackGrowth>
 				<trajectory>160</trajectory>
 				<hitboxLock>main</hitboxLock>
-				<chargeDamage>.292</chargeDamage>
+				<chargeDamage>.1</chargeDamage>
 			</createHitbox>
 		</setUp>
+
+		<onClank>
+			<doAction>NeutralAction</doAction>
+		</onClank>
 		
 		<frame number="before">
 			<updateHitbox>spikeBox</updateHitbox>
@@ -1098,6 +1123,10 @@
 				<transcendence>1</transcendence>
 			</createHitbox>
 		</setUp>
+		
+		<transitions>
+			<transitionState>airControl</transitionState>
+		</transitions>
 		
 		<frame number="before">
 			<updateHitbox>sour</updateHitbox>
@@ -1546,8 +1575,8 @@
 		<setUp>
 			<createHitbox>
 				<name>throwBox</name>
-				<center>(10,40)</center>
-				<size>(30,30)</size>
+				<center>(20,20)</center>
+				<size>(50,50)</size>
 				<damage>1</damage>
 				<baseKnockback>3</baseKnockback>
 				<knockbackGrowth>0</knockbackGrowth>

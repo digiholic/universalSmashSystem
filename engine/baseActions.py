@@ -232,6 +232,7 @@ class RunStop(action.Action):
     def stateTransitions(self, actor):
         if actor.grounded is False:
             actor.doAction('Fall')
+        actor.accel(actor.var['staticGrip'])
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.keyHeld(key,self.frame):
             print("run")
@@ -463,7 +464,6 @@ class HitStun(action.Action):
         if self.frame == self.lastFrame:
             actor.unRotate()
             actor.doAction('Tumble')
-            #Tumbling continues indefinetely, but can be cancelled out of
 
         self.frame += 1
 
@@ -582,10 +582,13 @@ class Jump(action.Action):
     def stateTransitions(self, actor):
         if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jumpFrame:
             print("Jump cancelled into up smash")
-            actor.doGroundAttack()
+            actor.doAction('UpSmash')
         elif actor.keyHeld('special') and actor.checkSmash('up') and self.frame < self.jumpFrame:
             print("Jump cancelled into up special")
-            actor.doGroundAttack()
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
+            else:
+                self.doAction('UpGroundSpecial')
         elif self.frame > self.jumpFrame+2:
             jumpState(actor)
         
@@ -618,10 +621,13 @@ class AirJump(action.Action):
     def stateTransitions(self, actor):
         if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jumpFrame:
             print("Jump cancelled into up aerial")
-            actor.doGroundAttack()
+            actor.doAction('UpAir')
         elif actor.keyHeld('special') and actor.checkSmash('up') and self.frame < self.jumpFrame:
             print("Jump cancelled into up special")
-            actor.doGroundAttack()
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
+            else:
+                self.doAction('UpAirSpecial')
         else: 
             jumpState(actor)
 
@@ -779,10 +785,13 @@ class PlatformDrop(action.Action):
     def stateTransitions(self, actor):
         if actor.keyHeld('attack') and actor.checkSmash('down') and self.frame < self.phaseFrame:
             print("Platform drop cancelled into down smash")
-            actor.doGroundAttack()
+            actor.doAction('DownSmash')
         elif actor.keyHeld('special') and actor.checkSmash('down') and self.frame < self.phaseFrame:
             print("Platform drop cancelled into down special")
-            actor.doGroundSpecial()
+            if self.hasAction('DownSpecial'):
+                self.doAction('DownSpecial')
+            else:
+                self.doAction('DownGroundSpecial')
         if self.frame > self.phaseFrame:
             airControl(actor)
         
@@ -1123,7 +1132,7 @@ class AirDodge(action.Action):
         if settingsManager.getSetting('enableWavedash'):
             actor.updateLandingLag(actor.var['wavedashLag'])
         else:
-            actor.updateLandingLag(24)
+            actor.updateLandingLag(20)
         if settingsManager.getSetting('airDodgeType') == 'directional':
             self.move_vec = actor.getSmoothedInput()
             actor.change_x = self.move_vec[0]*actor.var['dodgeSpeed']
@@ -1161,9 +1170,10 @@ class AirDodge(action.Action):
         if self.frame == self.startInvulnFrame:
             actor.createMask([255,255,255],16,True,24)
             actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
-            actor.updateLandingLag(24)
+        elif self.frame == self.startInvulnFrame+2:
+            actor.updateLandingLag(20)
         elif self.frame == self.endInvulnFrame:
-            actor.landingLag = 24
+            actor.landingLag = 20
         elif self.frame == self.lastFrame:
             if settingsManager.getSetting('freeDodgeSpecialFall'):
                 actor.doAction('Helpless')
@@ -1487,9 +1497,7 @@ def airState(actor):
 
 def tumbleState(actor):
     airControl(actor)
-    if actor.keyHeld('shield'):
-        actor.doTechDodge()
-    elif actor.keyHeld('attack'):
+    if actor.keyHeld('attack'):
         actor.doAirAttack()
     elif actor.keyHeld('special'):
         actor.doAirSpecial()
@@ -1501,8 +1509,8 @@ def tumbleState(actor):
             
 def moveState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
-    if actor.keyHeld('shield') and actor.keyHeld('attack'):
-        actor.doAction('GroundGrab')
+    if actor.keyHeld('shield'):
+        actor.doShield(True)
     elif actor.keyHeld('attack'):
         actor.doGroundAttack()
     elif actor.keyHeld('special'):
@@ -1525,7 +1533,7 @@ def dashState(actor, direction):
     elif actor.keyHeld('attack'):
         if actor.checkSmash(key):
             print("Dash cancelled into forward smash")
-            actor.doGroundAttack()
+            actor.doAction('ForwardSmash')
         else:
             actor.doAction('DashAttack')
     elif actor.keyHeld('special'):
@@ -1630,8 +1638,11 @@ def airControl(actor):
     
     if (actor.change_x < 0) and not actor.keysContain('left'):
         actor.preferred_xspeed = 0
-    elif (actor.change_x > 0) and not actor.keysContain('right'):
+    if (actor.change_x > 0) and not actor.keysContain('right'):
         actor.preferred_xspeed = 0
+
+    if not (actor.change_x < -actor.var['maxAirSpeed'] and actor.keysContain('left')) or not (actor.change_x > actor.var['maxAirSpeed'] and actor.keysContain('right')):
+        actor.accel(actor.var['airControl'])
 
     if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:
         actor.landingLag = actor.var['heavyLandLag']
@@ -1651,6 +1662,9 @@ def helplessControl(actor):
         actor.preferred_xspeed = 0
     elif (actor.change_x > 0) and not actor.keysContain('right'):
         actor.preferred_xspeed = 0
+
+    if not (actor.change_x < -actor.var['maxAirSpeed'] and actor.keysContain('left')) or not (actor.change_x > actor.var['maxAirSpeed'] and actor.keysContain('right')):
+        actor.accel(actor.var['airControl'])
 
     if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:
         actor.landingLag = actor.var['heavyLandLag']

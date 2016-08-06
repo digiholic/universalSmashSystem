@@ -65,10 +65,11 @@ class AbstractFighter():
                 'aerialTransitionSpeed': 7.5,
                 'crawlSpeed': 3.0,
                 'dodgeSpeed': 10.0,
-                'friction': 0.2,
-                'staticGrip': 0.4,
+                'friction': 0.3,
+                'staticGrip': 0.3,
                 'pivotGrip': 0.6,
-                'airControl': 0.4,
+                'airResistance': 0.2,
+                'airControl': 0.2,
                 'jumps': 1,
                 'jumpHeight': 12.5,
                 'shortHopHeight': 8.5,
@@ -302,29 +303,11 @@ class AbstractFighter():
         self.inputBuffer.push()
         
         if self.hitstop > 0:
-            if not self.hitstopVibration == (0,0):
-                (x,y) = self.hitstopVibration
-                self.rect.x += x
-                self.rect.y += y
-                self.hitstopVibration = (-x,-y)
 
-            #Smash directional influence AKA hitstun shuffling
-            di_vec = self.getSmoothedInput()
-            print(di_vec)
-            self.rect.x += di_vec[0]*1.5
-            if not self.grounded:
-                self.rect.y += di_vec[1]*1.5
-
-            groundBlocks = self.checkForGround()
-    
-            # Move with the platform
-            block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
-            if not block is None:
-                self.rect.x += block.change_x
-                self.rect.y += block.change_y
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
+
             loopCount = 0
-            while loopCount < 10:
+            while loopCount < 2:
                 self.sprite.updatePosition(self.rect)
                 self.ecb.normalize()
                 block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
@@ -338,18 +321,50 @@ class AbstractFighter():
                 loopCount += 1
 
             self.sprite.updatePosition(self.rect)
+            self.ecb.normalize()
 
-            #Update Sprite
+            if not self.hitstopVibration == (0,0):
+                (x,y) = self.hitstopVibration
+                self.rect.x += x
+                self.rect.y += y
+                self.hitstopVibration = (-x,-y)
+
+            #Smash directional influence AKA hitstun shuffling
+            di_vec = self.getSmoothedInput()
+            self.rect.x += di_vec[0]*1.5
+            if not self.grounded:
+                self.rect.y += di_vec[1]*1.5
+
+            self.sprite.updatePosition(self.rect)
+            self.ecb.normalize()
+        
+            groundBlocks = self.checkForGround()
+
+            # Move with the platform
+            block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
+            if not block is None:
+                self.rect.x += block.change_x
+                self.change_y -= self.var['gravity']
+
+            self.sprite.updatePosition(self.rect)
+
+            self.hitboxContact.clear()
+            if self.invulnerable > -1000:
+                self.invulnerable -= 1
+
+            if self.platformPhase > 0:
+                self.platformPhase -= 1
             self.ecb.normalize()
             return
         elif self.hitstop == 0 and not self.hitstopVibration == (0,0):
             #self.hitstopVibration = False #Lolwut?
             self.rect.center = self.hitstopPos
             self.hitstopVibration = (0,0)
+            self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
         #Step two, accelerate/decelerate
         if self.grounded: self.accel(self.var['friction'])
-        else: self.accel(self.var['airControl'])
+        else: self.accel(self.var['airResistance'])
         
         if self.ledgeLock:
             ledges = pygame.sprite.spritecollide(self, self.gameState.platform_ledges, False)
@@ -388,7 +403,7 @@ class AbstractFighter():
         self.calc_grav()
 
         loopCount = 0
-        while loopCount < 10:
+        while loopCount < 2:
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
             block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
@@ -423,24 +438,6 @@ class AbstractFighter():
         self.rect.y += self.change_y*t
         self.rect.x += self.change_x*t
 
-        #self.sprite.updatePosition(self.rect)
-        #self.ecb.normalize()
-
-        """
-        loopCount = 0
-        while loopCount < 1:
-            #self.sprite.updatePosition(self.rect)
-            #self.ecb.normalize()
-            block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
-            if not block_hit_list:
-                break
-            for block in block_hit_list:
-                if self.catchMovement(block):
-                    self.reflect(block)
-                    break
-            loopCount += 1
-        """
-
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         
@@ -465,7 +462,7 @@ class AbstractFighter():
         
     """
     Change speed to get closer to the preferred speed without going over.
-    xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['airControl']
+    xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['airResistance']
     """
     def accel(self,xFactor):
         if self.change_x > self.preferred_xspeed: #if we're going too fast
@@ -767,8 +764,8 @@ class AbstractFighter():
 
         trajectory_vec = [math.cos(trajectory/180*math.pi), math.sin(trajectory/180*math.pi)]
 
-        DI_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.12
-        trajectory += numpy.cross(di_vec, trajectory_vec)*15
+        DI_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
+        trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
 
         hitstun_frames = math.floor(totalKB*hitstun_multiplier+base_hitstun) #Tweak this constant
         print(hitstun_frames)
@@ -781,9 +778,9 @@ class AbstractFighter():
 
         if hitstun_frames > 0.5:
             print(totalKB)
-            if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.lastFrame-self.current_action.frame <= hitstun_frames:
-                self.doHitStun(hitstun_frames, trajectory)
+            if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.lastFrame-self.current_action.frame <= hitstun_frames+15:
                 self.setSpeed(totalKB*DI_multiplier, trajectory)
+                self.doHitStun(hitstun_frames, trajectory)
         
         self.dealDamage(damage)
 
@@ -1164,8 +1161,6 @@ class AbstractFighter():
         checkRect = other.rect.copy()
         #checkRect.centerx -= other.change_x
         #checkRect.centery -= other.change_y
-        newPrev = self.ecb.currentECB.rect.copy()
-        newPrev.center = self.ecb.previousECB.rect.center
         contact = intersectPoint(self.ecb.currentECB.rect, checkRect)
         bump = False
         
@@ -1174,11 +1169,14 @@ class AbstractFighter():
                 self.rect.x += contact[0]
                 self.rect.y += contact[1]
                 bump = True
-        elif self.platformPhase <= 0 and checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect, self.change_y):
-            if contact != [0, 0]:
-                self.rect.x += contact[0]
-                self.rect.y += contact[1]
-                bump = True
+        else:
+            newPrev = self.ecb.currentECB.rect.copy()
+            newPrev.center = self.ecb.previousECB.rect.center
+            if self.platformPhase <= 0 and checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect, self.change_y):
+                if contact != [0, 0]:
+                    self.rect.x += contact[0]
+                    self.rect.y += contact[1]
+                    bump = True
 
         if bump:
             #The contact vector is perpendicular to the axis over which the reflection should happen
@@ -1231,7 +1229,7 @@ def intersectPoint(firstRect, secondRect):
     downLeftDist = directionalDisplacement(firstPoints, secondPoints, [float(-firstRect.height), float(firstRect.width)])
     downRightDist = directionalDisplacement(firstPoints, secondPoints, [float(firstRect.height), float(firstRect.width)])
 
-    return min(leftDist, rightDist, upDist, downDist, upLeftDist, upRightDist, downLeftDist, downRightDist, key=lambda x: numpy.linalg.norm(x))
+    return min(leftDist, rightDist, upDist, downDist, upLeftDist, upRightDist, downLeftDist, downRightDist, key=lambda x: x[0]*x[0]+x[1]*x[1])
 
 def checkPlatform(current, previous, platform, yvel):
     intersect = intersectPoint(current, platform)
@@ -1245,10 +1243,7 @@ def directionalDisplacement(firstPoints, secondPoints, direction):
     firstDots = map(lambda x: numpy.dot(x, direction), firstPoints)
     secondDots = map(lambda x: numpy.dot(x, direction), secondPoints)
     projectedDisplacement = max(secondDots)-min(firstDots)
-    #if (projectedDisplacement < 0):
-    #    return [0, 0]
-    norm = numpy.linalg.norm(direction)
-    normsqr = 1.0 if norm == 0 else float(norm*norm)
+    normsqr = 1.0 if direction == [0, 0] else direction[0]*direction[0]+direction[1]*direction[1]
     return [projectedDisplacement/normsqr*direction[0], projectedDisplacement/normsqr*direction[1]]
 
 # Returns a 2-entry array representing a range of time when the points and the rect intersect
