@@ -1509,43 +1509,6 @@
 		</conditional>
 	</DownSpecial>
 	
-	<!-- Code Actions, TODO: pls fix -->
-	
-	<UpSpecial>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>UpSpecial</action>
-		</loadCodeAction>
-	</UpSpecial>
-	
-	<GroundGrab>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>GroundGrab</action>
-		</loadCodeAction>
-	</GroundGrab>
-	
-	<ForwardSpecial>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>ForwardSpecial</action>
-		</loadCodeAction>
-	</ForwardSpecial>
-	
-	<DashGrab>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>DashGrab</action>
-		</loadCodeAction>
-	</DashGrab>
-	
-	<Pummel>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>Pummel</action>
-		</loadCodeAction>
-	</Pummel>
-	
 	<ForwardThrow>
 		<length>20</length>
 		<sprite>fsmash</sprite>
@@ -1563,6 +1526,9 @@
 			</createHitbox>
 		</setUp>
 		
+		<frame number="after">
+			<updateHitbox>throwBox</updateHitbox>
+		</frame>
 		<frame number="14">
 			<activateHitbox>throwBox</activateHitbox>
 		</frame>
@@ -1630,6 +1596,43 @@
 			</modifyHitbox>
 		</frame>
 	</DownThrow>
+	
+	<!-- Code Actions, TODO: pls fix -->
+	
+	<UpSpecial>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>UpSpecial</action>
+		</loadCodeAction>
+	</UpSpecial>
+	
+	<GroundGrab>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>GroundGrab</action>
+		</loadCodeAction>
+	</GroundGrab>
+	
+	<ForwardSpecial>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>ForwardSpecial</action>
+		</loadCodeAction>
+	</ForwardSpecial>
+	
+	<DashGrab>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>DashGrab</action>
+		</loadCodeAction>
+	</DashGrab>
+	
+	<Pummel>
+		<loadCodeAction>
+			<file>hitboxie_actions.py</file>
+			<action>Pummel</action>
+		</loadCodeAction>
+	</Pummel>
 	
 	<UpThrow>
 		<loadCodeAction>

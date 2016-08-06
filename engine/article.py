@@ -121,11 +121,18 @@ class LandingArticle(AnimatedArticle):
 class RespawnPlatformArticle(Article):
     def __init__(self,owner):
         width, height = (256,69)
-        scaledWidth = owner.rect.width
-        #self.scaleRatio = float(scaledWidth) / float(width)
-        self.scaleRatio = 1
+        scaledWidth = owner.rect.width * 1.5
+        scaleRatio = float(scaledWidth) / float(width)
+        
         Article.__init__(self, settingsManager.createPath('sprites/platform.png'), owner, owner.rect.midbottom, 120, drawDepth = -1)
+        
+        w,h = int(width * scaleRatio),int(height * scaleRatio)
+        self.image = pygame.transform.smoothscale(self.image, (w,h))
+        
+        self.rect = self.image.get_rect()
+        
+        self.rect.center = owner.rect.midbottom
         self.rect.bottom += self.rect.height / 4
     
     def draw(self, screen, offset, scale):
-        return Article.draw(self, screen, offset, scale * self.scaleRatio)
+        return Article.draw(self, screen, offset, scale)

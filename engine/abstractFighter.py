@@ -166,12 +166,15 @@ class AbstractFighter():
         except:
             self.actions = baseActions
             self.action_file = baseActions.__file__
-            
-        #except:
-        #    print('unable to load actions. Loading base')
-        #    self.actions = settingsManager.importFromURI(settingsManager.createPath(''),'engine/baseActions.py',suffix=str(playerNum))
-    
-    
+        
+        self.rect = self.sprite.rect
+        
+        self.gameState = None
+        self.players = None
+        
+        # dataLog holds information for the post-game results screen
+        self.dataLog = None
+        
     def saveFighter(self,path=None):
         if not path: path = os.path.join(self.baseDir,'fighter.xml')
         tree = ElementTree.Element('fighter')
@@ -228,9 +231,6 @@ class AbstractFighter():
         self.elasticity = 0
         self.ground_elasticity = 0
         
-        # dataLog holds information for the post-game results screen
-        self.dataLog = None
-        
         # Whenever a fighter is hit, they are 'tagged' by that player, if they die while tagged, that player gets a point
         self.hitTagged = None
         
@@ -280,7 +280,6 @@ class AbstractFighter():
         #state variables and flags
         self.angle = 0
         self.grounded = False
-        self.rect = self.sprite.rect
         self.jumps = self.var['jumps']
         self.damage = 0
         self.landingLag = 6
@@ -295,10 +294,6 @@ class AbstractFighter():
         #facing right = 1, left = -1
         self.facing = 1
         if self.sprite.flip == 'left': self.sprite.flipX()
-        
-        #list of all of the other things to worry about
-        self.gameState = None
-        self.players = None
     
     def update(self):
         self.ecb.normalize()
@@ -831,7 +826,10 @@ class AbstractFighter():
                 self.hitTagged.dataLog.setData('KOs',1,lambda x,y: x+y)
         
         if respawn:
+            self.initialize()
+            
             self.rect.midbottom = self.gameState.spawnLocations[self.playerNum]
+            self.rect.bottom -= 200
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
             self.ecb.store()
