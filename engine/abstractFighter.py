@@ -1127,7 +1127,7 @@ class AbstractFighter():
 
     def getSizeCollisionsWith(self,spriteGroup):
         collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(self.ecb.previousECB.rect))
-        return sorted(filter(lambda r: intersectPoint(collideSprite.rect, r.rect) != [0, 0], pygame.sprite.spritecollide(collideSprite, spriteGroup, False)), key = lambda q: numpy.linalg.norm(intersectPoint(collideSprite.rect, q.rect)))
+        return sorted(filter(lambda r: intersectPoint(collideSprite.rect, r.rect) != [0, 0], pygame.sprite.spritecollide(collideSprite, spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(collideSprite.rect, q.rect)))
 
     def catchMovement(self, other):
         self.sprite.updatePosition(self.rect)
