@@ -311,14 +311,18 @@ class AbstractFighter():
             while loopCount < 2:
                 self.sprite.updatePosition(self.rect)
                 self.ecb.normalize()
+                bumped = False
                 block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
                 if not block_hit_list:
                     break
                 for block in block_hit_list:
                     if block.solid or (self.platformPhase <= 0):
                         self.platformPhase = 0
-                        self.eject(block)
-                        break
+                        if self.eject(block):
+                            bumped = True
+                            break
+                if not bumped:
+                    break
                 loopCount += 1
 
             self.sprite.updatePosition(self.rect)
@@ -402,19 +406,22 @@ class AbstractFighter():
 
         # Gravity
         self.calc_grav()
-
         loopCount = 0
         while loopCount < 2:
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
+            bumped = False
             block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
             if not block_hit_list:
                 break
             for block in block_hit_list:
                 if block.solid or (self.platformPhase <= 0):
                     self.platformPhase = 0
-                    self.eject(block)
-                    break
+                    if self.eject(block):
+                        bumped = True
+                        break
+            if not bumped:
+                break
             loopCount += 1
         # TODO: Crush death if loopcount reaches the 10 resolution attempt ceiling
 
@@ -1207,6 +1214,7 @@ class AbstractFighter():
                 projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
                 elasticity = self.ground_elasticity if contact[1] < 0 else self.elasticity
                 (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
+        return bump
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
