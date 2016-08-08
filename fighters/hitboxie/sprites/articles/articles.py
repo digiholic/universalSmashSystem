@@ -41,6 +41,7 @@ class SplatArticle(article.AnimatedArticle):
         self.change_y += 0.5
         self.hitbox.update()
         self.frame += 1
+        self.angle = -math.atan2(self.change_y, self.change_x)*180.0/math.pi
             
         if self.frame > 120:
             self.kill()
@@ -55,18 +56,6 @@ class SplatArticle(article.AnimatedArticle):
         article.AnimatedArticle.deactivate(self)
         self.hitbox.kill()
         self.kill()
-          
-    def draw(self, screen, offset, zoom):
-        # This is all the same as the base Draw method. We're overriding because we need to put some code in the middle of it.
-        h = int(round(self.rect.height * zoom))
-        w = int(round(self.rect.width * zoom))
-        newOff = (int(offset[0] * zoom), int(offset[1] * zoom))
-        
-        screenRect = pygame.Rect(newOff,(w,h)) # Store the rect that it will draw
-        angle = -math.atan2(self.change_y, self.change_x)*180.0/math.pi
-        blitSprite = pygame.transform.rotate(self.image, angle) # Rotate
-        
-        screen.blit(blitSprite,screenRect)
 
 class ShineArticle(article.AnimatedArticle):
     def __init__(self, owner):
