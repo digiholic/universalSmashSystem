@@ -425,7 +425,6 @@ class HitStun(action.Action):
             elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
                 actor.ground_elasticity = 0
                 if actor.grounded:
-                    #actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
                     actor.doAction('Prone')
             elif actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during hitstun
                 actor.landingLag = actor.var['heavyLandLag']+self.lastFrame-self.frame
@@ -438,7 +437,7 @@ class HitStun(action.Action):
         if not isinstance(nextAction, Tumble):
             actor.elasticity = 0
             actor.ground_elasticity = 0
-        actor.unRotate()
+            actor.unRotate()
         
     def update(self,actor):
         action.Action.update(self, actor)
@@ -462,7 +461,6 @@ class HitStun(action.Action):
                 actor.articles.add(art)
                     
         if self.frame == self.lastFrame:
-            actor.unRotate()
             actor.doAction('Tumble')
 
         self.frame += 1
@@ -472,6 +470,7 @@ class Tumble(action.Action):
         action.Action.__init__(self, length)
     
     def setUp(self, actor):
+        if self.spriteName=="": self.spriteName ="tumble"
         action.Action.setUp(self, actor)    
         self.techCooldown = 0
         
@@ -507,6 +506,7 @@ class Tumble(action.Action):
         
     def update(self, actor):
         action.Action.update(self, actor)
+        actor.rotateSprite((actor.sprite.angle+90)+2)
         if self.techCooldown > 0: self.techCooldown -= 1
         
 class Prone(action.Action):
@@ -517,6 +517,7 @@ class Prone(action.Action):
         if self.spriteName == "": self.spriteName = "prone"
         action.Action.setUp(self, actor)
         actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        actor.unRotate()
         
     def update(self, actor):
         action.Action.update(self, actor)
@@ -705,6 +706,7 @@ class Land(action.Action):
     def setUp(self, actor):
         if self.spriteName=="": self.spriteName ="land"
         action.Action.setUp(self, actor)
+        actor.unRotate()
         #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
 
 
