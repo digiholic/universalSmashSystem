@@ -492,7 +492,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 4
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.currentECB.rect.bottom <= block.rect.top+4:
+                if self.ecb.currentECB.rect.bottom <= block.rect.top+4 and self.change_y > block.change_y-1:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -1008,28 +1008,43 @@ class AbstractFighter():
         for frameInput in holdBuffer:
             workingX = 0.0
             workingY = 0.0
-            xSmooth = 0.9
-            ySmooth = 0.9
+            xDecay = float(1.5)/distanceBack
+            yDecay = float(1.5)/distanceBack
             if 'left' in frameInput: workingX -= frameInput['left']
             if 'right' in frameInput: workingX += frameInput['right']
             if 'up' in frameInput: workingY -= frameInput['up']
             if 'down' in frameInput: workingY += frameInput['down']
             if (workingX > 0 and smoothedX > 0) or (workingX < 0 and smoothedX < 0):
-                xSmooth = 0.98
+                xDecay = float(1)/distanceBack
             elif (workingX < 0 and smoothedX > 0) or (workingX > 0 and smoothedX < 0):
-                xSmooth = 0.6
+                xDecay = float(4)/distanceBack
             if (workingY < 0 and smoothedY < 0) or (workingY > 0 and smoothedY > 0):
-                ySmooth = 0.98
+                yDecay = float(1)/distanceBack
             elif (workingY < 0 and smoothedY > 0) or (workingY > 0 and smoothedY < 0):
-                ySmooth = 0.6
+                ySmooth = float(4)/distanceBack
             magnitude = numpy.linalg.norm([workingX, workingY])
             if magnitude > maxMagnitude:
                 workingX /= magnitude/maxMagnitude
                 workingY /= magnitude/maxMagnitude
-            smoothedX *= xSmooth
-            smoothedY *= ySmooth
-            smoothedX += workingX*2
-            smoothedY += workingY*2
+            if smoothedX > 0:
+                smoothedX -= xDecay
+                if smoothedX < 0:
+                    smoothedX = 0
+            elif smoothedX < 0:
+                smoothedX += xDecay
+                if smoothedX > 0:
+                    smoothedX = 0
+            if smoothedY > 0:
+                smoothedY -= yDecay
+                if smoothedY < 0:
+                    smoothedY = 0
+            elif smoothedY < 0:
+                smoothedY += yDecay
+                if smoothedY > 0:
+                    smoothedY = 0
+            smoothedX += workingX
+            smoothedY += workingY
+
         finalMagnitude = numpy.linalg.norm([smoothedX, smoothedY])
         if finalMagnitude > maxMagnitude:
             smoothedX /= finalMagnitude/maxMagnitude
