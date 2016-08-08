@@ -12,7 +12,7 @@ class SplatArticle(article.AnimatedArticle):
         self.change_x = self.direction*24
         self.change_y = 0
         
-        variables = {'center':self.rect.center,
+        variables = {'center':[0,0],
                      'size':[12,12],
                      'damage':3,
                      'baseKnockback':2,
@@ -24,6 +24,8 @@ class SplatArticle(article.AnimatedArticle):
         self.hitbox = hitbox.DamageHitbox(self.owner, hitbox.HitboxLock(), variables)
         
         self.hitbox.article = self
+        self.hitbox.owner = self.owner
+        
         self.tags = ['reflectable']
 
     # Override the onCollision of the hitbox
@@ -37,8 +39,7 @@ class SplatArticle(article.AnimatedArticle):
         self.rect.x += self.change_x
         self.rect.y += self.change_y
         self.change_y += 0.5
-        self.hitbox.rect.center = self.rect.center #update adjusts to the actor
-        self.hitbox.owner = self.owner
+        self.hitbox.update()
         self.frame += 1
             
         if self.frame > 120:

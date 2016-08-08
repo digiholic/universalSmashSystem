@@ -1,0 +1,46 @@
+<articles>
+
+	<SplatArticle>
+		<sprite>hitboxie_projectile</sprite>
+		<length>120</length>
+		<imgWidth>16</imgWidth>
+		
+		<setUp>
+			<createHitbox>
+				<name>SplatHitbox</name>
+			</createHitbox>
+			<changeSpeed>
+				<xSpeed relative="True">24</xSpeed>
+			</changeSpeed>
+			
+			<activateHitbox>SplatHitbox</activateHitbox>
+			<!-- Need to set origin point when creating an article in fighter-->
+		</setUp>
+		
+		<!-- Collision event if "other" is in the other object's class hierarchy -->
+		<collision other="AbstractFighter">
+			<deactivateSelf />
+		</collision>
+		
+		<collision other="Platform">
+			<deactivateSelf />
+		</collision>
+		
+		<frame number="before">
+			<changeSpeed>
+				<ySpeed relative="True">0.5</ySpeed>
+			</changeSpeed>
+		</frame>
+	</SplatArticle>
+	
+	<ShineArticle>
+		<sprite>hitboxie_shine</sprite>
+		<length>8</length>
+		<imgWidth>92</imgWidth>
+		<spriteRate>2</spriteRate>
+		
+		<frame number="last">
+			<setFrame>2</setFrame>
+		</frame>
+	</ShineArticle>
+</articles>

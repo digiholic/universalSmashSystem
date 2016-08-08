@@ -1,6 +1,7 @@
 import pygame
 import spriteManager
 import math
+import settingsManager
 
 """
 Articles are generated sprites that have their own behavior. For example, projectiles, shields,
@@ -12,7 +13,80 @@ origin - where the article starts. This sets the center of the article, not the 
 length - if this article has logic or animation, you can set this to be used in the update() method,
          just like a fighter's action.
 """
-import settingsManager
+class DynamicArticle(spriteManager.SheetSprite):
+    def __init__(self,owner,sheet,imgWidth=0,length=1,spriteRate=0):
+        self.owner = owner
+        spriteManager.SheetSprite.__init__(self, sheet, imgWidth)
+        
+        self.lastFrame = length
+        self.change_x = 0
+        self.change_y = 0
+        
+        self.hitboxes = {}
+        self.hitboxLocks = {}
+        
+        self.actionsAtFrame = [[]]
+        self.actionsBeforeFrame = []
+        self.actionsAfterFrame = []
+        self.actionsAtLastFrame = []
+        self.actionsOnClank = []
+        self.conditionalActions = dict()
+        self.setUpActions = []
+        self.tearDownActions = []
+        self.collisionActions = dict()
+        
+    def update(self):
+        #Animate the article
+        if self.spriteRate is not 0:
+            if self.frame % self.spriteRate == 0:
+                if self.spriteRate < 0:
+                    self.getImageAtIndex((self.frame / self.spriteRate)-1)
+                else:
+                    self.getImageAtIndex(self.frame / self.spriteRate)
+        
+        #Do all of the subactions involving update
+        for act in self.actionsBeforeFrame:
+            act.execute(self,self)
+        if self.frame < len(self.actionsAtFrame):
+            for act in self.actionsAtFrame[self.frame]:
+                act.execute(self,self)
+        if self.frame == self.lastFrame:
+            for act in self.actionsAtLastFrame:
+                act.execute(self,self)
+        for act in self.actionsAfterFrame:
+            act.execute(self,self)
+        
+        #Update stuff
+        self.rect.x += self.change_x
+        self.rect.y += self.change_y
+        for hitbox in self.hitboxes.values():
+            hitbox.update()
+        self.frame += 1 
+        
+    def activate(self):
+        for act in self.setUpActions:
+            act.execute(self,self)
+        
+    def deactivate(self):
+        for hitbox in self.hitboxes.values():
+            hitbox.kill()
+        for act in self.tearDownActions:
+            act.execute(self,self)
+
+    def onClank(self,actor):
+        for act in self.actionsOnClank:
+            act.execute(self,actor)
+    
+    def onCollision(self,other):
+        othersClasses = list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]
+        if ('AbstractFighter' in othersClasses or 'Platform' in othersClasses):
+            self.deactivate()
+            
+        for classKey,subacts in self.collisionActions:
+            if (classKey in othersClasses):
+                for subact in subacts:
+                    subact.execute(self,other)
+        
 class Article(spriteManager.ImageSprite):
     def __init__(self, spritePath, owner, origin, length=1, drawDepth = 1):
         spriteManager.ImageSprite.__init__(self,spritePath)
@@ -35,6 +109,7 @@ class Article(spriteManager.ImageSprite):
     
     def deactivate(self):
         self.kill()
+
          
 class AnimatedArticle(spriteManager.SheetSprite):
     def __init__(self, sprite, owner, origin, imageWidth, length=1, drawDepth=1):
