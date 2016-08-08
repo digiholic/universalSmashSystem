@@ -295,6 +295,7 @@ class AbstractFighter():
         #facing right = 1, left = -1
         self.facing = 1
         if self.sprite.flip == 'left': self.sprite.flipX()
+        self.unRotate()
     
     def update(self):
         self.ecb.normalize()
@@ -755,7 +756,7 @@ class AbstractFighter():
 
         # Thank you, ssbwiki!
         totalKB = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*weight_influence+100))*1.4) + 5) * s) + b
-        
+
         if damage < self.flinch_damage_threshold or totalKB < self.flinch_knockback_threshold:
             self.dealDamage(damage*self.armor_damage_multiplier)
             return 0
@@ -763,6 +764,8 @@ class AbstractFighter():
         di_vec = self.getSmoothedInput()
 
         trajectory_vec = [math.cos(trajectory/180*math.pi), math.sin(trajectory/180*math.pi)]
+
+        additionalKB = .5*base_hitstun*math.sqrt(abs(trajectory_vec[0])*self.var['airResistance']+abs(trajectory_vec[1])*self.var['gravity'])
 
         DI_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
         trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
@@ -777,14 +780,14 @@ class AbstractFighter():
             return 0
 
         if hitstun_frames > 0.5:
-            print(totalKB)
+            print((totalKB, additionalKB))
             if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.lastFrame-self.current_action.frame <= hitstun_frames+15:
-                self.setSpeed(totalKB*DI_multiplier, trajectory)
+                self.setSpeed((totalKB+additionalKB)*DI_multiplier, trajectory)
                 self.doHitStun(hitstun_frames, trajectory)
         
         self.dealDamage(damage)
 
-        return math.floor(totalKB*DI_multiplier)
+        return math.floor((totalKB+additionalKB)*DI_multiplier)
 
     def applyPushback(self, kb, trajectory, hitlag):
         self.hitstop = math.floor(hitlag)
