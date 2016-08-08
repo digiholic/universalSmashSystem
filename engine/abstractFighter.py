@@ -1214,7 +1214,8 @@ class AbstractFighter():
                 projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
                 elasticity = self.ground_elasticity if contact[1] < 0 else self.elasticity
                 (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
-        return bump
+                return True
+        return False
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
