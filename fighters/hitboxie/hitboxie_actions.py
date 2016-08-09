@@ -42,8 +42,18 @@ class ForwardSpecial(action.Action):
         actor.changeSprite("nair",0)
     
     def onClank(self,actor):
-        actor.landingLag = 30
-        actor.doAction('Fall')
+        self.chainHitbox.damage = 0
+        self.chainHitbox.baseKnockback = 0
+        self.chainHitbox.knockbackGrowth = 0
+        self.flingHitbox.priority = -9999
+        self.chainHitbox.base_hitstun = 0
+        self.flingHitbox.damage = 0
+        self.flingHitbox.baseKnockback = 0
+        self.flingHitbox.knockbackGrowth = 0
+        self.flingHitbox.priority = -9999
+        self.flingHitbox.base_hitstun = 0
+
+        actor.landingLag = 60
     
     class sideSpecialHitbox(hitbox.DamageHitbox):
         def __init__(self,actor):
