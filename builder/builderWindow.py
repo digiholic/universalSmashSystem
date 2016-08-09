@@ -404,7 +404,11 @@ class ViewerPanel(BuilderPanel):
         else:
             os.environ['SDL_VIDEODRIVER'] = 'x11'
         pygame.display.init()
+        if not sys.platform == "win32":
+            print("X crashes after this")
         self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
+        if not sys.platform == "win32":
+            print("X crashes before this")
         self.center = (0,0)
         self.scale = 1.0
         

@@ -20,7 +20,7 @@ class ForwardSpecial(action.Action):
                      'damage': 1,
                      'hitstun': 2,
                      'x_bias': 0,
-                     'y_bias': 0,
+                     'y_bias': -.25,
                      'shield_multiplier': 1,
                      'velocity_multiplier': 1,
                      'transcendence': -1,
@@ -421,7 +421,6 @@ class Pummel(baseActions.BaseGrabbing):
         actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
         if self.frame == self.lastFrame:
             actor.doAction('Grabbing')
-        self.frame += 1
 
 class UpThrow(baseActions.BaseGrabbing):
     def __init__(self):
@@ -451,7 +450,6 @@ class UpThrow(baseActions.BaseGrabbing):
                 if actor.isGrabbing():
                     actor.grabbing.applyKnockback(11, 12, 0.15, actor.getForwardWithOffset(70))
                 actor.doAction('Fall')
-        self.frame += 1
 
 class BackThrow(baseActions.BaseGrabbing):
     def __init__(self):
@@ -466,14 +464,13 @@ class BackThrow(baseActions.BaseGrabbing):
 
     def update(self, actor):
         baseActions.BaseGrabbing.update(self, actor)
-        if self.frame == 0 and actor.isGrabbing():
-            actor.grabbing.applyKnockback(7, 18, 0.05, actor.getForwardWithOffset(170), 0.5)
+        if self.frame == 1 and actor.isGrabbing():
+            actor.grabbing.applyKnockback(7, 15, 0.05, actor.getForwardWithOffset(170), 0.5)
         if self.frame <= 16:
             actor.changeSpriteImage(self.frame//2)
         elif self.frame == self.lastFrame: 
             actor.flip()
             actor.doAction('NeutralAction')
-        self.frame += 1
 
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
