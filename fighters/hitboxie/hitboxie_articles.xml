@@ -1,17 +1,18 @@
 <articles>
 
 	<SplatArticle>
-		<sprite>hitboxie_projectile</sprite>
+		<sprite>hitboxie_projectile.png</sprite>
 		<length>120</length>
 		<imgWidth>16</imgWidth>
+		<originPoint>0,0</originPoint>
 		
 		<setUp>
 			<createHitbox>
 				<name>SplatHitbox</name>
 			</createHitbox>
-			<changeSpeed>
+			<changeFighterSpeed>
 				<xSpeed relative="True">24</xSpeed>
-			</changeSpeed>
+			</changeFighterSpeed>
 			
 			<activateHitbox>SplatHitbox</activateHitbox>
 			<!-- Need to set origin point when creating an article in fighter-->
@@ -34,11 +35,15 @@
 	</SplatArticle>
 	
 	<ShineArticle>
-		<sprite>hitboxie_shine</sprite>
+		<sprite>hitboxie_shine.png</sprite>
 		<length>8</length>
 		<imgWidth>92</imgWidth>
 		<spriteRate>2</spriteRate>
+		<originPoint>0,0</originPoint>
 		
+		<frame number="before">
+			<recenterOnOrigin />
+		</frame>
 		<frame number="last">
 			<setFrame>2</setFrame>
 		</frame>

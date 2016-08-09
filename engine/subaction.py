@@ -1069,7 +1069,6 @@ class loadArticle(SubAction):
         SubAction.execute(self, action, actor)
         if self.article:
             action.articles[self.name] = actor.loadArticle(self.article)
-            print(action.articles)
     
     def getDisplayName(self):
         return 'Load Article: ' + self.name
@@ -1088,7 +1087,7 @@ class activateArticle(SubAction):
     def execute(self, action, actor):
         if action.articles.has_key(self.name):
             action.articles[self.name].activate()
-    
+        
     def getDisplayName(self):
         return 'Activate Article: ' + self.name
         

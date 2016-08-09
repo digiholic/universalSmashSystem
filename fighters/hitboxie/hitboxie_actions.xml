@@ -1542,7 +1542,7 @@
 		<length>20</length>
 		<sprite>fsmash</sprite>
 		<spriteRate>2</spriteRate>
-		
+	
 		<setUp>
 			<createHitbox>
 				<name>throwBox</name>

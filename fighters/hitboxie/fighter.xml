@@ -9,6 +9,7 @@
 	<sprite_width>92</sprite_width>
 	<default_sprite>idle</default_sprite>
 	<article_path>sprites/articles</article_path>
+	<articles>hitboxie_articles.xml</articles>
 	<sound_path>sfx/</sound_path>
 	<actions>hitboxie_actions.xml</actions>
 	

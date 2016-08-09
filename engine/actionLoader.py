@@ -8,7 +8,7 @@ import xml.dom.minidom as minidom
 import os
 
 class ActionLoader():
-    def __init__(self,baseDir, actions):
+    def __init__(self, baseDir, actions):
         self.actionsXMLdata = os.path.join(baseDir,actions)
         self.baseDir = baseDir
         self.actionsXMLFull = ElementTree.parse(self.actionsXMLdata)

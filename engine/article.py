@@ -14,13 +14,18 @@ length - if this article has logic or animation, you can set this to be used in 
          just like a fighter's action.
 """
 class DynamicArticle(spriteManager.SheetSprite):
-    def __init__(self,owner,sheet,imgWidth=0,length=1,spriteRate=0):
+    def __init__(self,owner,sheet,imgWidth=0,originPoint=(0,0),length=1,spriteRate=0,drawDepth=1):
         self.owner = owner
         spriteManager.SheetSprite.__init__(self, sheet, imgWidth)
         
+        self.frame = 0
         self.lastFrame = length
         self.change_x = 0
         self.change_y = 0
+        self.spriteRate = spriteRate
+        self.drawDepth = drawDepth
+        self.facing = 1
+        self.originPoint = originPoint
         
         self.hitboxes = {}
         self.hitboxLocks = {}
@@ -35,7 +40,15 @@ class DynamicArticle(spriteManager.SheetSprite):
         self.tearDownActions = []
         self.collisionActions = dict()
         
+        self.active_hitboxes = pygame.sprite.Group()
+        
     def update(self):
+        for hbox in self.active_hitboxes:
+            hbox.owner = self.owner
+            hbox.article = self
+            if hbox not in self.owner.active_hitboxes:
+                self.owner.active_hitboxes.add(hbox)
+        
         #Animate the article
         if self.spriteRate is not 0:
             if self.frame % self.spriteRate == 0:
@@ -53,17 +66,22 @@ class DynamicArticle(spriteManager.SheetSprite):
         if self.frame == self.lastFrame:
             for act in self.actionsAtLastFrame:
                 act.execute(self,self)
-        for act in self.actionsAfterFrame:
-            act.execute(self,self)
         
         #Update stuff
         self.rect.x += self.change_x
         self.rect.y += self.change_y
         for hitbox in self.hitboxes.values():
             hitbox.update()
+            
+        for act in self.actionsAfterFrame:
+            act.execute(self,self)
+            
         self.frame += 1 
         
     def activate(self):
+        self.owner.articles.add(self)
+        self.rect.centerx = self.owner.rect.centerx + self.originPoint[0]
+        self.rect.centery = self.owner.rect.centery + self.originPoint[1]
         for act in self.setUpActions:
             act.execute(self,self)
         
@@ -72,6 +90,7 @@ class DynamicArticle(spriteManager.SheetSprite):
             hitbox.kill()
         for act in self.tearDownActions:
             act.execute(self,self)
+        self.kill()
 
     def onClank(self,actor):
         for act in self.actionsOnClank:
@@ -86,7 +105,16 @@ class DynamicArticle(spriteManager.SheetSprite):
             if (classKey in othersClasses):
                 for subact in subacts:
                     subact.execute(self,other)
-        
+    
+    """
+    Articles need to know which way they're facing too.
+    """
+    def getForwardWithOffset(self,offSet = 0):
+        if self.facing == 1:
+            return offSet
+        else:
+            return 180 - offSet
+    
 class Article(spriteManager.ImageSprite):
     def __init__(self, spritePath, owner, origin, length=1, drawDepth = 1):
         spriteManager.ImageSprite.__init__(self,spritePath)

@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ElementTree
 import os
 import actionLoader
 import numpy
+import engine.articleLoader
 
 class AbstractFighter():
     def __init__(self,baseDir,playerNum):
@@ -106,6 +107,17 @@ class AbstractFighter():
         except:
             self.article_path = baseDir
             self.article_path_short = ''
+        
+        try:
+            self.article_loader_path = self.xmlData.find('articles').text
+            self.articleLoader = engine.articleLoader.ArticleLoader(self)
+        except:
+            self.article_loader_path = ''
+            try:
+                self.articleLoader = settingsManager.importFromURI(os.path.join(baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(playerNum))
+            except:
+                self.articleLoader = None
+            
         try:
             self.sound_path = os.path.join(baseDir,self.xmlData.find('sound_path').text)
             self.sound_path_short = self.xmlData.find('sound_path').text
@@ -113,11 +125,6 @@ class AbstractFighter():
             self.sound_path = None
             self.sound_path_short = ''
         #self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),'articles.py',suffix=str(playerNum))
-        try:
-            self.articleLoader = settingsManager.importFromURI(os.path.join(baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(playerNum))
-        except:
-            self.articleLoader = None
-            
         try:
             directory = os.path.join(baseDir,self.xmlData.find('sprite_directory').text)
             prefix = self.xmlData.find('sprite_prefix').text
@@ -552,8 +559,10 @@ class AbstractFighter():
         else: return hasattr(self.actions, actionName)
             
     def loadArticle(self,articleName):
+        print(self.articleLoader,articleName)
+        
         if hasattr(self.articleLoader, 'loadArticle'):
-            return self.articleLoader.loadArticle(articleName,self)
+            return self.articleLoader.loadArticle(articleName)
         elif hasattr(self.articleLoader, articleName):
             class_ = getattr(self.articleLoader, articleName)
             return(class_(self)) 
