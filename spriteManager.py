@@ -1,6 +1,7 @@
 import pygame
 import os
 import sys
+import math
 import settingsManager
 
 class Sprite(pygame.sprite.Sprite):
@@ -18,15 +19,20 @@ class Sprite(pygame.sprite.Sprite):
         #TODO: Check for bit depth first, inform user about alpha
         h = int(round(self.rect.height * scale))
         w = int(round(self.rect.width * scale))
-        newOff = (int((offset[0]+self.spriteOffset[0]) * scale), int((offset[1]+self.spriteOffset[1]) * scale))
+        unitVector = [math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle))]
+        rotatedW = abs(w*unitVector[0])+abs(h*unitVector[1])
+        rotatedH = abs(w*unitVector[1])+abs(h*unitVector[0])
+        dx = (rotatedW-w)/2.0
+        dy = (rotatedH-h)/2.0
+        newOff = (int((offset[0]+self.spriteOffset[0]) * scale - dx), int((offset[1]+self.spriteOffset[1]) * scale - dy))
         try:
-            blitSprite = pygame.transform.smoothscale(self.image, (w,h))
+            blitSprite = pygame.transform.smoothscale(self.image, (int(w), int(h)))
         except Exception as e:
             print(e)
             raise ValueError("Please use 32-bit PNG files")
         if self.angle != 0:
             blitSprite = pygame.transform.rotate(blitSprite,self.angle)
-        newRect = pygame.Rect(newOff,(w,h))
+        newRect = pygame.Rect(newOff,(int(rotatedW), int(rotatedH)))
         retRect = newRect
         if not newRect == self.lastDrawnPosition:
             self.changed = True

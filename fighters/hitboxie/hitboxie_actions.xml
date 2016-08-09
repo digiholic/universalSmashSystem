@@ -287,6 +287,11 @@
 			</setFighterVar>
 		</frame>
 	</HitStun>
+
+	<Tumble>
+		<length>1</length>
+		<sprite>jump</sprite>
+	</Tumble>
 	
 	<Prone>
 		<length>60</length>

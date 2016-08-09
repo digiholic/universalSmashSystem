@@ -302,6 +302,7 @@ class AbstractFighter():
         #facing right = 1, left = -1
         self.facing = 1
         if self.sprite.flip == 'left': self.sprite.flipX()
+        self.unRotate()
     
     def update(self):
         self.ecb.normalize()
@@ -317,14 +318,18 @@ class AbstractFighter():
             while loopCount < 2:
                 self.sprite.updatePosition(self.rect)
                 self.ecb.normalize()
+                bumped = False
                 block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
                 if not block_hit_list:
                     break
                 for block in block_hit_list:
                     if block.solid or (self.platformPhase <= 0):
                         self.platformPhase = 0
-                        self.eject(block)
-                        break
+                        if self.eject(block):
+                            bumped = True
+                            break
+                if not bumped:
+                    break
                 loopCount += 1
 
             self.sprite.updatePosition(self.rect)
@@ -408,19 +413,22 @@ class AbstractFighter():
 
         # Gravity
         self.calc_grav()
-
         loopCount = 0
         while loopCount < 2:
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
+            bumped = False
             block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
             if not block_hit_list:
                 break
             for block in block_hit_list:
                 if block.solid or (self.platformPhase <= 0):
                     self.platformPhase = 0
-                    self.eject(block)
-                    break
+                    if self.eject(block):
+                        bumped = True
+                        break
+            if not bumped:
+                break
             loopCount += 1
         # TODO: Crush death if loopcount reaches the 10 resolution attempt ceiling
 
@@ -499,7 +507,7 @@ class AbstractFighter():
         self.ecb.currentECB.rect.y -= 4
         for block in block_hit_list:
             if block.solid or (self.platformPhase <= 0):
-                if self.ecb.currentECB.rect.bottom <= block.rect.top+4:
+                if self.ecb.currentECB.rect.bottom <= block.rect.top+4 and self.change_y > block.change_y-1:
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
@@ -764,7 +772,7 @@ class AbstractFighter():
 
         # Thank you, ssbwiki!
         totalKB = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*weight_influence+100))*1.4) + 5) * s) + b
-        
+
         if damage < self.flinch_damage_threshold or totalKB < self.flinch_knockback_threshold:
             self.dealDamage(damage*self.armor_damage_multiplier)
             return 0
@@ -772,6 +780,8 @@ class AbstractFighter():
         di_vec = self.getSmoothedInput()
 
         trajectory_vec = [math.cos(trajectory/180*math.pi), math.sin(trajectory/180*math.pi)]
+
+        additionalKB = .5*base_hitstun*math.sqrt(abs(trajectory_vec[0])*self.var['airResistance']+abs(trajectory_vec[1])*self.var['gravity'])
 
         DI_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
         trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
@@ -786,14 +796,14 @@ class AbstractFighter():
             return 0
 
         if hitstun_frames > 0.5:
-            print(totalKB)
+            print((totalKB, additionalKB))
             if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.lastFrame-self.current_action.frame <= hitstun_frames+15:
-                self.setSpeed(totalKB*DI_multiplier, trajectory)
+                self.setSpeed((totalKB+additionalKB)*DI_multiplier, trajectory)
                 self.doHitStun(hitstun_frames, trajectory)
         
         self.dealDamage(damage)
 
-        return math.floor(totalKB*DI_multiplier)
+        return math.floor((totalKB+additionalKB)*DI_multiplier)
 
     def applyPushback(self, kb, trajectory, hitlag):
         self.hitstop = math.floor(hitlag)
@@ -1017,28 +1027,43 @@ class AbstractFighter():
         for frameInput in holdBuffer:
             workingX = 0.0
             workingY = 0.0
-            xSmooth = 0.9
-            ySmooth = 0.9
+            xDecay = float(1.5)/distanceBack
+            yDecay = float(1.5)/distanceBack
             if 'left' in frameInput: workingX -= frameInput['left']
             if 'right' in frameInput: workingX += frameInput['right']
             if 'up' in frameInput: workingY -= frameInput['up']
             if 'down' in frameInput: workingY += frameInput['down']
             if (workingX > 0 and smoothedX > 0) or (workingX < 0 and smoothedX < 0):
-                xSmooth = 0.98
+                xDecay = float(1)/distanceBack
             elif (workingX < 0 and smoothedX > 0) or (workingX > 0 and smoothedX < 0):
-                xSmooth = 0.6
+                xDecay = float(4)/distanceBack
             if (workingY < 0 and smoothedY < 0) or (workingY > 0 and smoothedY > 0):
-                ySmooth = 0.98
+                yDecay = float(1)/distanceBack
             elif (workingY < 0 and smoothedY > 0) or (workingY > 0 and smoothedY < 0):
-                ySmooth = 0.6
+                ySmooth = float(4)/distanceBack
             magnitude = numpy.linalg.norm([workingX, workingY])
             if magnitude > maxMagnitude:
                 workingX /= magnitude/maxMagnitude
                 workingY /= magnitude/maxMagnitude
-            smoothedX *= xSmooth
-            smoothedY *= ySmooth
-            smoothedX += workingX*2
-            smoothedY += workingY*2
+            if smoothedX > 0:
+                smoothedX -= xDecay
+                if smoothedX < 0:
+                    smoothedX = 0
+            elif smoothedX < 0:
+                smoothedX += xDecay
+                if smoothedX > 0:
+                    smoothedX = 0
+            if smoothedY > 0:
+                smoothedY -= yDecay
+                if smoothedY < 0:
+                    smoothedY = 0
+            elif smoothedY < 0:
+                smoothedY += yDecay
+                if smoothedY > 0:
+                    smoothedY = 0
+            smoothedX += workingX
+            smoothedY += workingY
+
         finalMagnitude = numpy.linalg.norm([smoothedX, smoothedY])
         if finalMagnitude > maxMagnitude:
             smoothedX /= finalMagnitude/maxMagnitude
@@ -1198,6 +1223,8 @@ class AbstractFighter():
                 projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
                 elasticity = self.ground_elasticity if contact[1] < 0 else self.elasticity
                 (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
+                return True
+        return False
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
