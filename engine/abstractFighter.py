@@ -288,6 +288,9 @@ class AbstractFighter():
         #state variables and flags
         self.angle = 0
         self.grounded = False
+        self.back_walled = False
+        self.front_walled = False
+        self.ceilinged = False
         self.jumps = self.var['jumps']
         self.damage = 0
         self.landingLag = 6
@@ -350,7 +353,10 @@ class AbstractFighter():
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
         
-            groundBlocks = self.checkForGround()
+            groundBlocks = self.checkGround()
+            self.checkLeftWall()
+            self.checkRightWall()
+            self.checkCeiling()
 
             # Move with the platform
             block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
@@ -448,7 +454,7 @@ class AbstractFighter():
         self.ecb.normalize()
         block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
-            if pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) >= 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t and self.catchMovement(block): 
+            if pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) > 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t and self.catchMovement(block): 
                 t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect)
                 toBounceBlock = block
                 
@@ -458,7 +464,10 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         
-        groundBlocks = self.checkForGround()
+        groundBlocks = self.checkGround()
+        self.checkLeftWall()
+        self.checkRightWall()
+        self.checkCeiling()
 
         # Move with the platform
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
@@ -502,7 +511,7 @@ class AbstractFighter():
             self.change_y += min(diff, multiplier*self.var['gravity'])
         if self.grounded: self.jumps = self.var['jumps']
 
-    def checkForGround(self):
+    def checkGround(self):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         self.grounded = False
@@ -516,6 +525,63 @@ class AbstractFighter():
                     self.grounded = True
                     groundBlock.add(block)
         return groundBlock
+
+    def checkLeftWall(self):
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
+        if self.facing == 1:
+            self.back_walled = False
+        else:
+            self.front_walled = False
+        self.ecb.currentECB.rect.x -= 4
+        wallBlock = pygame.sprite.Group()
+        block_hit_list = pygame.sprite.spritecollide(self.ecb.currentECB, self.gameState.platform_list, False)
+        self.ecb.currentECB.rect.x += 4
+        for block in block_hit_list:
+            if block.solid:
+                if self.ecb.currentECB.rect.left >= block.rect.right-4 and self.change_x < block.change_x+1:
+                    if self.facing == 1:
+                        self.back_walled = True
+                    else:
+                        self.front_walled = True
+                    wallBlock.add(block)
+        return wallBlock
+
+    def checkRightWall(self):
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
+        if self.facing == 1:
+            self.front_walled = False
+        else:
+            self.back_walled = False
+        self.ecb.currentECB.rect.x += 4
+        wallBlock = pygame.sprite.Group()
+        block_hit_list = pygame.sprite.spritecollide(self.ecb.currentECB, self.gameState.platform_list, False)
+        self.ecb.currentECB.rect.x -= 4
+        for block in block_hit_list:
+            if block.solid:
+                if self.ecb.currentECB.rect.right <= block.rect.left+4 and self.change_x > block.change_x-1:
+                    if self.facing == 1:
+                        self.front_walled = 1
+                    else:
+                        self.back_walled = 1
+                    wallBlock.add(block)
+        return wallBlock
+
+    def checkCeiling(self):
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
+        self.ceilinged = False
+        self.ecb.currentECB.rect.y -= 4
+        ceilingBlock = pygame.sprite.Group()
+        block_hit_list = pygame.sprite.spritecollide(self.ecb.currentECB, self.gameState.platform_list, False)
+        self.ecb.currentECB.rect.y += 4
+        for block in block_hit_list:
+            if block.solid:
+                if self.ecb.currentECB.rect.top >= block.rect.bottom-4 and self.change_y < block.change_y+1:
+                    self.ceilinged = True
+                    ceilingBlock.add(block)
+        return ceilingBlock
     
     """
     A simple function that converts the facing variable into a direction in degrees.
@@ -1186,7 +1252,7 @@ class AbstractFighter():
             if contact is None:
                 return False
             v_vel = [self.change_x-other.change_x, self.change_y-other.change_y]
-            return numpy.dot(contact[1], v_vel) <= 0
+            return numpy.dot(contact[1], v_vel) < 0
         elif self.platformPhase <= 0:
             return checkPlatform(myRect, self.ecb.currentECB.rect, checkRect, self.change_y)
         else:
@@ -1200,13 +1266,12 @@ class AbstractFighter():
         #checkRect.centerx -= other.change_x
         #checkRect.centery -= other.change_y
         contact = intersectPoint(self.ecb.currentECB.rect, checkRect)
-        bump = False
         
         if other.solid:
             if contact is not None:
                 self.rect.x += contact[0][0]
                 self.rect.y += contact[0][1]
-                return True
+                return self.reflect(other)
         else:
             newPrev = self.ecb.currentECB.rect.copy()
             newPrev.center = self.ecb.previousECB.rect.center
@@ -1214,8 +1279,8 @@ class AbstractFighter():
                 if contact is not None:
                     self.rect.x += contact[0][0]
                     self.rect.y += contact[0][1]
-                    return True
-        return numpy.dot([self.change_x-other.change_x, self.change_y-other.change_y], contact[1]) < 0
+                    return self.reflect(other)
+        return False
 
     def reflect(self, other):
         self.sprite.updatePosition(self.rect)
@@ -1228,12 +1293,15 @@ class AbstractFighter():
             v_vel = [self.change_x-other.change_x, self.change_y-other.change_y]
             if numpy.dot(v_vel, contact[1]) < 0:
                 v_norm = [contact[1][1], -contact[1][0]]
-                dot = numpy.dot(v_norm, v_vel) #v_norm is already normalized
+                dot = numpy.dot(v_norm, v_vel)
                 norm = numpy.linalg.norm(v_norm)
                 ratio = 1 if norm == 0 else dot/(norm*norm)
                 projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
                 elasticity = self.ground_elasticity if contact[1][1] < 0 else self.elasticity
-                (self.change_x, self.change_y) = (projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x, projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y)
+                self.change_x = projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x
+                self.change_y = projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y
+                return True
+        return False
         
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
@@ -1317,7 +1385,7 @@ def projectionIntersects(startPoints, endPoints, rectPoints, vector):
 
     if max(startDots) == max(endDots):
         if max(startDots) >= min(rectDots): #...|.O.
-            t_maxs = [0, float("inf")]
+            t_maxs = [float("-inf"), float("inf")]
         else:                               #.O.|...
             t_maxs = [float("inf"), float("-inf")]
     elif max(startDots) < max(endDots):
@@ -1343,10 +1411,12 @@ def pathRectIntersects(startRect, endRect, rect):
     startCorners = [startRect.midtop, startRect.midbottom, startRect.midleft, startRect.midright]
     endCorners = [endRect.midtop, endRect.midbottom, endRect.midleft, endRect.midright]
     rectCorners = [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]
+
     horizontalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [1, 0])
     verticalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [0, 1])
     downwardDiagonalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [startRect.height, startRect.width])
     upwardDiagonalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [-startRect.height, startRect.width])
+
     totalIntersects = [max(horizontalIntersects[0], verticalIntersects[0], downwardDiagonalIntersects[0], upwardDiagonalIntersects[0], 0), min(horizontalIntersects[1], verticalIntersects[1], downwardDiagonalIntersects[1], upwardDiagonalIntersects[1], 1)]
     if totalIntersects[0] > totalIntersects[1]:
         return 999
