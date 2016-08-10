@@ -305,7 +305,7 @@ class Crouch(action.Action):
         if actor.grounded is False:
             actor.doAction('Fall')
         if self.frame > 0 and actor.keyBuffered('down', 1, state = 1):
-            blocks = actor.checkForGround()
+            blocks = actor.checkGround()
             if blocks:
                 #Turn it into a list of true/false if the block is solid
                 blocks = map(lambda x:x.solid,blocks)
@@ -344,7 +344,7 @@ class CrouchGetup(action.Action):
         if actor.grounded is False:
             actor.doAction('Fall')
         elif actor.keyBuffered('down', 1, state = 1):
-            blocks = actor.checkForGround()
+            blocks = actor.checkGround()
             if blocks:
                 #Turn it into a list of true/false if the block is solid
                 blocks = map(lambda x:x.solid,blocks)
@@ -723,7 +723,7 @@ class Land(action.Action):
                 self.lastFrame = self.lastFrame // 2
 
         if actor.keyHeld('down') and self.frame*2 > self.lastFrame:
-            blocks = actor.checkForGround()
+            blocks = actor.checkGround()
             if blocks:   
                 blocks = map(lambda x: x.solid, blocks)
                 if not any(blocks):
@@ -760,7 +760,7 @@ class HelplessLand(action.Action):
                 print("l-cancel")
                 self.lastFrame = self.lastFrame // 2
         if actor.keyHeld('down', 8):
-            blocks = actor.checkForGround()
+            blocks = actor.checkGround()
             if blocks:
                 blocks = map(lambda x: x.solid, blocks)
                 if not any(blocks):
@@ -1100,7 +1100,7 @@ class SpotDodge(action.Action):
     def update(self,actor):
         action.Action.update(self, actor)
         if actor.keyBuffered('down', 1) and self.frame > 0:
-            blocks = actor.checkForGround()
+            blocks = actor.checkGround()
             if blocks:
                 blocks = map(lambda x:x.solid,blocks)
                 if not any(blocks):

@@ -20,7 +20,7 @@ class ForwardSpecial(action.Action):
                      'damage': 1,
                      'hitstun': 2,
                      'x_bias': 0,
-                     'y_bias': -.25,
+                     'y_bias': .25,
                      'shield_multiplier': 1,
                      'velocity_multiplier': 1,
                      'transcendence': -1,
