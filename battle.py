@@ -28,12 +28,12 @@ class Battle():
         self.controllers = []
         for player in players:
             player.initialize()
-            player.keyBindings.loadFighter(player)
-            self.controllers.append(player.keyBindings)
+            player.key_bindings.loadFighter(player)
+            self.controllers.append(player.key_bindings)
             
         self.stage = stage
-        self.inputBuffer = None
-        self.dataLogs = []
+        self.input_buffer = None
+        self.data_logs = []
         
         #TODO bring over InputBuffer from fighter.
         random.seed
@@ -45,7 +45,7 @@ class Battle():
         background = background.convert()
         background.fill((128, 128, 128))
         
-        screen.fill(self.stage.backgroundColor)
+        screen.fill(self.stage.background_color)
         current_stage = self.stage
         active_hitboxes = pygame.sprite.Group()
         active_hurtboxes = pygame.sprite.Group()
@@ -81,7 +81,7 @@ class Battle():
         
         guiOffset = screen.get_rect().width / (len(self.players) + 1)
         for fighter in currentFighters:
-            fighter.rect.midbottom = current_stage.spawnLocations[fighter.playerNum]
+            fighter.rect.midbottom = current_stage.spawn_locations[fighter.player_num]
             fighter.sprite.updatePosition(fighter.rect)
             fighter.ecb.normalize()
             fighter.ecb.store()
@@ -89,8 +89,8 @@ class Battle():
             fighter.players = self.players
             current_stage.follows.append(fighter.rect)
             log = DataLog()
-            self.dataLogs.append(log)
-            fighter.dataLog = log
+            self.data_logs.append(log)
+            fighter.data_log = log
             if trackStocks: fighter.stocks = self.rules.stocks
             
             percentSprite = HealthTracker(fighter)
@@ -155,7 +155,7 @@ class Battle():
                         exitStatus = 2
             # End pygame event loop
                                    
-            screen.fill(self.stage.backgroundColor)
+            screen.fill(self.stage.background_color)
             
             current_stage.update()
             current_stage.cameraUpdate()
@@ -168,7 +168,7 @@ class Battle():
                 foreground_articles = []
                 if hasattr(obj, 'articles'):
                     for art in obj.articles:
-                        if art.drawDepth == -1:
+                        if art.draw_depth == -1:
                             offset = current_stage.stageToScreen(art.rect)
                             scale =  current_stage.getScale()
                             drawRect = art.draw(screen,offset,scale)
@@ -364,14 +364,14 @@ class Battle():
                 nameSprite.rect.midtop = (resultSprite.rect.width / 2,0)
                 resultSprite.image.blit(nameSprite.image,nameSprite.rect.topleft)
                 
-                score = fighter.dataLog.getData('KOs') - fighter.dataLog.getData('Falls')
+                score = fighter.data_log.getData('KOs') - fighter.data_log.getData('Falls')
                 text = spriteManager.TextSprite('Score: ' + str(score))
                 resultSprite.image.blit(text.image,(0,32))
                     
                 dist = 48
                 
-                print(fighter.dataLog.data)
-                for item,val in fighter.dataLog.data.items():
+                print(fighter.data_log.data)
+                for item,val in fighter.data_log.data.items():
                     text = spriteManager.TextSprite(str(item) + ': ' + str(val))
                     resultSprite.image.blit(text.image,(0,dist))
                     dist += 16
@@ -416,7 +416,7 @@ The rules object determines the battle's rules.
 By default it's 3 stock, 8 minute, free for all.
 If stocks is set to 0, infinite stocks are used.
 If time is set to 0, infinite time is used.
-Self.teams is a list of tuples. Each tuple is in the form of (teamNumber, [playerNumbers]).
+Self.teams is a list of tuples. Each tuple is in the form of (teamNumber, [player_numbers]).
 For example, if players 1 and 4 were on a team against players 2 and 3, the variable would look like this:
 
 self.teams = [(0, [0,3]), (1, [1,2])]
@@ -446,7 +446,7 @@ class HealthTracker(spriteManager.Sprite):
         self.percent = int(fighter.damage)
         
         self.bgSprite = fighter.franchise_icon
-        self.bgSprite.recolor(self.bgSprite.image,pygame.Color('#cccccc'),pygame.Color(settingsManager.getSetting('playerColor'+str(fighter.playerNum))))
+        self.bgSprite.recolor(self.bgSprite.image,pygame.Color('#cccccc'),pygame.Color(settingsManager.getSetting('playerColor'+str(fighter.player_num))))
         self.bgSprite.alpha(128)
         
         self.image = self.bgSprite.image
@@ -502,12 +502,12 @@ class HealthTracker(spriteManager.Sprite):
         
         h = int(round(self.rect.height * scale))
         w = int(round(self.rect.width * scale))
-        newOff = (int(offset[0] * scale), int(offset[1] * scale))
+        new_off = (int(offset[0] * scale), int(offset[1] * scale))
         
-        screen.blit(self.image,pygame.Rect(newOff,(w,h)))
+        screen.blit(self.image,pygame.Rect(new_off,(w,h)))
         
         rect = self.percentSprite.rect
-        self.percentSprite.draw(screen, (newOff[0] + rect.left,newOff[1] + rect.top), scale)
+        self.percentSprite.draw(screen, (new_off[0] + rect.left,new_off[1] + rect.top), scale)
 
 """
 The Data Log object keeps track of information that happens in-game, such as score, deaths, total damage dealt/received, etc.

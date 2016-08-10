@@ -108,7 +108,7 @@ class CSSWidget():
         pass
        
 class FighterWheel():
-    def __init__(self,playerNum):
+    def __init__(self,player_num):
         self.fighters = []
         
         # Load all files.
@@ -120,9 +120,9 @@ class FighterWheel():
             fighterpy = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"fighter.py"),suffix=str(fightercount))
             #try:
             if fighterpy:
-                fighter = fighterpy.getFighter(os.path.join(directory,subdir),playerNum)
+                fighter = fighterpy.getFighter(os.path.join(directory,subdir),player_num)
             else:
-                fighter = abstractFighter.AbstractFighter(os.path.join(directory,subdir),playerNum)
+                fighter = abstractFighter.AbstractFighter(os.path.join(directory,subdir),player_num)
             if (fighter == None):
                 print("No fighter found at " + os.path.join(directory,subdir,"fighter.py"))
             else:
@@ -165,13 +165,13 @@ class FighterWheel():
         screen.blit(blankImage, location)
                      
 class PlayerPanel(pygame.Surface):
-    def __init__(self,playerNum):
+    def __init__(self,player_num):
         pygame.Surface.__init__(self,(settingsManager.getSetting('windowWidth')//2,
                                 settingsManager.getSetting('windowHeight')//2))
         
-        self.keys = settingsManager.getControls(playerNum)
-        self.playerNum = playerNum
-        self.wheel = FighterWheel(playerNum)
+        self.keys = settingsManager.getControls(player_num)
+        self.player_num = player_num
+        self.wheel = FighterWheel(player_num)
         self.active = False
         self.activeObject = self.wheel
         self.chosenFighter = None
@@ -229,7 +229,7 @@ class PlayerPanel(pygame.Surface):
                 self.activeObject = None
                 self.chosenFighter = self.wheel.fighterAt(0)
                 
-    def keyReleased(self,key):
+    def key_released(self,key):
         if key == 'right' or key == 'left':
             self.wheelIncrement = 0
             self.holdDistance = 0
@@ -243,9 +243,9 @@ class PlayerPanel(pygame.Surface):
             else:
                 self.wheel.draw(self,self.wheelOffset)
         else:
-            self.fill(pygame.Color(settingsManager.getSetting('playerColor' + str(self.playerNum))))
+            self.fill(pygame.Color(settingsManager.getSetting('playerColor' + str(self.player_num))))
             #draw closed shutter
         offset = [0,0]
-        if self.playerNum == 1 or self.playerNum == 3: offset[0] = self.get_width()
-        if self.playerNum == 2 or self.playerNum == 3: offset[1] = self.get_height()
+        if self.player_num == 1 or self.player_num == 3: offset[0] = self.get_width()
+        if self.player_num == 2 or self.player_num == 3: offset[1] = self.get_height()
         screen.blit(self,offset)

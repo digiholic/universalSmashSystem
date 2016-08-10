@@ -65,8 +65,8 @@ class SubactionSelector(Label):
         print(action)
         print(self.root.group)
         if self.root.group == 'Set Up':
-            action.setUpActions.remove(self.subaction)
-            print(action.setUpActions)
+            action.set_up_actions.remove(self.subaction)
+            print(action.set_up_actions)
         
 class ChangeAttributeFrame(Frame):
     def __init__(self,root,attribSet):
@@ -85,9 +85,9 @@ class ChangeAttributeFrame(Frame):
                 attribVar.set(str(self.getFromAttrib(obj, prop)))
                 attribEntry = Frame(self)
                 
-                fileName = Entry(attribEntry,textvariable=attribVar,state=DISABLED)
+                file_name = Entry(attribEntry,textvariable=attribVar,state=DISABLED)
                 loadFileButton = Button(attribEntry,text='...',command=lambda resultVar=attribVar,fileTuple=vartype: self.pickFile(resultVar,fileTuple))
-                fileName.pack(side=LEFT,fill=X)
+                file_name.pack(side=LEFT,fill=X)
                 loadFileButton.pack(side=RIGHT)
                 
             if vartype == 'string':
@@ -188,8 +188,8 @@ class IfProperties(BasePropertiesFrame):
         self.addVariable(StringVar, 'variable')
         self.addVariable(StringVar, 'source')
         self.addVariable(StringVar, 'function')
-        self.addVariable(StringVar, 'ifActions')
-        self.addVariable(StringVar, 'elseActions')
+        self.addVariable(StringVar, 'if_actions')
+        self.addVariable(StringVar, 'else_actions')
         #Value is special, so they need to be made differently
         self.valueVar = StringVar(self)
         self.valueVar.set(subaction.value)
@@ -211,9 +211,9 @@ class IfProperties(BasePropertiesFrame):
         valueTypeEntry = OptionMenu(self,self.valueTypeVar,*['string','int','float','bool'])
         
         conditionals = ['']
-        conditionals.extend(root.getAction().conditionalActions.keys())
-        ifEntry = OptionMenu(self,self.getVar('ifActions'),*conditionals)
-        elseEntry = OptionMenu(self,self.getVar('elseActions'),*conditionals)
+        conditionals.extend(root.getAction().conditional_actions.keys())
+        ifEntry = OptionMenu(self,self.getVar('if_actions'),*conditionals)
+        elseEntry = OptionMenu(self,self.getVar('else_actions'),*conditionals)
         
         self.initVars()
         
@@ -246,9 +246,9 @@ class IfButtonProperties(BasePropertiesFrame):
         #Create Variables
         self.addVariable(StringVar, 'button')
         self.addVariable(BooleanVar, 'held')
-        self.addVariable(IntVar, 'bufferTime')
-        self.addVariable(StringVar, 'ifActions')
-        self.addVariable(StringVar, 'elseActions')
+        self.addVariable(IntVar, 'buffer_time')
+        self.addVariable(StringVar, 'if_actions')
+        self.addVariable(StringVar, 'else_actions')
         
         buttonLabel = Label(self,text="Button:")
         bufferLabel = Label(self,text="Buffer:")
@@ -257,12 +257,12 @@ class IfButtonProperties(BasePropertiesFrame):
         
         buttonEntry = OptionMenu(self,self.getVar('button'),*['left','right','up','down','attack','jump','special','shield'])
         heldEntry = Checkbutton(self,text="Held?",variable=self.getVar('held'))
-        bufferEntry = Spinbox(self,textvariable=self.getVar('bufferTime'),from_=0,to=255)
+        bufferEntry = Spinbox(self,textvariable=self.getVar('buffer_time'),from_=0,to=255)
         
         conditionals = ['']
-        conditionals.extend(root.getAction().conditionalActions.keys())
-        ifEntry = OptionMenu(self,self.getVar('ifActions'),*conditionals)
-        elseEntry = OptionMenu(self,self.getVar('elseActions'),*conditionals)
+        conditionals.extend(root.getAction().conditional_actions.keys())
+        ifEntry = OptionMenu(self,self.getVar('if_actions'),*conditionals)
+        elseEntry = OptionMenu(self,self.getVar('else_actions'),*conditionals)
         
         self.initVars()
         
@@ -327,7 +327,7 @@ class ChangeSpeedProperties(BasePropertiesFrame):
         
         self.addVariable(IntVar, 'speed_x')
         self.addVariable(IntVar, 'speed_y')
-        self.addVariable(BooleanVar, 'xRelative')
+        self.addVariable(BooleanVar, 'x_relative')
         
         self.xUnchanged=BooleanVar(self)
         self.yUnchanged=BooleanVar(self)
@@ -341,7 +341,7 @@ class ChangeSpeedProperties(BasePropertiesFrame):
         self.ySpeedEntry = Spinbox(self,textvariable=self.getVar('speed_y'),from_=-255,to=255)
         self.ySpeedEntry.config(width=4)
         
-        self.xSpeedRelative = Checkbutton(self,variable=self.getVar('xRelative'),text="Relative?")
+        self.xSpeedRelative = Checkbutton(self,variable=self.getVar('x_relative'),text="Relative?")
         xUnchangedEntry = Checkbutton(self,variable=self.xUnchanged,text="Leave X Unchanged")
         yUnchangedEntry = Checkbutton(self,variable=self.yUnchanged,text="Leave Y Unchanged")
         
@@ -412,8 +412,8 @@ class ShiftPositionProperties(BasePropertiesFrame):
         
         self.addVariable(IntVar, 'new_x')
         self.addVariable(IntVar, 'new_y')
-        self.addVariable(BooleanVar, 'xRelative')
-        self.addVariable(BooleanVar, 'yRelative')
+        self.addVariable(BooleanVar, 'x_relative')
+        self.addVariable(BooleanVar, 'y_relative')
         
         self.xUnchanged=BooleanVar(self)
         self.yUnchanged=BooleanVar(self)
@@ -427,8 +427,8 @@ class ShiftPositionProperties(BasePropertiesFrame):
         self.ySpeedEntry = Spinbox(self,textvariable=self.getVar('new_y'),from_=-255,to=255)
         self.ySpeedEntry.config(width=4)
         
-        self.xSpeedRelative = Checkbutton(self,variable=self.getVar('xRelative'),text="Relative?")
-        self.ySpeedRelative = Checkbutton(self,variable=self.getVar('yRelative'),text="Relative?")
+        self.xSpeedRelative = Checkbutton(self,variable=self.getVar('x_relative'),text="Relative?")
+        self.ySpeedRelative = Checkbutton(self,variable=self.getVar('y_relative'),text="Relative?")
         xUnchangedEntry = Checkbutton(self,variable=self.xUnchanged,text="Leave X Unchanged")
         yUnchangedEntry = Checkbutton(self,variable=self.yUnchanged,text="Leave Y Unchanged")
         
@@ -506,7 +506,7 @@ class ShiftSpriteProperties(BasePropertiesFrame):
         
         self.addVariable(IntVar, 'new_x')
         self.addVariable(IntVar, 'new_y')
-        self.addVariable(BooleanVar, 'xRelative')
+        self.addVariable(BooleanVar, 'x_relative')
         
         self.xUnchanged=BooleanVar(self)
         self.yUnchanged=BooleanVar(self)
@@ -520,7 +520,7 @@ class ShiftSpriteProperties(BasePropertiesFrame):
         self.ySpeedEntry = Spinbox(self,textvariable=self.getVar('new_y'),from_=-255,to=255)
         self.ySpeedEntry.config(width=4)
         
-        self.xSpeedRelative = Checkbutton(self,variable=self.getVar('xRelative'),text="Relative?")
+        self.xSpeedRelative = Checkbutton(self,variable=self.getVar('x_relative'),text="Relative?")
         xUnchangedEntry = Checkbutton(self,variable=self.xUnchanged,text="Leave X Unchanged")
         yUnchangedEntry = Checkbutton(self,variable=self.yUnchanged,text="Leave Y Unchanged")
         
@@ -586,12 +586,12 @@ class UpdateLandingLagProperties(BasePropertiesFrame):
     def __init__(self,root,subaction):
         BasePropertiesFrame.__init__(self, root, subaction)
         
-        self.addVariable(IntVar, 'newLag')
+        self.addVariable(IntVar, 'new_lag')
         self.addVariable(BooleanVar, 'reset')
         
         lagLabel = Label(self,text="New Lag:")
         
-        lagEntry = Spinbox(self,textvariable=self.getVar('newLag'),from_=0,to=255)
+        lagEntry = Spinbox(self,textvariable=self.getVar('new_lag'),from_=0,to=255)
         resetButton = Checkbutton(self,variable=self.getVar('reset'),text="Reset even if lower?")
         
         self.initVars()
@@ -641,12 +641,12 @@ class ChangeFrameProperties(BasePropertiesFrame):
     def __init__(self,root,subaction):
         BasePropertiesFrame.__init__(self, root, subaction)
         
-        self.addVariable(IntVar, 'newFrame')
+        self.addVariable(IntVar, 'new_frame')
         self.addVariable(BooleanVar, 'relative')
         
         frameLabel = Label(self,text="Frame:")
         
-        frameEntry = Spinbox(self,textvariable=self.getVar('newFrame'),from_=-255,to=255)
+        frameEntry = Spinbox(self,textvariable=self.getVar('new_frame'),from_=-255,to=255)
         relativeEntry = Checkbutton(self,variable=self.getVar('relative'),text="Relative?")
         
         self.initVars()
@@ -674,8 +674,8 @@ class ModifyHitboxProperties(BasePropertiesFrame):
         BasePropertiesFrame.__init__(self, root, subaction)
         
         import engine
-        if root.getAction().hitboxes.has_key(self.subaction.hitboxName):
-            self.hitbox = root.getAction().hitboxes[self.subaction.hitboxName]
+        if root.getAction().hitboxes.has_key(self.subaction.hitbox_name):
+            self.hitbox = root.getAction().hitboxes[self.subaction.hitbox_name]
         else: self.hitbox = engine.hitbox.Hitbox(root.getFighter(),engine.hitbox.HitboxLock())
         self.variableList = []
         
@@ -712,10 +712,10 @@ class ModifyHitboxProperties(BasePropertiesFrame):
         hitstunVar = DoubleVar(self)
         
         self.variableList.append((damageVar,'damage'))
-        self.variableList.append((bkbVar,'baseKnockback'))
-        self.variableList.append((kbgVar,'knockbackGrowth'))
+        self.variableList.append((bkbVar,'base_knockback'))
+        self.variableList.append((kbgVar,'knockback_growth'))
         self.variableList.append((trajectoryVar,'trajectory'))
-        self.variableList.append((hitstunVar,'hitstun'))
+        self.variableList.append((hitstun_multiplierVar,'hitstun_multiplier'))
         
         damageEntry = Spinbox(damageFrame,textvariable=damageVar,from_=0,to=255,increment=0.5,format='%.1f')
         bkbEntry = Spinbox(damageFrame,textvariable=bkbVar,from_=-255,to=255)
@@ -759,14 +759,14 @@ class ModifyHitboxProperties(BasePropertiesFrame):
             var.trace('w',lambda name1, name2, op, variable=var, varname=val: self.variableChanged(variable, varname, name1, name2, op,))
             
     def populateHitboxVariable(self,variable):
-        if self.subaction.hitboxVars.has_key(variable):
-            return self.subaction.hitboxVars[variable]
+        if self.subaction.hitbox_vars.has_key(variable):
+            return self.subaction.hitbox_vars[variable]
         else: return getattr(self.hitbox,variable)
     
     def variableChanged(self,var,varname,*args):
         print(var,varname)
-        hitboxVars = {varname: var.get()}
-        self.subaction.hitboxVars.update(hitboxVars)
+        hitbox_vars = {varname: var.get()}
+        self.subaction.hitbox_vars.update(hitbox_vars)
         self.root.root.actionModified()
     
 """""""""""""""""""""""""""
@@ -786,19 +786,19 @@ class HitboxPropertiesFrame(ttk.Frame):
         sizeLabel = Label(self,text="Size:")
         lockLabel = Label(self,text="Lock:")
         
-        self.hitboxName = StringVar(self)
-        self.hitboxType = StringVar(self)
-        self.hitboxLock = StringVar(self)
+        self.hitbox_name = StringVar(self)
+        self.hitbox_type = StringVar(self)
+        self.hitbox_lock = StringVar(self)
         self.centerX = IntVar(self)
         self.centerY = IntVar(self)
         self.sizeX = IntVar(self)
         self.sizeY = IntVar(self)
         
-        self.hitboxName.set(self.subaction.hitboxName)
-        self.hitboxType.set(self.hitbox.hitboxType)
-        self.hitboxLock.set(self.hitbox.hitbox_lock.lockName)
+        self.hitbox_name.set(self.subaction.hitbox_name)
+        self.hitbox_type.set(self.hitbox.hitbox_type)
+        self.hitbox_lock.set(self.hitbox.hitbox_lock.lock_name)
         
-        self.name = self.hitboxName.get()
+        self.name = self.hitbox_name.get()
         
         center = self.populateHitboxVariable('center')
         self.centerX.set(center[0])
@@ -808,23 +808,23 @@ class HitboxPropertiesFrame(ttk.Frame):
         self.sizeY.set(size[1])
         
         if newHitbox:
-            hitboxTypes = ['damage','sakurai','autolink','funnel','grab','reflector']
+            hitbox_types = ['damage','sakurai','autolink','funnel','grab','reflector']
             
-            nameEntry = Entry(self,textvariable=self.hitboxName)
-            typeEntry = OptionMenu(self,self.hitboxType,*hitboxTypes)
-            lockEntry = Entry(self,textvariable=self.hitboxLock)
+            nameEntry = Entry(self,textvariable=self.hitbox_name)
+            typeEntry = OptionMenu(self,self.hitbox_type,*hitbox_types)
+            lockEntry = Entry(self,textvariable=self.hitbox_lock)
         else:
-            hitboxVals = ['No Hitboxes found']
+            hitbox_vals = ['No Hitboxes found']
             if parent.root.getAction():
-                hitboxVals = parent.root.getAction().hitboxes.keys()
+                hitbox_vals = parent.root.getAction().hitboxes.keys()
                 
-            nameEntry = OptionMenu(self,self.hitboxName,*hitboxVals)
-            typeEntry = Entry(self,textvariable=self.hitboxType,state=DISABLED)
-            lockEntry = Entry(self,textvariable=self.hitboxLock,state=DISABLED)
+            nameEntry = OptionMenu(self,self.hitbox_name,*hitbox_vals)
+            typeEntry = Entry(self,textvariable=self.hitbox_type,state=DISABLED)
+            lockEntry = Entry(self,textvariable=self.hitbox_lock,state=DISABLED)
         
-        self.hitboxName.trace('w',self.nameChanged)
-        self.hitboxType.trace('w',self.typeChanged)
-        self.hitboxLock.trace('w',self.lockChanged)
+        self.hitbox_name.trace('w',self.nameChanged)
+        self.hitbox_type.trace('w',self.typeChanged)
+        self.hitbox_lock.trace('w',self.lockChanged)
         
         centerXEntry = Spinbox(self,from_=-255,to=255,textvariable=self.centerX,width=4)
         centerYEntry = Spinbox(self,from_=-255,to=255,textvariable=self.centerY,width=4)
@@ -851,9 +851,9 @@ class HitboxPropertiesFrame(ttk.Frame):
     
     def nameChanged(self,*args):
         oldName = self.name
-        newName = self.hitboxName.get()
+        newName = self.hitbox_name.get()
         self.name = newName
-        self.subaction.hitboxName = newName
+        self.subaction.hitbox_name = newName
         
         #we need something in the action so that we can select it from a dropdown later
         if not self.parent.root.getAction().hitboxes.has_key(newName): #Set our working Hitbox to the action
@@ -864,44 +864,44 @@ class HitboxPropertiesFrame(ttk.Frame):
         self.parent.root.root.actionModified()
         
     def typeChanged(self,*args):
-        newType = self.hitboxType.get()
-        self.subaction.hitboxType = newType
+        newType = self.hitbox_type.get()
+        self.subaction.hitbox_type = newType
         self.parent.root.root.actionModified()
         
     def lockChanged(self,*args):
-        newLock = self.hitboxLock.get()
+        newLock = self.hitbox_lock.get()
         self.subaction.hitboxLock = newLock
         self.parent.root.root.actionModified()
         
     def centerChanged(self,*args):
         center = (self.centerX.get(),self.centerY.get())
-        hitboxVars = {"center": center}
-        self.subaction.hitboxVars.update(hitboxVars)
+        hitbox_vars = {"center": center}
+        self.subaction.hitbox_vars.update(hitbox_vars)
         self.parent.root.root.actionModified()
         
     def sizeChanged(self,*args):
         size = (self.sizeX.get(),self.sizeY.get())
-        hitboxVars = {"size": size}
-        self.subaction.hitboxVars.update(hitboxVars)
+        hitbox_vars = {"size": size}
+        self.subaction.hitbox_vars.update(hitbox_vars)
         self.parent.root.root.actionModified()
         
     def populateHitboxVariable(self,variable):
-        if self.subaction.hitboxVars.has_key(variable):
-            return self.subaction.hitboxVars[variable]
+        if self.subaction.hitbox_vars.has_key(variable):
+            return self.subaction.hitbox_vars[variable]
         else: return getattr(self.hitbox,variable)
         
 class UpdateHitboxProperties(BasePropertiesFrame):
     def __init__(self,root,subaction):
         BasePropertiesFrame.__init__(self, root, subaction)
         
-        self.addVariable(StringVar, 'hitboxName')
+        self.addVariable(StringVar, 'hitbox_name')
         
-        hitboxVals = ['No Hitboxes found']
+        hitbox_vals = ['No Hitboxes found']
         if root.getAction():
-            hitboxVals = root.getAction().hitboxes.keys()
+            hitbox_vals = root.getAction().hitboxes.keys()
         
         hitboxLabel = Label(self,text="Hitbox:")
-        hitboxEntry = OptionMenu(self,self.getVar('hitboxName'),*hitboxVals)
+        hitboxEntry = OptionMenu(self,self.getVar('hitbox_name'),*hitbox_vals)
         
         self.initVars()
         

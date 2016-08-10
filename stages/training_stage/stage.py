@@ -34,7 +34,7 @@ class TrainingStage(stage.Stage):
                               stage.Platform([self.size.right-32,self.size.top-32],[self.size.right-32,self.size.bottom+32])
                               ]
         
-        self.spawnLocations = [[192 * 1,self.size.bottom-65],
+        self.spawn_locations = [[192 * 1,self.size.bottom-65],
                                [192 * 4,self.size.bottom-65],
                                [192 * 2,self.size.bottom-65],
                                [192 * 3,self.size.bottom-65],
@@ -44,5 +44,5 @@ class TrainingStage(stage.Stage):
         backdrop.rect.topleft = [0,0]
         self.addToBackground(backdrop)
         
-        self.backgroundColor = [100,100,100]
+        self.background_color = [100,100,100]
         self.getLedges()

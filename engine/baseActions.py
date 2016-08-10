@@ -10,7 +10,7 @@ class Move(action.Action):
         action.Action.__init__(self,length) 
         
     def setUp(self,actor):
-        if self.spriteName=="": self.spriteName = "move"
+        if self.sprite_name=="": self.sprite_name = "move"
         action.Action.setUp(self, actor)
         self.accel = True
         self.direction = actor.facing
@@ -21,8 +21,8 @@ class Move(action.Action):
         
     def update(self, actor):
         action.Action.update(self, actor)
-        actor.preferred_xspeed = actor.var['maxGroundSpeed']*self.direction
-        actor.accel(actor.var['staticGrip'])
+        actor.preferred_xspeed = actor.var['max_ground_speed']*self.direction
+        actor.accel(actor.var['static_grip'])
 
         (key,invkey) = actor.getForwardBackwardKeys()
         if self.direction == actor.facing:
@@ -35,7 +35,7 @@ class Move(action.Action):
         
         self.frame += 1
         
-        if self.frame > self.lastFrame: self.frame = 0
+        if self.frame > self.last_frame: self.frame = 0
         
     def stateTransitions(self,actor):
         moveState(actor,self.direction)
@@ -53,7 +53,7 @@ class Dash(action.Action):
         self.runStartFrame = runStartFrame
         
     def setUp(self,actor):
-        if self.spriteName=="": self.spriteName = "dash"
+        if self.sprite_name=="": self.sprite_name = "dash"
         action.Action.setUp(self, actor)
         self.pivoted = False
         if actor.facing == 1: self.direction = 1
@@ -66,19 +66,19 @@ class Dash(action.Action):
     def update(self, actor):
         action.Action.update(self, actor)
         if self.frame == 0:
-            actor.preferred_xspeed = actor.var['runSpeed']*self.direction
+            actor.preferred_xspeed = actor.var['run_speed']*self.direction
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.grounded is False:
             actor.doAction('Fall')
         if not self.pivoted:
-            if actor.keysContain(invkey) and actor.change_x != actor.var['runSpeed']*self.direction:
+            if actor.keysContain(invkey) and actor.change_x != actor.var['run_speed']*self.direction:
                 actor.flip() #Do the moonwalk!
                 self.pivoted = True
-        actor.accel(actor.var['staticGrip'])
+        actor.accel(actor.var['static_grip'])
 
         self.frame += 1
         
-        if self.frame > self.lastFrame: 
+        if self.frame > self.last_frame: 
             self.frame = self.runStartFrame
             
     def stateTransitions(self,actor):
@@ -89,7 +89,7 @@ class Pivot(action.Action):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName = "pivot"
+        if self.sprite_name=="": self.sprite_name = "pivot"
         action.Action.setUp(self, actor)
         
     def tearDown(self, actor, nextAction):
@@ -114,10 +114,10 @@ class Pivot(action.Action):
         actor.accel(actor.var['pivotGrip'])
         if self.frame == 0:
             actor.flip()
-        if self.frame != self.lastFrame:
+        if self.frame != self.last_frame:
             self.frame += 1
             actor.preferred_xspeed = 0
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             (key, _) = actor.getForwardBackwardKeys()
             if actor.keysContain(key):
                 if actor.checkSmash(key):
@@ -138,7 +138,7 @@ class Stop(action.Action):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName = "stop"
+        if self.sprite_name=="": self.sprite_name = "stop"
         action.Action.setUp(self, actor)
         
     def update(self, actor):
@@ -150,7 +150,7 @@ class Stop(action.Action):
     def stateTransitions(self, actor):
         if actor.grounded is False:
             actor.doAction('Fall')
-        actor.accel(actor.var['staticGrip'])
+        actor.accel(actor.var['static_grip'])
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.keyHeld(key,self.frame):
             print("run")
@@ -158,7 +158,7 @@ class Stop(action.Action):
         if actor.keyHeld(invkey,self.frame):
             print("pivot")
             actor.doAction('Pivot')
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             if actor.keyHeld('jump'):
                 actor.doAction('Jump')
             else: actor.doAction('NeutralAction')
@@ -174,7 +174,7 @@ class RunPivot(action.Action):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="runPivot" 
+        if self.sprite_name=="": self.sprite_name ="runPivot" 
         action.Action.setUp(self, actor)
         actor.flip()
         
@@ -198,11 +198,11 @@ class RunPivot(action.Action):
         action.Action.update(self, actor)
         if actor.grounded is False:
             actor.doAction('Fall')
-        actor.accel(actor.var['staticGrip'])
-        if self.frame != self.lastFrame:
+        actor.accel(actor.var['static_grip'])
+        if self.frame != self.last_frame:
             self.frame += 1
-            actor.preferred_xspeed = actor.var['runSpeed']*actor.facing
-        if self.frame == self.lastFrame:
+            actor.preferred_xspeed = actor.var['run_speed']*actor.facing
+        if self.frame == self.last_frame:
             (key, _) = actor.getForwardBackwardKeys()
             if actor.keysContain(key):
                 if actor.facing == 1:
@@ -217,13 +217,13 @@ class RunStop(action.Action):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="runStop"
+        if self.sprite_name=="": self.sprite_name ="runStop"
         action.Action.setUp(self, actor)
         
     def update(self, actor):
         action.Action.update(self, actor)
         actor.preferred_xspeed = 0
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             if actor.keyHeld('jump'):
                 actor.doAction('Jump')
             else: actor.doAction('NeutralAction')
@@ -232,7 +232,7 @@ class RunStop(action.Action):
     def stateTransitions(self, actor):
         if actor.grounded is False:
             actor.doAction('Fall')
-        actor.accel(actor.var['staticGrip'])
+        actor.accel(actor.var['static_grip'])
         (key,invkey) = actor.getForwardBackwardKeys()
         if actor.keyHeld(key,self.frame):
             print("run")
@@ -240,7 +240,7 @@ class RunStop(action.Action):
         if actor.keyHeld(invkey,self.frame):
             print("run pivot")
             actor.doAction('RunPivot')
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             if actor.keyHeld('jump', 8, 1):
                 actor.doAction('Jump')
             else: actor.doAction('NeutralAction')
@@ -251,7 +251,7 @@ class NeutralAction(action.Action):
         action.Action.__init__(self, length)
     
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="neutralAction"
+        if self.sprite_name=="": self.sprite_name ="neutralAction"
         action.Action.setUp(self, actor)
         
     def stateTransitions(self, actor):
@@ -261,7 +261,7 @@ class NeutralAction(action.Action):
     
     def update(self,actor):
         action.Action.update(self, actor)
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             self.frame = 0
         self.frame += 1
 
@@ -270,24 +270,24 @@ class Respawn(action.Action):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="neutralAction"
+        if self.sprite_name=="": self.sprite_name ="neutralAction"
         action.Action.setUp(self, actor)
-        self.respawnArticle = article.RespawnPlatformArticle(actor)
+        self.respawn_article = article.RespawnPlatformArticle(actor)
         
     def stateTransitions(self, actor):
         neutralState(actor)
     
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
-        self.respawnArticle.kill()
+        self.respawn_article.kill()
         
     def update(self,actor):
         action.Action.update(self, actor)
         actor.ground = True
         actor.change_y = 0
         if self.frame == 0:
-            actor.articles.add(self.respawnArticle)
-        if self.frame == self.lastFrame:
+            actor.articles.add(self.respawn_article)
+        if self.frame == self.last_frame:
             actor.doAction('Fall')
         self.frame += 1
         
@@ -296,7 +296,7 @@ class Crouch(action.Action):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="crouch"
+        if self.sprite_name=="": self.sprite_name ="crouch"
         action.Action.setUp(self, actor)
         self.direction = actor.getForwardWithOffset(0)
 
@@ -324,9 +324,9 @@ class Crouch(action.Action):
         actor.accel(actor.var['pivotGrip'])
         (key, invkey) = actor.getForwardBackwardKeys()
         if actor.keysContain(key):
-            actor.preferred_xspeed = actor.var['crawlSpeed']*actor.facing
+            actor.preferred_xspeed = actor.var['crawl_speed']*actor.facing
         elif actor.keysContain(invkey):
-            actor.preferred_xspeed = -actor.var['crawlSpeed']*actor.facing
+            actor.preferred_xspeed = -actor.var['crawl_speed']*actor.facing
         else:
             actor.preferred_xspeed = 0
         
@@ -337,7 +337,7 @@ class CrouchGetup(action.Action):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="crouchGetup"
+        if self.sprite_name=="": self.sprite_name ="crouchGetup"
         action.Action.setUp(self, actor)
         
     def stateTransitions(self, actor):
@@ -356,7 +356,7 @@ class CrouchGetup(action.Action):
         action.Action.update(self, actor)
         actor.preferred_xspeed = 0
         self.frame += 1
-        if self.frame >= self.lastFrame:
+        if self.frame >= self.last_frame:
             actor.doAction('NeutralAction')
 
 class BaseGrabbing(action.Action):
@@ -364,7 +364,7 @@ class BaseGrabbing(action.Action):
         action.Action.__init__(self, length)
 
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="baseGrabbing"
+        if self.sprite_name=="": self.sprite_name ="baseGrabbing"
         action.Action.setUp(self, actor)
         
     def tearDown(self, actor, nextAction):
@@ -382,7 +382,7 @@ class Grabbing(BaseGrabbing):
         BaseGrabbing.__init__(self, length)
 
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="grabbing"
+        if self.sprite_name=="": self.sprite_name ="grabbing"
         action.Action.setUp(self, actor)
         actor.grabbing.flinch_damage_threshold = 9999
 
@@ -401,36 +401,36 @@ class HitStun(action.Action):
         self.direction = direction
 
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="hitStun"
+        if self.sprite_name=="": self.sprite_name ="hitStun"
         action.Action.setUp(self, actor)
-        self.techCooldown = 5
-        actor.elasticity = actor.var['hitstunElasticity']
+        self.tech_cooldown = 5
+        actor.elasticity = actor.var['hitstun_elasticity']
         
     def stateTransitions(self, actor):
         (direct,_) = actor.getDirectionMagnitude()
-        if actor.keyBuffered('shield', 1) and self.techCooldown == 0 and not actor.grounded:
+        if actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not actor.grounded:
             print('Try tech')
             actor.techWindow = 7
-            self.techCooldown = 40
+            self.tech_cooldown = 40
             
-        if self.frame == self.lastFrame:
-            actor.elasticity = actor.var['hitstunElasticity']/2
+        if self.frame == self.last_frame:
+            actor.elasticity = actor.var['hitstun_elasticity']/2
         else:
-            actor.elasticity = actor.var['hitstunElasticity']
+            actor.elasticity = actor.var['hitstun_elasticity']
             if self.frame > 2:
                 hitstunLanding(actor)
         if self.frame > 2:
-            if self.frame < self.lastFrame and actor.change_y >= actor.var['maxFallSpeed']: #Hard landing during hitstun
-                actor.ground_elasticity = actor.var['hitstunElasticity']
-            elif abs(actor.change_x) > actor.var['runSpeed']: #Skid trip
+            if self.frame < self.last_frame and actor.change_y >= actor.var['max_fall_speed']: #Hard landing during hitstun
+                actor.ground_elasticity = actor.var['hitstun_elasticity']
+            elif abs(actor.change_x) > actor.var['run_speed']: #Skid trip
                 actor.ground_elasticity = 0
                 if actor.grounded:
                     actor.doAction('Prone')
-            elif actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during hitstun
-                actor.landingLag = actor.var['heavyLandLag']+self.lastFrame-self.frame
+            elif actor.change_y < actor.var['max_fall_speed']/2.0: #Soft landing during hitstun
+                actor.landing_lag = actor.var['heavy_land_lag']+self.last_frame-self.frame
                 actor.ground_elasticity = 0
             else: #Firm landing during hitstun
-                actor.ground_elasticity = actor.var['hitstunElasticity']/2
+                actor.ground_elasticity = actor.var['hitstun_elasticity']/2
         
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
@@ -441,7 +441,7 @@ class HitStun(action.Action):
         
     def update(self,actor):
         action.Action.update(self, actor)
-        if self.techCooldown > 0: self.techCooldown -= 1
+        if self.tech_cooldown > 0: self.tech_cooldown -= 1
         
         if self.frame == 0:
             (direct,mag) = actor.getDirectionMagnitude()
@@ -451,16 +451,16 @@ class HitStun(action.Action):
                 if mag > 10:
                     actor.rotateSprite(self.direction)
             
-        if self.frame % 15 == 10 and self.frame < self.lastFrame:
+        if self.frame % 15 == 10 and self.frame < self.last_frame:
             if abs(actor.change_x) > 8 or abs(actor.change_y) > 8:
                 art = article.AnimatedArticle(settingsManager.createPath('sprites/circlepuff.png'),actor,actor.rect.center,86,6)
                 art.angle = actor.sprite.angle
-                if actor.hitTagged and hasattr(actor.hitTagged, 'playerNum'):
+                if actor.hit_tagged and hasattr(actor.hit_tagged, 'player_num'):
                     for image in art.imageList:
-                        art.recolor(image, [255,255,255], pygame.Color(settingsManager.getSetting('playerColor' + str(actor.hitTagged.playerNum))))
+                        art.recolor(image, [255,255,255], pygame.Color(settingsManager.getSetting('playerColor' + str(actor.hit_tagged.player_num))))
                 actor.articles.add(art)
                     
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             actor.doAction('Tumble')
 
         self.frame += 1
@@ -470,9 +470,9 @@ class Tumble(action.Action):
         action.Action.__init__(self, length)
     
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="tumble"
+        if self.sprite_name=="": self.sprite_name ="tumble"
         action.Action.setUp(self, actor)    
-        self.techCooldown = 0
+        self.tech_cooldown = 0
         
     def stateTransitions(self, actor):
         action.Action.stateTransitions(self, actor)
@@ -480,22 +480,22 @@ class Tumble(action.Action):
         
         (direct,_) = actor.getDirectionMagnitude()
         
-        if actor.keyBuffered('shield', 1) and self.techCooldown == 0 and not actor.grounded:
+        if actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not actor.grounded:
             print('Try tech')
             actor.techWindow = 20
-            self.techCooldown = 40
+            self.tech_cooldown = 40
             
-        if actor.change_y >= actor.var['maxFallSpeed']:#Hard landing during tumble
-            actor.ground_elasticity = actor.var['hitstunElasticity']/2
-        elif actor.change_y < actor.var['maxFallSpeed']/2.0: #Soft landing during tumble
+        if actor.change_y >= actor.var['max_fall_speed']:#Hard landing during tumble
+            actor.ground_elasticity = actor.var['hitstun_elasticity']/2
+        elif actor.change_y < actor.var['max_fall_speed']/2.0: #Soft landing during tumble
             actor.ground_elasticity = 0
             if actor.grounded: 
-                #actor.doTrip(self.lastFrame-self.frame//2, direct)
+                #actor.doTrip(self.last_frame-self.frame//2, direct)
                 actor.doAction('Prone')
         else: #Firm landing during tumble
             actor.ground_elasticity = 0
             if actor.grounded: 
-                #actor.doTrip(self.lastFrame-self.frame//2+actor.var['heavyLandLag'], direct)
+                #actor.doTrip(self.last_frame-self.frame//2+actor.var['heavy_land_lag'], direct)
                 actor.doAction('Prone')
     
     def tearDown(self, actor, nextAction):
@@ -507,29 +507,29 @@ class Tumble(action.Action):
     def update(self, actor):
         action.Action.update(self, actor)
         actor.rotateSprite((actor.sprite.angle+90)+2)
-        if self.techCooldown > 0: self.techCooldown -= 1
+        if self.tech_cooldown > 0: self.tech_cooldown -= 1
         
 class Prone(action.Action):
     def __init__(self,length=40):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
-        if self.spriteName == "": self.spriteName = "prone"
+        if self.sprite_name == "": self.sprite_name = "prone"
         action.Action.setUp(self, actor)
-        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        actor.rect.bottom = actor.ecb.current_ecb.rect.bottom
         actor.unRotate()
         
     def update(self, actor):
         action.Action.update(self, actor)
         if not actor.grounded:
             actor.doAction('Tumble')
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             actor.doAction('Getup')
         self.frame += 1
         
     def stateTransitions(self, actor):
         action.Action.stateTransitions(self, actor)
-        if self.frame >= self.lastFrame:
+        if self.frame >= self.last_frame:
             proneState(actor)
         
 class Trip(action.Action):
@@ -538,19 +538,19 @@ class Trip(action.Action):
         self.direction = direction
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="trip"
+        if self.sprite_name=="": self.sprite_name ="trip"
         action.Action.setUp(self, actor)
-        actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        actor.rect.bottom = actor.ecb.current_ecb.rect.bottom
 
     def update(self, actor):
         if actor.grounded is False:
-            actor.doHitStun(self.lastFrame-self.frame, self.direction)
-        if self.frame >= self.lastFrame + 60: #You aren't up yet?
+            actor.doHitStun(self.last_frame-self.frame, self.direction)
+        if self.frame >= self.last_frame + 60: #You aren't up yet?
             actor.doGetup(self.direction)
         self.frame += 1
 
     def stateTransitions(self, actor):
-        if self.frame >= self.lastFrame:
+        if self.frame >= self.last_frame:
             proneState(actor)
 
 class Getup(action.Action):
@@ -558,12 +558,12 @@ class Getup(action.Action):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="getup"
+        if self.sprite_name=="": self.sprite_name ="getup"
         action.Action.setUp(self, actor)
         
     def update(self, actor):
         action.Action.update(self, actor)
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             actor.doAction('NeutralAction')
         self.frame += 1
         
@@ -572,58 +572,58 @@ class Getup(action.Action):
 @ai-move-stop
 """
 class Jump(action.Action):
-    def __init__(self,length=0,jumpFrame=0):
+    def __init__(self,length=0,jump_frame=0):
         action.Action.__init__(self, length)
-        self.jumpFrame = jumpFrame
+        self.jump_frame = jump_frame
     
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="jump"
+        if self.sprite_name=="": self.sprite_name ="jump"
         action.Action.setUp(self, actor)
         
     def stateTransitions(self, actor):
-        if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jumpFrame:
+        if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jump_frame:
             print("Jump cancelled into up smash")
             actor.doAction('UpSmash')
-        elif actor.keyHeld('special') and actor.checkSmash('up') and self.frame < self.jumpFrame:
+        elif actor.keyHeld('special') and actor.checkSmash('up') and self.frame < self.jump_frame:
             print("Jump cancelled into up special")
             if self.hasAction('UpSpecial'):
                 self.doAction('UpSpecial')
             else:
                 self.doAction('UpGroundSpecial')
-        elif self.frame > self.jumpFrame+2:
+        elif self.frame > self.jump_frame+2:
             jumpState(actor)
         
     def update(self,actor):
         action.Action.update(self, actor)
-        if self.frame == self.jumpFrame:
+        if self.frame == self.jump_frame:
             actor.grounded = False
             if actor.keysContain('jump'):
-                actor.change_y = -actor.var['jumpHeight']
-            else: actor.change_y = -actor.var['shortHopHeight']
-            if actor.change_x > actor.var['aerialTransitionSpeed']:
-                actor.change_x = actor.var['aerialTransitionSpeed']
-            elif actor.change_x < -actor.var['aerialTransitionSpeed']:
-                actor.change_x = -actor.var['aerialTransitionSpeed']
-        if self.frame < self.lastFrame:
+                actor.change_y = -actor.var['jump_height']
+            else: actor.change_y = -actor.var['short_hop_height']
+            if actor.change_x > actor.var['aerial_transition_speed']:
+                actor.change_x = actor.var['aerial_transition_speed']
+            elif actor.change_x < -actor.var['aerial_transition_speed']:
+                actor.change_x = -actor.var['aerial_transition_speed']
+        if self.frame < self.last_frame:
             self.frame += 1
-        if self.frame == self.lastFrame and not actor.keysContain('jump'):
+        if self.frame == self.last_frame and not actor.keysContain('jump'):
             actor.doAction('Fall')
 
 class AirJump(action.Action):
-    def __init__(self,length=0,jumpFrame=0):
+    def __init__(self,length=0,jump_frame=0):
         action.Action.__init__(self, length)
-        self.jumpFrame = jumpFrame
+        self.jump_frame = jump_frame
         #TODO: Change to add the number of buffer frames
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="airjump"
+        if self.sprite_name=="": self.sprite_name ="airjump"
         action.Action.setUp(self, actor)
 
     def stateTransitions(self, actor):
-        if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jumpFrame:
+        if actor.keyHeld('attack') and actor.checkSmash('up') and self.frame < self.jump_frame:
             print("Jump cancelled into up aerial")
             actor.doAction('UpAir')
-        elif actor.keyHeld('special') and actor.checkSmash('up') and self.frame < self.jumpFrame:
+        elif actor.keyHeld('special') and actor.checkSmash('up') and self.frame < self.jump_frame:
             print("Jump cancelled into up special")
             if self.hasAction('UpSpecial'):
                 self.doAction('UpSpecial')
@@ -634,26 +634,26 @@ class AirJump(action.Action):
 
     def tearDown(self, actor, nextAction):
         action.Action.tearDown(self, actor, nextAction)
-        actor.preferred_yspeed = actor.var['maxFallSpeed']
+        actor.preferred_yspeed = actor.var['max_fall_speed']
         
     def update(self,actor):
         action.Action.update(self, actor)
-        if self.frame < self.jumpFrame:
+        if self.frame < self.jump_frame:
             actor.change_y = 0
             actor.preferred_yspeed = 0
-        if self.frame == self.jumpFrame:
+        if self.frame == self.jump_frame:
             actor.grounded = False
-            actor.change_y = -actor.var['airJumpHeight']
+            actor.change_y = -actor.var['air_jump_height']
             actor.jumps -= 1
             if actor.keysContain('left') and actor.facing == 1:
                 actor.flip()
-                actor.change_x = actor.facing * actor.var['maxAirSpeed']
+                actor.change_x = actor.facing * actor.var['max_air_speed']
             elif actor.keysContain('right') and actor.facing == -1:
                 actor.flip()
-                actor.change_x = actor.facing * actor.var['maxAirSpeed']
-        if self.frame < self.lastFrame:
+                actor.change_x = actor.facing * actor.var['max_air_speed']
+        if self.frame < self.last_frame:
             self.frame += 1
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             actor.doAction('Fall')
         
 class Fall(action.Action):
@@ -661,10 +661,10 @@ class Fall(action.Action):
         action.Action.__init__(self, 1)
 
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="fall"
+        if self.sprite_name=="": self.sprite_name ="fall"
         action.Action.setUp(self, actor)
         actor.preferred_xspeed = 0
-        actor.preferred_yspeed = actor.var['maxFallSpeed']
+        actor.preferred_yspeed = actor.var['max_fall_speed']
     
     def stateTransitions(self,actor):
         airState(actor)
@@ -680,7 +680,7 @@ class Helpless(action.Action):
         action.Action.__init__(self, 1)
     
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="helpless"
+        if self.sprite_name=="": self.sprite_name ="helpless"
         action.Action.setUp(self, actor)
     
     def tearDown(self, actor, nextAction):
@@ -702,10 +702,10 @@ class Land(action.Action):
         action.Action.__init__(self, 6)
 
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="land"
+        if self.sprite_name=="": self.sprite_name ="land"
         action.Action.setUp(self, actor)
         actor.unRotate()
-        #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        #actor.rect.bottom = actor.ecb.current_ecb.rect.bottom
 
 
     def tearDown(self, actor, nextAction):
@@ -714,15 +714,15 @@ class Land(action.Action):
 
     def update(self,actor):
         action.Action.update(self, actor)
-        #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        #actor.rect.bottom = actor.ecb.current_ecb.rect.bottom
         if self.frame == 0:
-            actor.preferred_yspeed = actor.var['maxFallSpeed']
-            self.lastFrame = actor.landingLag
+            actor.preferred_yspeed = actor.var['max_fall_speed']
+            self.last_frame = actor.landing_lag
             if actor.keyHeld('shield', 1):
                 print("l-cancel")
-                self.lastFrame = self.lastFrame // 2
+                self.last_frame = self.last_frame // 2
 
-        if actor.keyHeld('down') and self.frame*2 > self.lastFrame:
+        if actor.keyHeld('down') and self.frame*2 > self.last_frame:
             blocks = actor.checkGround()
             if blocks:   
                 blocks = map(lambda x: x.solid, blocks)
@@ -732,10 +732,10 @@ class Land(action.Action):
         if self.frame == 1:
             #actor.articles.add(article.LandingArticle(actor)) #this looks awful don't try it
             pass
-        if self.frame == self.lastFrame:
-            actor.landingLag = 0
+        if self.frame == self.last_frame:
+            actor.landing_lag = 0
             actor.doAction('NeutralAction')
-            actor.platformPhase = 0
+            actor.platform_phase = 0
             actor.preferred_xspeed = 0
         self.frame+= 1
 
@@ -744,70 +744,70 @@ class HelplessLand(action.Action):
         action.Action.__init__(self, 6)
 
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="helplessLand"
+        if self.sprite_name=="": self.sprite_name ="helplessLand"
         action.Action.setUp(self, actor)
-        #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        #actor.rect.bottom = actor.ecb.current_ecb.rect.bottom
 
 
     def update(self,actor):
         action.Action.update(self, actor)
-        #actor.rect.bottom = actor.ecb.currentECB.rect.bottom
+        #actor.rect.bottom = actor.ecb.current_ecb.rect.bottom
         if self.frame == 0:
             actor.change_y = 0
-            actor.preferred_yspeed = actor.var['maxFallSpeed']
-            self.lastFrame = actor.landingLag
+            actor.preferred_yspeed = actor.var['max_fall_speed']
+            self.last_frame = actor.landing_lag
             if actor.keyHeld('shield', 20):
                 print("l-cancel")
-                self.lastFrame = self.lastFrame // 2
+                self.last_frame = self.last_frame // 2
         if actor.keyHeld('down', 8):
             blocks = actor.checkGround()
             if blocks:
                 blocks = map(lambda x: x.solid, blocks)
                 if not any(blocks):
                     actor.doAction('PlatformDrop')
-        if self.frame >= self.lastFrame:
-            actor.landingLag = 0
+        if self.frame >= self.last_frame:
+            actor.landing_lag = 0
             actor.doAction('NeutralAction')
-            actor.platformPhase = 0
+            actor.platform_phase = 0
             actor.preferred_xspeed = 0
         self.frame += 1
 
 class PlatformDrop(action.Action):
-    def __init__(self, length=1, phaseFrame=1, phaseLength=1):
+    def __init__(self, length=1, phase_frame=1, phase_length=1):
         action.Action.__init__(self, length)
-        self.phaseFrame = phaseFrame
-        self.phaseLength = phaseLength
+        self.phase_frame = phase_frame
+        self.phase_length = phase_length
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="platformDrop"
+        if self.sprite_name=="": self.sprite_name ="platformDrop"
         action.Action.setUp(self, actor)
         
     def stateTransitions(self, actor):
-        if actor.keyHeld('attack') and actor.checkSmash('down') and self.frame < self.phaseFrame:
+        if actor.keyHeld('attack') and actor.checkSmash('down') and self.frame < self.phase_frame:
             print("Platform drop cancelled into down smash")
             actor.doAction('DownSmash')
-        elif actor.keyHeld('special') and actor.checkSmash('down') and self.frame < self.phaseFrame:
+        elif actor.keyHeld('special') and actor.checkSmash('down') and self.frame < self.phase_frame:
             print("Platform drop cancelled into down special")
             if self.hasAction('DownSpecial'):
                 self.doAction('DownSpecial')
             else:
                 self.doAction('DownGroundSpecial')
-        if self.frame > self.phaseFrame:
+        if self.frame > self.phase_frame:
             airControl(actor)
         
     def update(self,actor):
         action.Action.update(self, actor)
-        if self.frame == self.phaseFrame:
-            actor.platformPhase = self.phaseLength
-        if self.frame == self.lastFrame:
+        if self.frame == self.phase_frame:
+            actor.platform_phase = self.phase_length
+        if self.frame == self.last_frame:
             actor.doAction('Fall')
         self.frame += 1
 
 
 class Shield(action.Action):
-    def __init__(self, newShield=True):
+    def __init__(self, new_shield=True):
         action.Action.__init__(self, 8)
-        self.newShield = newShield
+        self.new_shield = new_shield
    
     def setUp(self, actor):
         action.Action.setUp(self, actor)
@@ -847,7 +847,7 @@ class Shield(action.Action):
             actor.doAction('Fall')
         if self.frame == 0:
             actor.shield = True
-            if self.newShield:
+            if self.new_shield:
                 actor.startShield()
             if actor.keysContain('shield'):
                 self.frame += 1
@@ -856,10 +856,10 @@ class Shield(action.Action):
         elif self.frame == 1:
             if not actor.keysContain('shield'):
                 self.frame += 1
-        elif self.frame >= 2 and self.frame < self.lastFrame:
+        elif self.frame >= 2 and self.frame < self.last_frame:
             actor.shield = False
             self.frame += 1
-        elif self.frame >= self.lastFrame:
+        elif self.frame >= self.last_frame:
             actor.doAction('NeutralAction')
         else: self.frame += 1
         if self.forward_last > 0: self.forward_last -= 1
@@ -871,7 +871,7 @@ class ShieldStun(action.Action):
         action.Action.__init__(self, length)
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="shieldStun"
+        if self.sprite_name=="": self.sprite_name ="shieldStun"
         action.Action.setUp(self, actor)
 
     def tearDown(self, actor, nextAction):
@@ -883,19 +883,19 @@ class ShieldStun(action.Action):
         if actor.grounded is False:
             actor.shield = False
             actor.doAction('Fall')
-        if self.frame >= self.lastFrame and actor.keysContain('shield'):
+        if self.frame >= self.last_frame and actor.keysContain('shield'):
             actor.doShield(False)
-        elif self.frame >= self.lastFrame:
+        elif self.frame >= self.last_frame:
             actor.doAction('NeutralAction')
         self.frame += 1
 
 class Stunned(action.Action):
     def __init__(self, length=1):
         action.Action.__init__(self, length)
-        if self.spriteName=="": self.spriteName ="stunned"
+        if self.sprite_name=="": self.sprite_name ="stunned"
     
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="stunned"
+        if self.sprite_name=="": self.sprite_name ="stunned"
         action.Action.setUp(self, actor)
     
     def tearDown(self, actor, nextAction):
@@ -906,7 +906,7 @@ class Stunned(action.Action):
         action.Action.update(self, actor)
         if self.frame == 0:
             actor.createMask([255, 0, 255], 99999, True, 8)
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             actor.doAction('NeutralAction')
         self.frame += 1
 
@@ -914,19 +914,19 @@ class Trapped(action.Action):
     def __init__(self, length=1):
         action.Action.__init__(self, length)
         self.time = 0
-        self.lastPosition = [0,0]
+        self.last_position = [0,0]
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="trapped"
+        if self.sprite_name=="": self.sprite_name ="trapped"
         action.Action.setUp(self, actor)
         
     def update(self,actor):
         action.Action.update(self, actor)
-        newPosition = actor.getSmoothedInput()
-        cross = newPosition[0]*self.lastPosition[1]-newPosition[1]*self.lastPosition[0]
+        new_position = actor.getSmoothedInput()
+        cross = new_position[0]*self.last_position[1]-new_position[1]*self.last_position[0]
         self.frame += (cross**2)*4
-        self.lastPosition = newPosition
-        if self.frame >= self.lastFrame:
+        self.last_position = new_position
+        if self.frame >= self.last_frame:
             actor.doAction('Released')
         # Throws and other grabber-controlled releases are the grabber's responsibility
         # Also, the grabber should always check to see if the grabbee is still under grab
@@ -940,18 +940,18 @@ class Grabbed(Trapped):
         self.height = height
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="grabbed"
+        if self.sprite_name=="": self.sprite_name ="grabbed"
         Trapped.setUp(self, actor)
         
     def update(self,actor):
         action.Action.update(self, actor)
         if self.frame == 0:
-            self.lastFrame = 40 + actor.damage//2
+            self.last_frame = 40 + actor.damage//2
         if (self.height > actor.rect.height):
-            actor.rect.top = actor.grabbedBy.rect.bottom-self.height
+            actor.rect.top = actor.grabbed_by.rect.bottom-self.height
         else:
-            actor.rect.bottom = actor.grabbedBy.rect.bottom
-        actor.rect.centerx = actor.grabbedBy.rect.centerx+actor.grabbedBy.facing*actor.grabbedBy.rect.width/2.0
+            actor.rect.bottom = actor.grabbed_by.rect.bottom
+        actor.rect.centerx = actor.grabbed_by.rect.centerx+actor.grabbed_by.facing*actor.grabbed_by.rect.width/2.0
         Trapped.update(self, actor)
 
 class Release(action.Action):
@@ -959,13 +959,13 @@ class Release(action.Action):
         action.Action.__init__(self, 15)
     
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="release"
+        if self.sprite_name=="": self.sprite_name ="release"
         action.Action.setUp(self, actor)
         
     def update(self, actor):
         if actor.grounded is False:
             actor.doAction('Fall')
-        if self.frame >= self.lastFrame:
+        if self.frame >= self.last_frame:
             actor.doAction('NeutralAction')
         self.frame += 1
 
@@ -974,38 +974,38 @@ class Released(action.Action):
         action.Action.__init__(self, 15)
 
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="released"
+        if self.sprite_name=="": self.sprite_name ="released"
         action.Action.setUp(self, actor)
         actor.preferred_xspeed = 0
-        actor.preferred_yspeed = actor.var['maxFallSpeed']
+        actor.preferred_yspeed = actor.var['max_fall_speed']
     
     def stateTransitions(self,actor):
         (key, invkey) = actor.getForwardBackwardKeys()
         if actor.keysContain(key):
-            actor.preferred_xspeed = actor.facing * actor.var['maxAirSpeed']
+            actor.preferred_xspeed = actor.facing * actor.var['max_air_speed']
         elif actor.keysContain(invkey):
-            actor.preferred_xspeed = -actor.facing * actor.var['maxAirSpeed']
+            actor.preferred_xspeed = -actor.facing * actor.var['max_air_speed']
     
         if (actor.change_x < 0) and not actor.keysContain('left'):
             actor.preferred_xspeed = 0
         elif (actor.change_x > 0) and not actor.keysContain('right'):
             actor.preferred_xspeed = 0
 
-        if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:
-            actor.landingLag = actor.var['heavyLandLag']
+        if actor.change_y >= actor.var['max_fall_speed'] and actor.landing_lag < actor.var['heavy_land_lag']:
+            actor.landing_lag = actor.var['heavy_land_lag']
 
         if actor.grounded and actor.ground_elasticity == 0:
             actor.preferred_xspeed = 0
-            actor.preferred_yspeed = actor.var['maxFallSpeed']
+            actor.preferred_yspeed = actor.var['max_fall_speed']
             actor.doAction('Prone')
-            actor.current_action.lastFrame = 15 - self.lastFrame
+            actor.current_action.last_frame = 15 - self.last_frame
 
         grabLedges(actor)
         
     def update(self,actor):
         action.Action.update(self, actor)
         actor.grounded = False
-        if self.frame >= self.lastFrame:
+        if self.frame >= self.last_frame:
             actor.doAction('Fall')
         self.frame += 1
         
@@ -1014,9 +1014,9 @@ class ForwardRoll(action.Action):
         action.Action.__init__(self, 46)
         
     def setUp(self, actor):
-        self.startInvulnFrame = 6
-        self.endInvulnFrame = 34
-        if self.spriteName=="": self.spriteName ="forwardRoll"
+        self.start_invuln_frame = 6
+        self.end_invuln_frame = 34
+        if self.sprite_name=="": self.sprite_name ="forwardRoll"
         action.Action.setUp(self, actor)
 
     def tearDown(self, actor, nextAction):
@@ -1030,15 +1030,15 @@ class ForwardRoll(action.Action):
         if actor.grounded is False:
             actor.doAction('Fall')
         if self.frame == 1:
-            actor.change_x = actor.facing * actor.var['dodgeSpeed']
-        elif self.frame == self.startInvulnFrame:
+            actor.change_x = actor.facing * actor.var['dodge_speed']
+        elif self.frame == self.start_invuln_frame:
             actor.createMask([255,255,255], 22, True, 24)
-            actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
-        elif self.frame == self.endInvulnFrame:
+            actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
+        elif self.frame == self.end_invuln_frame:
             actor.flip()
             actor.change_x = 0
-        elif self.frame == self.lastFrame:
-            if 'shield' in actor.keysHeld:
+        elif self.frame == self.last_frame:
+            if 'shield' in actor.keys_held:
                 actor.doShield()
             else:
                 actor.doAction('NeutralAction')
@@ -1049,9 +1049,9 @@ class BackwardRoll(action.Action):
         action.Action.__init__(self, 50)
         
     def setUp(self,actor):
-        self.startInvulnFrame = 6
-        self.endInvulnFrame = 34
-        if self.spriteName=="": self.spriteName ="backwardRoll"
+        self.start_invuln_frame = 6
+        self.end_invuln_frame = 34
+        if self.sprite_name=="": self.sprite_name ="backwardRoll"
         action.Action.setUp(self, actor)
 
     def tearDown(self, actor, nextAction):
@@ -1065,14 +1065,14 @@ class BackwardRoll(action.Action):
         if actor.grounded is False:
             actor.doAction('Fall')
         if self.frame == 1:
-            actor.change_x = actor.facing * -actor.var['dodgeSpeed']
-        elif self.frame == self.startInvulnFrame:
+            actor.change_x = actor.facing * -actor.var['dodge_speed']
+        elif self.frame == self.start_invuln_frame:
             actor.createMask([255,255,255], 22, True, 24)
-            actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
-        elif self.frame == self.endInvulnFrame:
+            actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
+        elif self.frame == self.end_invuln_frame:
             actor.change_x = 0
-        elif self.frame == self.lastFrame:
-            if 'shield' in actor.keysHeld:
+        elif self.frame == self.last_frame:
+            if 'shield' in actor.keys_held:
                 actor.doShield()
             else:
                 actor.doAction('NeutralAction')
@@ -1083,9 +1083,9 @@ class SpotDodge(action.Action):
         action.Action.__init__(self, 24)
         
     def setUp(self,actor):
-        self.startInvulnFrame = 4
-        self.endInvulnFrame = 20
-        if self.spriteName=="": self.spriteName ="spotDodge"
+        self.start_invuln_frame = 4
+        self.end_invuln_frame = 20
+        if self.sprite_name=="": self.sprite_name ="spotDodge"
         action.Action.setUp(self, actor)
 
     def tearDown(self, actor, nextAction):
@@ -1107,13 +1107,13 @@ class SpotDodge(action.Action):
                     actor.doAction('PlatformDrop')
         if self.frame == 1:
             actor.change_x = 0
-        elif self.frame == self.startInvulnFrame:
+        elif self.frame == self.start_invuln_frame:
             actor.createMask([255,255,255],16,True,24)
-            actor.invulnerable = self.endInvulnFrame - self.startInvulnFrame
-        elif self.frame == self.endInvulnFrame:
+            actor.invulnerable = self.end_invuln_frame - self.start_invuln_frame
+        elif self.frame == self.end_invuln_frame:
             pass
-        elif self.frame == self.lastFrame:
-            if 'shield' in actor.keysHeld:
+        elif self.frame == self.last_frame:
+            if 'shield' in actor.keys_held:
                 actor.doShield()
             else:
                 actor.doAction('NeutralAction')
@@ -1124,25 +1124,25 @@ class AirDodge(action.Action):
         action.Action.__init__(self, 24)
         
     def setUp(self,actor):
-        if self.spriteName=="": self.spriteName ="airDodge"
+        if self.sprite_name=="": self.sprite_name ="airDodge"
         action.Action.setUp(self, actor)
-        self.startInvulnFrame = 4
-        self.endInvulnFrame = 20
+        self.start_invuln_frame = 4
+        self.end_invuln_frame = 20
         self.move_vec = [0,0]
         
         if settingsManager.getSetting('enableWavedash'):
-            actor.updateLandingLag(actor.var['wavedashLag'])
+            actor.updateLandingLag(actor.var['wavedash_lag'])
         else:
             actor.updateLandingLag(20)
         if settingsManager.getSetting('airDodgeType') == 'directional':
             self.move_vec = actor.getSmoothedInput()
-            actor.change_x = self.move_vec[0]*actor.var['dodgeSpeed']
-            actor.change_y = self.move_vec[1]*actor.var['dodgeSpeed']
+            actor.change_x = self.move_vec[0]*actor.var['dodge_speed']
+            actor.change_y = self.move_vec[1]*actor.var['dodge_speed']
         
     def tearDown(self,actor,nextAction):
         action.Action.tearDown(self, actor, nextAction)
         if settingsManager.getSetting('airDodgeType') == 'directional':
-            actor.preferred_yspeed = actor.var['maxFallSpeed']
+            actor.preferred_yspeed = actor.var['max_fall_speed']
             actor.preferred_xspeed = 0
         if actor.mask: actor.mask = None
         if actor.invulnerable > 0:
@@ -1165,17 +1165,17 @@ class AirDodge(action.Action):
                 actor.change_y = 0
                 actor.preferred_xspeed = 0
                 actor.preferred_yspeed = 0
-            elif self.frame == self.lastFrame:
-                actor.preferred_yspeed = actor.var['maxFallSpeed']
+            elif self.frame == self.last_frame:
+                actor.preferred_yspeed = actor.var['max_fall_speed']
                 
-        if self.frame == self.startInvulnFrame:
+        if self.frame == self.start_invuln_frame:
             actor.createMask([255,255,255],16,True,24)
-            actor.invulnerable = self.endInvulnFrame-self.startInvulnFrame
-        elif self.frame == self.startInvulnFrame+2:
+            actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
+        elif self.frame == self.start_invuln_frame+2:
             actor.updateLandingLag(20)
-        elif self.frame == self.endInvulnFrame:
-            actor.landingLag = 20
-        elif self.frame == self.lastFrame:
+        elif self.frame == self.end_invuln_frame:
+            actor.landing_lag = 20
+        elif self.frame == self.last_frame:
             if settingsManager.getSetting('freeDodgeSpecialFall'):
                 actor.doAction('Helpless')
             else:
@@ -1186,17 +1186,17 @@ class LedgeGrab(action.Action):
     def __init__(self,ledge=None):
         action.Action.__init__(self, 1)
         self.ledge = ledge
-        self.sweetSpotX = 0
-        self.sweetSpotY = 0
+        self.sweetspot_x = 0
+        self.sweetspot_y = 0
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="ledgeGrab"
+        if self.sprite_name=="": self.sprite_name ="ledgeGrab"
         action.Action.setUp(self, actor)
         actor.createMask([255,255,255], settingsManager.getSetting('ledgeInvincibilityTime'), True, 12)
         actor.invulnerable = settingsManager.getSetting('ledgeInvincibilityTime')
         if not hasattr(self, 'ledge'): self.ledge = None
-        if not hasattr(self, 'sweetSpotX'): self.sweetSpotX = 0
-        if not hasattr(self, 'sweetSpotY'): self.sweetSpotY = 0
+        if not hasattr(self, 'sweetspot_x'): self.sweetspot_x = 0
+        if not hasattr(self, 'sweetspot_y'): self.sweetspot_y = 0
         
     def tearDown(self,actor,nextAction):
         action.Action.tearDown(self, actor, nextAction)
@@ -1212,14 +1212,14 @@ class LedgeGrab(action.Action):
         if self.ledge.side == 'left':
             if actor.facing == -1:
                 actor.flip()
-            actor.hurtbox.rect.right = self.ledge.rect.centerx + self.sweetSpotX
-            actor.hurtbox.rect.top = self.ledge.rect.top + self.sweetSpotY
+            actor.hurtbox.rect.right = self.ledge.rect.centerx + self.sweetspot_x
+            actor.hurtbox.rect.top = self.ledge.rect.top + self.sweetspot_y
             actor.rect.center = actor.hurtbox.rect.center
         else:
             if actor.facing == 1:
                 actor.flip()
-            actor.hurtbox.rect.left = self.ledge.rect.centerx - self.sweetSpotX
-            actor.hurtbox.rect.top = self.ledge.rect.top + self.sweetSpotY
+            actor.hurtbox.rect.left = self.ledge.rect.centerx - self.sweetspot_x
+            actor.hurtbox.rect.top = self.ledge.rect.top + self.sweetspot_y
             actor.rect.center = actor.hurtbox.rect.center
         actor.setSpeed(0, actor.getFacingDirection())
         self.frame += 1
@@ -1234,7 +1234,7 @@ class LedgeGetup(action.Action):
         actor.change_x = 0
         
     def setUp(self, actor):
-        if self.spriteName=="": self.spriteName ="ledgeGetup"
+        if self.sprite_name=="": self.sprite_name ="ledgeGetup"
         action.Action.setUp(self, actor)
         actor.invincibility = 12
     
@@ -1242,7 +1242,7 @@ class LedgeGetup(action.Action):
         action.Action.update(self, actor)
         if self.frame == 0:
             actor.createMask([255,255,255], 12, True, 24)
-        if self.frame >= self.lastFrame:
+        if self.frame >= self.last_frame:
             actor.doAction('NeutralAction')
         self.frame += 1
 
@@ -1263,7 +1263,7 @@ class BaseAttack(action.Action):
                     
     def update(self, actor):
         action.Action.update(self, actor)
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             if actor.grounded:
                 actor.doAction('NeutralAction')
             else:
@@ -1275,36 +1275,36 @@ class BaseAttack(action.Action):
 class AirAttack(BaseAttack):
     def __init__(self, length=1):
         BaseAttack.__init__(self, length)
-        self.fastFallFrame = None
+        self.fastfall_frame = None
     
     def setUp(self, actor):
         BaseAttack.setUp(self, actor)
-        if not hasattr(self, 'fastFallFrame'):
-            self.fastFallFrame = None
+        if not hasattr(self, 'fastfall_frame'):
+            self.fastfall_frame = None
     
     def onClank(self, actor):
         for _,hitbox in self.hitboxes.iteritems():
             hitbox.kill()
                     
     def stateTransitions(self, actor):
-        if self.fastFallFrame is not None and self.frame >= self.fastFallFrame:
+        if self.fastfall_frame is not None and self.frame >= self.fastfall_frame:
             if actor.keysContain('down'):
-                actor.platformPhase = 1
-                actor.calc_grav(actor.var['fastfallMultiplier'])
+                actor.platform_phase = 1
+                actor.calcGrav(actor.var['fastfall_multiplier'])
         if actor.grounded and actor.ground_elasticity == 0:
             actor.preferred_xspeed = 0
-            actor.preferred_yspeed = actor.var['maxFallSpeed']
+            actor.preferred_yspeed = actor.var['max_fall_speed']
             actor.doAction('Land')
                 
     def update(self, actor):
         BaseAttack.update(self, actor)
             
 class ChargeAttack(BaseAttack):
-    def __init__(self,length=1,startChargeFrame=1,endChargeFrame=1,maxCharge=0):
+    def __init__(self,length=1,start_charge_frame=1,end_charge_frame=1,max_charge=0):
         BaseAttack.__init__(self, length)
-        self.startChargeFrame = startChargeFrame
-        self.endChargeFrame = endChargeFrame
-        self.maxCharge = 1
+        self.start_charge_frame = start_charge_frame
+        self.end_charge_frame = end_charge_frame
+        self.max_charge = 1
         
     def setUp(self, actor):
         self.chargeLevel = 0
@@ -1312,19 +1312,19 @@ class ChargeAttack(BaseAttack):
         
     def update(self, actor):
         BaseAttack.update(self, actor)
-        if self.frame == self.startChargeFrame:
+        if self.frame == self.start_charge_frame:
             if actor.keysContain('attack') and self.chargeLevel == 0:
                 actor.createMask([255,255,0],72,True,32)
         
         #Find solution for multiple hitboxes
-        if self.frame == self.endChargeFrame:
-            if actor.keysContain('attack') and self.chargeLevel <= self.maxCharge:
+        if self.frame == self.end_charge_frame:
+            if actor.keysContain('attack') and self.chargeLevel <= self.max_charge:
                 for _,hitbox in self.hitboxes.iteritems():
                     hitbox.charge()
                 self.chargeLevel += 1
-                self.frame = self.startChargeFrame
+                self.frame = self.start_charge_frame
         
-        if self.frame == (self.endChargeFrame+1):
+        if self.frame == (self.end_charge_frame+1):
             actor.mask = None
 
 class BaseThrow(BaseGrabbing):
@@ -1332,7 +1332,7 @@ class BaseThrow(BaseGrabbing):
         BaseGrabbing.__init__(self, length)
         
     def update(self, actor):
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             if actor.grounded: actor.doAction('NeutralAction')
             else: actor.doAction('Fall')
         BaseGrabbing.update(self, actor)          
@@ -1493,8 +1493,8 @@ def airState(actor):
     elif actor.keyHeld('jump') and actor.jumps > 0:
         actor.doAction('AirJump')
     elif actor.keysContain('down'):
-        actor.platformPhase = 1
-        actor.calc_grav(actor.var['fastfallMultiplier'])
+        actor.platform_phase = 1
+        actor.calcGrav(actor.var['fastfall_multiplier'])
 
 def tumbleState(actor):
     airControl(actor)
@@ -1505,8 +1505,8 @@ def tumbleState(actor):
     elif actor.keyHeld('jump') and actor.jumps > 0:
         actor.doAirJump()
     elif actor.keysContain('down'):
-        actor.platformPhase = 1
-        actor.calc_grav(actor.var['fastfallMultiplier'])
+        actor.platform_phase = 1
+        actor.calcGrav(actor.var['fastfall_multiplier'])
             
 def moveState(actor, direction):
     (key,invkey) = actor.getForwardBackwardKeys()
@@ -1559,8 +1559,8 @@ def jumpState(actor):
     elif actor.keyHeld('special'):
         actor.doAirSpecial()
     elif actor.keysContain('down'):
-        actor.platformPhase = 1
-        actor.calc_grav(actor.var['fastfallMultiplier'])
+        actor.platform_phase = 1
+        actor.calcGrav(actor.var['fastfall_multiplier'])
             
 def shieldState(actor):
     if actor.keyHeld('attack'):
@@ -1634,53 +1634,53 @@ def proneState(actor):
 def airControl(actor):
     (key, invkey) = actor.getForwardBackwardKeys()
     if actor.keysContain(key):
-        actor.preferred_xspeed = actor.facing * actor.var['maxAirSpeed']
+        actor.preferred_xspeed = actor.facing * actor.var['max_air_speed']
     elif actor.keysContain(invkey):
-        actor.preferred_xspeed = -actor.facing * actor.var['maxAirSpeed']
+        actor.preferred_xspeed = -actor.facing * actor.var['max_air_speed']
     
     if (actor.change_x < 0) and not actor.keysContain('left'):
         actor.preferred_xspeed = 0
     if (actor.change_x > 0) and not actor.keysContain('right'):
         actor.preferred_xspeed = 0
 
-    if not (actor.change_x < -actor.var['maxAirSpeed'] and actor.keysContain('left')) or not (actor.change_x > actor.var['maxAirSpeed'] and actor.keysContain('right')):
-        actor.accel(actor.var['airControl'])
+    if not (actor.change_x < -actor.var['max_air_speed'] and actor.keysContain('left')) or not (actor.change_x > actor.var['max_air_speed'] and actor.keysContain('right')):
+        actor.accel(actor.var['air_control'])
 
-    if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:
-        actor.landingLag = actor.var['heavyLandLag']
+    if actor.change_y >= actor.var['max_fall_speed'] and actor.landing_lag < actor.var['heavy_land_lag']:
+        actor.landing_lag = actor.var['heavy_land_lag']
 
     if actor.grounded and actor.ground_elasticity == 0:
         actor.preferred_xspeed = 0
-        actor.preferred_yspeed = actor.var['maxFallSpeed']
+        actor.preferred_yspeed = actor.var['max_fall_speed']
         actor.doAction('Land')
 
 def helplessControl(actor):
     (key, invkey) = actor.getForwardBackwardKeys()
     if actor.keysContain(key):
-        actor.preferred_xspeed = actor.facing * actor.var['maxAirSpeed']
+        actor.preferred_xspeed = actor.facing * actor.var['max_air_speed']
     elif actor.keysContain(invkey):
-        actor.preferred_xspeed = -actor.facing * actor.var['maxAirSpeed']
+        actor.preferred_xspeed = -actor.facing * actor.var['max_air_speed']
     
     if (actor.change_x < 0) and not actor.keysContain('left'):
         actor.preferred_xspeed = 0
     elif (actor.change_x > 0) and not actor.keysContain('right'):
         actor.preferred_xspeed = 0
 
-    if not (actor.change_x < -actor.var['maxAirSpeed'] and actor.keysContain('left')) or not (actor.change_x > actor.var['maxAirSpeed'] and actor.keysContain('right')):
-        actor.accel(actor.var['airControl'])
+    if not (actor.change_x < -actor.var['max_air_speed'] and actor.keysContain('left')) or not (actor.change_x > actor.var['max_air_speed'] and actor.keysContain('right')):
+        actor.accel(actor.var['air_control'])
 
-    if actor.change_y >= actor.var['maxFallSpeed'] and actor.landingLag < actor.var['heavyLandLag']:
-        actor.landingLag = actor.var['heavyLandLag']
+    if actor.change_y >= actor.var['max_fall_speed'] and actor.landing_lag < actor.var['heavy_land_lag']:
+        actor.landing_lag = actor.var['heavy_land_lag']
 
     if actor.grounded and actor.ground_elasticity == 0:
         actor.preferred_xspeed = 0
-        actor.preferred_yspeed = actor.var['maxFallSpeed']
+        actor.preferred_yspeed = actor.var['max_fall_speed']
         actor.doAction('HelplessLand')
 
 def hitstunLanding(actor):
     if actor.grounded and actor.ground_elasticity == 0:
         actor.preferred_xspeed = 0
-        actor.preferred_yspeed = actor.var['maxFallSpeed']
+        actor.preferred_yspeed = actor.var['max_fall_speed']
         actor.doAction('Land')
 
 def grabLedges(actor):

@@ -48,7 +48,7 @@ class ArenaMovingPlatform(stage.Stage):
         self.entity_list.append(self.movingPlat)
         self.platform_list.append(self.movingPlat)
         
-        self.spawnLocations = [[879,573],
+        self.spawn_locations = [[879,573],
                                [1279,573],
                                [1079,453],
                                [1079,713]]
@@ -65,11 +65,11 @@ class ArenaMovingPlatform(stage.Stage):
         plat2front = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatFrontR.png"))
         plat2front.rect.topleft = [self.size.centerx - 314 - 9 + 56 + 172 + 172,self.size.centery]
         
-        self.foregroundSprites.extend([plat0front, self.plat1front, plat2front])
+        self.foreground_sprites.extend([plat0front, self.plat1front, plat2front])
         
         fgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaFront.png"))
         fgSprite.rect.topleft = [self.size.centerx - 351,self.size.centery+140-6]
-        self.foregroundSprites.append(fgSprite)
+        self.foreground_sprites.append(fgSprite)
         
         plat0back = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatBackL.png"))
         plat0back.rect.topleft = [self.size.centerx - 314 - 9 + 56,self.size.centery-3]

@@ -574,7 +574,7 @@ class PlayerControlsMenu(SubMenu):
         
         self.statusText = spriteManager.TextSprite('','rexlia rg',16,[255,255,255])
         
-        self.playerNum = 0
+        self.player_num = 0
         
         for i in range(0,len(self.actionColumn)):
             self.actionColumn[i].rect.left = self.parent.settings['windowSize'][0] / 4
@@ -603,14 +603,14 @@ class PlayerControlsMenu(SubMenu):
     def incrementOption(self, optionNum, direction):
         SubMenu.incrementOption(self, optionNum, direction)
         if optionNum == 0:
-            self.playerNum += direction
-            self.playerNum = self.playerNum % 4
+            self.player_num += direction
+            self.player_num = self.player_num % 4
     
     def update(self, screen):
         SubMenu.update(self, screen)
         
         for i,action in enumerate(self.actionColumn):
-            keyControls = settingsManager.getSetting('controls_'+str(self.playerNum)) 
+            keyControls = settingsManager.getSetting('controls_'+str(self.player_num)) 
             self.keyColumn[i].changeText('---')
             if keyControls:
                 k = keyControls.getKeysForAction(action.text)
@@ -625,7 +625,7 @@ class PlayerControlsMenu(SubMenu):
             m.changeColor([55,55,55])
         
         self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
-        self.menuText[0].changeText('Player '+str(self.playerNum+1))
+        self.menuText[0].changeText('Player '+str(self.player_num+1))
         
         
     def executeMenu(self, screen):
@@ -673,7 +673,7 @@ class PlayerControlsMenu(SubMenu):
                     settings = settingsManager.getSetting().setting
                     
                     if settingsManager.getSetting().loadGamepad(name):
-                        settings['controlType_'+str(self.playerNum)] = name
+                        settings['controlType_'+str(self.player_num)] = name
                     
                     settingsManager.saveSettings(settings)
                     self.statusText.changeText('')
@@ -692,8 +692,8 @@ class PlayerControlsMenu(SubMenu):
                     
                     if selectedSubOption >= len(self.actionColumn):
                         newController = engine.controller.Controller(newKeybinding)
-                        settingsManager.getSetting().setting['controls_'+str(self.playerNum)] = newController
-                        settingsManager.getSetting().setting['controlType_'+str(self.playerNum)] = 'Keyboard'
+                        settingsManager.getSetting().setting['controls_'+str(self.player_num)] = newController
+                        settingsManager.getSetting().setting['controlType_'+str(self.player_num)] = 'Keyboard'
                         settingsManager.saveSettings(settingsManager.getSetting().setting)
                         self.statusText.changeText('')
                         return 0
@@ -1065,8 +1065,8 @@ class GameSettingsMenu(SubMenu):
                 if event.type == QUIT:
                     self.status = -1
 
-            for keyName,keyValue in holding.items():
-                if keyValue and canPress: 
+            for keyName,key_value in holding.items():
+                if key_value and canPress: 
                     canPress = False
                     pygame.time.set_timer(pygame.USEREVENT+1,200)
                     if keyName == 'left':
@@ -1272,8 +1272,8 @@ class RebindIndividual(SubMenu):
                 if event.type == pygame.USEREVENT+1: 
                     canPress = True;
 
-            for keyName,keyValue in holding.items():
-                if keyValue and canPress:
+            for keyName,key_value in holding.items():
+                if key_value and canPress:
                     canPress = False
                     pygame.time.set_timer(pygame.USEREVENT+1,150)
                     if keyName == 'down':

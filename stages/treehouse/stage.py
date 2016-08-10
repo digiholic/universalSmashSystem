@@ -35,7 +35,7 @@ class Arena(stage.Stage):
                               ]
         
         
-        self.spawnLocations = [[self.size.centerx - 77,1121],
+        self.spawn_locations = [[self.size.centerx - 77,1121],
                                [self.size.centerx + 153,1121],
                                [self.size.centerx - 445,1005],
                                [self.size.centerx + 445,1005]]
@@ -47,7 +47,7 @@ class Arena(stage.Stage):
         
         fgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TreeHouseFront.png"))
         fgSprite.rect.midbottom = self.size.midbottom
-        self.foregroundSprites.append(fgSprite)
+        self.foreground_sprites.append(fgSprite)
         
         
         self.getLedges()

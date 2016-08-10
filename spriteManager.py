@@ -24,25 +24,25 @@ class Sprite(pygame.sprite.Sprite):
         rotatedH = abs(w*unitVector[1])+abs(h*unitVector[0])
         dx = (rotatedW-w)/2.0
         dy = (rotatedH-h)/2.0
-        newOff = (int((offset[0]+self.spriteOffset[0]) * scale - dx), int((offset[1]+self.spriteOffset[1]) * scale - dy))
+        new_off = (int((offset[0]+self.spriteOffset[0]) * scale - dx), int((offset[1]+self.spriteOffset[1]) * scale - dy))
         try:
-            blitSprite = pygame.transform.smoothscale(self.image, (int(w), int(h)))
+            blit_sprite = pygame.transform.smoothscale(self.image, (int(w), int(h)))
         except Exception as e:
             print(e)
             raise ValueError("Please use 32-bit PNG files")
         if self.angle != 0:
-            blitSprite = pygame.transform.rotate(blitSprite,self.angle)
-        newRect = pygame.Rect(newOff,(int(rotatedW), int(rotatedH)))
-        retRect = newRect
-        if not newRect == self.lastDrawnPosition:
+            blit_sprite = pygame.transform.rotate(blit_sprite,self.angle)
+        new_rect = pygame.Rect(new_off,(int(rotatedW), int(rotatedH)))
+        retRect = new_rect
+        if not new_rect == self.lastDrawnPosition:
             self.changed = True
-            retRect = newRect.union(self.lastDrawnPosition)
-            self.lastDrawnPosition = newRect
+            retRect = new_rect.union(self.lastDrawnPosition)
+            self.lastDrawnPosition = new_rect
         if self.changed:
-            screen.blit(blitSprite,newRect)
+            screen.blit(blit_sprite,new_rect)
             self.changed = False
             return retRect
-        screen.blit(blitSprite,newRect) #Until this starts working
+        screen.blit(blit_sprite,new_rect) #Until this starts working
         return None
   
 class SpriteHandler(Sprite):
@@ -333,11 +333,11 @@ class ImageLibrary():
         for f in os.listdir(self.directory):
             fname, ext = os.path.splitext(f)
             if fname.startswith(prefix) and supportedFileTypes.count(ext):
-                spriteName = fname[len(prefix):]
+                sprite_name = fname[len(prefix):]
                 sprite = pygame.image.load(os.path.join(self.directory,f))
                 sprite = sprite.convert_alpha()
-                self.imageDict[spriteName] = sprite
-                #print(sprite.get_alpha(), spriteName, self.imageDict[spriteName])
+                self.imageDict[sprite_name] = sprite
+                #print(sprite.get_alpha(), sprite_name, self.imageDict[sprite_name])
 
 class RectSprite(Sprite):
     def __init__(self,rect,color=[0,0,0]):

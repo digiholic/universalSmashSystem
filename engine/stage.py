@@ -19,12 +19,12 @@ class Stage():
         self.camera_maximum = None
         self.blast_line = None
         
-        self.preferred_zoomLevel = 1.0
-        self.zoomLevel = 1.0
+        self.preferred_zoom_level = 1.0
+        self.zoom_level = 1.0
     
         self.active_hitboxes = pygame.sprite.Group()
         self.follows = []
-        self.spawnLocations = []
+        self.spawn_locations = []
         
         """
         Background sprites are drawn before the fighters are,
@@ -32,9 +32,9 @@ class Stage():
         The sprites are drawn in order, with the first elements
         of the list drawn first, and later elements drawn over them.
         """
-        self.backgroundSprites = []
-        self.foregroundSprites = []
-        self.backgroundColor = [100, 100, 100]
+        self.background_sprites = []
+        self.foreground_sprites = []
+        self.background_color = [100, 100, 100]
         
     """
     Puts the camera in the proper position.
@@ -49,7 +49,7 @@ class Stage():
         self.camera_preferred_position = pygame.Rect(24,16,settingsManager.getSetting('windowWidth'),settingsManager.getSetting('windowHeight'))
         self.camera_preferred_position.midtop = self.size.midtop
         
-        self.deadZone = [64,32]
+        self.dead_zone = [64,32]
     
         self.cameraUpdate()
         self.camera_position = self.camera_preferred_position
@@ -70,14 +70,14 @@ class Stage():
         for entity in self.entity_list:
             entity.update()
         
-        if self.preferred_zoomLevel != self.zoomLevel:
-            diff = self.zoomLevel - self.preferred_zoomLevel
+        if self.preferred_zoom_level != self.zoom_level:
+            diff = self.zoom_level - self.preferred_zoom_level
             #If the camera is too narrow
-            if diff > 0: self.zoomLevel -= min([0.1,diff])
+            if diff > 0: self.zoom_level -= min([0.1,diff])
             #If the camera is too wide
-            else: self.zoomLevel += min([0.1,-diff])
-            self.camera_position.width  = round(float(settingsManager.getSetting('windowWidth'))  * self.zoomLevel)
-            self.camera_position.height = round(float(settingsManager.getSetting('windowHeight')) * self.zoomLevel)
+            else: self.zoom_level += min([0.1,-diff])
+            self.camera_position.width  = round(float(settingsManager.getSetting('windowWidth'))  * self.zoom_level)
+            self.camera_position.height = round(float(settingsManager.getSetting('windowHeight')) * self.zoom_level)
         
         if self.camera_position.x != self.camera_preferred_position.x:
             diff = self.camera_position.x - self.camera_preferred_position.x
@@ -98,8 +98,8 @@ class Stage():
     """    
     def centerCamera(self,center):
         # First, build the rect, then center it
-        self.camera_preferred_position.width  = round(settingsManager.getSetting('windowWidth')  * self.preferred_zoomLevel)
-        self.camera_preferred_position.height = round(settingsManager.getSetting('windowHeight') * self.preferred_zoomLevel)
+        self.camera_preferred_position.width  = round(settingsManager.getSetting('windowWidth')  * self.preferred_zoom_level)
+        self.camera_preferred_position.height = round(settingsManager.getSetting('windowHeight') * self.preferred_zoom_level)
         self.camera_preferred_position.center = center
         
         # If it's too far to one side, fix it.
@@ -115,13 +115,13 @@ class Stage():
     """
     def moveCamera(self,x,y,center=False):
         if center:
-            newRect = self.camera_preferred_position.copy()
-            newRect.center = [x,y]
+            new_rect = self.camera_preferred_position.copy()
+            new_rect.center = [x,y]
         else:
-            newRect = self.camera_preferred_position.copy()
-            newRect.x += x
-            newRect.y += y
-        self.camera_preferred_position = newRect
+            new_rect = self.camera_preferred_position.copy()
+            new_rect.x += x
+            new_rect.y += y
+        self.camera_preferred_position = new_rect
         
     
     """
@@ -147,33 +147,33 @@ class Stage():
                 bottommost = obj
         
         # Calculate the width and height between the two farthest sidewas objects (plus deadzone)
-        xdist = (rightmost.right - leftmost.left) + (2*self.deadZone[0])
-        ydist = (bottommost.bottom - topmost.top) + (2*self.deadZone[1])
+        x_dist = (rightmost.right - leftmost.left) + (2*self.dead_zone[0])
+        y_dist = (bottommost.bottom - topmost.top) + (2*self.dead_zone[1])
         
         # Compare that distance with the window size to get the scale
-        xZoom = xdist / float(settingsManager.getSetting('windowWidth'))
-        yZoom = ydist / float(settingsManager.getSetting('windowHeight'))
+        x_zoom = x_dist / float(settingsManager.getSetting('windowWidth'))
+        y_zoom = y_dist / float(settingsManager.getSetting('windowHeight'))
         
         # Minimum Zoom level
-        if xZoom < 1.0: xZoom = 1.0
-        if yZoom < 1.0: yZoom = 1.0
+        if x_zoom < 1.0: x_zoom = 1.0
+        if y_zoom < 1.0: y_zoom = 1.0
         
         # If our new zoomed value is too big, we need to cut it down to size
-        if xZoom * settingsManager.getSetting('windowWidth') > self.camera_maximum.width:
-            xZoom = self.camera_maximum.width / float(settingsManager.getSetting('windowWidth'))
-        if yZoom * settingsManager.getSetting('windowHeight') > self.camera_maximum.height:
-            yZoom = self.camera_maximum.height / float(settingsManager.getSetting('windowHeight'))
+        if x_zoom * settingsManager.getSetting('windowWidth') > self.camera_maximum.width:
+            x_zoom = self.camera_maximum.width / float(settingsManager.getSetting('windowWidth'))
+        if y_zoom * settingsManager.getSetting('windowHeight') > self.camera_maximum.height:
+            y_zoom = self.camera_maximum.height / float(settingsManager.getSetting('windowHeight'))
         
         # Set the preferred zoom level and camera position to be centered on later
-        self.preferred_zoomLevel = max([xZoom,yZoom])
-        if self.preferred_zoomLevel > (self.camera_maximum.width/float(settingsManager.getSetting('windowWidth'))):
-            self.preferred_zoomLevel = self.camera_maximum.width/float(settingsManager.getSetting('windowWidth'))
-        if self.preferred_zoomLevel > (self.camera_maximum.height/float(settingsManager.getSetting('windowHeight'))):
-            self.preferred_zoomLevel = self.camera_maximum.height/float(settingsManager.getSetting('windowHeight'))
+        self.preferred_zoom_level = max([x_zoom,y_zoom])
+        if self.preferred_zoom_level > (self.camera_maximum.width/float(settingsManager.getSetting('windowWidth'))):
+            self.preferred_zoom_level = self.camera_maximum.width/float(settingsManager.getSetting('windowWidth'))
+        if self.preferred_zoom_level > (self.camera_maximum.height/float(settingsManager.getSetting('windowHeight'))):
+            self.preferred_zoom_level = self.camera_maximum.height/float(settingsManager.getSetting('windowHeight'))
     
-        # Now that everything is set, we create the boundingBox around the cornermost objects, then get the center of it
-        boundingBox = pygame.Rect(leftmost.left-self.deadZone[0],topmost.top-self.deadZone[1],xdist,ydist)
-        center = boundingBox.center
+        # Now that everything is set, we create the bounding_box around the cornermost objects, then get the center of it
+        bounding_box = pygame.Rect(leftmost.left-self.dead_zone[0],topmost.top-self.dead_zone[1],x_dist,y_dist)
+        center = bounding_box.center
         
         # And finally, move the camera.
         self.centerCamera(center)
@@ -211,7 +211,7 @@ class Stage():
     """
     def drawBG(self,screen):
         rects = []
-        for sprite,paralax in self.backgroundSprites:
+        for sprite,paralax in self.background_sprites:
             x = sprite.rect.x - (self.camera_position.x * paralax)
             y = sprite.rect.y - (self.camera_position.y)
             rect = sprite.draw(screen,(x,y),self.getScale())
@@ -228,7 +228,7 @@ class Stage():
         #for ledge in self.platform_ledges:
             #ledgeSprite = spriteObject.RectSprite(ledge.rect.topleft,ledge.rect.size,[0,0,255])
             #ledgeSprite.draw(screen,self.stageToScreen(ledge.rect),self.getScale())
-        for sprite in self.foregroundSprites:
+        for sprite in self.foreground_sprites:
             rect = sprite.draw(screen,self.stageToScreen(sprite.rect),self.getScale())
             if rect: rects.append(rect)
         return rects
@@ -238,7 +238,7 @@ class Stage():
     it is affected by paralax. 1.0 is full scrolling with screen, 0.0 is no scrolling.
     """
     def addToBackground(self,sprite,paralaxFactor = 1.0):
-        self.backgroundSprites.append((sprite,paralaxFactor))
+        self.background_sprites.append((sprite,paralaxFactor))
 """
 Platforms for the stage.
 Given two points (as a tuple of XY coordinates), it will
@@ -248,31 +248,31 @@ is grabble, so a (True,False) would mean the left edge is grabbable,
 but the right edge is not.
 """
 class Platform(pygame.sprite.Sprite):
-    def __init__(self,leftPoint, rightPoint,grabbable = (False,False)):
+    def __init__(self,left_point, right_point,grabbable = (False,False)):
         pygame.sprite.Sprite.__init__(self)
-        self.leftPoint = leftPoint
-        self.rightPoint = rightPoint
-        self.xdist = max(1,rightPoint[0] - leftPoint[0])
-        self.ydist = max(1,rightPoint[1] - leftPoint[1])
-        self.angle = self.getDirectionBetweenPoints(leftPoint, rightPoint)
+        self.left_point = left_point
+        self.right_point = right_point
+        self.x_dist = max(1,right_point[0] - left_point[0])
+        self.y_dist = max(1,right_point[1] - left_point[1])
+        self.angle = self.getDirectionBetweenPoints(left_point, right_point)
         self.solid = True
         self.change_x = 0
         self.change_y = 0
         
-        self.playersOn = []
-        self.rect = pygame.Rect([leftPoint[0],min(leftPoint[1],rightPoint[1])], [self.xdist,self.ydist])
+        self.players_on = []
+        self.rect = pygame.Rect([left_point[0],min(left_point[1],right_point[1])], [self.x_dist,self.y_dist])
         
-        leftLedge = None
-        rightLedge = None
-        if grabbable[0]: leftLedge = Ledge(self,'left')
-        if grabbable[1]: rightLedge = Ledge(self,'right')
-        self.ledges = [leftLedge,rightLedge]
+        left_ledge = None
+        right_ledge = None
+        if grabbable[0]: left_ledge = Ledge(self,'left')
+        if grabbable[1]: right_ledge = Ledge(self,'right')
+        self.ledges = [left_ledge,right_ledge]
         
     def playerCollide(self,player):
-        self.playersOn.append(player)
+        self.players_on.append(player)
     
     def playerLeaves(self,player):
-        self.playersOn.remove(player)
+        self.players_on.remove(player)
     
     def ledgeGrabbed(self,fighter):
         pass
@@ -291,19 +291,19 @@ class Platform(pygame.sprite.Sprite):
         return (x,y)
     
 class PassthroughPlatform(Platform):
-    def __init__(self,leftPoint,rightPoint,grabbable = (False,False)):
-        Platform.__init__(self,leftPoint,rightPoint,grabbable)
+    def __init__(self,left_point,right_point,grabbable = (False,False)):
+        Platform.__init__(self,left_point,right_point,grabbable)
         self.solid = False 
         
 class MovingPlatform(Platform):
-    def __init__(self,leftPoint,rightPoint,endPoint,moveSpeed = 1, grabbable = (False,False), solid = False):
-        Platform.__init__(self, leftPoint, rightPoint, grabbable)
+    def __init__(self,left_point,right_point,end_point,moveSpeed = 1, grabbable = (False,False), solid = False):
+        Platform.__init__(self, left_point, right_point, grabbable)
         self.solid = solid
         
-        self.startPoint = self.rect.center
-        self.endPoint = endPoint
+        self.start_point = self.rect.center
+        self.end_point = end_point
         
-        self.direction = self.getDirectionBetweenPoints(self.startPoint, self.endPoint)
+        self.direction = self.getDirectionBetweenPoints(self.start_point, self.end_point)
         self.speed = moveSpeed
         self.delta_x, self.delta_y = self.getXYfromDM(self.direction,self.speed)
         self.change_x = 0
@@ -314,12 +314,12 @@ class MovingPlatform(Platform):
         print(self.delta_x, self.delta_y)
     
     def update(self):
-        if self.rect.center == self.endPoint:
+        if self.rect.center == self.end_point:
             #swap our destination, direction, and change_xy parameters
-            tmp = self.endPoint
-            self.endPoint = self.startPoint
-            self.startPoint = tmp
-            self.direction = self.getDirectionBetweenPoints(self.startPoint, self.endPoint)
+            tmp = self.end_point
+            self.end_point = self.start_point
+            self.start_point = tmp
+            self.direction = self.getDirectionBetweenPoints(self.start_point, self.end_point)
             self.delta_x, self.delta_y = self.getXYfromDM(self.direction,self.speed)
             self.change_x = 0
             self.change_y = 0
@@ -339,11 +339,11 @@ class MovingPlatform(Platform):
         self.rect.x += self.change_x
         self.rect.y += self.change_y
         
-        self.leftPoint = self.rect.topleft
-        self.rightPoint = self.rect.topright
+        self.left_point = self.rect.topleft
+        self.right_point = self.rect.topright
         
-        self.xdist = max(1,self.rightPoint[0] - self.leftPoint[0])
-        self.ydist = max(1,self.rightPoint[1] - self.leftPoint[1])
+        self.x_dist = max(1,self.right_point[0] - self.left_point[0])
+        self.y_dist = max(1,self.right_point[1] - self.left_point[1])
   
 """
 Ledge object. This is what the fighter interacts with.
@@ -355,9 +355,9 @@ class Ledge(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.rect = pygame.Rect([0,0],settingsManager.getSetting('ledgeSweetspotSize'))
         self.side = side
-        if side == 'left': self.rect.midtop = plat.leftPoint
-        else: self.rect.midtop = [plat.rightPoint[0], plat.leftPoint[1]]
-        self.fightersGrabbed = [] # this is a list in case "Ledge Conflict" is set to "share"
+        if side == 'left': self.rect.midtop = plat.left_point
+        else: self.rect.midtop = [plat.right_point[0], plat.left_point[1]]
+        self.fighters_grabbed = [] # this is a list in case "Ledge Conflict" is set to "share"
         
     """
     When a fighter wants to grab the ledge, this function is called.
@@ -366,21 +366,21 @@ class Ledge(pygame.sprite.Sprite):
     pop opponents off if conflict is set to trump.
     """
     def fighterGrabs(self,fighter):
-        if len(self.fightersGrabbed) == 0: # if no one's on the ledge, we don't care about conflict resolution
-            self.fightersGrabbed.append(fighter)
+        if len(self.fighters_grabbed) == 0: # if no one's on the ledge, we don't care about conflict resolution
+            self.fighters_grabbed.append(fighter)
             fighter.doLedgeGrab(self)
         else: # someone's already here
             conflict = settingsManager.getSetting('ledgeConflict')
             if conflict == 'share':
-                self.fightersGrabbed.append(fighter)
+                self.fighters_grabbed.append(fighter)
                 fighter.doLedgeGrab(self)
             elif conflict == 'hog':
                 return
             elif conflict == 'trump':
-                for other in self.fightersGrabbed:
+                for other in self.fighters_grabbed:
                     self.fighterLeaves(other)
                     other.doGetTrumped()
-                self.fightersGrabbed.append(fighter)
+                self.fighters_grabbed.append(fighter)
                 fighter.doLedgeGrab(self)
     
     """
@@ -388,4 +388,4 @@ class Ledge(pygame.sprite.Sprite):
     ledge grab list.
     """
     def fighterLeaves(self,fighter):
-        self.fightersGrabbed.remove(fighter)
+        self.fighters_grabbed.remove(fighter)

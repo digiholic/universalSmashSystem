@@ -3,8 +3,8 @@
 	<SplatArticle>
 		<sprite>hitboxie_projectile.png</sprite>
 		<length>120</length>
-		<imgWidth>16</imgWidth>
-		<originPoint>0,0</originPoint>
+		<img_width>16</img_width>
+		<origin_point>0,0</origin_point>
 		
 		<setUp>
 			<createHitbox>
@@ -37,9 +37,9 @@
 	<ShineArticle>
 		<sprite>hitboxie_shine.png</sprite>
 		<length>8</length>
-		<imgWidth>92</imgWidth>
-		<spriteRate>2</spriteRate>
-		<originPoint>0,0</originPoint>
+		<img_width>92</img_width>
+		<sprite_rate>2</sprite_rate>
+		<origin_point>0,0</origin_point>
 		
 		<frame number="before">
 			<recenterOnOrigin />

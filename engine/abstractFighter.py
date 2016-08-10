@@ -13,30 +13,30 @@ import numpy
 import engine.articleLoader
 
 class AbstractFighter():
-    def __init__(self,baseDir,playerNum):
-        self.baseDir = baseDir
-        self.playerNum = playerNum
+    def __init__(self,_baseDir,_playerNum):
+        self.base_dir = _baseDir
+        self.player_num = _playerNum
         
         """
         Load the fighter variables from fighter.xml
         """
-        directory = os.path.join(baseDir,'sprites')
+        directory = os.path.join(_baseDir,'sprites')
         prefix = ''
         defaultSprite = 'idle'
         imgwidth = '64'
         try:
-            self.xmlData = ElementTree.parse(os.path.join(baseDir,'fighter.xml')).getroot()
+            self.xml_data = ElementTree.parse(os.path.join(_baseDir,'fighter.xml')).getroot()
         except:
-            self.xmlData = ElementTree.ElementTree()
+            self.xml_data = ElementTree.ElementTree()
             
         try:
-            self.name = self.xmlData.find('name').text
+            self.name = self.xml_data.find('name').text
         except:
             self.name = 'Unknown'
         
         try:
-            franchise_icon_path = os.path.join(baseDir,self.xmlData.find('icon').text)
-            self.franchise_icon_path = self.xmlData.find('icon').text
+            franchise_icon_path = os.path.join(_baseDir,self.xml_data.find('icon').text)
+            self.franchise_icon_path = self.xml_data.find('icon').text
         except:
             franchise_icon_path = settingsManager.createPath('sprites/default_franchise_icon.png')
             self.franchise_icon_path = settingsManager.createPath('sprites/default_franchise_icon.png')
@@ -44,46 +44,46 @@ class AbstractFighter():
         self.franchise_icon = spriteManager.ImageSprite(franchise_icon_path)
         
         try:
-            css_icon_path = os.path.join(baseDir,self.xmlData.find('css_icon').text)
-            self.css_icon_path = self.xmlData.find('css_icon').text
+            css_icon_path = os.path.join(_baseDir,self.xml_data.find('css_icon').text)
+            self.css_icon_path = self.xml_data.find('css_icon').text
         except:
             css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
             self.css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
         self.css_icon = spriteManager.ImageSprite(css_icon_path)
         
         try:
-            scale = float(self.xmlData.find('scale').text)
+            scale = float(self.xml_data.find('scale').text)
         except:
             scale = 1.0
         
         self.var = {
                 'weight': 100,
                 'gravity': .5,
-                'maxFallSpeed': 20.0,
-                'maxGroundSpeed': 6.0,
-                'runSpeed': 9.0,
-                'maxAirSpeed': 6.0,
-                'aerialTransitionSpeed': 7.5,
-                'crawlSpeed': 3.0,
-                'dodgeSpeed': 10.0,
+                'max_fall_speed': 20.0,
+                'max_ground_speed': 6.0,
+                'run_speed': 9.0,
+                'max_air_speed': 6.0,
+                'aerial_transition_speed': 7.5,
+                'crawl_speed': 3.0,
+                'dodge_speed': 10.0,
                 'friction': 0.3,
-                'staticGrip': 0.3,
+                'static_grip': 0.3,
                 'pivotGrip': 0.6,
-                'airResistance': 0.2,
-                'airControl': 0.2,
+                'air_resistance': 0.2,
+                'air_control': 0.2,
                 'jumps': 1,
-                'jumpHeight': 12.5,
-                'shortHopHeight': 8.5,
-                'airJumpHeight': 15.0,
-                'heavyLandLag': 4,
-                'wavedashLag': 8,
-                'fastfallMultiplier': 2.0,
-                'hitstunElasticity': .8,
-                'shieldSize': 1.0
+                'jump_height': 12.5,
+                'short_hop_height': 8.5,
+                'air_jump_height': 15.0,
+                'heavy_land_lag': 4,
+                'wavedash_lag': 8,
+                'fastfall_multiplier': 2.0,
+                'hitstun_elasticity': .8,
+                'shield_size': 1.0
                 }
         
         try:
-            for stat in self.xmlData.find('stats'):
+            for stat in self.xml_data.find('stats'):
                 vartype = type(self.var[stat.tag]).__name__
                 if vartype == 'int': self.var[stat.tag] = int(stat.text)
                 if vartype == 'float': self.var[stat.tag] = float(stat.text)
@@ -91,7 +91,7 @@ class AbstractFighter():
         except: pass
         
         try:
-            for var in self.xmlData.find('variables'):
+            for var in self.xml_data.find('variables'):
                 vartype = 'string'
                 if var.attrib.has_key('type'): vartype = var.attrib['type']
                 val = var.text
@@ -102,35 +102,35 @@ class AbstractFighter():
         except: pass
         
         try:
-            self.article_path = os.path.join(baseDir,self.xmlData.find('article_path').text)
-            self.article_path_short = self.xmlData.find('article_path').text
+            self.article_path = os.path.join(_baseDir,self.xml_data.find('article_path').text)
+            self.article_path_short = self.xml_data.find('article_path').text
         except:
-            self.article_path = baseDir
+            self.article_path = _baseDir
             self.article_path_short = ''
         
         try:
-            self.article_loader_path = self.xmlData.find('articles').text
-            self.articleLoader = engine.articleLoader.ArticleLoader(self)
+            self.article_loader_path = self.xml_data.find('articles').text
+            self.article_loader = engine.articleLoader.ArticleLoader(self)
         except:
             self.article_loader_path = ''
             try:
-                self.articleLoader = settingsManager.importFromURI(os.path.join(baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(playerNum))
+                self.article_loader = settingsManager.importFromURI(os.path.join(_baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(player_num))
             except:
-                self.articleLoader = None
+                self.article_loader = None
             
         try:
-            self.sound_path = os.path.join(baseDir,self.xmlData.find('sound_path').text)
-            self.sound_path_short = self.xmlData.find('sound_path').text
+            self.sound_path = os.path.join(_baseDir,self.xml_data.find('sound_path').text)
+            self.sound_path_short = self.xml_data.find('sound_path').text
         except:
             self.sound_path = None
             self.sound_path_short = ''
-        #self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),'articles.py',suffix=str(playerNum))
+        #self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),'articles.py',suffix=str(player_num))
         try:
-            directory = os.path.join(baseDir,self.xmlData.find('sprite_directory').text)
-            prefix = self.xmlData.find('sprite_prefix').text
-            defaultSprite = self.xmlData.find('default_sprite').text
-            imgwidth = int(self.xmlData.find('sprite_width').text)
-            self.sprite_directory = self.xmlData.find('sprite_directory').text
+            directory = os.path.join(_baseDir,self.xml_data.find('sprite_directory').text)
+            prefix = self.xml_data.find('sprite_prefix').text
+            defaultSprite = self.xml_data.find('default_sprite').text
+            imgwidth = int(self.xml_data.find('sprite_width').text)
+            self.sprite_directory = self.xml_data.find('sprite_directory').text
         except:
             print('Could not load sprites')
             directory = settingsManager.createPath('sprites')
@@ -145,7 +145,7 @@ class AbstractFighter():
         
         self.colorPalettes = []
         try:
-            for colorPalette in self.xmlData.findall('colorPalette'):
+            for colorPalette in self.xml_data.findall('colorPalette'):
                 colorDict = {}
                 for colorMap in colorPalette.findall('colorMap'):
                     fromColor = pygame.Color(colorMap.attrib['fromColor'])
@@ -158,19 +158,19 @@ class AbstractFighter():
         while len(self.colorPalettes) < 4:
             self.colorPalettes.append({})
         
-        color = self.colorPalettes[self.playerNum] #TODO: Pick colors
+        color = self.colorPalettes[self.player_num] #TODO: Pick colors
         
         print(directory,prefix,defaultSprite,imgwidth,color,scale)
         self.sprite = spriteManager.SpriteHandler(directory,prefix,defaultSprite,imgwidth,color,scale)
         
         #try:
         try:
-            actions = self.xmlData.find('actions').text
+            actions = self.xml_data.find('actions').text
             self.action_file = actions
             if actions.endswith('.py'):
-                self.actions = settingsManager.importFromURI(os.path.join(baseDir,'fighter.xml'),actions,suffix=str(playerNum))
+                self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),actions,suffix=str(player_num))
             else:
-                self.actions = actionLoader.ActionLoader(baseDir,actions)
+                self.actions = actionLoader.ActionLoader(_baseDir,actions)
         except:
             self.actions = baseActions
             self.action_file = baseActions.__file__
@@ -181,10 +181,10 @@ class AbstractFighter():
         self.players = None
         
         # dataLog holds information for the post-game results screen
-        self.dataLog = None
+        self.data_log = None
         
     def saveFighter(self,path=None):
-        if not path: path = os.path.join(self.baseDir,'fighter.xml')
+        if not path: path = os.path.join(self.base_dir,'fighter.xml')
         tree = ElementTree.Element('fighter')
         
         tree.append(self.createElement('name', self.name))
@@ -240,17 +240,17 @@ class AbstractFighter():
         self.ground_elasticity = 0
         
         # Whenever a fighter is hit, they are 'tagged' by that player, if they die while tagged, that player gets a point
-        self.hitTagged = None
+        self.hit_tagged = None
         
         #Initialize engine variables
         
-        # Connect the keyBindings object to the fighter and flush any residual inputs
-        self.keyBindings = settingsManager.getControls(self.playerNum)
-        self.keyBindings.loadFighter(self)
-        self.keyBindings.flushInputs()
+        # Connect the key_bindings object to the fighter and flush any residual inputs
+        self.key_bindings = settingsManager.getControls(self.player_num)
+        self.key_bindings.loadFighter(self)
+        self.key_bindings.flushInputs()
         
-        self.inputBuffer = InputBuffer()
-        self.keysHeld = dict()
+        self.input_buffer = InputBuffer()
+        self.keys_held = dict()
         
         self.mask = None
         self.ecb = ECB(self)
@@ -261,7 +261,7 @@ class AbstractFighter():
             settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
         
         self.shield = False
-        self.shieldIntegrity = 100
+        self.shield_integrity = 100
         
         # Hitstop freezes the character for a few frames when hitting or being hit.
         self.hitstop = 0
@@ -270,7 +270,7 @@ class AbstractFighter():
         
         # HitboxLock is a list of hitboxes that will not hit the fighter again for a given amount of time.
         # Each entry in the list is a hitboxLock object
-        self.hitboxLock = weakref.WeakSet()
+        self.hitbox_lock = weakref.WeakSet()
         self.hitboxContact = set()
         
         # When a fighter lets go of a ledge, he can't grab another one until he gets out of the area.
@@ -293,8 +293,8 @@ class AbstractFighter():
         self.ceilinged = False
         self.jumps = self.var['jumps']
         self.damage = 0
-        self.landingLag = 6
-        self.platformPhase = 0
+        self.landing_lag = 6
+        self.platform_phase = 0
         self.techWindow = 0
         
         self.change_x = 0
@@ -311,14 +311,14 @@ class AbstractFighter():
         self.ecb.normalize()
         self.ecb.store()
         #Step one, push the input buffer
-        self.inputBuffer.push()
+        self.input_buffer.push()
         
         if self.hitstop > 0:
 
             self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
 
-            loopCount = 0
-            while loopCount < 2:
+            loop_count = 0
+            while loop_count < 2:
                 self.sprite.updatePosition(self.rect)
                 self.ecb.normalize()
                 bumped = False
@@ -326,14 +326,14 @@ class AbstractFighter():
                 if not block_hit_list:
                     break
                 for block in block_hit_list:
-                    if block.solid or (self.platformPhase <= 0):
-                        self.platformPhase = 0
+                    if block.solid or (self.platform_phase <= 0):
+                        self.platform_phase = 0
                         if self.eject(block):
                             bumped = True
                             break
                 if not bumped:
                     break
-                loopCount += 1
+                loop_count += 1
 
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
@@ -341,7 +341,8 @@ class AbstractFighter():
             if not self.hitstopVibration == (0,0):
                 (x,y) = self.hitstopVibration
                 self.rect.x += x
-                self.rect.y += y
+                if not self.grounded: 
+                    self.rect.y += y
                 self.hitstopVibration = (-x,-y)
 
             #Smash directional influence AKA hitstun shuffling
@@ -353,16 +354,15 @@ class AbstractFighter():
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
         
-            groundBlocks = self.checkGround()
+            ground_blocks = self.checkGround()
             self.checkLeftWall()
             self.checkRightWall()
             self.checkCeiling()
 
             # Move with the platform
-            block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
+            block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
             if not block is None:
                 self.rect.x += block.change_x
-                self.change_y -= self.var['gravity']
 
             self.sprite.updatePosition(self.rect)
 
@@ -370,8 +370,8 @@ class AbstractFighter():
             if self.invulnerable > -1000:
                 self.invulnerable -= 1
 
-            if self.platformPhase > 0:
-                self.platformPhase -= 1
+            if self.platform_phase > 0:
+                self.platform_phase -= 1
             self.ecb.normalize()
             return
         elif self.hitstop == 0 and not self.hitstopVibration == (0,0):
@@ -382,7 +382,7 @@ class AbstractFighter():
             self.ecb.normalize()
         #Step two, accelerate/decelerate
         if self.grounded: self.accel(self.var['friction'])
-        else: self.accel(self.var['airResistance'])
+        else: self.accel(self.var['air_resistance'])
         
         if self.ledgeLock:
             ledges = pygame.sprite.spritecollide(self, self.gameState.platform_ledges, False)
@@ -396,7 +396,7 @@ class AbstractFighter():
                 print('Ground tech!')
                 self.unRotate()
                 self.doAction('Prone')
-                self.current_action.frame = self.current_action.lastFrame
+                self.current_action.frame = self.current_action.last_frame
             self.techWindow -= 1
 
         # We set the hurbox to be the Bounding Rect of the sprite.
@@ -408,8 +408,8 @@ class AbstractFighter():
         self.current_action.update(self) #update our action
         
         if self.mask:self.mask = self.mask.update()
-        self.shieldIntegrity += 0.2
-        if self.shieldIntegrity > 100: self.shieldIntegrity = 100
+        self.shield_integrity += 0.2
+        if self.shield_integrity > 100: self.shield_integrity = 100
         
         for art in self.articles:
             art.update()
@@ -418,10 +418,10 @@ class AbstractFighter():
         self.ecb.normalize()
 
         # Gravity
-        self.calc_grav()
+        self.calcGrav()
 
-        loopCount = 0
-        while loopCount < 2:
+        loop_count = 0
+        while loop_count < 2:
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
             bumped = False
@@ -429,34 +429,34 @@ class AbstractFighter():
             if not block_hit_list:
                 break
             for block in block_hit_list:
-                if block.solid or (self.platformPhase <= 0):
-                    self.platformPhase = 0
+                if block.solid or (self.platform_phase <= 0):
+                    self.platform_phase = 0
                     if self.eject(block):
                         bumped = True
                         break
             if not bumped:
                 break
-            loopCount += 1
+            loop_count += 1
         # TODO: Crush death if loopcount reaches the 10 resolution attempt ceiling
 
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
 
-        futureRect = self.ecb.currentECB.rect.copy()
-        futureRect.x += self.change_x
-        futureRect.y += self.change_y
+        future_rect = self.ecb.current_ecb.rect.copy()
+        future_rect.x += self.change_x
+        future_rect.y += self.change_y
 
         t = 1
 
-        toBounceBlock = None
+        to_bounce_block = None
 
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
         for block in block_hit_list:
-            if pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) > 0 and pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect) < t and self.catchMovement(block): 
-                t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, block.rect)
-                toBounceBlock = block
+            if pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) > 0 and pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) < t and self.catchMovement(block): 
+                t = pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect)
+                to_bounce_block = block
                 
         self.rect.y += self.change_y*t
         self.rect.x += self.change_x*t
@@ -464,19 +464,19 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         
-        groundBlocks = self.checkGround()
+        ground_blocks = self.checkGround()
         self.checkLeftWall()
         self.checkRightWall()
         self.checkCeiling()
 
         # Move with the platform
-        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, groundBlocks, None)
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             self.rect.x += block.change_x
             self.change_y -= self.var['gravity']
 
-        if toBounceBlock is not None:
-            self.reflect(toBounceBlock)
+        if to_bounce_block is not None:
+            self.reflect(to_bounce_block)
 
         self.sprite.updatePosition(self.rect)
 
@@ -484,14 +484,14 @@ class AbstractFighter():
         if self.invulnerable > -1000:
             self.invulnerable -= 1
 
-        if self.platformPhase > 0:
-            self.platformPhase -= 1
+        if self.platform_phase > 0:
+            self.platform_phase -= 1
 
         self.ecb.normalize()
         
     """
     Change speed to get closer to the preferred speed without going over.
-    xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['airResistance']
+    xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['air_resistance']
     """
     def accel(self,xFactor):
         if self.change_x > self.preferred_xspeed: #if we're going too fast
@@ -502,7 +502,7 @@ class AbstractFighter():
             self.change_x += min(diff,xFactor)
     
     # Change ySpeed according to gravity.        
-    def calc_grav(self, multiplier=1):
+    def calcGrav(self, multiplier=1):
         if self.change_y > self.preferred_yspeed:
             diff = self.change_y - self.preferred_yspeed
             self.change_y -= min(diff, multiplier*self.var['gravity'])
@@ -515,16 +515,16 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         self.grounded = False
-        self.ecb.currentECB.rect.y += 4
-        groundBlock = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.currentECB, self.gameState.platform_list, False)
-        self.ecb.currentECB.rect.y -= 4
+        self.ecb.current_ecb.rect.y += 4
+        ground_block = pygame.sprite.Group()
+        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.gameState.platform_list, False)
+        self.ecb.current_ecb.rect.y -= 4
         for block in block_hit_list:
-            if block.solid or (self.platformPhase <= 0):
-                if self.ecb.currentECB.rect.bottom <= block.rect.top+4 and self.change_y > block.change_y-1:
+            if block.solid or (self.platform_phase <= 0):
+                if self.ecb.current_ecb.rect.bottom <= block.rect.top+4 and self.change_y > block.change_y-1:
                     self.grounded = True
-                    groundBlock.add(block)
-        return groundBlock
+                    ground_block.add(block)
+        return ground_block
 
     def checkLeftWall(self):
         self.sprite.updatePosition(self.rect)
@@ -533,19 +533,19 @@ class AbstractFighter():
             self.back_walled = False
         else:
             self.front_walled = False
-        self.ecb.currentECB.rect.x -= 4
-        wallBlock = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.currentECB, self.gameState.platform_list, False)
-        self.ecb.currentECB.rect.x += 4
+        self.ecb.current_ecb.rect.x -= 4
+        wall_block = pygame.sprite.Group()
+        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.gameState.platform_list, False)
+        self.ecb.current_ecb.rect.x += 4
         for block in block_hit_list:
             if block.solid:
-                if self.ecb.currentECB.rect.left >= block.rect.right-4 and self.change_x < block.change_x+1:
+                if self.ecb.current_ecb.rect.left >= block.rect.right-4 and self.change_x < block.change_x+1:
                     if self.facing == 1:
                         self.back_walled = True
                     else:
                         self.front_walled = True
-                    wallBlock.add(block)
-        return wallBlock
+                    wall_block.add(block)
+        return wall_block
 
     def checkRightWall(self):
         self.sprite.updatePosition(self.rect)
@@ -554,34 +554,34 @@ class AbstractFighter():
             self.front_walled = False
         else:
             self.back_walled = False
-        self.ecb.currentECB.rect.x += 4
-        wallBlock = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.currentECB, self.gameState.platform_list, False)
-        self.ecb.currentECB.rect.x -= 4
+        self.ecb.current_ecb.rect.x += 4
+        wall_block = pygame.sprite.Group()
+        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.gameState.platform_list, False)
+        self.ecb.current_ecb.rect.x -= 4
         for block in block_hit_list:
             if block.solid:
-                if self.ecb.currentECB.rect.right <= block.rect.left+4 and self.change_x > block.change_x-1:
+                if self.ecb.current_ecb.rect.right <= block.rect.left+4 and self.change_x > block.change_x-1:
                     if self.facing == 1:
                         self.front_walled = 1
                     else:
                         self.back_walled = 1
-                    wallBlock.add(block)
-        return wallBlock
+                    wall_block.add(block)
+        return wall_block
 
     def checkCeiling(self):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         self.ceilinged = False
-        self.ecb.currentECB.rect.y -= 4
-        ceilingBlock = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.currentECB, self.gameState.platform_list, False)
-        self.ecb.currentECB.rect.y += 4
+        self.ecb.current_ecb.rect.y -= 4
+        ceiling_block = pygame.sprite.Group()
+        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.gameState.platform_list, False)
+        self.ecb.current_ecb.rect.y += 4
         for block in block_hit_list:
             if block.solid:
-                if self.ecb.currentECB.rect.top >= block.rect.bottom-4 and self.change_y < block.change_y+1:
+                if self.ecb.current_ecb.rect.top >= block.rect.bottom-4 and self.change_y < block.change_y+1:
                     self.ceilinged = True
-                    ceilingBlock.add(block)
-        return ceilingBlock
+                    ceiling_block.add(block)
+        return ceiling_block
     
     """
     A simple function that converts the facing variable into a direction in degrees.
@@ -592,10 +592,10 @@ class AbstractFighter():
 
     def setGrabbing(self, other):
         self.grabbing = other
-        other.grabbedBy = self
+        other.grabbed_by = self
 
     def isGrabbing(self):
-        return isinstance(self.grabbing.current_action, baseActions.Grabbed) and self.grabbing.grabbedBy == self
+        return isinstance(self.grabbing.current_action, baseActions.Grabbed) and self.grabbing.grabbed_by == self
         
 ########################################################
 #                  ACTION SETTERS                      #
@@ -614,36 +614,36 @@ class AbstractFighter():
         newAction.setUp(self)
         self.current_action = newAction
     
-    def doAction(self,actionName):
+    def doAction(self,action_name):
         if hasattr(self.actions,'loadAction'):
-            action = self.actions.loadAction(actionName)
-            if action.lastFrame > 0: self.changeAction(action)
-        elif hasattr(self.actions, actionName):
-            class_ = getattr(self.actions,actionName)
+            action = self.actions.loadAction(action_name)
+            if action.last_frame > 0: self.changeAction(action)
+        elif hasattr(self.actions, action_name):
+            class_ = getattr(self.actions,action_name)
             action = class_()
-            if action.lastFrame > 0: self.changeAction(action)
+            if action.last_frame > 0: self.changeAction(action)
     
-    def getAction(self,actionName):
+    def getAction(self,action_name):
         action = None
         if hasattr(self.actions,'loadAction'):
-            action = self.actions.loadAction(actionName)
-        elif hasattr(self.actions, actionName):
-            class_ = getattr(self.actions,actionName)
+            action = self.actions.loadAction(action_name)
+        elif hasattr(self.actions, action_name):
+            class_ = getattr(self.actions,action_name)
             action = class_()
         return action
             
-    def hasAction(self,actionName):
+    def hasAction(self,action_name):
         if hasattr(self.actions,'hasAction'):
-            return self.actions.hasAction(actionName)
-        else: return hasattr(self.actions, actionName)
+            return self.actions.hasAction(action_name)
+        else: return hasattr(self.actions, action_name)
             
-    def loadArticle(self,articleName):
-        print(self.articleLoader,articleName)
+    def loadArticle(self,article_name):
+        print(self.article_loader,article_name)
         
-        if hasattr(self.articleLoader, 'loadArticle'):
-            return self.articleLoader.loadArticle(articleName)
-        elif hasattr(self.articleLoader, articleName):
-            class_ = getattr(self.articleLoader, articleName)
+        if hasattr(self.article_loader, 'loadArticle'):
+            return self.article_loader.loadArticle(article_name)
+        elif hasattr(self.article_loader, article_name):
+            class_ = getattr(self.article_loader, article_name)
             return(class_(self)) 
                             
     def doGroundMove(self,direction):
@@ -743,20 +743,20 @@ class AbstractFighter():
     def doHitStun(self,hitstun,trajectory):
         self.doAction('HitStun')
         self.current_action.direction = trajectory
-        self.current_action.lastFrame = hitstun
+        self.current_action.last_frame = hitstun
         
     def doTrip(self, length, direction):
         self.doAction('Trip')
-        self.current_action.lastFrame = length
+        self.current_action.last_frame = length
         self.current_action.direction = direction
 
-    def doShield(self, newShield=True):
+    def doShield(self, new_shield=True):
         self.doAction('Shield')
-        self.current_action.newShield = newShield
+        self.current_action.new_shield = new_shield
 
     def doShieldStun(self, length):
         self.doAction('ShieldStun')
-        self.current_action.lastFrame = length
+        self.current_action.last_frame = length
              
     def doLedgeGrab(self,ledge):
         self.doAction('LedgeGrab')
@@ -764,11 +764,11 @@ class AbstractFighter():
 
     def doTrapped(self, length):
         self.doAction('Trapped')
-        self.current_action.lastFrame = length
+        self.current_action.last_frame = length
 
     def doStunned(self, length):
         self.doAction('Stunned')
-        self.current_action.lastFrame = length
+        self.current_action.last_frame = length
 
     def doGrabbed(self, height):
         self.doAction('Grabbed')
@@ -819,9 +819,13 @@ class AbstractFighter():
                  into consideration in the hitbox collision event itself, to allow the hitbox to also take in the attacker's
                  current state as well as the fighter receiving knockback.
     weight_influence - The degree to which weight influences knockback. Default value is 1, set to 0 to make knockback 
-                 weight-independent, or to whatever other value you want to change the effect of weight on knockback
-    hitstun_multiplier - The ratio of usual (calculated) hitstun to the hitstun that the hit should inflict. Default value is 
-                 1 for normal levels of hitstun. To disable flinching, set to 0. 
+                 weight-independent, or to whatever other value you want to change the effect of weight on knockback. 
+    hitstun_multiplier - The ratio of the knockback to the additional hitstun that the hit should inflict. Default value is 
+                 2 for normal levels of hitstun. To disable flinching, set to 0. 
+    base_hitstun - The minimum hitstun that the hit should inflict regardless of knockback. This also influences how much gravity and 
+                 air resistance affect base knockback. 
+    hitlag_multiplier - The ratio of normal calculated hitlag to the amount of hitlag the hit should inflict. This affects both 
+                 attacker and target. 
     
     The knockback calculation is derived from the SSBWiki, and a bit of information from ColinJF and Amazing Ampharos on Smashboards,
     it is based off of Super Smash Bros. Brawl's knockback calculation, which is the one with the most information available (due to
@@ -842,9 +846,9 @@ class AbstractFighter():
         b = float(kb)
 
         # Thank you, ssbwiki!
-        totalKB = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*weight_influence+100))*1.4) + 5) * s) + b
+        total_kb = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*weight_influence+100))*1.4) + 5) * s) + b
 
-        if damage < self.flinch_damage_threshold or totalKB < self.flinch_knockback_threshold:
+        if damage < self.flinch_damage_threshold or total_kb < self.flinch_knockback_threshold:
             self.dealDamage(damage*self.armor_damage_multiplier)
             return 0
 
@@ -852,29 +856,29 @@ class AbstractFighter():
 
         trajectory_vec = [math.cos(trajectory/180*math.pi), math.sin(trajectory/180*math.pi)]
 
-        additionalKB = .5*base_hitstun*math.sqrt(abs(trajectory_vec[0])*self.var['airResistance']+abs(trajectory_vec[1])*self.var['gravity'])
+        additional_kb = .5*base_hitstun*math.sqrt(abs(trajectory_vec[0])*self.var['air_resistance']+abs(trajectory_vec[1])*self.var['gravity'])
 
-        DI_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
+        di_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
         trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
 
-        hitstun_frames = math.floor(totalKB*hitstun_multiplier+base_hitstun) #Tweak this constant
+        hitstun_frames = math.floor(total_kb*hitstun_multiplier+base_hitstun) #Tweak this constant
         print(hitstun_frames)
 
         if self.no_flinch_hits > 0:
-            if hitstun_frames > 0:
+            if hitstun_frames > 0.5:
                 self.no_flinch_hits -= 1
             self.dealDamage(damage*self.armor_damage_multiplier)
             return 0
 
         if hitstun_frames > 0.5:
-            print((totalKB, additionalKB))
-            if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.lastFrame-self.current_action.frame <= hitstun_frames+15:
-                self.setSpeed((totalKB+additionalKB)*DI_multiplier, trajectory)
+            print((total_kb, additional_kb))
+            if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.last_frame-self.current_action.frame <= hitstun_frames+15:
+                self.setSpeed((total_kb+additional_kb)*di_multiplier, trajectory)
                 self.doHitStun(hitstun_frames, trajectory)
         
         self.dealDamage(damage)
 
-        return math.floor((totalKB+additionalKB)*DI_multiplier)
+        return math.floor((total_kb+additional_kb)*di_multiplier)
 
     def applyPushback(self, kb, trajectory, hitlag):
         self.hitstop = math.floor(hitlag)
@@ -907,15 +911,15 @@ class AbstractFighter():
         self.change_x = 0
         self.change_y = 0
         self.jumps = self.var['jumps']
-        self.dataLog.setData('Falls',1,lambda x,y: x+y)
-        if self.hitTagged != None:
-            if hasattr(self.hitTagged, 'dataLog'):
-                self.hitTagged.dataLog.setData('KOs',1,lambda x,y: x+y)
+        self.data_log.setData('Falls',1,lambda x,y: x+y)
+        if self.hit_tagged != None:
+            if hasattr(self.hit_tagged, 'dataLog'):
+                self.hit_tagged.data_log.setData('KOs',1,lambda x,y: x+y)
         
         if respawn:
             self.initialize()
             
-            self.rect.midbottom = self.gameState.spawnLocations[self.playerNum]
+            self.rect.midbottom = self.gameState.spawn_locations[self.player_num]
             self.rect.bottom -= 200
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
@@ -926,7 +930,7 @@ class AbstractFighter():
         
     def changeSprite(self,newSprite,frame=0):
         self.sprite.changeImage(newSprite)
-        self.current_action.spriteName = newSprite
+        self.current_action.sprite_name = newSprite
         if frame != 0: self.sprite.changeSubImage(frame)
         
     def changeSpriteImage(self,frame,loop=False):
@@ -956,32 +960,32 @@ class AbstractFighter():
 
         #If the hitbox belongs to something, get tagged by it
         if not hbox.owner is None:
-            self.hitTagged = hbox.owner
+            self.hit_tagged = hbox.owner
 
-        if hbox.hitbox_lock in self.hitboxLock:
+        if hbox.hitbox_lock in self.hitbox_lock:
             return False
 
-        self.hitboxLock.add(hbox.hitbox_lock)
+        self.hitbox_lock.add(hbox.hitbox_lock)
         return True
     
     def startShield(self):
         self.articles.add(article.ShieldArticle(settingsManager.createPath("sprites/melee_shield.png"),self))
         
     def shieldDamage(self,damage):
-        if self.shieldIntegrity > 0:
-            self.shieldIntegrity -= damage
+        if self.shield_integrity > 0:
+            self.shield_integrity -= damage
             if damage > 1:
                 self.doShieldStun(math.floor(damage+2))
         else:
             self.change_y = -15
             self.invincible = 20
-            self.shieldIntegrity = 100
+            self.shield_integrity = 100
             self.doStunned(400)
     
     def updateLandingLag(self,lag,reset=False):
-        if reset: self.landingLag = lag
+        if reset: self.landing_lag = lag
         else:
-            if lag > self.landingLag: self.landingLag = lag
+            if lag > self.landing_lag: self.landing_lag = lag
             
 ########################################################
 #                 ENGINE FUNCTIONS                     #
@@ -1002,16 +1006,16 @@ class AbstractFighter():
     in the stateTransitions function of the current action.
     """
     def keyPressed(self,key):
-        self.inputBuffer.append((key,1.0))
-        self.keysHeld[key] = 1.0
+        self.input_buffer.append((key,1.0))
+        self.keys_held[key] = 1.0
         
     """
     As above, but opposite.
     """
-    def keyReleased(self,key):
-        if key in self.keysHeld:
-            self.inputBuffer.append((key,0))	
-            del self.keysHeld[key]
+    def key_released(self,key):
+        if key in self.keys_held:
+            self.input_buffer.append((key,0))	
+            del self.keys_held[key]
             return True
         else: return False
     
@@ -1021,7 +1025,7 @@ class AbstractFighter():
                 
     def joyButtonReleased(self,pad,button):
         # TODO: Check gamepad first
-        self.keyReleased(button)
+        self.key_released(button)
         
     def joyAxisMotion(self,pad,axis):
         #TODO - Actually check if this the right gamePad
@@ -1030,9 +1034,9 @@ class AbstractFighter():
         if value < 0: sign = '-'
         else: sign = '+'
         
-        k = self.keyBindings.get('axis ' + str(axis) + sign)
-        self.inputBuffer.append((k,value)) # This should hopefully append something along the line of ('left',0.8)
-        self.keysHeld[k] = value
+        k = self.key_bindings.get('axis ' + str(axis) + sign)
+        self.input_buffer.append((k,value)) # This should hopefully append something along the line of ('left',0.8)
+        self.keys_held[k] = value
 
     """
     Various wrappers for the InputBuffer function, each one corresponding to a kind of input. 
@@ -1040,107 +1044,107 @@ class AbstractFighter():
 
     #A key press
     def keyBuffered(self, key, distanceBack = 1, state = 0.1):
-        return any(map(lambda k: key in k and k[key] >= state,self.inputBuffer.getLastNFrames(distanceBack)))
+        return any(map(lambda k: key in k and k[key] >= state,self.input_buffer.getLastNFrames(distanceBack)))
 
     #A key tap (press, then release)
     def keyTapped(self, key, distanceBack = 8, state = 0.1):
-        downFrames = map(lambda k: key in k and k[key] >= state, self.inputBuffer.getLastNFrames(distanceBack))
-        upFrames = map(lambda k: key in k and k[key] < state, self.inputBuffer.getLastNFrames(distanceBack))
-        if not any(downFrames) or not any(upFrames):
+        down_frames = map(lambda k: key in k and k[key] >= state, self.input_buffer.getLastNFrames(distanceBack))
+        up_frames = map(lambda k: key in k and k[key] < state, self.input_buffer.getLastNFrames(distanceBack))
+        if not any(down_frames) or not any(up_frames):
             return False
-        firstDownFrame = reduce(lambda j, k: j if j != None else (k if downFrames[k] else None), range(len(downFrames)), None)
-        lastUpFrame = reduce(lambda j, k: k if upFrames[k] else j, range(len(upFrames)), None)
-        return firstDownFrame <= lastUpFrame
+        first_down_frame = reduce(lambda j, k: j if j != None else (k if down_frames[k] else None), range(len(down_frames)), None)
+        last_up_frame = reduce(lambda j, k: k if up_frames[k] else j, range(len(up_frames)), None)
+        return first_down_frame <= last_up_frame
 
     #A key press which hasn't been released yet
     def keyHeld(self, key, distanceBack = 8, state = 0.1):
-        downFrames = map(lambda k: key in k and k[key] >= state, self.inputBuffer.getLastNFrames(distanceBack))
-        upFrames = map(lambda k: key in k and k[key] < state, self.inputBuffer.getLastNFrames(distanceBack))
-        if not any(downFrames):
+        down_frames = map(lambda k: key in k and k[key] >= state, self.input_buffer.getLastNFrames(distanceBack))
+        up_frames = map(lambda k: key in k and k[key] < state, self.input_buffer.getLastNFrames(distanceBack))
+        if not any(down_frames):
             return False
-        if any(downFrames) and not any(upFrames):
+        if any(down_frames) and not any(up_frames):
             return True
-        firstDownFrame = reduce(lambda j, k: j if j != None else (k if downFrames[k] else None), range(len(downFrames)), None)
-        lastUpFrame = reduce(lambda j, k: k if upFrames[k] else j, range(len(upFrames)), None)
-        return firstDownFrame > lastUpFrame
+        first_down_frame = reduce(lambda j, k: j if j != None else (k if down_frames[k] else None), range(len(down_frames)), None)
+        last_up_frame = reduce(lambda j, k: k if up_frames[k] else j, range(len(up_frames)), None)
+        return first_down_frame > last_up_frame
 
     #A key release
     def keyUp(self, key, distanceBack = 1, state = 0.1):
-        return any(map(lambda k: key in k and k[key] < state, self.inputBuffer.getLastNFrames(distanceBack)))
+        return any(map(lambda k: key in k and k[key] < state, self.input_buffer.getLastNFrames(distanceBack)))
 
     #A key reinput (release, then press)
     def keyReinput(self, key, distanceBack = 8, state = 0.1):
-        upFrames = map(lambda k: key in k and k[key] < state, self.inputBuffer.getLastNFrames(distanceBack))
-        downFrames = map(lambda k: key in k and k[key] >= state, self.inputBuffer.getLastNFrames(distanceBack))
-        if not any(downFrames) or not any(downFrames):
+        up_frames = map(lambda k: key in k and k[key] < state, self.input_buffer.getLastNFrames(distanceBack))
+        down_frames = map(lambda k: key in k and k[key] >= state, self.input_buffer.getLastNFrames(distanceBack))
+        if not any(down_frames) or not any(down_frames):
             return False
-        firstUpFrame = reduce(lambda j, k: j if j != None else (k if upFrames[k] else None), range(len(upFrames)), None)
-        lastDownFrame = reduce(lambda j, k: k if downFrames[k] else j, range(len(downFrames)), None)
-        return firstUpFrame <= lastDownFrame
+        first_up_frame = reduce(lambda j, k: j if j != None else (k if up_frames[k] else None), range(len(up_frames)), None)
+        last_down_frame = reduce(lambda j, k: k if down_frames[k] else j, range(len(down_frames)), None)
+        return first_up_frame <= last_down_frame
 
     #A key release which hasn't been pressed yet
     def keyIdle(self, key, distanceBack = 8, state = 0.1):
-        upFrames = map(lambda k: key in k and k[key] < state, self.inputBuffer.getLastNFrames(distanceBack))
-        downFrames = map(lambda k: key in k and k[key] >= state, self.inputBuffer.getLastNFrames(distanceBack))
-        if not any(upFrames):
+        up_frames = map(lambda k: key in k and k[key] < state, self.input_buffer.getLastNFrames(distanceBack))
+        down_frames = map(lambda k: key in k and k[key] >= state, self.input_buffer.getLastNFrames(distanceBack))
+        if not any(up_frames):
             return False
-        if any(upFrames) and not any(downFrames):
+        if any(up_frames) and not any(down_frames):
             return True
-        firstUpFrame = reduce(lambda j, k: j if j != None else (k if upFrames[k] else None), range(len(upFrames)), None)
-        lastDownFrame = reduce(lambda j, k: k if downFrames[k] else j, range(len(downFrames)), None)
-        return firstUpFrame > lastDownFrame
+        first_up_frame = reduce(lambda j, k: j if j != None else (k if up_frames[k] else None), range(len(up_frames)), None)
+        last_down_frame = reduce(lambda j, k: k if down_frames[k] else j, range(len(down_frames)), None)
+        return first_up_frame > last_down_frame
 
     #Analog directional input
-    def getSmoothedInput(self, distanceBack = 64, maxMagnitude = 1.0):
+    def getSmoothedInput(self, distanceBack = 64, max_magnitude = 1.0):
         #TODO If this is a gamepad, simply return its analog input
-        holdBuffer = reversed(self.inputBuffer.getLastNFrames(distanceBack))
-        smoothedX = 0.0
-        smoothedY = 0.0
-        for frameInput in holdBuffer:
-            workingX = 0.0
-            workingY = 0.0
-            xDecay = float(1.5)/distanceBack
-            yDecay = float(1.5)/distanceBack
-            if 'left' in frameInput: workingX -= frameInput['left']
-            if 'right' in frameInput: workingX += frameInput['right']
-            if 'up' in frameInput: workingY -= frameInput['up']
-            if 'down' in frameInput: workingY += frameInput['down']
-            if (workingX > 0 and smoothedX > 0) or (workingX < 0 and smoothedX < 0):
-                xDecay = float(1)/distanceBack
-            elif (workingX < 0 and smoothedX > 0) or (workingX > 0 and smoothedX < 0):
-                xDecay = float(4)/distanceBack
-            if (workingY < 0 and smoothedY < 0) or (workingY > 0 and smoothedY > 0):
-                yDecay = float(1)/distanceBack
-            elif (workingY < 0 and smoothedY > 0) or (workingY > 0 and smoothedY < 0):
+        hold_buffer = reversed(self.input_buffer.getLastNFrames(distanceBack))
+        smoothed_x = 0.0
+        smoothed_y = 0.0
+        for frame_input in hold_buffer:
+            working_x = 0.0
+            working_y = 0.0
+            x_decay = float(1.5)/distanceBack
+            y_decay = float(1.5)/distanceBack
+            if 'left' in frame_input: working_x -= frame_input['left']
+            if 'right' in frame_input: working_x += frame_input['right']
+            if 'up' in frame_input: working_y -= frame_input['up']
+            if 'down' in frame_input: working_y += frame_input['down']
+            if (working_x > 0 and smoothed_x > 0) or (working_x < 0 and smoothed_x < 0):
+                x_decay = float(1)/distanceBack
+            elif (working_x < 0 and smoothed_x > 0) or (working_x > 0 and smoothed_x < 0):
+                x_decay = float(4)/distanceBack
+            if (working_y < 0 and smoothed_y < 0) or (working_y > 0 and smoothed_y > 0):
+                y_decay = float(1)/distanceBack
+            elif (working_y < 0 and smoothed_y > 0) or (working_y > 0 and smoothed_y < 0):
                 ySmooth = float(4)/distanceBack
-            magnitude = numpy.linalg.norm([workingX, workingY])
-            if magnitude > maxMagnitude:
-                workingX /= magnitude/maxMagnitude
-                workingY /= magnitude/maxMagnitude
-            if smoothedX > 0:
-                smoothedX -= xDecay
-                if smoothedX < 0:
-                    smoothedX = 0
-            elif smoothedX < 0:
-                smoothedX += xDecay
-                if smoothedX > 0:
-                    smoothedX = 0
-            if smoothedY > 0:
-                smoothedY -= yDecay
-                if smoothedY < 0:
-                    smoothedY = 0
-            elif smoothedY < 0:
-                smoothedY += yDecay
-                if smoothedY > 0:
-                    smoothedY = 0
-            smoothedX += workingX
-            smoothedY += workingY
+            magnitude = numpy.linalg.norm([working_x, working_y])
+            if magnitude > max_magnitude:
+                working_x /= magnitude/max_magnitude
+                working_y /= magnitude/max_magnitude
+            if smoothed_x > 0:
+                smoothed_x -= x_decay
+                if smoothed_x < 0:
+                    smoothed_x = 0
+            elif smoothed_x < 0:
+                smoothed_x += x_decay
+                if smoothed_x > 0:
+                    smoothed_x = 0
+            if smoothed_y > 0:
+                smoothed_y -= y_decay
+                if smoothed_y < 0:
+                    smoothed_y = 0
+            elif smoothed_y < 0:
+                smoothed_y += y_decay
+                if smoothed_y > 0:
+                    smoothed_y = 0
+            smoothed_x += working_x
+            smoothed_y += working_y
 
-        finalMagnitude = numpy.linalg.norm([smoothedX, smoothedY])
-        if finalMagnitude > maxMagnitude:
-            smoothedX /= finalMagnitude/maxMagnitude
-            smoothedY /= finalMagnitude/maxMagnitude
-        return [smoothedX, smoothedY]
+        final_magnitude = numpy.linalg.norm([smoothed_x, smoothed_y])
+        if final_magnitude > max_magnitude:
+            smoothed_x /= final_magnitude/max_magnitude
+            smoothed_y /= final_magnitude/max_magnitude
+        return [smoothed_x, smoothed_y]
         
     
     """
@@ -1160,8 +1164,8 @@ class AbstractFighter():
     IS STILL BEING HELD, this is your function.
     """
     def keysContain(self,key,threshold=0.1):
-        if key in self.keysHeld:
-            return self.keysHeld[key] >= threshold
+        if key in self.keys_held:
+            return self.keys_held[key] >= threshold
         return False
     
     """
@@ -1225,37 +1229,37 @@ class AbstractFighter():
     that collide with the fighter, not counting transparency.
     """
     def getMovementCollisionsWith(self,spriteGroup):
-        futureRect = self.ecb.currentECB.rect.copy()
-        futureRect.x += self.change_x
-        futureRect.y += self.change_y
-        collideSprite = spriteManager.RectSprite(self.ecb.currentECB.rect.union(futureRect))
-        return filter(lambda r: pathRectIntersects(self.ecb.currentECB.rect, futureRect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collideSprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.currentECB.rect, futureRect, q.rect)))
+        future_rect = self.ecb.current_ecb.rect.copy()
+        future_rect.x += self.change_x
+        future_rect.y += self.change_y
+        collide_sprite = spriteManager.RectSprite(self.ecb.current_ecb.rect.union(future_rect))
+        return filter(lambda r: pathRectIntersects(self.ecb.current_ecb.rect, future_rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collide_sprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.current_ecb.rect, future_rect, q.rect)))
 
     def getSizeCollisionsWith(self,spriteGroup):
-        return sorted(filter(lambda r: intersectPoint(self.ecb.currentECB.rect, r.rect) != None, pygame.sprite.spritecollide(self.ecb.currentECB, spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(self.ecb.currentECB.rect, q.rect)[0]))
+        return sorted(filter(lambda r: intersectPoint(self.ecb.current_ecb.rect, r.rect) != None, pygame.sprite.spritecollide(self.ecb.current_ecb, spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(self.ecb.current_ecb.rect, q.rect)[0]))
 
     def catchMovement(self, other):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
-        checkRect = other.rect.copy()
+        check_rect = other.rect.copy()
 
-        futureRect = self.ecb.currentECB.rect.copy()
-        futureRect.x += self.change_x
-        futureRect.y += self.change_y
-        t = pathRectIntersects(self.ecb.currentECB.rect, futureRect, checkRect)
+        future_rect = self.ecb.current_ecb.rect.copy()
+        future_rect.x += self.change_x
+        future_rect.y += self.change_y
+        t = pathRectIntersects(self.ecb.current_ecb.rect, future_rect, check_rect)
 
-        myRect = self.ecb.currentECB.rect.copy()
-        myRect.x += t*(futureRect.x-self.ecb.currentECB.rect.x)
-        myRect.y += t*(futureRect.y-self.ecb.currentECB.rect.y)
+        my_rect = self.ecb.current_ecb.rect.copy()
+        my_rect.x += t*(future_rect.x-self.ecb.current_ecb.rect.x)
+        my_rect.y += t*(future_rect.y-self.ecb.current_ecb.rect.y)
 
         if other.solid:
-            contact = intersectPoint(myRect, checkRect)
+            contact = intersectPoint(my_rect, check_rect)
             if contact is None:
                 return False
             v_vel = [self.change_x-other.change_x, self.change_y-other.change_y]
             return numpy.dot(contact[1], v_vel) < 0
-        elif self.platformPhase <= 0:
-            return checkPlatform(myRect, self.ecb.currentECB.rect, checkRect, self.change_y)
+        elif self.platform_phase <= 0:
+            return checkPlatform(my_rect, self.ecb.current_ecb.rect, check_rect, self.change_y)
         else:
             return False
         
@@ -1263,10 +1267,10 @@ class AbstractFighter():
     def eject(self, other):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
-        checkRect = other.rect.copy()
-        #checkRect.centerx -= other.change_x
-        #checkRect.centery -= other.change_y
-        contact = intersectPoint(self.ecb.currentECB.rect, checkRect)
+        check_rect = other.rect.copy()
+        #check_rect.centerx -= other.change_x
+        #check_rect.centery -= other.change_y
+        contact = intersectPoint(self.ecb.current_ecb.rect, check_rect)
         
         if other.solid:
             if contact is not None:
@@ -1274,9 +1278,9 @@ class AbstractFighter():
                 self.rect.y += contact[0][1]
                 return self.reflect(other)
         else:
-            newPrev = self.ecb.currentECB.rect.copy()
-            newPrev.center = self.ecb.previousECB.rect.center
-            if self.platformPhase <= 0 and checkPlatform(self.ecb.currentECB.rect, self.ecb.previousECB.rect, checkRect, self.change_y):
+            new_prev = self.ecb.current_ecb.rect.copy()
+            new_prev.center = self.ecb.previous_ecb.rect.center
+            if self.platform_phase <= 0 and checkPlatform(self.ecb.current_ecb.rect, self.ecb.previous_ecb.rect, check_rect, self.change_y):
                 if contact is not None:
                     self.rect.x += contact[0][0]
                     self.rect.y += contact[0][1]
@@ -1286,8 +1290,8 @@ class AbstractFighter():
     def reflect(self, other):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
-        checkRect = other.rect.copy()
-        contact = intersectPoint(self.ecb.currentECB.rect, checkRect)
+        check_rect = other.rect.copy()
+        contact = intersectPoint(self.ecb.current_ecb.rect, check_rect)
 
         if contact is not None:
             #The contact vector is perpendicular to the axis over which the reflection should happen
@@ -1331,27 +1335,27 @@ def getDirectionBetweenPoints(p1, p2):
     return (180 * math.atan2(dy, dx)) / math.pi 
 
 def intersectPoint(firstRect, secondRect): 
-    firstPoints = [firstRect.midtop, firstRect.midbottom, firstRect.midleft, firstRect.midright]
-    secondPoints = [secondRect.topleft, secondRect.topright, secondRect.bottomleft, secondRect.bottomright]
+    first_points = [firstRect.midtop, firstRect.midbottom, firstRect.midleft, firstRect.midright]
+    second_points = [secondRect.topleft, secondRect.topright, secondRect.bottomleft, secondRect.bottomright]
 
     norm = numpy.linalg.norm([firstRect.height, firstRect.width])
     if norm == 0:
         norm = 1
 
-    leftDist = [directionalDisplacement(firstPoints, secondPoints, [float(-1), float(0)]), [float(-1), float(0)]]
-    rightDist = [directionalDisplacement(firstPoints, secondPoints, [float(1), float(0)]), [float(1), float(0)]]
-    upDist = [directionalDisplacement(firstPoints, secondPoints, [float(0), float(-1)]), [float(0), float(-1)]]
-    downDist = [directionalDisplacement(firstPoints, secondPoints, [float(0), float(1)]), [float(0), float(1)]]
-    upLeftDist = [directionalDisplacement(firstPoints, secondPoints, [float(-firstRect.height), float(-firstRect.width)]), [float(-firstRect.height)/norm, float(-firstRect.width)/norm]]
-    upRightDist = [directionalDisplacement(firstPoints, secondPoints, [float(firstRect.height), float(-firstRect.width)]), [float(firstRect.height)/norm, float(-firstRect.width)/norm]]
-    downLeftDist = [directionalDisplacement(firstPoints, secondPoints, [float(-firstRect.height), float(firstRect.width)]), [float(-firstRect.height)/norm, float(firstRect.width)/norm]]
-    downRightDist = [directionalDisplacement(firstPoints, secondPoints, [float(firstRect.height), float(firstRect.width)]), [float(firstRect.height)/norm, float(firstRect.width)/norm]]
+    left_dist = [directionalDisplacement(first_points, second_points, [float(-1), float(0)]), [float(-1), float(0)]]
+    right_dist = [directionalDisplacement(first_points, second_points, [float(1), float(0)]), [float(1), float(0)]]
+    up_dist = [directionalDisplacement(first_points, second_points, [float(0), float(-1)]), [float(0), float(-1)]]
+    down_dist = [directionalDisplacement(first_points, second_points, [float(0), float(1)]), [float(0), float(1)]]
+    up_left_dist = [directionalDisplacement(first_points, second_points, [float(-firstRect.height), float(-firstRect.width)]), [float(-firstRect.height)/norm, float(-firstRect.width)/norm]]
+    up_right_dist = [directionalDisplacement(first_points, second_points, [float(firstRect.height), float(-firstRect.width)]), [float(firstRect.height)/norm, float(-firstRect.width)/norm]]
+    down_left_dist = [directionalDisplacement(first_points, second_points, [float(-firstRect.height), float(firstRect.width)]), [float(-firstRect.height)/norm, float(firstRect.width)/norm]]
+    down_right_dist = [directionalDisplacement(first_points, second_points, [float(firstRect.height), float(firstRect.width)]), [float(firstRect.height)/norm, float(firstRect.width)/norm]]
 
-    minDirection = min(leftDist, rightDist, upDist, downDist, upLeftDist, upRightDist, downLeftDist, downRightDist, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
-    if directionalDisplacement(firstPoints, secondPoints, minDirection[1]) < 0:
+    min_direction = min(left_dist, right_dist, up_dist, down_dist, up_left_dist, up_right_dist, down_left_dist, down_right_dist, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
+    if directionalDisplacement(first_points, second_points, min_direction[1]) < 0:
         return None
     else:
-        return minDirection
+        return min_direction
 
 def checkPlatform(current, previous, platform, yvel):
     intersect = intersectPoint(current, platform)
@@ -1359,70 +1363,70 @@ def checkPlatform(current, previous, platform, yvel):
         return True
     return False
     
-def directionalDisplacement(firstPoints, secondPoints, direction):
+def directionalDisplacement(first_points, second_points, direction):
     #Given a direction to displace in, determine the displacement needed to get it out
-    firstDots = map(lambda x: numpy.dot(x, direction), firstPoints)
-    secondDots = map(lambda x: numpy.dot(x, direction), secondPoints)
-    projectedDisplacement = max(secondDots)-min(firstDots)
-    normsqr = 1.0 if direction == [0, 0] else direction[0]*direction[0]+direction[1]*direction[1]
-    return [projectedDisplacement/normsqr*direction[0], projectedDisplacement/normsqr*direction[1]]
+    first_dots = map(lambda x: numpy.dot(x, direction), first_points)
+    second_dots = map(lambda x: numpy.dot(x, direction), second_points)
+    projected_displacement = max(second_dots)-min(first_dots)
+    norm_sqr = 1.0 if direction == [0, 0] else direction[0]*direction[0]+direction[1]*direction[1]
+    return [projected_displacement/norm_sqr*direction[0], projected_displacement/norm_sqr*direction[1]]
 
 # Returns a 2-entry array representing a range of time when the points and the rect intersect
 # If the range's min is greater than its max, it represents an empty interval
-def projectionIntersects(startPoints, endPoints, rectPoints, vector):
-    startDots = map(lambda x: numpy.dot(x, vector), startPoints)
-    endDots = map(lambda x: numpy.dot(x, vector), endPoints)
-    rectDots = map(lambda x: numpy.dot(x, vector), rectPoints)
+def projectionIntersects(start_points, end_points, rectPoints, vector):
+    start_dots = map(lambda x: numpy.dot(x, vector), start_points)
+    end_dots = map(lambda x: numpy.dot(x, vector), end_points)
+    rect_dots = map(lambda x: numpy.dot(x, vector), rectPoints)
 
-    if min(startDots) == min(endDots):
-        if min(startDots) <= max(rectDots): #.O.|...
+    if min(start_dots) == min(end_dots):
+        if min(start_dots) <= max(rect_dots): #.O.|...
             t_mins = [float("-inf"), float("inf")]
         else:                               #...|.O.
             t_mins = [float("inf"), float("-inf")]
-    elif min(startDots) > min(endDots):
-        t_mins = [float(max(rectDots)-min(startDots))/(min(endDots)-min(startDots)), float("inf")]
+    elif min(start_dots) > min(end_dots):
+        t_mins = [float(max(rect_dots)-min(start_dots))/(min(end_dots)-min(start_dots)), float("inf")]
     else:
-        t_mins = [float("-inf"), float(max(rectDots)-min(startDots))/(min(endDots)-min(startDots))]
+        t_mins = [float("-inf"), float(max(rect_dots)-min(start_dots))/(min(end_dots)-min(start_dots))]
 
-    if max(startDots) == max(endDots):
-        if max(startDots) >= min(rectDots): #...|.O.
+    if max(start_dots) == max(end_dots):
+        if max(start_dots) >= min(rect_dots): #...|.O.
             t_maxs = [float("-inf"), float("inf")]
         else:                               #.O.|...
             t_maxs = [float("inf"), float("-inf")]
-    elif max(startDots) < max(endDots):
-        t_maxs = [float(min(rectDots)-max(startDots))/(max(endDots)-max(startDots)), float("inf")]
+    elif max(start_dots) < max(end_dots):
+        t_maxs = [float(min(rect_dots)-max(start_dots))/(max(end_dots)-max(start_dots)), float("inf")]
     else:
-        t_maxs = [float("-inf"), float(min(rectDots)-max(startDots))/(max(endDots)-max(startDots))]
+        t_maxs = [float("-inf"), float(min(rect_dots)-max(start_dots))/(max(end_dots)-max(start_dots))]
 
-    if max(endDots)-max(startDots) == min(endDots)-min(startDots):
-        if max(startDots) > min(startDots):
+    if max(end_dots)-max(start_dots) == min(end_dots)-min(start_dots):
+        if max(start_dots) > min(start_dots):
             t_open = [float("-inf"), float("inf")]
         else:
             t_open = [float("inf"), float("-inf")]
-    elif max(endDots)-max(startDots) > min(endDots)-min(startDots):
-        t_open = [float("-inf"), float(max(endDots)-max(startDots)-min(endDots)+min(startDots))/(max(startDots)-min(startDots))]
+    elif max(end_dots)-max(start_dots) > min(end_dots)-min(start_dots):
+        t_open = [float("-inf"), float(max(end_dots)-max(start_dots)-min(end_dots)+min(start_dots))/(max(start_dots)-min(start_dots))]
     else:
-        t_open = [float(max(endDots)-max(startDots)-min(endDots)+min(startDots))/(max(startDots)-min(startDots)), float("inf")]
+        t_open = [float(max(end_dots)-max(start_dots)-min(end_dots)+min(start_dots))/(max(start_dots)-min(start_dots)), float("inf")]
 
     return [max(t_mins[0], t_maxs[0], t_open[0]), min(t_mins[1], t_maxs[1], t_open[1])]
 
 def pathRectIntersects(startRect, endRect, rect):
     if startRect.colliderect(rect):
         return 0
-    startCorners = [startRect.midtop, startRect.midbottom, startRect.midleft, startRect.midright]
-    endCorners = [endRect.midtop, endRect.midbottom, endRect.midleft, endRect.midright]
-    rectCorners = [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]
+    start_corners = [startRect.midtop, startRect.midbottom, startRect.midleft, startRect.midright]
+    end_corners = [endRect.midtop, endRect.midbottom, endRect.midleft, endRect.midright]
+    rect_corners = [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]
 
-    horizontalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [1, 0])
-    verticalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [0, 1])
-    downwardDiagonalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [startRect.height, startRect.width])
-    upwardDiagonalIntersects = projectionIntersects(startCorners, endCorners, rectCorners, [-startRect.height, startRect.width])
+    horizontal_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [1, 0])
+    vertical_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [0, 1])
+    downward_diagonal_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [startRect.height, startRect.width])
+    upward_diagonal_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [-startRect.height, startRect.width])
 
-    totalIntersects = [max(horizontalIntersects[0], verticalIntersects[0], downwardDiagonalIntersects[0], upwardDiagonalIntersects[0], 0), min(horizontalIntersects[1], verticalIntersects[1], downwardDiagonalIntersects[1], upwardDiagonalIntersects[1], 1)]
-    if totalIntersects[0] > totalIntersects[1]:
+    total_intersects = [max(horizontal_intersects[0], vertical_intersects[0], downward_diagonal_intersects[0], upward_diagonal_intersects[0], 0), min(horizontal_intersects[1], vertical_intersects[1], downward_diagonal_intersects[1], upward_diagonal_intersects[1], 1)]
+    if total_intersects[0] > total_intersects[1]:
         return 999
     else:
-        return totalIntersects[0]
+        return total_intersects[0]
         
 ########################################################
 #                  INPUT BUFFER                        #
@@ -1438,33 +1442,33 @@ class InputBuffer():
     
     def __init__(self):
         self.buffer = [[]]
-        self.workingBuff = []
+        self.working_buff = []
         self.lastIndex = 0
       
     """
     Pushes the buttons for the frame into the buffer, then extends the index by one.
     """
     def push(self):
-        self.buffer.append(dict(self.workingBuff))
-        self.workingBuff = []
+        self.buffer.append(dict(self.working_buff))
+        self.working_buff = []
         self.lastIndex += 1
                 
     """
     Get a sub-buffer of N frames
     """
     def getLastNFrames(self,n):
-        retBuffer = []
+        ret_buffer = []
         if n > self.lastIndex: n = self.lastIndex
         for i in range(self.lastIndex,self.lastIndex - n,-1):
-            retBuffer.append(self.buffer[i])
-        return retBuffer
+            ret_buffer.append(self.buffer[i])
+        return ret_buffer
     
     """
     put a key into the current working buffer. The working buffer is all of the inputs for
     one frame, before the frame is actually executed.
     """
     def append(self,key):
-        self.workingBuff.append(key)
+        self.working_buff.append(key)
 
 
 ########################################################
@@ -1480,11 +1484,11 @@ class ECB():
     def __init__(self,actor):
         self.actor = actor
 
-        self.currentECB = spriteManager.RectSprite(self.actor.sprite.boundingRect.copy(), pygame.Color('#ECB134'))
-        self.originalsize = self.currentECB.rect.size
-        self.currentECB.rect.center = self.actor.sprite.boundingRect.center
+        self.current_ecb = spriteManager.RectSprite(self.actor.sprite.boundingRect.copy(), pygame.Color('#ECB134'))
+        self.original_size = self.current_ecb.rect.size
+        self.current_ecb.rect.center = self.actor.sprite.boundingRect.center
 
-        self.previousECB = spriteManager.RectSprite(self.currentECB.rect.copy(), pygame.Color('#EA6F1C'))
+        self.previous_ecb = spriteManager.RectSprite(self.current_ecb.rect.copy(), pygame.Color('#EA6F1C'))
         
     """
     Resize the ECB. Give it a height, width, and center point.
@@ -1504,36 +1508,36 @@ class ECB():
     This one moves the ECB without resizing it.
     """
     def move(self,newCenter):
-        self.currentECB.rect.center = newCenter
+        self.current_ecb.rect.center = newCenter
     
     """
     This stores the previous location of the ECB
     """
     def store(self):
-        self.previousECB = spriteManager.RectSprite(self.currentECB.rect,pygame.Color('#EA6F1C'))
+        self.previous_ecb = spriteManager.RectSprite(self.current_ecb.rect,pygame.Color('#EA6F1C'))
     
     """
     Set the ECB's height and width to the sprite's, and centers it
     """
     def normalize(self):
-        #center = (self.actor.sprite.boundingRect.centerx + self.actor.current_action.ecbCenter[0],self.actor.sprite.boundingRect.centery + self.actor.current_action.ecbCenter[1])
-        sizes = self.actor.current_action.ecbSize
-        offsets = self.actor.current_action.ecbOffset
+        #center = (self.actor.sprite.boundingRect.centerx + self.actor.current_action.ecb_center[0],self.actor.sprite.boundingRect.centery + self.actor.current_action.ecb_center[1])
+        sizes = self.actor.current_action.ecb_size
+        offsets = self.actor.current_action.ecb_offset
         
         
         if sizes[0] == 0: 
-            self.currentECB.rect.width = self.actor.sprite.boundingRect.width
+            self.current_ecb.rect.width = self.actor.sprite.boundingRect.width
         else:
-            self.currentECB.rect.width = sizes[0]
+            self.current_ecb.rect.width = sizes[0]
         if sizes[1] == 0: 
-            self.currentECB.rect.height = self.actor.sprite.boundingRect.height
+            self.current_ecb.rect.height = self.actor.sprite.boundingRect.height
         else:
-            self.currentECB.rect.height = sizes[1]
+            self.current_ecb.rect.height = sizes[1]
         
-        self.currentECB.rect.center = self.actor.sprite.boundingRect.center
-        self.currentECB.rect.x += offsets[0]
-        self.currentECB.rect.y += offsets[1]
+        self.current_ecb.rect.center = self.actor.sprite.boundingRect.center
+        self.current_ecb.rect.x += offsets[0]
+        self.current_ecb.rect.y += offsets[1]
         
     def draw(self,screen,offset,scale):
-        self.currentECB.draw(screen,self.actor.gameState.stageToScreen(self.currentECB.rect),scale)
-        self.previousECB.draw(screen,self.actor.gameState.stageToScreen(self.previousECB.rect),scale)
+        self.current_ecb.draw(screen,self.actor.gameState.stageToScreen(self.current_ecb.rect),scale)
+        self.previous_ecb.draw(screen,self.actor.gameState.stageToScreen(self.previous_ecb.rect),scale)

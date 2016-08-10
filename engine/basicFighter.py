@@ -3,14 +3,14 @@ import vector2D
 
 class BasicFighter():
     def __init__(self,
-                 playerNum,
+                 player_num,
                  sprite,
                  attributes):
         
         self.attr = attributes
         self.vars = {}
         self.flags = {}
-        self.functionHooks = {
+        self.function_hooks = {
                               'beforeUpdate': [],
                               'afterUpdate' : []
                               }
@@ -22,10 +22,10 @@ class BasicFighter():
         self.actions = settingsManager.importFromURI(__file__,'baseActions.py')
         
     def update(self):
-        for func in self.functionHooks['beforeUpdate']:
+        for func in self.function_hooks['beforeUpdate']:
             func(self)
             
-        for func in self.functionHooks['afterUpdate']:
+        for func in self.function_hooks['afterUpdate']:
             func(self)
 ########################################################
 #                  ACTION SETTERS                      #
@@ -60,14 +60,8 @@ class BasicFighter():
     def doDash(self,direction):
         self.changeAction(self.actions.Dash())
 
-    #def doRun(self,direction):
-    #    self.changeAction(self.actions.Run())
-
     def doHitStun(self,hitstun,trajectory):
         self.changeAction(self.actions.HitStun(hitstun,trajectory))
-
-    def doTryTech(self, hitstun, trajectory):
-        self.changeAction(self.actions.TryTech(hitstun, trajectory))
     
     def doPivot(self):
         self.changeAction(self.actions.Pivot())
@@ -150,8 +144,8 @@ class BasicFighter():
     def doThrow(self):
         return None
    
-    def doShield(self, newShield=True):
-        self.changeAction(self.actions.Shield(newShield))
+    def doShield(self, new_shield=True):
+        self.changeAction(self.actions.Shield(new_shield))
 
     def doShieldStun(self, length):
         self.changeAction(self.actions.ShieldStun(length))
@@ -196,8 +190,8 @@ class BasicFighter():
 ########################################################
     
     def registerFunction(self,hook,func):
-        self.functionHooks[hook].append(func)
+        self.function_hooks[hook].append(func)
         
     def unregisterFunction(self,hook,func):
-        self.functionHooks[hook].remove(func)
+        self.function_hooks[hook].remove(func)
     

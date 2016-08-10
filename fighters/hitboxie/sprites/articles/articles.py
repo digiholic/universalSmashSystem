@@ -15,10 +15,10 @@ class SplatArticle(article.AnimatedArticle):
         variables = {'center':[0,0],
                      'size':[12,12],
                      'damage':3,
-                     'baseKnockback':2,
-                     'knockbackGrowth':0,
+                     'base_knockback':2,
+                     'knockback_growth':0,
                      'trajectory':0,
-                     'hitstun':1,
+                     'hitstun_multiplier':1,
                      'transcendence':-1
                      }
         self.hitbox = hitbox.DamageHitbox(self.owner, hitbox.HitboxLock(), variables)
@@ -30,8 +30,8 @@ class SplatArticle(article.AnimatedArticle):
 
     # Override the onCollision of the hitbox
     def onCollision(self, other):
-        othersClasses = list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]
-        if ('AbstractFighter' in othersClasses or 'Platform' in othersClasses):
+        others_classes = list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]
+        if ('AbstractFighter' in others_classes or 'Platform' in others_classes):
             self.deactivate()
         #TODO check for verticality of platform landing
             
@@ -71,7 +71,7 @@ class ShineArticle(article.AnimatedArticle):
             self.getImageAtIndex(2)
         elif self.frame == 6:
             self.getImageAtIndex(3)
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             self.frame = 2
         else:
             self.frame += 1
