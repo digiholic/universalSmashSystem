@@ -408,7 +408,7 @@ class AbstractFighter():
         self.current_action.update(self) #update our action
         
         if self.mask:self.mask = self.mask.update()
-        self.shieldIntegrity += 0.4
+        self.shieldIntegrity += 0.2
         if self.shieldIntegrity > 100: self.shieldIntegrity = 100
         
         for art in self.articles:
@@ -975,6 +975,7 @@ class AbstractFighter():
         else:
             self.change_y = -15
             self.invincible = 20
+            self.shieldIntegrity = 100
             self.doStunned(400)
     
     def updateLandingLag(self,lag,reset=False):

@@ -645,14 +645,12 @@ class AirJump(action.Action):
             actor.grounded = False
             actor.change_y = -actor.var['airJumpHeight']
             actor.jumps -= 1
-            if actor.keysContain('left'):
-                if actor.facing == 1:
-                    actor.flip()
-                    actor.change_x = actor.facing * actor.var['maxAirSpeed']
-            elif actor.keysContain('right'):
-                if actor.facing == -1:
-                    actor.flip()
-                    actor.change_x = actor.facing * actor.var['maxAirSpeed']
+            if actor.keysContain('left') and actor.facing == 1:
+                actor.flip()
+                actor.change_x = actor.facing * actor.var['maxAirSpeed']
+            elif actor.keysContain('right') and actor.facing == -1:
+                actor.flip()
+                actor.change_x = actor.facing * actor.var['maxAirSpeed']
         if self.frame < self.lastFrame:
             self.frame += 1
         if self.frame == self.lastFrame:
@@ -982,10 +980,11 @@ class Released(action.Action):
         actor.preferred_yspeed = actor.var['maxFallSpeed']
     
     def stateTransitions(self,actor):
-        if actor.keysContain('left'):
-            actor.preferred_xspeed = -actor.var['maxAirSpeed']
-        elif actor.keysContain('right'):
-            actor.preferred_xspeed = actor.var['maxAirSpeed']
+        (key, invkey) = actor.getForwardBackwardKeys()
+        if actor.keysContain(key):
+            actor.preferred_xspeed = actor.facing * actor.var['maxAirSpeed']
+        elif actor.keysContain(invkey):
+            actor.preferred_xspeed = -actor.facing * actor.var['maxAirSpeed']
     
         if (actor.change_x < 0) and not actor.keysContain('left'):
             actor.preferred_xspeed = 0
@@ -1633,10 +1632,11 @@ def proneState(actor):
 ########################################################
 
 def airControl(actor):
-    if actor.keysContain('left'):
-        actor.preferred_xspeed = -actor.var['maxAirSpeed']
-    elif actor.keysContain('right'):
-        actor.preferred_xspeed = actor.var['maxAirSpeed']
+    (key, invkey) = actor.getForwardBackwardKeys()
+    if actor.keysContain(key):
+        actor.preferred_xspeed = actor.facing * actor.var['maxAirSpeed']
+    elif actor.keysContain(invkey):
+        actor.preferred_xspeed = -actor.facing * actor.var['maxAirSpeed']
     
     if (actor.change_x < 0) and not actor.keysContain('left'):
         actor.preferred_xspeed = 0
@@ -1655,10 +1655,11 @@ def airControl(actor):
         actor.doAction('Land')
 
 def helplessControl(actor):
-    if actor.keysContain('left'):
-        actor.preferred_xspeed = -actor.var['maxAirSpeed']
-    elif actor.keysContain('right'):
-        actor.preferred_xspeed = actor.var['maxAirSpeed']
+    (key, invkey) = actor.getForwardBackwardKeys()
+    if actor.keysContain(key):
+        actor.preferred_xspeed = actor.facing * actor.var['maxAirSpeed']
+    elif actor.keysContain(invkey):
+        actor.preferred_xspeed = -actor.facing * actor.var['maxAirSpeed']
     
     if (actor.change_x < 0) and not actor.keysContain('left'):
         actor.preferred_xspeed = 0
