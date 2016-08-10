@@ -13,36 +13,36 @@
 	<sound_path>sfx/</sound_path>
 	<actions>hitboxie_actions.xml</actions>
 	
-	<colorPalette id='0' displayColor='#000000'>
-	</colorPalette>
+	<color_palette id='0' displayColor='#000000'>
+	</color_palette>
 	
-	<colorPalette id='1' displayColor='#0000FF'>
-		<colorMap fromColor='#000000' toColor='#0000FF'></colorMap>
-	</colorPalette>
+	<color_palette id='1' displayColor='#0000FF'>
+		<color_map from_color='#000000' to_color='#0000FF'></color_map>
+	</color_palette>
 	
-	<colorPalette id='2' displayColor='#FFFF00'>
-		<colorMap fromColor='#000000' toColor='#FFFF00'></colorMap>
-	</colorPalette>
+	<color_palette id='2' displayColor='#FFFF00'>
+		<color_map from_color='#000000' to_color='#FFFF00'></color_map>
+	</color_palette>
 	
-	<colorPalette id='3' displayColor='#00FF00'>
-		<colorMap fromColor='#000000' toColor='#00FF00'></colorMap>
-	</colorPalette>
+	<color_palette id='3' displayColor='#00FF00'>
+		<color_map from_color='#000000' to_color='#00FF00'></color_map>
+	</color_palette>
 	
-	<colorPalette id='4' displayColor='#FF0000'>
-		<colorMap fromColor='#000000' toColor='#FF0000'></colorMap>
-	</colorPalette>
+	<color_palette id='4' displayColor='#FF0000'>
+		<color_map from_color='#000000' to_color='#FF0000'></color_map>
+	</color_palette>
 	
-	<colorPalette id='5' displayColor='#00FFFF'>
-		<colorMap fromColor='#000000' toColor='#00FFFF'></colorMap>
-	</colorPalette>
+	<color_palette id='5' displayColor='#00FFFF'>
+		<color_map from_color='#000000' to_color='#00FFFF'></color_map>
+	</color_palette>
 	
-	<colorPalette id='6' displayColor='#FF00FF'>
-		<colorMap fromColor='#000000' toColor='#FF00FF'></colorMap>
-	</colorPalette>
+	<color_palette id='6' displayColor='#FF00FF'>
+		<color_map from_color='#000000' to_color='#FF00FF'></color_map>
+	</color_palette>
 	
-	<colorPalette id='7' displayColor='#FFFFFF'>
-		<colorMap fromColor='#000000' toColor='#FFFFFF'></colorMap>
-	</colorPalette>
+	<color_palette id='7' displayColor='#FFFFFF'>
+		<color_map from_color='#000000' to_color='#FFFFFF'></color_map>
+	</color_palette>
 	
 	<stats>
 		<weight>100</weight>
@@ -56,7 +56,7 @@
 		<dodge_speed>10</dodge_speed>
 		<friction>0.3</friction>
 		<static_grip>0.3</static_grip>
-                <pivotGrip>0.6</pivotGrip>
+                <pivot_grip>0.6</pivot_grip>
 		<air_resistance>0.2</air_resistance>
 		<air_control>0.2</air_control>
 		<jumps>1</jumps>

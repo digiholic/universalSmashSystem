@@ -111,7 +111,7 @@ class Pivot(action.Action):
         action.Action.update(self, actor)
         if actor.grounded is False:
             actor.doAction('Fall')
-        actor.accel(actor.var['pivotGrip'])
+        actor.accel(actor.var['pivot_grip'])
         if self.frame == 0:
             actor.flip()
         if self.frame != self.last_frame:
@@ -321,7 +321,7 @@ class Crouch(action.Action):
         action.Action.update(self, actor)
         if actor.grounded is False:
             actor.doAction('Fall')
-        actor.accel(actor.var['pivotGrip'])
+        actor.accel(actor.var['pivot_grip'])
         (key, invkey) = actor.getForwardBackwardKeys()
         if actor.keysContain(key):
             actor.preferred_xspeed = actor.var['crawl_speed']*actor.facing
@@ -410,7 +410,7 @@ class HitStun(action.Action):
         (direct,_) = actor.getDirectionMagnitude()
         if actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not actor.grounded:
             print('Try tech')
-            actor.techWindow = 7
+            actor.tech_window = 7
             self.tech_cooldown = 40
             
         if self.frame == self.last_frame:
@@ -482,7 +482,7 @@ class Tumble(action.Action):
         
         if actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not actor.grounded:
             print('Try tech')
-            actor.techWindow = 20
+            actor.tech_window = 20
             self.tech_cooldown = 40
             
         if actor.change_y >= actor.var['max_fall_speed']:#Hard landing during tumble
@@ -1574,24 +1574,24 @@ def ledgeState(actor):
     (key,invkey) = actor.getForwardBackwardKeys()
     actor.setSpeed(0, actor.getFacingDirection())
     if actor.keyHeld('shield'):
-        actor.ledgeLock = True
+        actor.ledge_lock = True
         actor.doAction('LedgeRoll')
     elif actor.keyHeld('attack'):
-        actor.ledgeLock = True
+        actor.ledge_lock = True
         actor.doAction('LedgeAttack')
     elif actor.keyHeld('jump'):
-        actor.ledgeLock = True
+        actor.ledge_lock = True
         actor.invincible = 6
         actor.doAction('Jump')
     elif actor.keyBuffered(key):
-        actor.ledgeLock = True
+        actor.ledge_lock = True
         actor.doAction('LedgeGetup')
     elif actor.keyBuffered(invkey):
-        actor.ledgeLock = True
+        actor.ledge_lock = True
         actor.invincible = 6
         actor.doAction('Fall')
     elif actor.keyBuffered('down'):
-        actor.ledgeLock = True
+        actor.ledge_lock = True
         actor.invincible = 6
         actor.doAction('Fall')
 
@@ -1685,8 +1685,8 @@ def hitstunLanding(actor):
 
 def grabLedges(actor):
     # Check if we're colliding with any ledges.
-    if not actor.ledgeLock: #If we're not allowed to re-grab, don't bother calculating
-        ledge_hit_list = pygame.sprite.spritecollide(actor, actor.gameState.platform_ledges, False)
+    if not actor.ledge_lock: #If we're not allowed to re-grab, don't bother calculating
+        ledge_hit_list = pygame.sprite.spritecollide(actor, actor.game_state.platform_ledges, False)
         for ledge in ledge_hit_list:
             # Don't grab any ledges if the actor is holding down
             if actor.keysContain('down') is False:

@@ -22,8 +22,8 @@ class AbstractFighter():
         """
         directory = os.path.join(_baseDir,'sprites')
         prefix = ''
-        defaultSprite = 'idle'
-        imgwidth = '64'
+        default_sprite = 'idle'
+        img_width = '64'
         try:
             self.xml_data = ElementTree.parse(os.path.join(_baseDir,'fighter.xml')).getroot()
         except:
@@ -68,7 +68,7 @@ class AbstractFighter():
                 'dodge_speed': 10.0,
                 'friction': 0.3,
                 'static_grip': 0.3,
-                'pivotGrip': 0.6,
+                'pivot_grip': 0.6,
                 'air_resistance': 0.2,
                 'air_control': 0.2,
                 'jumps': 1,
@@ -128,40 +128,40 @@ class AbstractFighter():
         try:
             directory = os.path.join(_baseDir,self.xml_data.find('sprite_directory').text)
             prefix = self.xml_data.find('sprite_prefix').text
-            defaultSprite = self.xml_data.find('default_sprite').text
-            imgwidth = int(self.xml_data.find('sprite_width').text)
+            default_sprite = self.xml_data.find('default_sprite').text
+            img_width = int(self.xml_data.find('sprite_width').text)
             self.sprite_directory = self.xml_data.find('sprite_directory').text
         except:
             print('Could not load sprites')
             directory = settingsManager.createPath('sprites')
             prefix = ''
-            defaultSprite = 'sandbag_idle'
-            imgwidth = 64
+            default_sprite = 'sandbag_idle'
+            img_width = 64
             self.sprite_directory = settingsManager.createPath('sprites')
             
         self.sprite_prefix = prefix
-        self.default_sprite = defaultSprite
-        self.sprite_width = imgwidth
+        self.default_sprite = default_sprite
+        self.sprite_width = img_width
         
-        self.colorPalettes = []
+        self.color_palettes = []
         try:
-            for colorPalette in self.xml_data.findall('colorPalette'):
-                colorDict = {}
-                for colorMap in colorPalette.findall('colorMap'):
-                    fromColor = pygame.Color(colorMap.attrib['fromColor'])
-                    toColor = pygame.Color(colorMap.attrib['toColor'])
-                    colorDict[(fromColor.r, fromColor.g, fromColor.b)] = (toColor.r, toColor.g, toColor.b)
+            for color_palette in self.xml_data.findall('color_palette'):
+                color_dict = {}
+                for color_map in color_palette.findall('color_map'):
+                    from_color = pygame.Color(color_map.attrib['from_color'])
+                    to_color = pygame.Color(color_map.attrib['to_color'])
+                    color_dict[(from_color.r, from_color.g, from_color.b)] = (to_color.r, to_color.g, to_color.b)
                 
-                self.colorPalettes.append(colorDict)
+                self.color_palettes.append(color_dict)
         except: pass
         
-        while len(self.colorPalettes) < 4:
-            self.colorPalettes.append({})
+        while len(self.color_palettes) < 4:
+            self.color_palettes.append({})
         
-        color = self.colorPalettes[self.player_num] #TODO: Pick colors
+        color = self.color_palettes[self.player_num] #TODO: Pick colors
         
-        print(directory,prefix,defaultSprite,imgwidth,color,scale)
-        self.sprite = spriteManager.SpriteHandler(directory,prefix,defaultSprite,imgwidth,color,scale)
+        print(directory,prefix,default_sprite,img_width,color,scale)
+        self.sprite = spriteManager.SpriteHandler(directory,prefix,default_sprite,img_width,color,scale)
         
         #try:
         try:
@@ -177,7 +177,7 @@ class AbstractFighter():
         
         self.rect = self.sprite.rect
         
-        self.gameState = None
+        self.game_state = None
         self.players = None
         
         # dataLog holds information for the post-game results screen
@@ -200,20 +200,20 @@ class AbstractFighter():
         tree.append(self.createElement('sound_path', self.sound_path_short))
         tree.append(self.createElement('actions', self.action_file))
         
-        for i,colorDict in enumerate(self.colorPalettes):
-            colorElem = ElementTree.Element('colorPalette')
-            colorElem.attrib['id'] = str(i)
-            colorElem.attrib['displayColor'] = '#000000'
-            for fromColor,toColor in colorDict.iteritems():
-                mapElem = ElementTree.Element('colorMap')
-                mapElem.attrib['fromColor'] = '#%02x%02x%02x' % fromColor
-                mapElem.attrib['toColor'] = '#%02x%02x%02x' % toColor
-                colorElem.append(mapElem)
-            tree.append(colorElem)
-        statsElem = ElementTree.Element('stats')
+        for i,color_dict in enumerate(self.color_palettes):
+            color_elem = ElementTree.Element('color_palette')
+            color_elem.attrib['id'] = str(i)
+            color_elem.attrib['displayColor'] = '#000000'
+            for from_color,to_color in color_dict.iteritems():
+                map_elem = ElementTree.Element('color_map')
+                map_elem.attrib['from_color'] = '#%02x%02x%02x' % from_color
+                map_elem.attrib['to_color'] = '#%02x%02x%02x' % to_color
+                color_elem.append(map_elem)
+            tree.append(color_elem)
+        stats_elem = ElementTree.Element('stats')
         for tag,val in self.var.iteritems():
-            statsElem.append(self.createElement(tag, val))
-        tree.append(statsElem)
+            stats_elem.append(self.createElement(tag, val))
+        tree.append(stats_elem)
         
         ElementTree.ElementTree(tree).write(path)
     
@@ -265,16 +265,16 @@ class AbstractFighter():
         
         # Hitstop freezes the character for a few frames when hitting or being hit.
         self.hitstop = 0
-        self.hitstopVibration = (0,0)
-        self.hitstopPos = (0,0)
+        self.hitstop_vibration = (0,0)
+        self.hitstop_pos = (0,0)
         
         # HitboxLock is a list of hitboxes that will not hit the fighter again for a given amount of time.
         # Each entry in the list is a hitboxLock object
         self.hitbox_lock = weakref.WeakSet()
-        self.hitboxContact = set()
+        self.hitbox_contact = set()
         
         # When a fighter lets go of a ledge, he can't grab another one until he gets out of the area.
-        self.ledgeLock = False
+        self.ledge_lock = False
         
         #initialize the action
         if hasattr(self.actions,'loadAction'):
@@ -295,7 +295,7 @@ class AbstractFighter():
         self.damage = 0
         self.landing_lag = 6
         self.platform_phase = 0
-        self.techWindow = 0
+        self.tech_window = 0
         
         self.change_x = 0
         self.change_y = 0
@@ -322,7 +322,7 @@ class AbstractFighter():
                 self.sprite.updatePosition(self.rect)
                 self.ecb.normalize()
                 bumped = False
-                block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
+                block_hit_list = self.getSizeCollisionsWith(self.game_state.platform_list)
                 if not block_hit_list:
                     break
                 for block in block_hit_list:
@@ -338,12 +338,12 @@ class AbstractFighter():
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
 
-            if not self.hitstopVibration == (0,0):
-                (x,y) = self.hitstopVibration
+            if not self.hitstop_vibration == (0,0):
+                (x,y) = self.hitstop_vibration
                 self.rect.x += x
                 if not self.grounded: 
                     self.rect.y += y
-                self.hitstopVibration = (-x,-y)
+                self.hitstop_vibration = (-x,-y)
 
             #Smash directional influence AKA hitstun shuffling
             di_vec = self.getSmoothedInput()
@@ -366,7 +366,7 @@ class AbstractFighter():
 
             self.sprite.updatePosition(self.rect)
 
-            self.hitboxContact.clear()
+            self.hitbox_contact.clear()
             if self.invulnerable > -1000:
                 self.invulnerable -= 1
 
@@ -374,30 +374,30 @@ class AbstractFighter():
                 self.platform_phase -= 1
             self.ecb.normalize()
             return
-        elif self.hitstop == 0 and not self.hitstopVibration == (0,0):
-            #self.hitstopVibration = False #Lolwut?
-            self.rect.center = self.hitstopPos
-            self.hitstopVibration = (0,0)
+        elif self.hitstop == 0 and not self.hitstop_vibration == (0,0):
+            #self.hitstop_vibration = False #Lolwut?
+            self.rect.center = self.hitstop_pos
+            self.hitstop_vibration = (0,0)
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
         #Step two, accelerate/decelerate
         if self.grounded: self.accel(self.var['friction'])
         else: self.accel(self.var['air_resistance'])
         
-        if self.ledgeLock:
-            ledges = pygame.sprite.spritecollide(self, self.gameState.platform_ledges, False)
+        if self.ledge_lock:
+            ledges = pygame.sprite.spritecollide(self, self.game_state.platform_ledges, False)
             if len(ledges) == 0: # If we've cleared out of all of the ledges
-                self.ledgeLock = False
+                self.ledge_lock = False
         
         # Count down the tech window
-        if self.techWindow > 0:
+        if self.tech_window > 0:
             if self.grounded:
                 (direct,_) = self.getDirectionMagnitude()
                 print('Ground tech!')
                 self.unRotate()
                 self.doAction('Prone')
                 self.current_action.frame = self.current_action.last_frame
-            self.techWindow -= 1
+            self.tech_window -= 1
 
         # We set the hurbox to be the Bounding Rect of the sprite.
         # It is done here, so that the hurtbox can be changed by the action.
@@ -425,7 +425,7 @@ class AbstractFighter():
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
             bumped = False
-            block_hit_list = self.getSizeCollisionsWith(self.gameState.platform_list)
+            block_hit_list = self.getSizeCollisionsWith(self.game_state.platform_list)
             if not block_hit_list:
                 break
             for block in block_hit_list:
@@ -452,7 +452,7 @@ class AbstractFighter():
 
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
-        block_hit_list = self.getMovementCollisionsWith(self.gameState.platform_list)
+        block_hit_list = self.getMovementCollisionsWith(self.game_state.platform_list)
         for block in block_hit_list:
             if pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) > 0 and pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) < t and self.catchMovement(block): 
                 t = pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect)
@@ -480,7 +480,7 @@ class AbstractFighter():
 
         self.sprite.updatePosition(self.rect)
 
-        self.hitboxContact.clear()
+        self.hitbox_contact.clear()
         if self.invulnerable > -1000:
             self.invulnerable -= 1
 
@@ -517,7 +517,7 @@ class AbstractFighter():
         self.grounded = False
         self.ecb.current_ecb.rect.y += 4
         ground_block = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.gameState.platform_list, False)
+        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.game_state.platform_list, False)
         self.ecb.current_ecb.rect.y -= 4
         for block in block_hit_list:
             if block.solid or (self.platform_phase <= 0):
@@ -535,7 +535,7 @@ class AbstractFighter():
             self.front_walled = False
         self.ecb.current_ecb.rect.x -= 4
         wall_block = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.gameState.platform_list, False)
+        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.game_state.platform_list, False)
         self.ecb.current_ecb.rect.x += 4
         for block in block_hit_list:
             if block.solid:
@@ -556,7 +556,7 @@ class AbstractFighter():
             self.back_walled = False
         self.ecb.current_ecb.rect.x += 4
         wall_block = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.gameState.platform_list, False)
+        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.game_state.platform_list, False)
         self.ecb.current_ecb.rect.x -= 4
         for block in block_hit_list:
             if block.solid:
@@ -574,7 +574,7 @@ class AbstractFighter():
         self.ceilinged = False
         self.ecb.current_ecb.rect.y -= 4
         ceiling_block = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.gameState.platform_list, False)
+        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.game_state.platform_list, False)
         self.ecb.current_ecb.rect.y += 4
         for block in block_hit_list:
             if block.solid:
@@ -834,10 +834,10 @@ class AbstractFighter():
     def applyKnockback(self, damage, kb, kbg, trajectory, weight_influence=1, hitstun_multiplier=1, base_hitstun=1, hitlag_multiplier=1):
         self.hitstop = math.floor((damage / 4.0 + 2)*hitlag_multiplier)
         if self.grounded:
-            self.hitstopVibration = (3,0)
+            self.hitstop_vibration = (3,0)
         else:
-            self.hitstopVibration = (0,3)
-        self.hitstopPos = self.rect.center
+            self.hitstop_vibration = (0,3)
+        self.hitstop_pos = self.rect.center
         
         p = float(self.damage)
         d = float(damage)
@@ -919,7 +919,7 @@ class AbstractFighter():
         if respawn:
             self.initialize()
             
-            self.rect.midbottom = self.gameState.spawn_locations[self.player_num]
+            self.rect.midbottom = self.game_state.spawn_locations[self.player_num]
             self.rect.bottom -= 200
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
@@ -1539,5 +1539,5 @@ class ECB():
         self.current_ecb.rect.y += offsets[1]
         
     def draw(self,screen,offset,scale):
-        self.current_ecb.draw(screen,self.actor.gameState.stageToScreen(self.current_ecb.rect),scale)
-        self.previous_ecb.draw(screen,self.actor.gameState.stageToScreen(self.previous_ecb.rect),scale)
+        self.current_ecb.draw(screen,self.actor.game_state.stageToScreen(self.current_ecb.rect),scale)
+        self.previous_ecb.draw(screen,self.actor.game_state.stageToScreen(self.previous_ecb.rect),scale)

@@ -61,7 +61,7 @@ class Hitbox(spriteManager.RectSprite):
     def onCollision(self,other):
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
         if 'AbstractFighter' in list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
-            other.hitboxContact.add(self)
+            other.hitbox_contact.add(self)
     
     def update(self):
         self.rect.width = self.size[0]

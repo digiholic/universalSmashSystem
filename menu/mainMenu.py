@@ -903,12 +903,12 @@ class bgStar(engine.article.Article):
     def hsvtorgb(self,hsv):
         return tuple(i * 255 for i in colorsys.hsv_to_rgb(hsv[0],hsv[1],hsv[2]))
     
-    def changeColor(self,toColor):
-        fromColor = self.hsvtorgb(self.color)
-        trueColor = self.hsvtorgb(toColor)
+    def changeColor(self,to_color):
+        from_color = self.hsvtorgb(self.color)
+        trueColor = self.hsvtorgb(to_color)
         
-        self.recolor(self.image, fromColor, trueColor)
-        self.color = [toColor[0],toColor[1],toColor[2]]
+        self.recolor(self.image, from_color, trueColor)
+        self.color = [to_color[0],to_color[1],to_color[2]]
         
 
 """

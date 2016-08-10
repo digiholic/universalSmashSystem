@@ -85,7 +85,7 @@ class Battle():
             fighter.sprite.updatePosition(fighter.rect)
             fighter.ecb.normalize()
             fighter.ecb.store()
-            fighter.gameState = current_stage
+            fighter.game_state = current_stage
             fighter.players = self.players
             current_stage.follows.append(fighter.rect)
             log = DataLog()

@@ -758,7 +758,7 @@ class SubactionPanel(BuilderPanel):
                                                                           'sprite_directory')],
                                                                        'Sprite Directory')
             spriteWidthPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Sprite Width','int',fighter,'sprite_width')],'Sprite Width')
-            defaultSpritePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Default Sprite','string',fighter,'default_sprite')],'Default Sprite')
+            default_spritePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Default Sprite','string',fighter,'default_sprite')],'Default Sprite')
             article_pathPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Article Path',('dir',[]),fighter,'article_path_short')],'Article Path')
             actionsPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Actions File',
                                                                       ('file',[('TUSSLE ActionScript files','*.xml'),
@@ -771,7 +771,7 @@ class SubactionPanel(BuilderPanel):
             self.subActionList.append(scalePanel)
             self.subActionList.append(spriteDirectoryPanel)
             self.subActionList.append(spriteWidthPanel)
-            self.subActionList.append(defaultSpritePanel)
+            self.subActionList.append(default_spritePanel)
             self.subActionList.append(article_pathPanel)
             self.subActionList.append(actionsPanel)
             

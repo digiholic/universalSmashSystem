@@ -23,7 +23,7 @@ class CPUplayer(controller.Controller):
         import engine.abstractFighter as abstractFighter
         nodes = [start_point, end_point]
         solid_list = []
-        for platform in self.fighter.gameState.platform_list:
+        for platform in self.fighter.game_state.platform_list:
             if platform.solid:
                 solid_list += [platform.rect]
                 nodes += [[platform.rect.right+self.fighter.sprite.boundingRect.width/2.0, platform.rect.top-self.fighter.sprite.boundingRect.height/2.0], 
@@ -69,12 +69,12 @@ class CPUplayer(controller.Controller):
         return opposing_players[opposing_dists.index(min(opposing_dists))].rect.center
 
     def ledgeTargeting(self):
-        ledge_points = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], self.fighter.gameState.platform_ledges)
+        ledge_points = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], self.fighter.game_state.platform_ledges)
         ledge_distances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), ledge_points)
         return ledge_points[ledge_distances.index(min(ledge_distances))]
 
     def platformTargeting(self):
-        target_points = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.fighter.gameState.platform_list)+map(lambda x: [x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.fighter.gameState.platform_list)
+        target_points = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.fighter.game_state.platform_list)+map(lambda x: [x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.fighter.game_state.platform_list)
         target_distances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), target_points)
         return target_points[target_distances.index(min(target_distances))]
 
