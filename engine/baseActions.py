@@ -411,24 +411,24 @@ class HitStun(action.Action):
             print('Try tech')
             _actor.tech_window = 7
             self.tech_cooldown = 40
-            
-        if self.frame == self.last_frame:
-            _actor.elasticity = _actor.var['hitstun_elasticity']/2
-        else:
-            _actor.elasticity = _actor.var['hitstun_elasticity']
-            if self.frame > 2:
-                hitstunLanding(_actor)
+        _actor.elasticity = _actor.var['hitstun_elasticity']
         if self.frame > 2:
-            if self.frame < self.last_frame and _actor.change_y >= _actor.var['max_fall_speed']: #Hard landing during hitstun
+            hitstunLanding(_actor)
+        if self.frame > 2:
+            if self.frame < self.last_frame and _actor.change_y >= _actor.var['max_fall_speed']: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']
             elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
                 _actor.ground_elasticity = 0
                 if _actor.grounded:
                     _actor.doAction('Prone')
-            elif _actor.change_y < _actor.var['max_fall_speed']/2.0: #Soft landing during hitstun
-                _actor.landing_lag = _actor.var['heavy_land_lag']+self.last_frame-self.frame
+            elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
                 _actor.ground_elasticity = 0
-            else: #Firm landing during hitstun
+                if self.last_frame > 15: 
+                    if _actor.grounded: 
+                        _actor.doAction('Prone')
+                else:
+                    actor.landingLag = 40
+            else: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
         
     def tearDown(self, _actor, _nextAction):
@@ -478,6 +478,8 @@ class Tumble(action.Action):
         airState(_actor)
         
         (direct,_) = _actor.getDirectionMagnitude()
+
+        _actor.elasticity = _actor.var['hitstun_elasticity']/2
         
         if _actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not _actor.grounded:
             print('Try tech')
@@ -489,12 +491,10 @@ class Tumble(action.Action):
         elif _actor.change_y < _actor.var['max_fall_speed']/2.0: #Soft landing during tumble
             _actor.ground_elasticity = 0
             if _actor.grounded: 
-                #_actor.doTrip(self.last_frame-self.frame//2, direct)
                 _actor.doAction('Prone')
         else: #Firm landing during tumble
             _actor.ground_elasticity = 0
             if _actor.grounded: 
-                #_actor.doTrip(self.last_frame-self.frame//2+_actor.var['heavy_land_lag'], direct)
                 _actor.doAction('Prone')
     
     def tearDown(self, _actor, _nextAction):
@@ -528,7 +528,7 @@ class Prone(action.Action):
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
-        if self.frame >= self.last_frame:
+        if self.frame >= self.last_frame-2:
             proneState(_actor)
         
 class Trip(action.Action):
