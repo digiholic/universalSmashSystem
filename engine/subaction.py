@@ -1221,7 +1221,40 @@ class debugAction(SubAction):
             name = _node.find('var').text
             return debugAction((source,name))
         return debugAction(_node.text)
+    
+    
+######################################################################
+#                         Article Subactions                         #
+######################################################################
+class deactivateSelf(SubAction):
+    subact_group = 'Article'
+    def __init__(self):
+        SubAction.__init__(self)
         
+    def execute(self, _action, _actor):
+        _actor.deactivate()
+        
+    def getDisplayName(self):
+        return 'Deactivate Self'
+    
+    @staticmethod
+    def buildFromXml(_node):
+        return deactivateSelf()
+    
+class recenterOnOrigin(SubAction):
+    def __init__(self):
+        SubAction.__init__(self)
+    
+    def execute(self, _action, _actor):
+        _actor.recenter()
+        
+    def getDisplayName(self):
+        return 'Recenter On Origin'
+    
+    @staticmethod
+    def buildFromXml(_node):
+        return recenterOnOrigin()
+    
 subaction_dict = {
                  #Control Flow
                  'setFrame': changeActionFrame,
@@ -1259,6 +1292,8 @@ subaction_dict = {
                  'loadArticle': loadArticle,
                  'activateArticle': activateArticle,
                  'deactivateArticle': deactivateArticle,
+                 'recenterOnOrigin': recenterOnOrigin,
+                 'deactivateSelf': deactivateSelf,
                  
                  'playSound': playSound,
                  

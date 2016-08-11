@@ -84,8 +84,7 @@ class DynamicArticle(spriteManager.SheetSprite):
     
     def activate(self):
         self.owner.articles.add(self)
-        self.rect.centerx = self.owner.rect.centerx + self.origin_point[0]
-        self.rect.centery = self.owner.rect.centery + self.origin_point[1]
+        self.recenter()
         self.facing = self.owner.facing
         if not self.facing == 0 and not self.facing == self.starting_direction: 
             self.flipX()
@@ -122,6 +121,13 @@ class DynamicArticle(spriteManager.SheetSprite):
         else:
             return 180 - _offSet
     
+    """
+    Recenter Self on origin point
+    """
+    def recenter(self):
+        self.rect.centerx = self.owner.rect.centerx + self.origin_point[0]
+        self.rect.centery = self.owner.rect.centery + self.origin_point[1]
+        
 class Article(spriteManager.ImageSprite):
     def __init__(self, _spritePath, _owner, _origin, _length=1, _draw_depth = 1):
         spriteManager.ImageSprite.__init__(self,_spritePath)
