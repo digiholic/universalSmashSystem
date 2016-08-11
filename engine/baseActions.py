@@ -530,27 +530,6 @@ class Prone(action.Action):
         action.Action.stateTransitions(self, _actor)
         if self.frame >= self.last_frame-2:
             proneState(_actor)
-        
-class Trip(action.Action):
-    def __init__(self,_length=0,_direction=0):
-        action.Action.__init__(self, _length)
-        self.direction = _direction
-        
-    def setUp(self, _actor):
-        if self.sprite_name=="": self.sprite_name ="trip"
-        action.Action.setUp(self, _actor)
-        _actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
-
-    def update(self, _actor):
-        if _actor.grounded is False:
-            _actor.doHitStun(self.last_frame-self.frame, self.direction)
-        if self.frame >= self.last_frame + 60: #You aren't up yet?
-            _actor.doGetup(self.direction)
-        self.frame += 1
-
-    def stateTransitions(self, _actor):
-        if self.frame >= self.last_frame:
-            proneState(_actor)
 
 class Getup(action.Action):
     def __init__(self, _length=1):

@@ -744,10 +744,9 @@ class AbstractFighter():
         self.current_action.direction = _trajectory
         self.current_action.last_frame = _hitstun
         
-    def doTrip(self, _length, _direction):
-        self.doAction('Trip')
+    def doProne(self, _length):
+        self.doAction('Prone')
         self.current_action.last_frame = _length
-        self.current_action.direction = _direction
 
     def doShield(self, _newShield=True):
         self.doAction('Shield')

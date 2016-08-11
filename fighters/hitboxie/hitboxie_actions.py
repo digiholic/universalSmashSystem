@@ -76,8 +76,8 @@ class ForwardSpecial(action.Action):
                         self.owner.applyPushback(self.damage/4.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     if _other.grounded:
                         _other.applyKnockback(self.damage, 0, 0, 0, 1, 1)
-                        (otherDirect,_) = _other.getDirectionMagnitude()
-                        _other.doTrip(50, _other.getForwardWithOffset(otherDirect))
+                        _other.doAction('Prone')
+                        _other.current_action.last_frame = 50
                     else:
                         _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier)
                             
@@ -505,20 +505,6 @@ class HitStun(baseActions.HitStun):
                 _actor.changeSprite("land",1)
             else:
                 _actor.changeSprite("jump")
-
-class Trip(baseActions.Trip):
-    def __init__(self, _length=1, _direction=0):
-        baseActions.Trip.__init__(self, _length, _direction)
-        self.sprite_rate = 0
-
-    def setUp(self, _actor):
-        baseActions.Trip.setUp(self, _actor)
-        _actor.sideSpecialUses = 1
-
-    def update(self, _actor):
-        if self.frame == 0:
-            _actor.changeSprite("land", 3)
-        baseActions.Trip.update(self, _actor)
 
 class GetupAttack(action.Action):
     def __init__(self):

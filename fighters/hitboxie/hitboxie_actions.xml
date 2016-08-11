@@ -1679,13 +1679,6 @@
 		</loadCodeAction>
 	</BackThrow>
 	
-	<Trip>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>Trip</action>
-		</loadCodeAction>
-	</Trip>
-	
 	<GetupAttack>
 		<loadCodeAction>
 			<file>hitboxie_actions.py</file>
