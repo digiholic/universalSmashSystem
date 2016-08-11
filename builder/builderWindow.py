@@ -103,7 +103,7 @@ class MainFrame(Tk):
         self.action_string.trace('w',self.changeAction)
         self.frame.trace('w',self.changeFrame)
         
-        self.main_loop()
+        self.mainloop()
     
     def actionModified(self):
         global action
