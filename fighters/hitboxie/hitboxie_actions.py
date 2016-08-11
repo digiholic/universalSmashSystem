@@ -325,43 +325,43 @@ class GroundGrab(action.Action):
         action.Action.__init__(self, 30)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        self.grabHitbox = hitbox.GrabHitbox(actor,hitbox.HitboxLock(),{'center':[30,0],
+    def setUp(self, _actor):
+        self.grab_hitbox = hitbox.GrabHitbox(_actor,hitbox.HitboxLock(),{'center':[30,0],
                                                                        'size': [30,30],
                                                                        'height': 30
                                                                        })
-    def tearDown(self, actor, other):
-        self.grabHitbox.kill()
+    def tearDown(self, _actor, _nextAction):
+        self.grab_hitbox.kill()
 
-    def stateTransitions(self, actor):
-        if not actor.grounded:
-            actor.doAction('Fall')
+    def stateTransitions(self, _actor):
+        if not _actor.grounded:
+            _actor.doAction('Fall')
 
-    def update(self,actor):
-        self.grabHitbox.update()
-        actor.preferred_xspeed = 0
+    def update(self,_actor):
+        self.grab_hitbox.update()
+        _actor.preferred_xspeed = 0
         if self.frame == 0:
-            actor.changeSprite("pivot", 0)
+            _actor.changeSprite("pivot", 0)
         elif self.frame == 2:
-            actor.changeSpriteImage(1)
+            _actor.changeSpriteImage(1)
         elif self.frame == 4:
-            actor.changeSpriteImage(2)
-            actor.active_hitboxes.add(self.grabHitbox)
+            _actor.changeSpriteImage(2)
+            _actor.active_hitboxes.add(self.grab_hitbox)
         elif self.frame == 6:
-            actor.changeSpriteImage(3)
+            _actor.changeSpriteImage(3)
         elif self.frame == 8:
-            actor.changeSpriteImage(4)
+            _actor.changeSpriteImage(4)
         elif self.frame == 11:
-            actor.changeSpriteImage(3)
-            self.grabHitbox.kill()
+            _actor.changeSpriteImage(3)
+            self.grab_hitbox.kill()
         elif self.frame == 15:
-            actor.changeSpriteImage(2)
+            _actor.changeSpriteImage(2)
         elif self.frame == 20:
-            actor.changeSpriteImage(1)
+            _actor.changeSpriteImage(1)
         elif self.frame == 26:
-            actor.changeSpriteImage(0)
+            _actor.changeSpriteImage(0)
         if self.frame == self.last_frame:
-            actor.doAction('NeutralAction')
+            _actor.doAction('NeutralAction')
         self.frame += 1
 
 class DashGrab(action.Action):
@@ -369,41 +369,44 @@ class DashGrab(action.Action):
         action.Action.__init__(self, 35)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        self.grabHitbox = hitbox.GrabHitbox([40,0], [50,30], actor, hitbox.HitboxLock(), 30)
+    def setUp(self, _actor):
+        self.grab_hitbox = hitbox.GrabHitbox(_actor,hitbox.HitboxLock(),{'center':[40,0],
+                                                                       'size': [50,30],
+                                                                       'height': 30
+                                                                       })
 
-    def tearDown(self, actor, other):
-        self.grabHitbox.kill()
+    def tearDown(self, _actor, _nextAction):
+        self.grab_hitbox.kill()
 
-    def stateTransitions(self, actor):
-        if not actor.grounded:
-            actor.doAction('Fall')
+    def stateTransitions(self, _actor):
+        if not _actor.grounded:
+            _actor.doAction('Fall')
 
-    def update(self,actor):
-        self.grabHitbox.update()
-        actor.preferred_xspeed = 0
+    def update(self,_actor):
+        self.grab_hitbox.update()
+        _actor.preferred_xspeed = 0
         if self.frame == 0:
-            actor.changeSprite("pivot", 0)
+            _actor.changeSprite("pivot", 0)
         elif self.frame == 3:
-            actor.changeSpriteImage(1)
+            _actor.changeSpriteImage(1)
         elif self.frame == 6:
-            actor.changeSpriteImage(2)
-            actor.active_hitboxes.add(self.grabHitbox)
+            _actor.changeSpriteImage(2)
+            _actor.active_hitboxes.add(self.grab_hitbox)
         elif self.frame == 9:
-            actor.changeSpriteImage(3)
+            _actor.changeSpriteImage(3)
         elif self.frame == 13:
-            actor.changeSpriteImage(4)
+            _actor.changeSpriteImage(4)
         elif self.frame == 18:
-            actor.changeSpriteImage(3)
-            self.grabHitbox.kill()
+            _actor.changeSpriteImage(3)
+            self.grab_hitbox.kill()
         elif self.frame == 22:
-            actor.changeSpriteImage(2)
+            _actor.changeSpriteImage(2)
         elif self.frame == 26:
-            actor.changeSpriteImage(1)
+            _actor.changeSpriteImage(1)
         elif self.frame == 30:
-            actor.changeSpriteImage(0)
+            _actor.changeSpriteImage(0)
         if self.frame == self.last_frame:
-            actor.doAction('NeutralAction')
+            _actor.doAction('NeutralAction')
         self.frame += 1
 
 class Pummel(baseActions.BaseGrabbing):
@@ -412,390 +415,122 @@ class Pummel(baseActions.BaseGrabbing):
         self.sprite_rate = 0
 
     def update(self, actor):
-        baseActions.BaseGrabbing.update(self, actor)
+        baseActions.BaseGrabbing.update(self, _actor)
         if self.frame == 0:
-            actor.changeSprite("neutral", self.frame)
+            _actor.changeSprite("neutral", self.frame)
         elif self.frame < 4:
-            actor.changeSpriteImage(self.frame)
+            _actor.changeSpriteImage(self.frame)
         elif actor.isGrabbing() and self.frame == 4:
-            actor.grabbing.dealDamage(3)
+            _actor.grabbing.dealDamage(3)
         elif self.frame >= 5 and self.frame <= 8:
-            actor.changeSpriteImage(9)
+            _actor.changeSpriteImage(9)
         elif self.frame >= 9 and self.frame <= 10:
-            actor.changeSpriteImage(10)
+            _actor.changeSpriteImage(10)
         elif self.frame > 10:
             if not (self.frame) > 14:
-                actor.changeSpriteImage(self.frame)
-        actor.hurtbox.rect.width -= 16
-        actor.hurtbox.rect.height -= 16
-        actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
+                _actor.changeSpriteImage(self.frame)
+        _actor.hurtbox.rect.width -= 16
+        _actor.hurtbox.rect.height -= 16
+        _actor.hurtbox.rect.midbottom = _actor.sprite.boundingRect.midbottom
         if self.frame == self.last_frame:
-            actor.doAction('Grabbing')
+            _actor.doAction('Grabbing')
 
 class UpThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self, 100)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        actor.changeSprite("land",3)
-        actor.flinch_knockback_threshold = 10000
-        actor.flinch_damage_threshold = 10000
+    def setUp(self, _actor):
+        _actor.changeSprite("land",3)
+        _actor.flinch_knockback_threshold = 10000
+        _actor.flinch_damage_threshold = 10000
 
-    def tearDown(self, actor, nextAction):
-        baseActions.BaseGrabbing.tearDown(self, actor, nextAction)
-        actor.flinch_knockback_threshold = 0
-        actor.flinch_damage_threshold = 0
+    def tearDown(self, _actor, _nextAction):
+        baseActions.BaseGrabbing.tearDown(self, _actor, _nextAction)
+        _actor.flinch_knockback_threshold = 0
+        _actor.flinch_damage_threshold = 0
 
-    def update(self, actor):
-        baseActions.BaseGrabbing.update(self, actor)
+    def update(self, _actor):
+        baseActions.BaseGrabbing.update(self, _actor)
         if self.frame < 8:
-            actor.changeSpriteImage(3-self.frame//2)
+            _actor.changeSpriteImage(3-self.frame//2)
         elif self.frame == 8:
-            actor.change_y -= 45
-            actor.landing_lag = 12
+            _actor.change_y -= 45
+            _actor.landing_lag = 12
         elif self.frame > 10:
-            actor.calcGrav(4)
-            if actor.grounded and actor.change_y >= 0:
-                if actor.isGrabbing():
-                    actor.grabbing.applyKnockback(11, 12, 0.15, actor.getForwardWithOffset(70))
-                actor.doAction('Fall')
+            _actor.calcGrav(4)
+            if _actor.grounded and _actor.change_y >= 0:
+                if _actor.isGrabbing():
+                    _actor.grabbing.applyKnockback(11, 12, 0.15, _actor.getForwardWithOffset(70))
+                _actor.doAction('Fall')
 
 class BackThrow(baseActions.BaseGrabbing):
     def __init__(self):
         baseActions.BaseGrabbing.__init__(self, 22)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        actor.changeSprite("bthrow")
+    def setUp(self, _actor):
+        _actor.changeSprite("bthrow")
 
-    def tearDown(self, actor, nextAction):
-        baseActions.BaseGrabbing.tearDown(self, actor, nextAction)
+    def tearDown(self, _actor, _nextAction):
+        baseActions.BaseGrabbing.tearDown(self, _actor, _nextAction)
 
-    def update(self, actor):
-        baseActions.BaseGrabbing.update(self, actor)
-        if self.frame == 1 and actor.isGrabbing():
-            actor.grabbing.applyKnockback(7, 15, 0.05, actor.getForwardWithOffset(170), 0.5)
+    def update(self, _actor):
+        baseActions.BaseGrabbing.update(self, _actor)
+        if self.frame == 1 and _actor.isGrabbing():
+            _actor.grabbing.applyKnockback(7, 15, 0.05, _actor.getForwardWithOffset(170), 0.5)
         if self.frame <= 16:
-            actor.changeSpriteImage(self.frame//2)
+            _actor.changeSpriteImage(self.frame//2)
         elif self.frame == self.last_frame: 
-            actor.flip()
-            actor.doAction('NeutralAction')
+            _actor.flip()
+            _actor.doAction('NeutralAction')
 
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
 ########################################################
-
-class Move(baseActions.Move):
-    def __init__(self,accel = True):
-        baseActions.Move.__init__(self,15)
-        self.sprite_rate = 0
-        self.accel = accel
-        
-    def update(self, actor):
-        if self.accel:
-            if (self.frame == 0):
-                actor.changeSprite("run",0)
-            elif (self.frame == 3):
-                actor.changeSpriteImage(1)
-            elif (self.frame == 6):
-                actor.changeSpriteImage(2)
-            elif (self.frame == 9):
-                actor.changeSpriteImage(3)
-            elif (self.frame == 12):
-                actor.changeSpriteImage(4)
-        else:
-            if (self.frame == 0):
-                actor.changeSprite("run",4)
-                
-        baseActions.Move.update(self, actor)
-        if (self.frame == self.last_frame):
-            self.frame = 12
-
-class Dash(baseActions.Dash):
-    def __init__(self,accel = True):
-        baseActions.Dash.__init__(self,15)
-        self.sprite_rate = 0
-        self.accel = accel
-        
-    def update(self, actor):
-        if self.accel:
-            if (self.frame == 0):
-                actor.changeSprite("run",0)
-            elif (self.frame == 2):
-                actor.changeSpriteImage(1)
-            elif (self.frame == 4):
-                actor.changeSpriteImage(2)
-            elif (self.frame == 6):
-                actor.changeSpriteImage(3)
-            elif (self.frame == 8):
-                actor.changeSpriteImage(4)
-        else:
-            if (self.frame == 0):
-                actor.changeSprite("run",4)
-                
-        
-        baseActions.Dash.update(self, actor)
-        
-"""
-class Run(baseActions.Run):
-    def __init__(self):
-        baseActions.Run.__init__(self,2)
-        self.sprite_rate = 0
-        
-    def update(self, actor):
-        actor.changeSprite("run",4)
-                
-        baseActions.Run.update(self, actor)
-        if (self.frame == self.last_frame):
-            self.frame = 1
-"""
-                   
-class Pivot(baseActions.Pivot):
-    def __init__(self):
-        baseActions.Pivot.__init__(self,10)
-        self.sprite_rate = 0
-        
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("pivot",4)
-        elif self.frame == 2:
-            actor.changeSpriteImage(3)
-        elif self.frame == 4:
-            actor.changeSpriteImage(2)
-        elif self.frame == 6:
-            actor.changeSpriteImage(1)
-        elif self.frame == 8:
-            actor.changeSpriteImage(0)
-        baseActions.Pivot.update(self, actor)
-        
-    def tearDown(self,actor,newAction):
-        if isinstance(newAction, Move) or isinstance(newAction, Dash):
-            newAction.accel = False
-
-class RunPivot(baseActions.RunPivot):
-    def __init__(self):
-        baseActions.RunPivot.__init__(self,15)
-        self.sprite_rate = 0
-        
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("pivot",4)
-        elif self.frame == 3:
-            actor.changeSpriteImage(3)
-        elif self.frame == 6:
-            actor.changeSpriteImage(2)
-        elif self.frame == 9:
-            actor.changeSpriteImage(1)
-        elif self.frame == 12:
-            actor.changeSpriteImage(0)
-        baseActions.RunPivot.update(self, actor)
-        
-    def tearDown(self,actor,newAction):
-        if isinstance(newAction, Dash):
-            newAction.accel = False
-
-class Grabbing(baseActions.Grabbing):
-    def __init__(self):
-        baseActions.Grabbing.__init__(self,1)
-        self.sprite_rate = 0
-
-    def update(self, actor):
-        baseActions.Grabbing.update(self, actor)
-        actor.change_x = 0
-        if self.frame == 0:
-            actor.changeSprite('pivot', 4)
-        self.frame += 1
-        
-class Stop(baseActions.Stop):
-    def __init__(self):
-        baseActions.Stop.__init__(self, 9)
-        self.sprite_rate = 0
-    
-    def update(self, actor):
-        if self.frame == 0:
-            actor.changeSprite("pivot",0)
-        elif self.frame == 3:
-            actor.changeSpriteImage(1)
-        elif self.frame == 6:
-            actor.changeSpriteImage(2)
-        baseActions.Stop.update(self, actor)
-
-class RunStop(baseActions.RunStop):
-    def __init__(self):
-        baseActions.RunStop.__init__(self, 12)
-        self.sprite_rate = 0
-    
-    def update(self, actor):
-        if self.frame == 0:
-            actor.changeSprite("pivot",0)
-        elif self.frame == 4:
-            actor.changeSpriteImage(1)
-        elif self.frame == 8:
-            actor.changeSpriteImage(2)
-        baseActions.RunStop.update(self, actor)
-
-
-class CrouchGetup(baseActions.CrouchGetup):
-    def __init__(self):
-        baseActions.CrouchGetup.__init__(self, 9)
-        self.sprite_rate = 0
-
-    def setUp(self, actor):
-        actor.changeSprite('land', 2)
-
-    def update(self, actor):
-        actor.changeSpriteImage(3-self.frame/3)
-        baseActions.CrouchGetup.update(self, actor)
         
 class HitStun(baseActions.HitStun):
-    def __init__(self,hitstun=1,direction=0):
-        baseActions.HitStun.__init__(self, hitstun, direction)
+    def __init__(self,_hitstun=1,_direction=0):
+        baseActions.HitStun.__init__(self, _hitstun, _direction)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        baseActions.HitStun.setUp(self, actor)
-        actor.sideSpecialUses = 1
+    def setUp(self, _actor):
+        baseActions.HitStun.setUp(self, _actor)
+        _actor.sideSpecialUses = 1
     
-    def update(self, actor):
-        baseActions.HitStun.update(self, actor)
+    def update(self, _actor):
+        baseActions.HitStun.update(self, _actor)
         if self.frame == 1:
-            if actor.grounded:
-                actor.changeSprite("land",1)
+            if _actor.grounded:
+                _actor.changeSprite("land",1)
             else:
-                actor.changeSprite("jump")
-        
-class Jump(baseActions.Jump):
-    def __init__(self):
-        baseActions.Jump.__init__(self,8,5)
-        self.sprite_rate = 0
-        
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("land",0)
-        elif self.frame == 1:
-            actor.changeSpriteImage(1)
-        elif self.frame == 2:
-            actor.changeSpriteImage(2)
-        elif self.frame == 3:
-            actor.changeSpriteImage(3)
-        elif self.frame == 5:
-            actor.changeSprite("jump")
-        baseActions.Jump.update(self, actor)
-        
-
-class AirJump(baseActions.AirJump):
-    def __init__(self):
-        baseActions.AirJump.__init__(self,8,4)
-        self.sprite_rate = 0
-        
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("airjump",0)
-        elif self.frame == 1:
-            actor.changeSpriteImage(1)
-        elif self.frame == 2:
-            actor.changeSpriteImage(2)
-        elif self.frame == 4:
-            actor.changeSpriteImage(3)
-        elif self.frame == 6:
-            actor.changeSpriteImage(4)
-        elif self.frame == 8:
-            actor.changeSpriteImage(0)
-        baseActions.AirJump.update(self, actor)
-
-class Helpless(baseActions.Helpless):
-    def __init__(self):
-        baseActions.Helpless.__init__(self)
-        self.sprite_rate = 0
-
-    def update(self, actor):
-        actor.changeSprite("jump")
-        baseActions.Helpless.update(self, actor)
-            
-class Land(baseActions.Land):
-    def __init__(self):
-        baseActions.Land.__init__(self)
-        self.sprite_rate = 0
-
-    def setUp(self, actor):
-        baseActions.Land.setUp(self, actor)
-        actor.sideSpecialUses = 1
-        
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("land",0)
-        else:
-            if self.frame < 12:
-                if self.frame % 3 == 0:
-                    actor.changeSpriteImage(self.frame // 3)
-        
-        baseActions.Land.update(self, actor)
-
-class HelplessLand(baseActions.HelplessLand):
-    def __init__(self):
-        baseActions.HelplessLand.__init__(self)
-        self.sprite_rate = 0
-
-    def setUp(self, actor):
-        baseActions.HelplessLand.setUp(self, actor)
-        actor.sideSpecialUses = 1
-        
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("land",0)
-        else:
-            if self.frame < 12:
-                if self.frame % 3 == 0:
-                    actor.changeSpriteImage(self.frame // 3)
-        
-        baseActions.HelplessLand.update(self, actor)
+                _actor.changeSprite("jump")
 
 class Trip(baseActions.Trip):
-    def __init__(self, length=1, direction=0):
-        baseActions.Trip.__init__(self, length, direction)
+    def __init__(self, _length=1, _direction=0):
+        baseActions.Trip.__init__(self, _length, _direction)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        baseActions.Trip.setUp(self, actor)
-        actor.sideSpecialUses = 1
+    def setUp(self, _actor):
+        baseActions.Trip.setUp(self, _actor)
+        _actor.sideSpecialUses = 1
 
-    def update(self, actor):
+    def update(self, _actor):
         if self.frame == 0:
-            actor.changeSprite("land", 3)
-        baseActions.Trip.update(self, actor)
-
-class Prone(baseActions.Prone):
-    def __init__(self):
-        baseActions.Prone.__init__(self, 60)
-        self.sprite_name = 'land'
-        self.sprite_rate = 2
-        
-    def update(self, actor):
-        if self.frame == 6: actor.changeSpriteImage(3)
-
-class Getup(baseActions.Getup):
-    def __init__(self, direction=0):
-        baseActions.Getup.__init__(self, direction, 12)
-        self.sprite_rate = 0
-
-    def update(self, actor):
-        if self.frame < 12:
-            if self.frame % 3 == 0:
-                actor.changeSprite("land", 3-self.frame//3)
-        baseActions.Getup.update(self, actor)
+            _actor.changeSprite("land", 3)
+        baseActions.Trip.update(self, _actor)
 
 class GetupAttack(action.Action):
     def __init__(self):
         action.Action.__init__(self,36)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        actor.preferred_xspeed = 0
-        actor.changeSprite("nair")
+    def setUp(self, _actor):
+        _actor.preferred_xspeed = 0
+        _actor.changeSprite("nair")
         self.ecb_offset = [0,7]
         self.ecb_size = [64, 78]
-        self.dashHitbox = hitbox.DamageHitbox(actor,hitbox.HitboxLock(),{
+        self.dash_hitbox = hitbox.DamageHitbox(_actor,hitbox.HitboxLock(),{
                                                                          'center': [0,0],
                                                                          'size': [70,70],
                                                                          'damage': 2,
@@ -804,7 +539,7 @@ class GetupAttack(action.Action):
                                                                          'trajectory': 20,
                                                                          'hitstun_multiplier': 2
                                                                          })
-        self.chainHitbox = hitbox.AutolinkHitbox(actor,hitbox.HitboxLock(),{
+        self.chain_hitbox = hitbox.AutolinkHitbox(_actor,hitbox.HitboxLock(),{
                                                                          'center': [0,0],
                                                                          'size': [70,70],
                                                                          'damage': 2,
@@ -813,200 +548,115 @@ class GetupAttack(action.Action):
                                                                          'y_bias': -1,
                                                                          'velocity_multiplier': 1.5
                                                                          })
-    def onClank(self,actor):
-        actor.doAction('NeutralAction')
+    def onClank(self,_actor):
+        _actor.doAction('NeutralAction')
 
-    def tearDown(self,actor,other):
-        self.dashHitbox.kill()
-        self.chainHitbox.kill()
-        actor.preferred_xspeed = 0
+    def tearDown(self,_actor,_newAction):
+        self.dash_hitbox.kill()
+        self.chain_hitbox.kill()
+        _actor.preferred_xspeed = 0
 
-    def stateTransitions(self, actor):
-        if not actor.grounded:
-            actor.doAction('Fall')
+    def stateTransitions(self, _actor):
+        if not _actor.grounded:
+            _actor.doAction('Fall')
 
-    def update(self,actor):
+    def update(self,_actor):
         if self.frame%2 == 0 and self.frame <= 12:
-            actor.changeSpriteImage(self.frame//2)
+            _actor.changeSpriteImage(self.frame//2)
         elif self.frame <= 28:
-            actor.changeSpriteImage((self.frame-4)%16)
+            _actor.changeSpriteImage((self.frame-4)%16)
         elif self.frame%2 == 0:
-            actor.changeSpriteImage((self.frame//2-8)%16)
+            _actor.changeSpriteImage((self.frame//2-8)%16)
 
-        self.dashHitbox.update()
-        self.chainHitbox.update()
+        self.dash_hitbox.update()
+        self.chain_hitbox.update()
 
         if self.frame == 12:
-            actor.active_hitboxes.add(self.chainHitbox)
+            _actor.active_hitboxes.add(self.chain_hitbox)
         if self.frame == 16:
-            self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
+            self.chain_hitbox.hitbox_lock = hitbox.HitboxLock()
         if self.frame == 20:
-            self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
+            self.chain_hitbox.hitbox_lock = hitbox.HitboxLock()
         if self.frame == 24:
-            self.chainHitbox.kill()
-            actor.active_hitboxes.add(self.dashHitbox)
+            self.chain_hitbox.kill()
+            _actor.active_hitboxes.add(self.dash_hitbox)
         if self.frame == 28:
-            self.dashHitbox.kill()
-            actor.preferred_xspeed = 0
+            self.dash_hitbox.kill()
+            _actor.preferred_xspeed = 0
 
         if self.frame == self.last_frame:
-            actor.doAction('NeutralAction')
+            _actor.doAction('NeutralAction')
         self.frame += 1
 
-class PlatformDrop(baseActions.PlatformDrop):
-    def __init__(self):
-        baseActions.PlatformDrop.__init__(self, 12, 6, 9)
-        self.sprite_rate = 0
-        
-    def update(self,actor):
-        if self.frame == 2:
-            actor.changeSprite("airjump",4)
-            actor.change_y = 3
-        elif self.frame == 4:
-            actor.changeSpriteImage(3)
-        elif self.frame == 6:
-            actor.changeSpriteImage(2)
-        elif self.frame == 8:
-            actor.changeSpriteImage(1)
-        elif self.frame == 10:
-            actor.changeSpriteImage(0)
-        baseActions.PlatformDrop.update(self, actor)
-        
-class Shield(baseActions.Shield):
-    def __init__(self, new_shield=True):
-        baseActions.Shield.__init__(self, new_shield)
-        self.sprite_rate = 0
-    
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("jump")
-        baseActions.Shield.update(self, actor)
-
 class ShieldStun(baseActions.ShieldStun):
-    def __init__(self, length=1):
-        baseActions.ShieldStun.__init__(self, length)
+    def __init__(self, _length=1):
+        baseActions.ShieldStun.__init__(self, _length)
         self.sprite_rate = 0
 
-    def update(self, actor):
-        actor.createMask([191, 63, 191], self.last_frame, False, 8)
-        baseActions.ShieldStun.update(self, actor)
+    def update(self, _actor):
+        _actor.createMask([191, 63, 191], self.last_frame, False, 8)
+        baseActions.ShieldStun.update(self, _actor)
 
 class Stunned(baseActions.Stunned):
-    def __init__(self, length=1):
-        baseActions.Stunned.__init__(self, length)
+    def __init__(self, _length=1):
+        baseActions.Stunned.__init__(self, _length)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        baseActions.Stunned.setUp(self, actor)
+    def setUp(self, _actor):
+        baseActions.Stunned.setUp(self, _actor)
         actor.sideSpecialUses = 1
 
-    def tearDown(self, actor, newAction):
-        actor.mask = None
+    def tearDown(self, _actor, _newAction):
+        _actor.mask = None
 
-    def update(self, actor):
+    def update(self, _actor):
         if self.frame == 0:
-            actor.createMask([255, 0, 255], 99999, True, 8)
-        baseActions.Stunned.update(self, actor)
-        
-class ForwardRoll(baseActions.ForwardRoll):
-    def __init__(self):
-        baseActions.ForwardRoll.__init__(self)
-        self.sprite_rate = 0
-        
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("land",1)
-        elif self.frame == self.end_invuln_frame:
-            actor.changeSprite("land",0)
-        baseActions.ForwardRoll.update(self, actor)
-        
-class BackwardRoll(baseActions.BackwardRoll):
-    def __init__(self):
-        baseActions.BackwardRoll.__init__(self)
-        self.sprite_rate = 0
-        
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("land",1)
-        elif self.frame == self.end_invuln_frame:
-            actor.changeSprite("land",0)
-        baseActions.BackwardRoll.update(self, actor)
-        
-class SpotDodge(baseActions.SpotDodge):
-    def __init__(self):
-        baseActions.SpotDodge.__init__(self)
-        self.sprite_rate = 0
-        
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("land",0)
-        if self.frame < 4:
-            actor.changeSpriteImage(self.frame)
-        elif self.frame == 21:
-            actor.changeSpriteImage(2)
-        elif self.frame == 22:
-            actor.changeSpriteImage(1)
-        elif self.frame == 23:
-            actor.changeSpriteImage(0)
-        baseActions.SpotDodge.update(self, actor)
-        
-class AirDodge(baseActions.AirDodge):
-    def __init__(self):
-        baseActions.AirDodge.__init__(self)
-        self.sprite_rate = 0
-        
-    def update(self,actor):
-        if self.frame == 0:
-            actor.changeSprite("nair",0)
-        elif self.frame == self.start_invuln_frame:
-            actor.changeSpriteImage(-round(abs(actor.change_x)))
-        elif self.frame == self.end_invuln_frame:
-            actor.changeSpriteImage(0)
-        baseActions.AirDodge.update(self, actor)
+            _actor.createMask([255, 0, 255], 99999, True, 8)
+        baseActions.Stunned.update(self, _actor)
 
 class Trapped(baseActions.Trapped):
-    def __init__(self, length=1):
-        baseActions.Trapped.__init__(self, length)
+    def __init__(self, _length=1):
+        baseActions.Trapped.__init__(self, _length)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        baseActions.Trapped.setUp(self, actor)
-        actor.sideSpecialUses = 1
+    def setUp(self, _actor):
+        baseActions.Trapped.setUp(self, _actor)
+        _actor.sideSpecialUses = 1
 
-    def update(self, actor):
-        actor.changeSprite("idle")
-        baseActions.Trapped.update(self, actor)
+    def update(self, _actor):
+        _actor.changeSprite("idle")
+        baseActions.Trapped.update(self, _actor)
 
 class Grabbed(baseActions.Grabbed):
-    def __init__(self,height=0):
-        baseActions.Grabbed.__init__(self, height)
+    def __init__(self,_height=0):
+        baseActions.Grabbed.__init__(self, _height)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        baseActions.Grabbed.setUp(self, actor)
-        actor.sideSpecialUses = 1
+    def setUp(self, _actor):
+        baseActions.Grabbed.setUp(self, _actor)
+        _actor.sideSpecialUses = 1
 
-    def update(self,actor):
-        actor.changeSprite("idle")
-        baseActions.Grabbed.update(self, actor)
+    def update(self,_actor):
+        _actor.changeSprite("idle")
+        baseActions.Grabbed.update(self, _actor)
 
 class Release(baseActions.Release):
-    def __init__(self,height=0):
-        baseActions.Release.__init__(self)
+    def __init__(self, _height=30):
+        baseActions.Release.__init__(self, _height)
         self.sprite_rate = 0
 
-    def update(self,actor):
+    def update(self,_actor):
         if self.frame == 0:
-            actor.changeSprite("pivot",4)
+            _actor.changeSprite("pivot",4)
         elif self.frame == 2:
-            actor.changeSpriteImage(3)
+            _actor.changeSpriteImage(3)
         elif self.frame == 4:
-            actor.changeSpriteImage(2)
+            _actor.changeSpriteImage(2)
         elif self.frame == 10:
-            actor.changeSpriteImage(3)
+            _actor.changeSpriteImage(3)
         elif self.frame == 12:
-            actor.changeSpriteImage(4)
-        baseActions.Release.update(self, actor)
+            _actor.changeSpriteImage(4)
+        baseActions.Release.update(self, _actor)
 
 class Released(baseActions.Released):
     def __init__(self):
@@ -1014,66 +664,53 @@ class Released(baseActions.Released):
         self.sprite_rate = 0
 
     def setUp(self, actor):
-        baseActions.Released.setUp(self, actor)
-        actor.changeSprite("jump")
-
-class LedgeGrab(baseActions.LedgeGrab):
-    def __init__(self,ledge=None):
-        baseActions.LedgeGrab.__init__(self, ledge)
-        self.sprite_rate = 0
-
-    def setUp(self, actor):
-        baseActions.LedgeGrab.setUp(self, actor)
-        actor.sideSpecialUses = 1
-        
-    def update(self,actor):
-        actor.changeSprite('jump')
-        baseActions.LedgeGrab.update(self, actor)
+        baseActions.Released.setUp(self, _actor)
+        _actor.changeSprite("jump")
 
 class LedgeGetup(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self,27)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        baseActions.LedgeGetup.setUp(self, actor)
-        if actor.facing == 1:
-            actor.rect.left -= actor.rect.width//2
+    def setUp(self, _actor):
+        baseActions.LedgeGetup.setUp(self, _actor)
+        if _actor.facing == 1:
+            _actor.rect.left -= _actor.rect.width//2
         else:
-            actor.rect.right += actor.rect.width//2
+            _actor.rect.right += _actor.rect.width//2
             
-    def update(self,actor):
+    def update(self,_actor):
         if self.frame == 0:
-            actor.changeSprite("getup",0)
-            actor.createMask([255,255,255], 24, True, 24)
+            _actor.changeSprite("getup",0)
+            _actor.createMask([255,255,255], 24, True, 24)
         if (self.frame >= 0) and (self.frame <= 6):
-            actor.changeSpriteImage(self.frame)
+            _actor.changeSpriteImage(self.frame)
             self.ecb_size = [0, 100]
             if self.frame > 2:
-                actor.change_y = -19
-            actor.change_x = 0
+                _actor.change_y = -19
+            _actor.change_x = 0
         if (self.frame >= 8) and (self.frame <= 14):
             self.ecb_size = [0, 0]
-            actor.change_y = 0
-            actor.change_x = 11.5*actor.facing
+            _actor.change_y = 0
+            _actor.change_x = 11.5*_actor.facing
             if (self.frame % 2 == 0):
-                actor.changeSpriteImage(self.frame//2+4)
+                _actor.changeSpriteImage(self.frame//2+4)
         if (self.frame > 15):
             if (self.frame % 3 == 2):
-                actor.changeSpriteImage(self.frame//3+6)
-            actor.change_x = actor.var['max_ground_speed']*actor.facing
-        baseActions.LedgeGetup.update(self, actor)
+                _actor.changeSpriteImage(self.frame//3+6)
+            _actor.change_x = _actor.var['max_ground_speed']*_actor.facing
+        baseActions.LedgeGetup.update(self, _actor)
 
 class LedgeAttack(baseActions.LedgeGetup):
     def __init__(self):
-        baseActions.LedgeGetup.__init__(self,36)
+        baseActions.LedgeGetup.__init__(self,38)
         self.sprite_rate = 0
 
-    def setUp(self,actor):
-        baseActions.LedgeGetup.setUp(self, actor)
-        actor.invincibility = 24
-        actor.createMask([255,255,255], 24, True, 24)
-        self.dashHitbox = hitbox.DamageHitbox(actor,hitbox.HitboxLock(),{
+    def setUp(self,_actor):
+        baseActions.LedgeGetup.setUp(self, _actor)
+        _actor.invincibility = 24
+        _actor.createMask([255,255,255], 24, True, 24)
+        self.dash_hitbox = hitbox.DamageHitbox(_actor,hitbox.HitboxLock(),{
                                                                          'center': [0,0],
                                                                          'size': [70,70],
                                                                          'damage': 2,
@@ -1082,7 +719,7 @@ class LedgeAttack(baseActions.LedgeGetup):
                                                                          'trajectory': 20,
                                                                          'hitstun_multiplier': 2
                                                                          })
-        self.chainHitbox = hitbox.AutolinkHitbox(actor,hitbox.HitboxLock(),{
+        self.chain_hitbox = hitbox.AutolinkHitbox(_actor,hitbox.HitboxLock(),{
                                                                          'center': [0,0],
                                                                          'size': [70,70],
                                                                          'damage': 2,
@@ -1091,122 +728,91 @@ class LedgeAttack(baseActions.LedgeGetup):
                                                                          'y_bias': -1,
                                                                          'velocity_multiplier': 1.5
                                                                          })
-    def tearDown(self,actor,other):
-        self.dashHitbox.kill()
-        self.chainHitbox.kill()
-        actor.change_x = 0
-        actor.preferred_xspeed = 0
+    def tearDown(self,_actor,_newAction):
+        self.dash_hitbox.kill()
+        self.chain_hitbox.kill()
+        _actor.change_x = 0
+        _actor.preferred_xspeed = 0
 
-    def update(self, actor):
+    def update(self, _actor):
         if self.frame == 0:
-            actor.changeSprite("getup",0)
+            _actor.changeSprite("getup",0)
         if (self.frame >= 0) and (self.frame <= 6):
-            actor.changeSpriteImage(self.frame)
+            _actor.changeSpriteImage(self.frame)
             self.ecb_size = [0, 100]
             if self.frame > 2:
-                actor.change_y = -19
-            actor.change_x = 0
+                _actor.change_y = -19
+            _actor.change_x = 0
         if (self.frame >= 8) and (self.frame <= 14):
             self.ecb_size = [0, 0]
-            actor.change_y = 0
-            actor.change_x = 11.5*actor.facing
+            _actor.change_y = 0
+            _actor.change_x = 11.5*_actor.facing
             if (self.frame % 2 == 0):
-                actor.changeSpriteImage(self.frame//2+4)
+                _actor.changeSpriteImage(self.frame//2+4)
         if self.frame == 15:
-            actor.change_x = actor.var['max_ground_speed']*actor.facing
-            actor.preferred_xspeed = actor.var['max_ground_speed']*actor.facing
+            _actor.change_x = _actor.var['max_ground_speed']*_actor.facing
+            _actor.preferred_xspeed = _actor.var['max_ground_speed']*_actor.facing
         if self.frame >= 15 and self.frame <= 22:
-            actor.changeSprite("nair", (self.frame-15)%16)
+            _actor.changeSprite("nair", (self.frame-15)%16)
         if self.frame%2 == 0 and self.frame > 22:
-            actor.changeSprite("nair", (self.frame//2-11)%16)
-        self.dashHitbox.update()
-        self.chainHitbox.update()
+            _actor.changeSprite("nair", (self.frame//2-4)%16)
+        self.dash_hitbox.update()
+        self.chain_hitbox.update()
         if self.frame == 17:
-            actor.active_hitboxes.add(self.chainHitbox)
+            _actor.active_hitboxes.add(self.chain_hitbox)
         if self.frame == 21:
-            self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
+            self.chain_hitbox.hitbox_lock = hitbox.HitboxLock()
         if self.frame == 25:
-            self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
+            self.chain_hitbox.hitbox_lock = hitbox.HitboxLock()
         if self.frame == 29:
-            self.chainHitbox.kill()
-            actor.active_hitboxes.add(self.dashHitbox)
+            self.chain_hitbox.kill()
+            _actor.active_hitboxes.add(self.dash_hitbox)
         if self.frame == 33:
-            self.dashHitbox.kill()
-            actor.preferred_xspeed = 0
-        baseActions.LedgeGetup.update(self, actor)
+            self.dash_hitbox.kill()
+            _actor.preferred_xspeed = 0
+        baseActions.LedgeGetup.update(self, _actor)
 
 class LedgeRoll(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self, 43)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
-        baseActions.LedgeGetup.setUp(self, actor)
+    def setUp(self, _actor):
+        baseActions.LedgeGetup.setUp(self, _actor)
 
-    def tearDown(self, actor, nextAction):
-        actor.change_x = 0
-        actor.preferred_xspeed = 0
-        if actor.invulnerable > 0:
-            actor.invulnerable = 0
-        actor.mask = None
+    def tearDown(self, _actor, _nextAction):
+        _actor.change_x = 0
+        _actor.preferred_xspeed = 0
+        if _actor.invulnerable > 0:
+            _actor.invulnerable = 0
+        _actor.mask = None
 
-    def update(self, actor):
+    def update(self, _actor):
         if self.frame == 0:
-            actor.invulnerable = 37
-            actor.createMask([255,255,255], 32, True, 24)
-            actor.changeSprite("getup",0)
+            _actor.invulnerable = 37
+            _actor.createMask([255,255,255], 32, True, 24)
+            _actor.changeSprite("getup",0)
         if (self.frame >= 0) and (self.frame <= 6):
-            actor.changeSpriteImage(self.frame)
+            _actor.changeSpriteImage(self.frame)
             self.ecb_size = [0, 100]
             if self.frame > 2:
-                actor.change_y = -19
-            actor.change_x = 0
+                _actor.change_y = -19
+            _actor.change_x = 0
         if (self.frame >= 8) and (self.frame <= 14):
             self.ecb_size = [0, 0]
-            actor.change_y = 0
-            actor.change_x = 11.5*actor.facing
+            _actor.change_y = 0
+            _actor.change_x = 11.5*_actor.facing
             if (self.frame % 2 == 0):
-                actor.changeSpriteImage(self.frame//2+4)
+                _actor.changeSpriteImage(self.frame//2+4)
         if self.frame == 15:
-            actor.change_x = actor.var['dodge_speed']*actor.facing
+            _actor.change_x = _actor.var['dodge_speed']*_actor.facing
         if self.frame == 17:
-            actor.changeSprite("land", 1)
-            actor.flip()
-            actor.preferred_xspeed = 0
+            _actor.changeSprite("land", 1)
+            _actor.flip()
+            _actor.preferred_xspeed = 0
         if self.frame == 33:
-            actor.changeSprite("land", 0)
-        baseActions.LedgeGetup.update(self, actor)
-
-class NeutralAction(baseActions.NeutralAction):
-    def __init__(self):
-        baseActions.NeutralAction.__init__(self,1)
-        self.sprite_rate = 0
-        
-    def update(self, actor):
-        if self.frame == 0:
-            actor.changeSprite("idle")
-            self.frame += 1
-        
-class Crouch(baseActions.Crouch):
-    def __init__(self):
-        baseActions.Crouch.__init__(self, 2)
-        self.sprite_rate = 0
-    def setUp(self, actor):
-        actor.changeSprite('land', 0)
-    def update(self, actor):
-        actor.changeSpriteImage(self.frame)
-        if self.frame == self.last_frame:
-            self.frame -= 1
-        baseActions.Crouch.update(self, actor)
-
-class Fall(baseActions.Fall):
-    def __init__(self):
-        baseActions.Fall.__init__(self)
-        self.sprite_rate = 0
-        
-    def update(self,actor):
-        actor.changeSprite("jump")
-        baseActions.Fall.update(self, actor)
+            _actor.changeSprite("land", 0)
+        baseActions.LedgeGetup.update(self, _actor)
 
 
 ########################################################

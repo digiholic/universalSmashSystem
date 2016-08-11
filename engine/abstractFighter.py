@@ -975,6 +975,8 @@ class AbstractFighter():
         if self.shield_integrity > 0:
             self.shield_integrity -= _damage
             if _damage > 1:
+                self.doAction('shieldStun')
+                self.current_action.last_frame = math.floor(_damage+2)
                 self.doShieldStun(math.floor(_damage+2))
         else:
             self.change_y = -15
@@ -1357,7 +1359,7 @@ def intersectPoint(_firstRect, _secondRect):
     else:
         return min_direction
 
-def checkPlatform(current, _previous, _platform, _yvel):
+def checkPlatform(_current, _previous, _platform, _yvel):
     intersect = intersectPoint(_current, _platform)
     if _platform.top >= _previous.bottom-4-_yvel and intersect is not None and intersect[1][1] < 0 and _current.bottom >= _platform.top:
         return True

@@ -954,8 +954,9 @@ class Grabbed(Trapped):
         Trapped.update(self, _actor)
 
 class Release(action.Action):
-    def __init__(self):
+    def __init__(self, _height=30):
         action.Action.__init__(self, 15)
+        self.height = _height
     
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="release"
