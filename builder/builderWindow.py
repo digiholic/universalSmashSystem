@@ -120,15 +120,15 @@ class MainFrame(Tk):
         for subact in self.actionPane.subactionPanel.subActionList:
             subact.updateName()
                 
-    def getFighterAction(self,actionName,getRawXml=False):
+    def getFighterAction(self,action_name,getRawXml=False):
         global fighter
-        if getRawXml:return fighter.actions.actionsXML.find(actionName)
-        else: return fighter.getAction(actionName)
+        if getRawXml:return fighter.actions.actions_xml.find(action_name)
+        else: return fighter.getAction(action_name)
     
-    def addAction(self,actionName):
+    def addAction(self,action_name):
         global fighter
-        changedActions[actionName] = engine.action.DynamicAction(1)
-        fighter.actions.modifyAction(actionName, changedActions[actionName])
+        changedActions[action_name] = engine.action.DynamicAction(1)
+        fighter.actions.modifyAction(action_name, changedActions[action_name])
         self.actionPane.actionSelectorPanel.refreshDropdowns()
     
     def changeFighter(self,*args):
@@ -309,8 +309,8 @@ class AddConditionalWindow(Toplevel):
         global action
         
         name = self.name.get()
-        if name and not action.conditionalActions.has_key(name):
-            action.conditionalActions[name] = []
+        if name and not action.conditional_actions.has_key(name):
+            action.conditional_actions[name] = []
             self.root.actionModified()
             self.destroy()
  
@@ -404,7 +404,11 @@ class ViewerPanel(BuilderPanel):
         else:
             os.environ['SDL_VIDEODRIVER'] = 'x11'
         pygame.display.init()
+        if not sys.platform == "win32":
+            print("X crashes after this")
         self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
+        if not sys.platform == "win32":
+            print("X crashes before this")
         self.center = (0,0)
         self.scale = 1.0
         
@@ -495,9 +499,9 @@ class NavigatorPanel(BuilderPanel):
         frame = self.root.frame.get()
         if action:
             frame = max(0,frame + amount)
-            frame = min(frame,action.lastFrame)
+            frame = min(frame,action.last_frame)
             
-            self.currentFrame.config(text=str(frame)+"/"+str(action.lastFrame))
+            self.currentFrame.config(text=str(frame)+"/"+str(action.last_frame))
             
             #Enable buttons
             self.buttonMinusFive.config(state=NORMAL)
@@ -510,7 +514,7 @@ class NavigatorPanel(BuilderPanel):
             if frame == 0:
                 self.buttonMinus.config(state=DISABLED)
                 self.buttonMinusFive.config(state=DISABLED)
-            if frame == action.lastFrame:
+            if frame == action.last_frame:
                 self.buttonPlus.config(state=DISABLED)
                 self.buttonPlusFive.config(state=DISABLED)
             
@@ -599,7 +603,7 @@ class SelectorPanel(BuilderPanel):
         else:
             self.groupList = self.defaultGroupList[:]
             if action and isinstance(action, engine.action.DynamicAction):
-                for group in action.conditionalActions.keys():
+                for group in action.conditional_actions.keys():
                     self.groupList.append('Cond: '+ group)
                             
         self.action.destroy()
@@ -754,8 +758,8 @@ class SubactionPanel(BuilderPanel):
                                                                           'sprite_directory')],
                                                                        'Sprite Directory')
             spriteWidthPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Sprite Width','int',fighter,'sprite_width')],'Sprite Width')
-            defaultSpritePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Default Sprite','string',fighter,'default_sprite')],'Default Sprite')
-            articlePathPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Article Path',('dir',[]),fighter,'article_path_short')],'Article Path')
+            default_spritePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Default Sprite','string',fighter,'default_sprite')],'Default Sprite')
+            article_pathPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Article Path',('dir',[]),fighter,'article_path_short')],'Article Path')
             actionsPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Actions File',
                                                                       ('file',[('TUSSLE ActionScript files','*.xml'),
                                                                                ('Python Files','*.py')]),
@@ -767,8 +771,8 @@ class SubactionPanel(BuilderPanel):
             self.subActionList.append(scalePanel)
             self.subActionList.append(spriteDirectoryPanel)
             self.subActionList.append(spriteWidthPanel)
-            self.subActionList.append(defaultSpritePanel)
-            self.subActionList.append(articlePathPanel)
+            self.subActionList.append(default_spritePanel)
+            self.subActionList.append(article_pathPanel)
             self.subActionList.append(actionsPanel)
             
             self.showSubactionList()
@@ -781,21 +785,21 @@ class SubactionPanel(BuilderPanel):
         elif isinstance(action,engine.action.DynamicAction):
             subActGroup = []
             if self.group == 'Set Up':
-                subActGroup = action.setUpActions
+                subActGroup = action.set_up_actions
             elif self.group == 'Tear Down':
-                subActGroup = action.tearDownActions
+                subActGroup = action.tear_down_actions
             elif self.group == 'Transitions':
-                subActGroup = action.stateTransitionActions
+                subActGroup = action.state_transition_actions
             elif self.group == 'Before Frames':
-                subActGroup = action.actionsBeforeFrame
+                subActGroup = action.actions_before_frame
             elif self.group == 'After Frames':
-                subActGroup = action.actionsAfterFrame
+                subActGroup = action.actions_after_frame
             elif self.group == 'Last Frame':
-                subActGroup = action.actionsAtLastFrame
+                subActGroup = action.actions_at_last_frame
             elif self.group == 'Current Frame':
                 subActGroup = self.currentFrameSubacts
             elif self.group.startswith('Cond:'):
-                subActGroup = action.conditionalActions[self.group[6:]]
+                subActGroup = action.conditional_actions[self.group[6:]]
             
             for subact in subActGroup:
                 selector = subactionSelector.SubactionSelector(self.scrollFrame,subact)
@@ -805,14 +809,14 @@ class SubactionPanel(BuilderPanel):
             
             self.showSubactionList()
             if self.group == 'Properties':
-                lengthPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Length','int',action,'lastFrame')],'Length: '+str(action.lastFrame))
-                spritePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Sprite','sprite',action,'spriteName')],'Sprite Name: '+str(action.spriteName))
-                spriteRatePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Sprite Rate','int',action,'spriteRate')],'Sprite Rate: '+str(action.spriteRate))
+                lengthPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Length','int',action,'last_frame')],'Length: '+str(action.last_frame))
+                spritePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Sprite','sprite',action,'sprite_name')],'Sprite Name: '+str(action.sprite_name))
+                sprite_ratePanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Sprite Rate','int',action,'sprite_rate')],'Sprite Rate: '+str(action.sprite_rate))
                 loopPanel = subactionSelector.SubactionSelector(self.scrollFrame,[('Loop','bool',action,'loop')],'Loop:'+str(action.loop))
                 
                 self.subActionList.append(lengthPanel)
                 self.subActionList.append(spritePanel)
-                self.subActionList.append(spriteRatePanel)
+                self.subActionList.append(sprite_ratePanel)
                 self.subActionList.append(loopPanel)
                 
                 self.showSubactionList()
@@ -837,7 +841,7 @@ class SubactionPanel(BuilderPanel):
             self.selectedString.set('')
             
         self.currentFrameSubacts = []
-        for subact in action.actionsAtFrame[frame]:
+        for subact in action.actions_at_frame[frame]:
             self.currentFrameSubacts.append(subact)
         if self.parent.actionSelectorPanel.currentGroup.get() == 'Current Frame':
             self.clearSubActList()
@@ -879,11 +883,11 @@ class PropertiesPanel(BuilderPanel):
                           'Hitbox':[],
                           'Article':[]}
         
-        for name,subact in engine.subaction.subActionDict.iteritems():
-            if subact.subactGroup in subactWindows.keys():
+        for name,subact in engine.subaction.subaction_dict.iteritems():
+            if subact.subact_group in subactWindows.keys():
                 shortname = (name[:19] + '..') if len(name) > 22 else name
-                button = Button(subactWindows[subact.subactGroup],text=shortname,command=lambda subaction=subact: self.addSubaction(subaction))
-                subactionLists[subact.subactGroup].append(button)
+                button = Button(subactWindows[subact.subact_group],text=shortname,command=lambda subaction=subact: self.addSubaction(subaction))
+                subactionLists[subact.subact_group].append(button)
                 
         for group in subactionLists.values():
             x = 0
@@ -902,18 +906,18 @@ class PropertiesPanel(BuilderPanel):
         global action
         global frame
         
-        groupToAction = {'Current Frame': action.actionsAtFrame[frame],
-                         'Set Up': action.setUpActions,
-                         'Tear Down': action.tearDownActions,
-                         'Transitions': action.stateTransitionActions,
-                         'Before Frames': action.actionsBeforeFrame,
-                         'After Frames': action.actionsAfterFrame,
-                         'Last Frame': action.actionsAtLastFrame}
+        groupToAction = {'Current Frame': action.actions_at_frame[frame],
+                         'Set Up': action.set_up_actions,
+                         'Tear Down': action.tear_down_actions,
+                         'Transitions': action.state_transition_actions,
+                         'Before Frames': action.actions_before_frame,
+                         'After Frames': action.actions_after_frame,
+                         'Last Frame': action.actions_at_last_frame}
         group = self.parent.actionSelectorPanel.currentGroup.get()
         if groupToAction.has_key(group) or group.startswith('Cond:'):
             subact = subAction()
             if group.startswith('Cond:'):
-                action.conditionalActions[group[6:]].append(subact)
+                action.conditional_actions[group[6:]].append(subact)
             else: groupToAction[group].append(subact)
             self.root.actionModified()
             self.parent.subactionPanel.addSubactionPanel(subact)

@@ -82,18 +82,18 @@ def getSetting(key = None):
         return settings
 
 """
-Gets the Keybindings object for the given playerNum.
+Gets the Keybindings object for the given player_num.
 
 If it can't find those controls, it'll make a blank Keybinding
 """
-def getControls(playerNum):
+def getControls(player_num):
     global settings
     if settings == None:
         settings = Settings()
     
     controls = None
     
-    controlType = settings.setting['controlType_'+str(playerNum)]  
+    controlType = settings.setting['controlType_'+str(player_num)]  
     if not controlType == 'Keyobard':
         try:
             controls = settings.setting[controlType]
@@ -102,7 +102,7 @@ def getControls(playerNum):
     
     if not controls:
         try:
-            controls = settings.setting['controls_' + str(playerNum)]
+            controls = settings.setting['controls_' + str(player_num)]
         except:
             controls = engine.controller.Controller({})
     
@@ -219,18 +219,18 @@ class Settings():
         print(self.setting)
     
     def loadControls(self):
-        playerNum = 0
+        player_num = 0
         self.getGamepadList(True)
-        while self.parser.has_section('controls_' + str(playerNum)):
+        while self.parser.has_section('controls_' + str(player_num)):
             bindings = {}
-            groupName = 'controls_' + str(playerNum)
+            groupName = 'controls_' + str(player_num)
             controlType = self.parser.get(groupName, 'controlType')
             
-            self.setting['controlType_'+str(playerNum)] = controlType
+            self.setting['controlType_'+str(player_num)] = controlType
             try:
                 self.setting[controlType]
             except:
-                self.setting['controlType_'+str(playerNum)] = 'Keyboard'
+                self.setting['controlType_'+str(player_num)] = 'Keyboard'
             
             for opt in self.parser.options(groupName):
                 if self.KeyNameMap.has_key(opt):
@@ -238,7 +238,7 @@ class Settings():
             self.setting[groupName] = engine.controller.Controller(bindings)
             #self.setting[groupName] = engine.cpuPlayer.CPUplayer(bindings) #Here be CPU players
                     
-            playerNum += 1
+            player_num += 1
     
     """
     Check all connected gamepads and add them to the settings.
@@ -268,8 +268,8 @@ class Settings():
                 elif opt[0] == 'b':
                     buttons[int(opt[1:])] = controllerParser.get(controllerName, opt)
         
-            padBindings = engine.controller.PadBindings(controllerName,jid,axes,buttons)
-            return engine.controller.GamepadController(padBindings)
+            pad_bindings = engine.controller.PadBindings(controllerName,jid,axes,buttons)
+            return engine.controller.GamepadController(pad_bindings)
         else:
             joystick = None
             for pad in range(pygame.joystick.get_count()):
@@ -286,10 +286,10 @@ class Settings():
             axes = dict()
             buttons = dict()
             
-            padBindings = engine.controller.PadBindings(controllerName,jid,axes,buttons)
-            self.setting[joystick.get_name()] = padBindings
+            pad_bindings = engine.controller.PadBindings(controllerName,jid,axes,buttons)
+            self.setting[joystick.get_name()] = pad_bindings
             
-            return engine.controller.GamepadController(padBindings)
+            return engine.controller.GamepadController(pad_bindings)
     
     def getGamepadList(self,store=False):
         controllerParser = SafeConfigParser()
@@ -355,9 +355,9 @@ def saveSettings(settings):
         sect = 'controls_'+str(i)
         parser.add_section(sect)
         parser.set(sect,'controlType',settings['controlType_'+str(i)])
-        for key in settings[sect].keyBindings:
+        for key in settings[sect].key_bindings:
             parser.set(sect,'controlType',settings['controlType_'+str(i)])
-            parser.set(sect,keyIdMap[key],str(settings[sect].keyBindings[key]))
+            parser.set(sect,keyIdMap[key],str(settings[sect].key_bindings[key]))
             
     with open(os.path.join(getSetting().datadir.replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
         parser.write(configfile)
@@ -371,13 +371,13 @@ def saveGamepad(settings):
         if not parser.has_section(controllerName):
             parser.add_section(controllerName)
         
-        for key,value in gamepad.padBindings.axisBindings.iteritems():
+        for key,value in gamepad.pad_bindings.axis_bindings.iteritems():
             neg,pos = value
             if not neg: neg = 'none'
             if not pos: pos = 'none'
             parser.set(controllerName,'a'+str(key),'('+str(neg)+','+str(pos)+')' )
         
-        for key,value in gamepad.padBindings.buttonBindings.iteritems():
+        for key,value in gamepad.pad_bindings.button_bindings.iteritems():
             parser.set(controllerName,'b'+str(key),str(value))
             
     with open(os.path.join(getSetting().datadir.replace('main.exe',''),'settings','gamepads.ini'), 'w') as configfile:

@@ -2,160 +2,160 @@ import settingsManager
 import pygame
 
 class Controller():
-    def __init__(self,bindings):
-        self.keysToPass = []
-        self.keysToRelease = []
-        self.keysHeld = []
-        self.keyBindings = bindings
+    def __init__(self,_bindings):
+        self.keys_to_pass = []
+        self.keys_to_release = []
+        self.keys_held = []
+        self.key_bindings = _bindings
         self.type = 'Keyboard'
     
-    def loadFighter(self,fighter):
-        self.fighter = fighter
+    def loadFighter(self,_fighter):
+        self.fighter = _fighter
     
     def flushInputs(self):
-        self.keysToPass = []
-        self.keysToRelease = []
-        self.keysHeld = []
+        self.keys_to_pass = []
+        self.keys_to_release = []
+        self.keys_held = []
         
-    def getInputs(self,event,push = True, outputOnRelease = True):
-        if event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
+    def getInputs(self,_event,_push = True, _outputOnRelease = True):
+        if _event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
             return None
         output = True
-        k = self.keyBindings.get(event.key)
+        k = self.key_bindings.get(_event.key)
         if k:
-            if event.type == pygame.KEYDOWN:
-                if push: self.keysToPass.append(k)
-                if k not in self.keysHeld: self.keysHeld.append(k)
-            elif event.type == pygame.KEYUP:
-                output = outputOnRelease and output
-                if push: self.keysToRelease.append(k)
-                if k in self.keysHeld: self.keysHeld.remove(k)
+            if _event.type == pygame.KEYDOWN:
+                if _push: self.keys_to_pass.append(k)
+                if k not in self.keys_held: self.keys_held.append(k)
+            elif _event.type == pygame.KEYUP:
+                output = _outputOnRelease and output
+                if _push: self.keys_to_release.append(k)
+                if k in self.keys_held: self.keys_held.remove(k)
         if output: return k
         return None
     
-    def get(self,key):
-        return self.keyBindings.get(key)
+    def get(self,_key):
+        return self.key_bindings.get(_key)
     
     def passInputs(self):
-        for key in self.keysToPass:
+        for key in self.keys_to_pass:
             self.fighter.keyPressed(key)
-        for key in self.keysToRelease:
-            self.fighter.keyReleased(key)
-        self.keysToPass = []
-        self.keysToRelease = []
+        for key in self.keys_to_release:
+            self.fighter.key_released(key)
+        self.keys_to_pass = []
+        self.keys_to_release = []
     
-    def getKeysForAction(self,action):
-        listOfBindings = []
-        for binding,name in self.keyBindings.items():
-            if name == action:
-                listOfBindings.append(settingsManager.getSetting().KeyIdMap[binding])
-        return listOfBindings
+    def getKeysForAction(self,_action):
+        list_of_bindings = []
+        for binding,name in self.key_bindings.items():
+            if name == _action:
+                list_of_bindings.append(settingsManager.getSetting().KeyIdMap[binding])
+        return list_of_bindings
     
 class GamepadController():
-    def __init__(self,padBindings):
-        self.keysToPass = []
-        self.keysToRelease = []
-        self.keysHeld = []
-        self.padBindings = padBindings
+    def __init__(self,_padBindings):
+        self.keys_to_pass = []
+        self.keys_to_release = []
+        self.keys_held = []
+        self.pad_bindings = _padBindings
         self.type = 'Gamepad'
     
-    def loadFighter(self,fighter):
-        self.fighter = fighter
+    def loadFighter(self,_fighter):
+        self.fighter = _fighter
     
     def flushInputs(self):
-        self.keysToPass = []
-        self.keysToRelease = []
-        self.keysHeld = []
+        self.keys_to_pass = []
+        self.keys_to_release = []
+        self.keys_held = []
     
-    def getInputs(self,event,push = True, outputOnRelease = True):
-        if event.type not in [pygame.JOYAXISMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
+    def getInputs(self,_event,_push = True, _outputOnRelease = True):
+        if _event.type not in [pygame.JOYAXISMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
             return None
         k = None
         output = True
-        if event.type == pygame.JOYAXISMOTION:
+        if _event.type == pygame.JOYAXISMOTION:
             #getJoystickInput will get a pad and an axis, and return the value of that stick
             #by checking it along with the other axis of that joystick, if there is one.
-            k = self.padBindings.getJoystickInput(event.joy,event.axis,event.value)
-            if k and k in self.keysHeld: k = None
-            if k and k not in self.keysHeld:
-                self.keysHeld.append(k)
+            k = self.pad_bindings.getJoystickInput(_event.joy,_event.axis,_event.value)
+            if k and k in self.keys_held: k = None
+            if k and k not in self.keys_held:
+                self.keys_held.append(k)
             if k and push:
-                self.keysToPass.append(k)
+                self.keys_to_pass.append(k)
                 
             if k == 0:
-                output = output and outputOnRelease
-                a, b = self.padBindings.axisBindings.get(event.axis)
-                if a in self.keysHeld: self.keysHeld.remove(a)
-                if b in self.keysHeld: self.keysHeld.remove(b)
-                if push:
-                    self.keysToRelease.extend([a,b])
-        elif event.type == pygame.JOYBUTTONDOWN:
+                output = output and _outputOnRelease
+                a, b = self.pad_bindings.axis_bindings.get(_event.axis)
+                if a in self.keys_held: self.keys_held.remove(a)
+                if b in self.keys_held: self.keys_held.remove(b)
+                if _push:
+                    self.keys_to_release.extend([a,b])
+        elif _event.type == pygame.JOYBUTTONDOWN:
             #getButtonInput is much more simple. It gets the key that button is mapped to
-            k = self.padBindings.getButtonInput(event.joy,event.button)
-        elif event.type == pygame.JOYBUTTONUP:
-            output = output and outputOnRelease
-            k = self.padBindings.getButtonInput(event.joy,event.button)
+            k = self.pad_bindings.getButtonInput(_event.joy,_event.button)
+        elif _event.type == pygame.JOYBUTTONUP:
+            output = output and _outputOnRelease
+            k = self.pad_bindings.getButtonInput(_event.joy,_event.button)
         
         if k:
-            if event.type == pygame.JOYBUTTONDOWN:
-                if k not in self.keysHeld: self.keysHeld.append(k)
-                if push: self.keysToPass.append(k)
+            if _event.type == pygame.JOYBUTTONDOWN:
+                if k not in self.keys_held: self.keys_held.append(k)
+                if _push: self.keys_to_pass.append(k)
                 
-            elif event.type == pygame.JOYBUTTONUP:
-                if k in self.keysHeld: self.keysHeld.remove(k)
-                if push: self.keysToRelease.append(k)
+            elif _event.type == pygame.JOYBUTTONUP:
+                if k in self.keys_held: self.keys_held.remove(k)
+                if _push: self.keys_to_release.append(k)
         if output: return k
         return None
     
-    def get(self,key):
-        return self.keyBindings.get(key)
+    def get(self,_key):
+        return self.key_bindings.get(_key)
     
     def passInputs(self):
-        for key in self.keysToPass:
+        for key in self.keys_to_pass:
             self.fighter.keyPressed(key)
-        for key in self.keysToRelease:
-            self.fighter.keyReleased(key)
-        self.keysToPass = []
-        self.keysToRelease = []
+        for key in self.keys_to_release:
+            self.fighter.key_released(key)
+        self.keys_to_pass = []
+        self.keys_to_release = []
     
-    def getKeysForAction(self,action):
-        return self.padBindings.getKeysForAction(action)
+    def getKeysForAction(self,_action):
+        return self.pad_bindings.getKeysForAction(_action)
     
 class PadBindings():
-    def __init__(self,joyName,joystick,axisBindings,buttonBindings):
-        self.name = joyName
-        self.joystick = joystick
+    def __init__(self,_joyName,_joystick,_axisBindings,_buttonBindings):
+        self.name = _joyName
+        self.joystick = _joystick
         #Each axis is bound to a tuple of what a negative value is, and what a positive value is.
         #So, in this hard-coded example, axis 0 is left when negative, right when positive.
-        self.axisBindings = axisBindings
-        self.buttonBindings = buttonBindings
+        self.axis_bindings = _axisBindings
+        self.button_bindings = _buttonBindings
         
-    def getJoystickInput(self,joy,axis,value):
-        if not joy == self.joystick:
+    def getJoystickInput(self,_joy,_axis,_value):
+        if not _joy == self.joystick:
             return None
-        axisTuple = self.axisBindings.get(axis) 
-        if axisTuple:
+        axis_tuple = self.axis_bindings.get(_axis) 
+        if axis_tuple:
             #if the value is above deadzone
             if value > 0.2750:
-                return axisTuple[1]
+                return axis_tuple[1]
             elif value < -0.2750:
-                return axisTuple[0]
+                return axis_tuple[0]
             else:
                 return 0
             
-    def getButtonInput(self,joy,button):
-        if not joy == self.joystick:
+    def getButtonInput(self,_joy,_button):
+        if not _joy == self.joystick:
             return None
-        return self.buttonBindings.get(button)
+        return self.button_bindings.get(_button)
     
-    def getKeysForAction(self,action):
-        listOfBindings = []
-        for button,name in self.buttonBindings.items():
-            if name == action:
-                listOfBindings.append('Button ' + str(button))
-        for axis,(neg,pos) in self.axisBindings.items():
-            if pos == action:
-                listOfBindings.append('Axis ' + str(axis) + ' Positive')
-            if neg == action:
-                listOfBindings.append('Axis ' + str(axis) + ' Negative')
-        return listOfBindings
+    def getKeysForAction(self,_action):
+        list_of_bindings = []
+        for button,name in self.button_bindings.items():
+            if name == _action:
+                list_of_bindings.append('Button ' + str(button))
+        for axis,(neg,pos) in self.axis_bindings.items():
+            if pos == _action:
+                list_of_bindings.append('Axis ' + str(axis) + ' Positive')
+            if neg == _action:
+                list_of_bindings.append('Axis ' + str(axis) + ' Negative')
+        return list_of_bindings

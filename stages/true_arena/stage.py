@@ -60,7 +60,7 @@ class TrueArena(stage.Stage):
         
         self.platform_list = [stage.Platform([self.size.centerx - 337,self.size.centery], [self.size.centerx + 337,self.size.centery+102],(True,True))]
         
-        self.spawnLocations = [[self.size.centerx - 337 + (134 * 1),self.size.centery-1],
+        self.spawn_locations = [[self.size.centerx - 337 + (134 * 1),self.size.centery-1],
                                [self.size.centerx - 337 + (134 * 4),self.size.centery-1],
                                [self.size.centerx - 337 + (134 * 2),self.size.centery-1],
                                [self.size.centerx - 337 + (134 * 3),self.size.centery-1],
@@ -68,7 +68,7 @@ class TrueArena(stage.Stage):
         
         fgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TrueArenaFront.png"))
         fgSprite.rect.topleft = [self.size.centerx - 383,self.size.centery]
-        self.foregroundSprites.append(fgSprite)
+        self.foreground_sprites.append(fgSprite)
         
         backdropa = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll4.png"))
         backdropa.rect.left = 0
@@ -113,7 +113,7 @@ class TrueArena(stage.Stage):
         self.addToBackground(bgSprite0)
         
         
-        self.backgroundColor = [0,0,0]
+        self.background_color = [0,0,0]
         self.getLedges()
     
     def update(self):

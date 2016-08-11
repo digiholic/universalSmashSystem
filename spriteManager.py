@@ -24,31 +24,31 @@ class Sprite(pygame.sprite.Sprite):
         rotatedH = abs(w*unitVector[1])+abs(h*unitVector[0])
         dx = (rotatedW-w)/2.0
         dy = (rotatedH-h)/2.0
-        newOff = (int((offset[0]+self.spriteOffset[0]) * scale - dx), int((offset[1]+self.spriteOffset[1]) * scale - dy))
+        new_off = (int((offset[0]+self.spriteOffset[0]) * scale - dx), int((offset[1]+self.spriteOffset[1]) * scale - dy))
         try:
-            blitSprite = pygame.transform.smoothscale(self.image, (int(w), int(h)))
+            blit_sprite = pygame.transform.smoothscale(self.image, (int(w), int(h)))
         except Exception as e:
             print(e)
             raise ValueError("Please use 32-bit PNG files")
         if self.angle != 0:
-            blitSprite = pygame.transform.rotate(blitSprite,self.angle)
-        newRect = pygame.Rect(newOff,(int(rotatedW), int(rotatedH)))
-        retRect = newRect
-        if not newRect == self.lastDrawnPosition:
+            blit_sprite = pygame.transform.rotate(blit_sprite,self.angle)
+        new_rect = pygame.Rect(new_off,(int(rotatedW), int(rotatedH)))
+        retRect = new_rect
+        if not new_rect == self.lastDrawnPosition:
             self.changed = True
-            retRect = newRect.union(self.lastDrawnPosition)
-            self.lastDrawnPosition = newRect
+            retRect = new_rect.union(self.lastDrawnPosition)
+            self.lastDrawnPosition = new_rect
         if self.changed:
-            screen.blit(blitSprite,newRect)
+            screen.blit(blit_sprite,new_rect)
             self.changed = False
             return retRect
-        screen.blit(blitSprite,newRect) #Until this starts working
+        screen.blit(blit_sprite,new_rect) #Until this starts working
         return None
   
 class SpriteHandler(Sprite):
-    def __init__(self,directory,prefix,startingImage,offset,colorMap = {},scale=1.0):
+    def __init__(self,directory,prefix,startingImage,offset,color_map = {},scale=1.0):
         Sprite.__init__(self)
-        self.colorMap = colorMap
+        self.color_map = color_map
         self.scale = scale
         self.imageLibrary = self.buildImageLibrary(ImageLibrary(directory,prefix), offset)
         
@@ -147,8 +147,8 @@ class SpriteHandler(Sprite):
         while index < sheet.get_width() // offset:
             sheet.set_clip(pygame.Rect(index * offset, 0, offset,sheet.get_height()))
             image = sheet.subsurface(sheet.get_clip())
-            for fromColor,toColor in self.colorMap.items():
-                self.recolor(image, tuple(list(fromColor)), tuple(list(toColor)))
+            for from_color,to_color in self.color_map.items():
+                self.recolor(image, tuple(list(from_color)), tuple(list(to_color)))
             if not self.scale == 1.0:
                 w = int(image.get_width() * self.scale)
                 h = int(image.get_height() * self.scale)
@@ -157,9 +157,9 @@ class SpriteHandler(Sprite):
             index += 1
         return imageList
     
-    def recolor(self,image,fromColor,toColor):
+    def recolor(self,image,from_color,to_color):
         arr = pygame.PixelArray(image)
-        arr.replace(fromColor,toColor)
+        arr.replace(from_color,to_color)
         del arr
         self.changed = True
         
@@ -185,21 +185,21 @@ class ImageSprite(Sprite):
         del arr
         self.changed = True
     
-    def recolor(self,image,fromColor,toColor):
+    def recolor(self,image,from_color,to_color):
         arr = pygame.PixelArray(image)
-        arr.replace(fromColor,toColor)
+        arr.replace(from_color,to_color)
         del arr
         self.changed = True
         
 class SheetSprite(ImageSprite):
-    def __init__(self,sheet,offset=0,colorMap = {}):
+    def __init__(self,sheet,offset=0,color_map = {}):
         Sprite.__init__(self)
         
         self.sheet = sheet
         if isinstance(sheet,str):
             self.sheet = pygame.image.load(sheet)
         
-        self.colorMap = colorMap
+        self.color_map = color_map
         self.index = 0
         self.maxIndex = self.sheet.get_width() // offset
         self.offset = offset
@@ -224,8 +224,8 @@ class SheetSprite(ImageSprite):
             self.sheet.set_clip(pygame.Rect(index * offset, 0, offset,sheet.get_height()))
             image = sheet.subsurface(sheet.get_clip())
             #image = image.convert_alpha()
-            for fromColor,toColor in self.colorMap.items():
-                self.recolor(image, tuple(list(fromColor)), tuple(list(toColor)))
+            for from_color,to_color in self.color_map.items():
+                self.recolor(image, tuple(list(from_color)), tuple(list(to_color)))
             imageList.append(image)
             index += 1
         return imageList
@@ -235,9 +235,9 @@ class SheetSprite(ImageSprite):
         self.image = pygame.transform.flip(self.image,True,False)
         self.changed = True
         
-    def recolor(self,image,fromColor,toColor):
+    def recolor(self,image,from_color,to_color):
         arr = pygame.PixelArray(image)
-        arr.replace(fromColor,toColor)
+        arr.replace(from_color,to_color)
         del arr
         self.changed = True
         
@@ -333,11 +333,11 @@ class ImageLibrary():
         for f in os.listdir(self.directory):
             fname, ext = os.path.splitext(f)
             if fname.startswith(prefix) and supportedFileTypes.count(ext):
-                spriteName = fname[len(prefix):]
+                sprite_name = fname[len(prefix):]
                 sprite = pygame.image.load(os.path.join(self.directory,f))
                 sprite = sprite.convert_alpha()
-                self.imageDict[spriteName] = sprite
-                #print(sprite.get_alpha(), spriteName, self.imageDict[spriteName])
+                self.imageDict[sprite_name] = sprite
+                #print(sprite.get_alpha(), sprite_name, self.imageDict[sprite_name])
 
 class RectSprite(Sprite):
     def __init__(self,rect,color=[0,0,0]):

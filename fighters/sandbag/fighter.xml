@@ -12,44 +12,44 @@
 	
 	<actions>sandbag_actions.py</actions>
 	
-	<colorPalette id='0' displayColor='#000000'>
+	<color_palette id='0' displayColor='#000000'>
 		
-	</colorPalette>
+	</color_palette>
 	
-	<colorPalette id='1' displayColor='#000000'>
+	<color_palette id='1' displayColor='#000000'>
 		
-	</colorPalette>
+	</color_palette>
 	
-	<colorPalette id='2' displayColor='#000000'>
+	<color_palette id='2' displayColor='#000000'>
 		
-	</colorPalette>
+	</color_palette>
 	
-	<colorPalette id='3' displayColor='#000000'>
+	<color_palette id='3' displayColor='#000000'>
 		
-	</colorPalette>
+	</color_palette>
 	<stats>
 		<weight>200</weight>
 		<gravity>1.0</gravity>
-		<maxFallSpeed>20</maxFallSpeed>
-		<maxGroundSpeed>4.5</maxGroundSpeed>
-		<runSpeed>5</runSpeed>
-		<maxAirSpeed>4</maxAirSpeed>
-		<aerialTransitionSpeed>4.5</aerialTransitionSpeed>
-		<crawlSpeed>0</crawlSpeed>
-		<dodgeSpeed>10</dodgeSpeed>
+		<max_fall_speed>20</max_fall_speed>
+		<max_ground_speed>4.5</max_ground_speed>
+		<run_speed>5</run_speed>
+		<max_air_speed>4</max_air_speed>
+		<aerial_transition_speed>4.5</aerial_transition_speed>
+		<crawl_speed>0</crawl_speed>
+		<dodge_speed>10</dodge_speed>
 		<friction>1.0</friction>
-		<staticGrip>1.0</staticGrip>
-                <pivotGrip>2.0</pivotGrip>
-		<airResistance>0.1</airResistance>
-		<airControl>0.1</airControl>
+		<static_grip>1.0</static_grip>
+                <pivot_grip>2.0</pivot_grip>
+		<air_resistance>0.1</air_resistance>
+		<air_control>0.1</air_control>
 		<jumps>1</jumps>
-		<jumpHeight>8</jumpHeight>
-		<shortHopHeight>4</shortHopHeight>
-		<airJumpHeight>10</airJumpHeight>
-		<heavyLandLag>4</heavyLandLag>
-		<wavedashLag>8</wavedashLag>
-		<fastfallMultiplier>2</fastfallMultiplier>
-		<hitstunElasticity>.8</hitstunElasticity>
-		<shieldSize>1</shieldSize>
+		<jump_height>8</jump_height>
+		<short_hop_height>4</short_hop_height>
+		<air_jump_height>10</air_jump_height>
+		<heavy_land_lag>4</heavy_land_lag>
+		<wavedash_lag>8</wavedash_lag>
+		<fastfall_multiplier>2</fastfall_multiplier>
+		<hitstun_elasticity>.8</hitstun_elasticity>
+		<shield_size>1</shield_size>
 	</stats>
 </fighter>

@@ -4,21 +4,21 @@ import math
 import pygame
 
 class SplatArticle(article.AnimatedArticle):
-    def __init__(self, owner):
-        origin = (owner.sprite.boundingRect.centerx + (24 * owner.facing), owner.sprite.boundingRect.centery)
-        article.AnimatedArticle.__init__(self, owner.article_path+'/hitboxie_projectile.png', owner, origin, imageWidth=16,length=120)
+    def __init__(self, _owner):
+        origin = (_owner.sprite.boundingRect.centerx + (24 * _owner.facing), _owner.sprite.boundingRect.centery)
+        article.AnimatedArticle.__init__(self, _owner.article_path+'/hitboxie_projectile.png', _owner, origin, imageWidth=16,length=120)
         
-        self.direction = owner.facing
+        self.direction = _owner.facing
         self.change_x = self.direction*24
         self.change_y = 0
         
         variables = {'center':[0,0],
                      'size':[12,12],
                      'damage':3,
-                     'baseKnockback':2,
-                     'knockbackGrowth':0,
+                     'base_knockback':2,
+                     'knockback_growth':0,
                      'trajectory':0,
-                     'hitstun':1,
+                     'hitstun_multiplier':1,
                      'transcendence':-1
                      }
         self.hitbox = hitbox.DamageHitbox(self.owner, hitbox.HitboxLock(), variables)
@@ -29,9 +29,9 @@ class SplatArticle(article.AnimatedArticle):
         self.tags = ['reflectable']
 
     # Override the onCollision of the hitbox
-    def onCollision(self, other):
-        othersClasses = list(map(lambda x :x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]
-        if ('AbstractFighter' in othersClasses or 'Platform' in othersClasses):
+    def onCollision(self, _other):
+        _others_classes = list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]
+        if ('AbstractFighter' in others_classes or 'Platform' in others_classes):
             self.deactivate()
         #TODO check for verticality of platform landing
             
@@ -58,8 +58,8 @@ class SplatArticle(article.AnimatedArticle):
         self.kill()
 
 class ShineArticle(article.AnimatedArticle):
-    def __init__(self, owner):
-        article.AnimatedArticle.__init__(self, owner.article_path+'/hitboxie_shine.png', owner, [0,0], imageWidth=92,length=8)
+    def __init__(self, _owner):
+        article.AnimatedArticle.__init__(self, _owner.article_path+'/hitboxie_shine.png', _owner, [0,0], imageWidth=92,length=8)
             
     def update(self):
         self.rect.center = self.owner.sprite.boundingRect.center
@@ -71,7 +71,7 @@ class ShineArticle(article.AnimatedArticle):
             self.getImageAtIndex(2)
         elif self.frame == 6:
             self.getImageAtIndex(3)
-        if self.frame == self.lastFrame:
+        if self.frame == self.last_frame:
             self.frame = 2
         else:
             self.frame += 1

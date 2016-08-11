@@ -13,61 +13,61 @@
 	<sound_path>sfx/</sound_path>
 	<actions>hitboxie_actions.xml</actions>
 	
-	<colorPalette id='0' displayColor='#000000'>
-	</colorPalette>
+	<color_palette id='0' displayColor='#000000'>
+	</color_palette>
 	
-	<colorPalette id='1' displayColor='#0000FF'>
-		<colorMap fromColor='#000000' toColor='#0000FF'></colorMap>
-	</colorPalette>
+	<color_palette id='1' displayColor='#0000FF'>
+		<color_map from_color='#000000' to_color='#0000FF'></color_map>
+	</color_palette>
 	
-	<colorPalette id='2' displayColor='#FFFF00'>
-		<colorMap fromColor='#000000' toColor='#FFFF00'></colorMap>
-	</colorPalette>
+	<color_palette id='2' displayColor='#FFFF00'>
+		<color_map from_color='#000000' to_color='#FFFF00'></color_map>
+	</color_palette>
 	
-	<colorPalette id='3' displayColor='#00FF00'>
-		<colorMap fromColor='#000000' toColor='#00FF00'></colorMap>
-	</colorPalette>
+	<color_palette id='3' displayColor='#00FF00'>
+		<color_map from_color='#000000' to_color='#00FF00'></color_map>
+	</color_palette>
 	
-	<colorPalette id='4' displayColor='#FF0000'>
-		<colorMap fromColor='#000000' toColor='#FF0000'></colorMap>
-	</colorPalette>
+	<color_palette id='4' displayColor='#FF0000'>
+		<color_map from_color='#000000' to_color='#FF0000'></color_map>
+	</color_palette>
 	
-	<colorPalette id='5' displayColor='#00FFFF'>
-		<colorMap fromColor='#000000' toColor='#00FFFF'></colorMap>
-	</colorPalette>
+	<color_palette id='5' displayColor='#00FFFF'>
+		<color_map from_color='#000000' to_color='#00FFFF'></color_map>
+	</color_palette>
 	
-	<colorPalette id='6' displayColor='#FF00FF'>
-		<colorMap fromColor='#000000' toColor='#FF00FF'></colorMap>
-	</colorPalette>
+	<color_palette id='6' displayColor='#FF00FF'>
+		<color_map from_color='#000000' to_color='#FF00FF'></color_map>
+	</color_palette>
 	
-	<colorPalette id='7' displayColor='#FFFFFF'>
-		<colorMap fromColor='#000000' toColor='#FFFFFF'></colorMap>
-	</colorPalette>
+	<color_palette id='7' displayColor='#FFFFFF'>
+		<color_map from_color='#000000' to_color='#FFFFFF'></color_map>
+	</color_palette>
 	
 	<stats>
 		<weight>100</weight>
 		<gravity>0.5</gravity>
-		<maxFallSpeed>20</maxFallSpeed>
-		<maxGroundSpeed>6</maxGroundSpeed>
-		<runSpeed>9</runSpeed>
-		<maxAirSpeed>6</maxAirSpeed>
-		<aerialTransitionSpeed>7.5</aerialTransitionSpeed>
-		<crawlSpeed>3</crawlSpeed>
-		<dodgeSpeed>10</dodgeSpeed>
+		<max_fall_speed>20</max_fall_speed>
+		<max_ground_speed>6</max_ground_speed>
+		<run_speed>9</run_speed>
+		<max_air_speed>6</max_air_speed>
+		<aerial_transition_speed>7.5</aerial_transition_speed>
+		<crawl_speed>3</crawl_speed>
+		<dodge_speed>10</dodge_speed>
 		<friction>0.3</friction>
-		<staticGrip>0.3</staticGrip>
-                <pivotGrip>0.6</pivotGrip>
-		<airResistance>0.2</airResistance>
-		<airControl>0.2</airControl>
+		<static_grip>0.3</static_grip>
+                <pivot_grip>0.6</pivot_grip>
+		<air_resistance>0.2</air_resistance>
+		<air_control>0.2</air_control>
 		<jumps>1</jumps>
-		<jumpHeight>12.5</jumpHeight>
-		<shortHopHeight>8.5</shortHopHeight>
-		<airJumpHeight>15</airJumpHeight>
-		<heavyLandLag>4</heavyLandLag>
-		<wavedashLag>8</wavedashLag>
-		<fastfallMultiplier>2</fastfallMultiplier>
-		<hitstunElasticity>.8</hitstunElasticity>
-		<shieldSize>1</shieldSize>
+		<jump_height>12.5</jump_height>
+		<short_hop_height>8.5</short_hop_height>
+		<air_jump_height>15</air_jump_height>
+		<heavy_land_lag>4</heavy_land_lag>
+		<wavedash_lag>8</wavedash_lag>
+		<fastfall_multiplier>2</fastfall_multiplier>
+		<hitstun_elasticity>.8</hitstun_elasticity>
+		<shield_size>1</shield_size>
 	</stats>
 	
 	<variables>
