@@ -66,6 +66,7 @@ class ArticleLoader():
         imgWidth = int(self.loadNodeWithDefault(articleXML, 'imgWidth', 0))
         drawDepth = int(self.loadNodeWithDefault(articleXML, 'drawDepth', 1))
         originPoint = make_tuple(self.loadNodeWithDefault(articleXML, 'originPoint', (0,0)))
+        facingDirection = int(self.loadNodeWithDefault(articleXML, 'facingDirection', 0))
         
         #Load the SetUp subactions
         setUpActions = []
@@ -136,7 +137,9 @@ class ArticleLoader():
             conditionalActions[cond.attrib['name']] = conditionalList
          
         #Create and populate the Dynamic Action
-        dynArticle = article.DynamicArticle(self.owner, os.path.join(self.articlePath,spriteName), imgWidth, originPoint, length, spriteRate, drawDepth)
+        dynArticle = article.DynamicArticle(self.owner, os.path.join(self.articlePath,spriteName),
+                                            imgWidth, originPoint, length, spriteRate, facingDirection,
+                                            drawDepth)
         
         dynArticle.actionsBeforeFrame = subactionsBeforeFrame
         dynArticle.actionsAtFrame = subactionsAtFrame

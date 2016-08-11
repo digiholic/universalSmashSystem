@@ -14,7 +14,7 @@ length - if this article has logic or animation, you can set this to be used in 
          just like a fighter's action.
 """
 class DynamicArticle(spriteManager.SheetSprite):
-    def __init__(self,owner,sheet,imgWidth=0,originPoint=(0,0),length=1,spriteRate=0,drawDepth=1):
+    def __init__(self,owner,sheet,imgWidth=0,originPoint=(0,0),length=1,spriteRate=0,facingDirection=0,drawDepth=1):
         self.owner = owner
         spriteManager.SheetSprite.__init__(self, sheet, imgWidth)
         
@@ -26,6 +26,7 @@ class DynamicArticle(spriteManager.SheetSprite):
         self.drawDepth = drawDepth
         self.facing = 1
         self.originPoint = originPoint
+        self.startingDirection = facingDirection
         
         self.hitboxes = {}
         self.hitboxLocks = {}
@@ -82,6 +83,8 @@ class DynamicArticle(spriteManager.SheetSprite):
         self.owner.articles.add(self)
         self.rect.centerx = self.owner.rect.centerx + self.originPoint[0]
         self.rect.centery = self.owner.rect.centery + self.originPoint[1]
+        self.facing = self.owner.facing
+        if not self.facing == 0 and not self.facing == self.startingDirection: self.flipX()
         for act in self.setUpActions:
             act.execute(self,self)
         

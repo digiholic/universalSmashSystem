@@ -5,6 +5,7 @@
 		<length>120</length>
 		<imgWidth>16</imgWidth>
 		<originPoint>0,0</originPoint>
+		<facingDirection>1</facingDirection>
 		
 		<setUp>
 			<createHitbox>
