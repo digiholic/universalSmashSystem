@@ -367,11 +367,12 @@ class changeFighterPreferredSpeed(SubAction):
 class changeFighterSpeed(SubAction):
     subact_group = 'Behavior'
     
-    def __init__(self,_speedX = None, _speedY = None, _xRelative = False):
+    def __init__(self,_speedX = None, _speedY = None, _xRelative = False, _yRelative = False):
         SubAction.__init__(self)
         self.speed_x = _speedX
         self.speed_y = _speedY
         self.x_relative = _xRelative
+        self.y_relative = _yRelative
         
     def execute(self, _action, _actor):
         if self.speed_x is not None:
@@ -391,8 +392,9 @@ class changeFighterSpeed(SubAction):
                     self.speed_y = _actor.var[value]
                 elif owner == 'action':
                     self.speed_y = getattr(self, value)
-            
-            _actor.change_y = self.speed_y
+            if self.y_relative:_actor.change_y += self.speed_y
+            else: _actor.change_y = self.speed_y
+            print('ySpeed',_actor.change_y)
     
     def getPropertiesPanel(self, _root):
         return subactionSelector.ChangeSpeedProperties(_root,self)
@@ -414,6 +416,7 @@ class changeFighterSpeed(SubAction):
             
         if self.speed_y is not None:
             y_elem = ElementTree.Element('ySpeed')
+            if self.y_relative: y_elem.attrib['relative'] = 'True'
             y_elem.text = str(self.speed_y)
             elem.append(y_elem)
             
@@ -422,10 +425,12 @@ class changeFighterSpeed(SubAction):
     @staticmethod
     def buildFromXml(_node):
         x_relative = False
-        speed_x = loadValueOrVariable(_node, 'xSpeed', 'int', None)
+        y_relative = False
+        speed_x = loadValueOrVariable(_node, 'xSpeed', 'float', None)
         if speed_x and _node.find('xSpeed').attrib.has_key("relative"): x_relative = True
-        speed_y = loadValueOrVariable(_node, 'ySpeed', 'int', None)
-        return changeFighterSpeed(speed_x,speed_y,x_relative)
+        speed_y = loadValueOrVariable(_node, 'ySpeed', 'float', None)
+        if speed_y and _node.find('ySpeed').attrib.has_key("relative"): y_relative = True
+        return changeFighterSpeed(speed_x,speed_y,x_relative,y_relative)
 
 # ApplyForceVector is usually called when launched, but can be used as an alternative to setting speed. This one
 # takes a direction in degrees (0 being forward, 90 being straight up, 180 being backward, 270 being downward)

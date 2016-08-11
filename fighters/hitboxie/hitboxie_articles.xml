@@ -37,9 +37,9 @@
 		</collision>
 		
 		<frame number="before">
-			<changeSpeed>
+			<changeFighterSpeed>
 				<ySpeed relative="True">0.5</ySpeed>
-			</changeSpeed>
+			</changeFighterSpeed>
 		</frame>
 	</SplatArticle>
 	

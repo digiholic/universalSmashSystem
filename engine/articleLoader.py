@@ -97,9 +97,9 @@ class ArticleLoader():
         for frame in frames:
             if frame.attrib['number'] == 'before':
                 for subact in frame:
+                    print('subact',subact)
                     if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
                         subactions_before_frame.append(subaction.subaction_dict[subact.tag].buildFromXml(subact))
-                frames.remove(frame)
             if frame.attrib['number'] == 'after':
                 for subact in frame:
                     if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
