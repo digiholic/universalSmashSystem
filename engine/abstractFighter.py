@@ -183,8 +183,8 @@ class AbstractFighter():
         # dataLog holds information for the post-game results screen
         self.data_log = None
         
-    def saveFighter(self,path=None):
-        if not path: path = os.path.join(self.base_dir,'fighter.xml')
+    def saveFighter(self,_path=None):
+        if not _path: _path = os.path.join(self.base_dir,'fighter.xml')
         tree = ElementTree.Element('fighter')
         
         tree.append(self.createElement('name', self.name))
@@ -215,11 +215,11 @@ class AbstractFighter():
             stats_elem.append(self.createElement(tag, val))
         tree.append(stats_elem)
         
-        ElementTree.ElementTree(tree).write(path)
+        ElementTree.ElementTree(tree).write(_path)
     
-    def createElement(self,tag,val):
-        elem = ElementTree.Element(tag)
-        elem.text = str(val)
+    def createElement(self,_tag,_val):
+        elem = ElementTree.Element(_tag)
+        elem.text = str(_val)
         return elem
     
     def initialize(self):     
@@ -493,22 +493,22 @@ class AbstractFighter():
     Change speed to get closer to the preferred speed without going over.
     xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['air_resistance']
     """
-    def accel(self,xFactor):
+    def accel(self,_xFactor):
         if self.change_x > self.preferred_xspeed: #if we're going too fast
             diff = self.change_x - self.preferred_xspeed
-            self.change_x -= min(diff,xFactor)
+            self.change_x -= min(diff,_xFactor)
         elif self.change_x < self.preferred_xspeed: #if we're going too slow
             diff = self.preferred_xspeed - self.change_x
-            self.change_x += min(diff,xFactor)
+            self.change_x += min(diff,_xFactor)
     
     # Change ySpeed according to gravity.        
-    def calcGrav(self, multiplier=1):
+    def calcGrav(self, _multiplier=1):
         if self.change_y > self.preferred_yspeed:
             diff = self.change_y - self.preferred_yspeed
-            self.change_y -= min(diff, multiplier*self.var['gravity'])
+            self.change_y -= min(diff, _multiplier*self.var['gravity'])
         elif self.change_y < self.preferred_yspeed:
             diff = self.preferred_yspeed - self.change_y
-            self.change_y += min(diff, multiplier*self.var['gravity'])
+            self.change_y += min(diff, _multiplier*self.var['gravity'])
         if self.grounded: self.jumps = self.var['jumps']
 
     def checkGround(self):
@@ -590,9 +590,9 @@ class AbstractFighter():
         if self.facing == 1: return 0
         else: return 180
 
-    def setGrabbing(self, other):
-        self.grabbing = other
-        other.grabbed_by = self
+    def setGrabbing(self, _other):
+        self.grabbing = _other
+        _other.grabbed_by = self
 
     def isGrabbing(self):
         return isinstance(self.grabbing.current_action, baseActions.Grabbed) and self.grabbing.grabbed_by == self
@@ -609,50 +609,50 @@ class AbstractFighter():
     an instance of your overridden action.
     """
 
-    def changeAction(self,newAction):
-        self.current_action.tearDown(self,newAction)
-        newAction.setUp(self)
-        self.current_action = newAction
+    def changeAction(self,_newAction):
+        self.current_action.tearDown(self,_newAction)
+        _newAction.setUp(self)
+        self.current_action = _newAction
     
-    def doAction(self,action_name):
+    def doAction(self,_actionName):
         if hasattr(self.actions,'loadAction'):
-            action = self.actions.loadAction(action_name)
+            action = self.actions.loadAction(_actionName)
             if action.last_frame > 0: self.changeAction(action)
-        elif hasattr(self.actions, action_name):
-            class_ = getattr(self.actions,action_name)
+        elif hasattr(self.actions, _actionName):
+            class_ = getattr(self.actions,_actionName)
             action = class_()
             if action.last_frame > 0: self.changeAction(action)
     
-    def getAction(self,action_name):
+    def getAction(self,_actionName):
         action = None
         if hasattr(self.actions,'loadAction'):
-            action = self.actions.loadAction(action_name)
-        elif hasattr(self.actions, action_name):
-            class_ = getattr(self.actions,action_name)
+            action = self.actions.loadAction(_actionName)
+        elif hasattr(self.actions, _actionName):
+            class_ = getattr(self.actions,_actionName)
             action = class_()
         return action
             
-    def hasAction(self,action_name):
+    def hasAction(self,_actionName):
         if hasattr(self.actions,'hasAction'):
-            return self.actions.hasAction(action_name)
-        else: return hasattr(self.actions, action_name)
+            return self.actions.hasAction(_actionName)
+        else: return hasattr(self.actions, _actionName)
             
-    def loadArticle(self,article_name):
-        print(self.article_loader,article_name)
+    def loadArticle(self,_articleName):
+        print(self.article_loader,_articleName)
         
         if hasattr(self.article_loader, 'loadArticle'):
-            return self.article_loader.loadArticle(article_name)
-        elif hasattr(self.article_loader, article_name):
-            class_ = getattr(self.article_loader, article_name)
+            return self.article_loader.loadArticle(_articleName)
+        elif hasattr(self.article_loader, _articleName):
+            class_ = getattr(self.article_loader, _articleName)
             return(class_(self)) 
                             
-    def doGroundMove(self,direction):
-        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
+    def doGroundMove(self,_direction):
+        if (self.facing == 1 and _direction == 180) or (self.facing == -1 and _direction == 0):
             self.flip()
         self.doAction('Move')
         
-    def doDash(self,direction):
-        if (self.facing == 1 and direction == 180) or (self.facing == -1 and direction == 0):
+    def doDash(self,_direction):
+        if (self.facing == 1 and _direction == 180) or (self.facing == -1 and _direction == 0):
             self.flip()
         self.doAction('Dash')
         
@@ -740,39 +740,39 @@ class AbstractFighter():
             else:
                 self.doAction('NeutralAirSpecial')
     
-    def doHitStun(self,hitstun,trajectory):
+    def doHitStun(self,_hitstun,_trajectory):
         self.doAction('HitStun')
-        self.current_action.direction = trajectory
-        self.current_action.last_frame = hitstun
+        self.current_action.direction = _trajectory
+        self.current_action.last_frame = _hitstun
         
-    def doTrip(self, length, direction):
+    def doTrip(self, _length, _direction):
         self.doAction('Trip')
-        self.current_action.last_frame = length
-        self.current_action.direction = direction
+        self.current_action.last_frame = _length
+        self.current_action.direction = _direction
 
-    def doShield(self, new_shield=True):
+    def doShield(self, _newShield=True):
         self.doAction('Shield')
-        self.current_action.new_shield = new_shield
+        self.current_action.new_shield = _newShield
 
-    def doShieldStun(self, length):
+    def doShieldStun(self, _length):
         self.doAction('ShieldStun')
-        self.current_action.last_frame = length
+        self.current_action.last_frame = _length
              
-    def doLedgeGrab(self,ledge):
+    def doLedgeGrab(self,_ledge):
         self.doAction('LedgeGrab')
-        self.current_action.ledge = ledge
+        self.current_action.ledge = _ledge
 
-    def doTrapped(self, length):
+    def doTrapped(self, _length):
         self.doAction('Trapped')
-        self.current_action.last_frame = length
+        self.current_action.last_frame = _length
 
-    def doStunned(self, length):
+    def doStunned(self, _length):
         self.doAction('Stunned')
-        self.current_action.last_frame = length
+        self.current_action.last_frame = _length
 
-    def doGrabbed(self, height):
+    def doGrabbed(self, _height):
         self.doAction('Grabbed')
-        self.current_action.height = height
+        self.current_action.height = _height
     
 ########################################################
 #                  STATE CHANGERS                      #
@@ -803,8 +803,8 @@ class AbstractFighter():
     need to call this function directly for normal attacks, although you can
     for things like poison, non-knockback attacks, etc.
     """ 
-    def dealDamage(self, damage):
-        self.damage += float(math.floor(damage))
+    def dealDamage(self, _damage):
+        self.damage += float(math.floor(_damage))
         if self.damage >= 999:
             self.damage = 999
     
@@ -831,8 +831,8 @@ class AbstractFighter():
     it is based off of Super Smash Bros. Brawl's knockback calculation, which is the one with the most information available (due to
     all the modding)
     """
-    def applyKnockback(self, damage, kb, kbg, trajectory, weight_influence=1, hitstun_multiplier=1, base_hitstun=1, hitlag_multiplier=1):
-        self.hitstop = math.floor((damage / 4.0 + 2)*hitlag_multiplier)
+    def applyKnockback(self, _damage, _kb, _kbg, _trajectory, _weightInfluence=1, _hitstunMultiplier=1, _baseHitstun=1, _hitlagMultiplier=1):
+        self.hitstop = math.floor((_damage / 4.0 + 2)*_hitlagMultiplier)
         if self.grounded:
             self.hitstop_vibration = (3,0)
         else:
@@ -840,49 +840,49 @@ class AbstractFighter():
         self.hitstop_pos = self.rect.center
         
         p = float(self.damage)
-        d = float(damage)
+        d = float(_damage)
         w = float(self.var['weight'])
-        s = float(kbg)
-        b = float(kb)
+        s = float(_kbg)
+        b = float(_kb)
 
         # Thank you, ssbwiki!
-        total_kb = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*weight_influence+100))*1.4) + 5) * s) + b
+        total_kb = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*_weightInfluence+100))*1.4) + 5) * s) + b
 
-        if damage < self.flinch_damage_threshold or total_kb < self.flinch_knockback_threshold:
-            self.dealDamage(damage*self.armor_damage_multiplier)
+        if _damage < self.flinch_damage_threshold or total_kb < self.flinch_knockback_threshold:
+            self.dealDamage(_damage*self.armor_damage_multiplier)
             return 0
 
         di_vec = self.getSmoothedInput()
 
-        trajectory_vec = [math.cos(trajectory/180*math.pi), math.sin(trajectory/180*math.pi)]
+        trajectory_vec = [math.cos(_trajectory/180*math.pi), math.sin(_trajectory/180*math.pi)]
 
-        additional_kb = .5*base_hitstun*math.sqrt(abs(trajectory_vec[0])*self.var['air_resistance']+abs(trajectory_vec[1])*self.var['gravity'])
+        additional_kb = .5*_baseHitstun*math.sqrt(abs(trajectory_vec[0])*self.var['air_resistance']+abs(trajectory_vec[1])*self.var['gravity'])
 
         di_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
-        trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
+        _trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
 
-        hitstun_frames = math.floor(total_kb*hitstun_multiplier+base_hitstun) #Tweak this constant
+        hitstun_frames = math.floor(total_kb*_hitstunMultiplier+_baseHitstun) #Tweak this constant
         print(hitstun_frames)
 
         if self.no_flinch_hits > 0:
             if hitstun_frames > 0.5:
                 self.no_flinch_hits -= 1
-            self.dealDamage(damage*self.armor_damage_multiplier)
+            self.dealDamage(_damage*self.armor_damage_multiplier)
             return 0
 
         if hitstun_frames > 0.5:
             print((total_kb, additional_kb))
             if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.last_frame-self.current_action.frame <= hitstun_frames+15:
-                self.setSpeed((total_kb+additional_kb)*di_multiplier, trajectory)
-                self.doHitStun(hitstun_frames, trajectory)
+                self.setSpeed((total_kb+additional_kb)*di_multiplier, _trajectory)
+                self.doHitStun(hitstun_frames, _trajectory)
         
-        self.dealDamage(damage)
+        self.dealDamage(_damage)
 
         return math.floor((total_kb+additional_kb)*di_multiplier)
 
-    def applyPushback(self, kb, trajectory, hitlag):
-        self.hitstop = math.floor(hitlag)
-        (x, y) = getXYFromDM(trajectory, kb)
+    def applyPushback(self, _kb, _trajectory, _hitlag):
+        self.hitstop = math.floor(_hitlag)
+        (x, y) = getXYFromDM(_trajectory, _kb)
         self.change_x += x
         if not self.grounded:
             self.change_y += y
@@ -895,18 +895,18 @@ class AbstractFighter():
     speed - the total speed you want the fighter to move
     direction - the angle of the speed vector, 0 being right, 90 being up, 180 being left.
     """
-    def setSpeed(self,speed,direction):
-        (x,y) = getXYFromDM(direction,speed)
+    def setSpeed(self,_speed,_direction):
+        (x,y) = getXYFromDM(_direction,_speed)
         self.change_x = x
         self.change_y = y
         
-    def rotateSprite(self,direction):
-        self.sprite.rotate(-1 * (90 - direction)) 
+    def rotateSprite(self,_direction):
+        self.sprite.rotate(-1 * (90 - _direction)) 
             
     def unRotate(self):
         self.sprite.rotate()
         
-    def die(self,respawn = True):
+    def die(self,_respawn = True):
         self.damage = 0
         self.change_x = 0
         self.change_y = 0
@@ -916,7 +916,7 @@ class AbstractFighter():
             if hasattr(self.hit_tagged, 'dataLog'):
                 self.hit_tagged.data_log.setData('KOs',1,lambda x,y: x+y)
         
-        if respawn:
+        if _respawn:
             self.initialize()
             
             self.rect.midbottom = self.game_state.spawn_locations[self.player_num]
@@ -928,13 +928,13 @@ class AbstractFighter():
             self.invulnerable = 120
             self.doAction('Respawn')
         
-    def changeSprite(self,newSprite,frame=0):
-        self.sprite.changeImage(newSprite)
-        self.current_action.sprite_name = newSprite
-        if frame != 0: self.sprite.changeSubImage(frame)
+    def changeSprite(self,_newSprite,_frame=0):
+        self.sprite.changeImage(_newSprite)
+        self.current_action.sprite_name = _newSprite
+        if _frame != 0: self.sprite.changeSubImage(_frame)
         
-    def changeSpriteImage(self,frame,loop=False):
-        self.sprite.changeSubImage(frame,loop)
+    def changeSpriteImage(self,_frame,_loop=False):
+        self.sprite.changeSubImage(_frame,_loop)
     
     """
     Play a sound effect. If the sound is not in the fighter's SFX library, it will play the base sound.
@@ -953,39 +953,39 @@ class AbstractFighter():
     
     hbox - the hitbox we are checking for
     """
-    def lockHitbox(self,hbox):
+    def lockHitbox(self,_hbox):
         #Check for invulnerability first
         if self.invulnerable > 0:
             return False
 
         #If the hitbox belongs to something, get tagged by it
-        if not hbox.owner is None:
-            self.hit_tagged = hbox.owner
+        if not _hbox.owner is None:
+            self.hit_tagged = _hbox.owner
 
-        if hbox.hitbox_lock in self.hitbox_lock:
+        if _hbox.hitbox_lock in self.hitbox_lock:
             return False
 
-        self.hitbox_lock.add(hbox.hitbox_lock)
+        self.hitbox_lock.add(_hbox.hitbox_lock)
         return True
     
     def startShield(self):
         self.articles.add(article.ShieldArticle(settingsManager.createPath("sprites/melee_shield.png"),self))
         
-    def shieldDamage(self,damage):
+    def shieldDamage(self,_damage):
         if self.shield_integrity > 0:
-            self.shield_integrity -= damage
-            if damage > 1:
-                self.doShieldStun(math.floor(damage+2))
+            self.shield_integrity -= _damage
+            if _damage > 1:
+                self.doShieldStun(math.floor(_damage+2))
         else:
             self.change_y = -15
             self.invincible = 20
             self.shield_integrity = 100
             self.doStunned(400)
     
-    def updateLandingLag(self,lag,reset=False):
-        if reset: self.landing_lag = lag
+    def updateLandingLag(self,_lag,_reset=False):
+        if _reset: self.landing_lag = _lag
         else:
-            if lag > self.landing_lag: self.landing_lag = lag
+            if _lag > self.landing_lag: self.landing_lag = _lag
             
 ########################################################
 #                 ENGINE FUNCTIONS                     #
@@ -1005,36 +1005,36 @@ class AbstractFighter():
     of calculations and state changes should probably be done
     in the stateTransitions function of the current action.
     """
-    def keyPressed(self,key):
-        self.input_buffer.append((key,1.0))
-        self.keys_held[key] = 1.0
+    def keyPressed(self,_key):
+        self.input_buffer.append((_key,1.0))
+        self.keys_held[_key] = 1.0
         
     """
     As above, but opposite.
     """
-    def key_released(self,key):
-        if key in self.keys_held:
-            self.input_buffer.append((key,0))	
-            del self.keys_held[key]
+    def key_released(self,_key):
+        if _key in self.keys_held:
+            self.input_buffer.append((_key,0))	
+            del self.keys_held[_key]
             return True
         else: return False
     
-    def joyButtonPressed(self,pad,button):
+    def joyButtonPressed(self,_pad,_button):
         # TODO: Check gamepad first
-        self.keyPressed(button)
+        self.keyPressed(_button)
                 
-    def joyButtonReleased(self,pad,button):
+    def joyButtonReleased(self,_pad,_button):
         # TODO: Check gamepad first
-        self.key_released(button)
+        self.key_released(_button)
         
-    def joyAxisMotion(self,pad,axis):
+    def joyAxisMotion(self,_pad,_axis):
         #TODO - Actually check if this the right gamePad
-        value = round(pad.get_axis(axis),3) # We really only need three decimals of precision
+        value = round(_pad.get_axis(_axis),3) # We really only need three decimals of precision
         if abs(value) < 0.05: value = 0
         if value < 0: sign = '-'
         else: sign = '+'
         
-        k = self.key_bindings.get('axis ' + str(axis) + sign)
+        k = self.key_bindings.get('axis ' + str(_axis) + sign)
         self.input_buffer.append((k,value)) # This should hopefully append something along the line of ('left',0.8)
         self.keys_held[k] = value
 
@@ -1043,13 +1043,13 @@ class AbstractFighter():
     """
 
     #A key press
-    def keyBuffered(self, key, distanceBack = 1, state = 0.1):
-        return any(map(lambda k: key in k and k[key] >= state,self.input_buffer.getLastNFrames(distanceBack)))
+    def keyBuffered(self, _key, _distanceBack = 1, _state = 0.1):
+        return any(map(lambda k: _key in k and k[_key] >= _state,self.input_buffer.getLastNFrames(_distanceBack)))
 
     #A key tap (press, then release)
-    def keyTapped(self, key, distanceBack = 8, state = 0.1):
-        down_frames = map(lambda k: key in k and k[key] >= state, self.input_buffer.getLastNFrames(distanceBack))
-        up_frames = map(lambda k: key in k and k[key] < state, self.input_buffer.getLastNFrames(distanceBack))
+    def keyTapped(self, _key, _distanceBack = 8, _state = 0.1):
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_distanceBack))
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_distanceBack))
         if not any(down_frames) or not any(up_frames):
             return False
         first_down_frame = reduce(lambda j, k: j if j != None else (k if down_frames[k] else None), range(len(down_frames)), None)
@@ -1057,9 +1057,9 @@ class AbstractFighter():
         return first_down_frame <= last_up_frame
 
     #A key press which hasn't been released yet
-    def keyHeld(self, key, distanceBack = 8, state = 0.1):
-        down_frames = map(lambda k: key in k and k[key] >= state, self.input_buffer.getLastNFrames(distanceBack))
-        up_frames = map(lambda k: key in k and k[key] < state, self.input_buffer.getLastNFrames(distanceBack))
+    def keyHeld(self, _key, _distanceBack = 8, _state = 0.1):
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_distanceBack))
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_distanceBack))
         if not any(down_frames):
             return False
         if any(down_frames) and not any(up_frames):
@@ -1069,13 +1069,13 @@ class AbstractFighter():
         return first_down_frame > last_up_frame
 
     #A key release
-    def keyUp(self, key, distanceBack = 1, state = 0.1):
-        return any(map(lambda k: key in k and k[key] < state, self.input_buffer.getLastNFrames(distanceBack)))
+    def keyUp(self, _key, _distanceBack = 1, _state = 0.1):
+        return any(map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_distanceBack)))
 
     #A key reinput (release, then press)
-    def keyReinput(self, key, distanceBack = 8, state = 0.1):
-        up_frames = map(lambda k: key in k and k[key] < state, self.input_buffer.getLastNFrames(distanceBack))
-        down_frames = map(lambda k: key in k and k[key] >= state, self.input_buffer.getLastNFrames(distanceBack))
+    def keyReinput(self, _key, _distanceBack = 8, _state = 0.1):
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_distanceBack))
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_distanceBack))
         if not any(down_frames) or not any(down_frames):
             return False
         first_up_frame = reduce(lambda j, k: j if j != None else (k if up_frames[k] else None), range(len(up_frames)), None)
@@ -1083,9 +1083,9 @@ class AbstractFighter():
         return first_up_frame <= last_down_frame
 
     #A key release which hasn't been pressed yet
-    def keyIdle(self, key, distanceBack = 8, state = 0.1):
-        up_frames = map(lambda k: key in k and k[key] < state, self.input_buffer.getLastNFrames(distanceBack))
-        down_frames = map(lambda k: key in k and k[key] >= state, self.input_buffer.getLastNFrames(distanceBack))
+    def keyIdle(self, _key, _distanceBack = 8, _state = 0.1):
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_distanceBack))
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_distanceBack))
         if not any(up_frames):
             return False
         if any(up_frames) and not any(down_frames):
@@ -1095,32 +1095,32 @@ class AbstractFighter():
         return first_up_frame > last_down_frame
 
     #Analog directional input
-    def getSmoothedInput(self, distanceBack = 64, max_magnitude = 1.0):
+    def getSmoothedInput(self, _distanceBack = 64, _maxMagnitude = 1.0):
         #TODO If this is a gamepad, simply return its analog input
-        hold_buffer = reversed(self.input_buffer.getLastNFrames(distanceBack))
+        hold_buffer = reversed(self.input_buffer.getLastNFrames(_distanceBack))
         smoothed_x = 0.0
         smoothed_y = 0.0
         for frame_input in hold_buffer:
             working_x = 0.0
             working_y = 0.0
-            x_decay = float(1.5)/distanceBack
-            y_decay = float(1.5)/distanceBack
+            x_decay = float(1.5)/_distanceBack
+            y_decay = float(1.5)/_distanceBack
             if 'left' in frame_input: working_x -= frame_input['left']
             if 'right' in frame_input: working_x += frame_input['right']
             if 'up' in frame_input: working_y -= frame_input['up']
             if 'down' in frame_input: working_y += frame_input['down']
             if (working_x > 0 and smoothed_x > 0) or (working_x < 0 and smoothed_x < 0):
-                x_decay = float(1)/distanceBack
+                x_decay = float(1)/_distanceBack
             elif (working_x < 0 and smoothed_x > 0) or (working_x > 0 and smoothed_x < 0):
-                x_decay = float(4)/distanceBack
+                x_decay = float(4)/_distanceBack
             if (working_y < 0 and smoothed_y < 0) or (working_y > 0 and smoothed_y > 0):
-                y_decay = float(1)/distanceBack
+                y_decay = float(1)/_distanceBack
             elif (working_y < 0 and smoothed_y > 0) or (working_y > 0 and smoothed_y < 0):
-                ySmooth = float(4)/distanceBack
+                ySmooth = float(4)/_distanceBack
             magnitude = numpy.linalg.norm([working_x, working_y])
-            if magnitude > max_magnitude:
-                working_x /= magnitude/max_magnitude
-                working_y /= magnitude/max_magnitude
+            if magnitude > _maxMagnitude:
+                working_x /= magnitude/_maxMagnitude
+                working_y /= magnitude/_maxMagnitude
             if smoothed_x > 0:
                 smoothed_x -= x_decay
                 if smoothed_x < 0:
@@ -1141,9 +1141,9 @@ class AbstractFighter():
             smoothed_y += working_y
 
         final_magnitude = numpy.linalg.norm([smoothed_x, smoothed_y])
-        if final_magnitude > max_magnitude:
-            smoothed_x /= final_magnitude/max_magnitude
-            smoothed_y /= final_magnitude/max_magnitude
+        if final_magnitude > _maxMagnitude:
+            smoothed_x /= final_magnitude/_maxMagnitude
+            smoothed_y /= final_magnitude/_maxMagnitude
         return [smoothed_x, smoothed_y]
         
     
@@ -1151,9 +1151,9 @@ class AbstractFighter():
     This function checks if the player has Smashed in a direction. It does this by noting if the direction was
     pressed recently and is now above a threshold
     """
-    def checkSmash(self,direction):
+    def checkSmash(self,_direction):
         #TODO different for buttons than joysticks
-        return self.keyBuffered(direction, 4, 1.0)
+        return self.keyBuffered(_direction, 4, 1.0)
     
     """
     This checks for keys that are currently being held, whether or not they've actually been pressed recently.
@@ -1163,9 +1163,9 @@ class AbstractFighter():
     If you are looking for a button PRESS, use one of the input methods provided. If you are looking for IF A KEY 
     IS STILL BEING HELD, this is your function.
     """
-    def keysContain(self,key,threshold=0.1):
-        if key in self.keys_held:
-            return self.keys_held[key] >= threshold
+    def keysContain(self,_key,_threshold=0.1):
+        if _key in self.keys_held:
+            return self.keys_held[_key] >= _threshold
         return False
     
     """
@@ -1181,12 +1181,12 @@ class AbstractFighter():
         if self.facing == 1: return ('right','left')
         else: return ('left','right')
         
-    def draw(self,screen,offset,scale):
-        if (settingsManager.getSetting('showSpriteArea')): spriteManager.RectSprite(self.rect).draw(screen, offset, scale)
-        rect = self.sprite.draw(screen,offset,scale)
+    def draw(self,_screen,_offset,_scale):
+        if (settingsManager.getSetting('showSpriteArea')): spriteManager.RectSprite(self.rect).draw(_screen, _offset, _scale)
+        rect = self.sprite.draw(_screen,_offset,_scale)
         
-        if self.mask: self.mask.draw(screen,offset,scale)
-        if settingsManager.getSetting('showECB'): self.ecb.draw(screen,offset,scale)
+        if self.mask: self.mask.draw(_screen,_offset,_scale)
+        if settingsManager.getSetting('showECB'): self.ecb.draw(_screen,_offset,_scale)
         return rect
         
     """
@@ -1198,14 +1198,14 @@ class AbstractFighter():
     from "forward". Defaults to 0, which will give either 0 or 180, depending on the direction
     of the fighter.
     """
-    def getForwardWithOffset(self,offSet = 0):
+    def getForwardWithOffset(self,_offSet = 0):
         if self.facing == 1:
-            return offSet
+            return _offSet
         else:
-            return 180 - offSet
+            return 180 - _offSet
 
-    def createMask(self,color,duration,pulse = False,pulseSize = 16):
-        self.mask = spriteManager.MaskSprite(self.sprite,color,duration,pulse, pulseSize)
+    def createMask(self,_color,_duration,_pulse = False,_pulseSize = 16):
+        self.mask = spriteManager.MaskSprite(self.sprite,_color,_duration,_pulse, _pulseSize)
         
     def getDirectionMagnitude(self):
         if self.change_x == 0:
@@ -1228,20 +1228,20 @@ class AbstractFighter():
     This will return a list of all sprites in the given group
     that collide with the fighter, not counting transparency.
     """
-    def getMovementCollisionsWith(self,spriteGroup):
+    def getMovementCollisionsWith(self,_spriteGroup):
         future_rect = self.ecb.current_ecb.rect.copy()
         future_rect.x += self.change_x
         future_rect.y += self.change_y
         collide_sprite = spriteManager.RectSprite(self.ecb.current_ecb.rect.union(future_rect))
-        return filter(lambda r: pathRectIntersects(self.ecb.current_ecb.rect, future_rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collide_sprite, spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.current_ecb.rect, future_rect, q.rect)))
+        return filter(lambda r: pathRectIntersects(self.ecb.current_ecb.rect, future_rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collide_sprite, _spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.current_ecb.rect, future_rect, q.rect)))
 
-    def getSizeCollisionsWith(self,spriteGroup):
-        return sorted(filter(lambda r: intersectPoint(self.ecb.current_ecb.rect, r.rect) != None, pygame.sprite.spritecollide(self.ecb.current_ecb, spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(self.ecb.current_ecb.rect, q.rect)[0]))
+    def getSizeCollisionsWith(self,_spriteGroup):
+        return sorted(filter(lambda r: intersectPoint(self.ecb.current_ecb.rect, r.rect) != None, pygame.sprite.spritecollide(self.ecb.current_ecb, _spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(self.ecb.current_ecb.rect, q.rect)[0]))
 
-    def catchMovement(self, other):
+    def catchMovement(self, _other):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
-        check_rect = other.rect.copy()
+        check_rect = _other.rect.copy()
 
         future_rect = self.ecb.current_ecb.rect.copy()
         future_rect.x += self.change_x
@@ -1252,11 +1252,11 @@ class AbstractFighter():
         my_rect.x += t*(future_rect.x-self.ecb.current_ecb.rect.x)
         my_rect.y += t*(future_rect.y-self.ecb.current_ecb.rect.y)
 
-        if other.solid:
+        if _other.solid:
             contact = intersectPoint(my_rect, check_rect)
             if contact is None:
                 return False
-            v_vel = [self.change_x-other.change_x, self.change_y-other.change_y]
+            v_vel = [self.change_x-_other.change_x, self.change_y-_other.change_y]
             return numpy.dot(contact[1], v_vel) < 0
         elif self.platform_phase <= 0:
             return checkPlatform(my_rect, self.ecb.current_ecb.rect, check_rect, self.change_y)
@@ -1264,19 +1264,19 @@ class AbstractFighter():
             return False
         
 
-    def eject(self, other):
+    def eject(self, _other):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
-        check_rect = other.rect.copy()
+        check_rect = _other.rect.copy()
         #check_rect.centerx -= other.change_x
         #check_rect.centery -= other.change_y
         contact = intersectPoint(self.ecb.current_ecb.rect, check_rect)
         
-        if other.solid:
+        if _other.solid:
             if contact is not None:
                 self.rect.x += contact[0][0]
                 self.rect.y += contact[0][1]
-                return self.reflect(other)
+                return self.reflect(_other)
         else:
             new_prev = self.ecb.current_ecb.rect.copy()
             new_prev.center = self.ecb.previous_ecb.rect.center
@@ -1284,18 +1284,18 @@ class AbstractFighter():
                 if contact is not None:
                     self.rect.x += contact[0][0]
                     self.rect.y += contact[0][1]
-                    return self.reflect(other)
+                    return self.reflect(_other)
         return False
 
-    def reflect(self, other):
+    def reflect(self, _other):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
-        check_rect = other.rect.copy()
+        check_rect = _other.rect.copy()
         contact = intersectPoint(self.ecb.current_ecb.rect, check_rect)
 
         if contact is not None:
             #The contact vector is perpendicular to the axis over which the reflection should happen
-            v_vel = [self.change_x-other.change_x, self.change_y-other.change_y]
+            v_vel = [self.change_x-_other.change_x, self.change_y-_other.change_y]
             if numpy.dot(v_vel, contact[1]) < 0:
                 v_norm = [contact[1][1], -contact[1][0]]
                 dot = numpy.dot(v_norm, v_vel)
@@ -1303,8 +1303,8 @@ class AbstractFighter():
                 ratio = 1 if norm == 0 else dot/(norm*norm)
                 projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
                 elasticity = self.ground_elasticity if contact[1][1] < 0 else self.elasticity
-                self.change_x = projection[0]+elasticity*(projection[0]-v_vel[0])+other.change_x
-                self.change_y = projection[1]+elasticity*(projection[1]-v_vel[1])+other.change_y
+                self.change_x = projection[0]+elasticity*(projection[0]-v_vel[0])+_other.change_x
+                self.change_y = projection[1]+elasticity*(projection[1]-v_vel[1])+_other.change_y
                 return True
         return False
         
@@ -1316,10 +1316,10 @@ class AbstractFighter():
 """
 A helper function to get the X and Y magnitudes from the Direction and Magnitude of a trajectory
 """
-def getXYFromDM(direction,magnitude):
-    rad = math.radians(direction)
-    x = round(math.cos(rad) * magnitude,5)
-    y = -round(math.sin(rad) * magnitude,5)
+def getXYFromDM(_direction,_magnitude):
+    rad = math.radians(_direction)
+    x = round(math.cos(rad) * _magnitude,5)
+    y = -round(math.sin(rad) * _magnitude,5)
     return (x,y)
 
 """
@@ -1327,18 +1327,18 @@ Get the direction between two points. 0 means the second point is to the right o
 90 is straight above, 180 is straight left. Used in some knockback calculations.
 """
 
-def getDirectionBetweenPoints(p1, p2):
-    (x1, y1) = p1
-    (x2, y2) = p2
+def getDirectionBetweenPoints(_p1, _p2):
+    (x1, y1) = _p1
+    (x2, y2) = _p2
     dx = x2 - x1
     dy = y1 - y2
     return (180 * math.atan2(dy, dx)) / math.pi 
 
-def intersectPoint(firstRect, secondRect): 
-    first_points = [firstRect.midtop, firstRect.midbottom, firstRect.midleft, firstRect.midright]
-    second_points = [secondRect.topleft, secondRect.topright, secondRect.bottomleft, secondRect.bottomright]
+def intersectPoint(_firstRect, _secondRect): 
+    first_points = [_firstRect.midtop, _firstRect.midbottom, _firstRect.midleft, _firstRect.midright]
+    second_points = [_secondRect.topleft, _secondRect.topright, _secondRect.bottomleft, _secondRect.bottomright]
 
-    norm = numpy.linalg.norm([firstRect.height, firstRect.width])
+    norm = numpy.linalg.norm([_firstRect.height, _firstRect.width])
     if norm == 0:
         norm = 1
 
@@ -1346,10 +1346,10 @@ def intersectPoint(firstRect, secondRect):
     right_dist = [directionalDisplacement(first_points, second_points, [float(1), float(0)]), [float(1), float(0)]]
     up_dist = [directionalDisplacement(first_points, second_points, [float(0), float(-1)]), [float(0), float(-1)]]
     down_dist = [directionalDisplacement(first_points, second_points, [float(0), float(1)]), [float(0), float(1)]]
-    up_left_dist = [directionalDisplacement(first_points, second_points, [float(-firstRect.height), float(-firstRect.width)]), [float(-firstRect.height)/norm, float(-firstRect.width)/norm]]
-    up_right_dist = [directionalDisplacement(first_points, second_points, [float(firstRect.height), float(-firstRect.width)]), [float(firstRect.height)/norm, float(-firstRect.width)/norm]]
-    down_left_dist = [directionalDisplacement(first_points, second_points, [float(-firstRect.height), float(firstRect.width)]), [float(-firstRect.height)/norm, float(firstRect.width)/norm]]
-    down_right_dist = [directionalDisplacement(first_points, second_points, [float(firstRect.height), float(firstRect.width)]), [float(firstRect.height)/norm, float(firstRect.width)/norm]]
+    up_left_dist = [directionalDisplacement(first_points, second_points, [float(-_firstRect.height), float(-_firstRect.width)]), [float(-_firstRect.height)/norm, float(-_firstRect.width)/norm]]
+    up_right_dist = [directionalDisplacement(first_points, second_points, [float(_firstRect.height), float(-_firstRect.width)]), [float(_firstRect.height)/norm, float(-_firstRect.width)/norm]]
+    down_left_dist = [directionalDisplacement(first_points, second_points, [float(-_firstRect.height), float(_firstRect.width)]), [float(-_firstRect.height)/norm, float(_firstRect.width)/norm]]
+    down_right_dist = [directionalDisplacement(first_points, second_points, [float(_firstRect.height), float(_firstRect.width)]), [float(_firstRect.height)/norm, float(_firstRect.width)/norm]]
 
     min_direction = min(left_dist, right_dist, up_dist, down_dist, up_left_dist, up_right_dist, down_left_dist, down_right_dist, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
     if directionalDisplacement(first_points, second_points, min_direction[1]) < 0:
@@ -1357,26 +1357,26 @@ def intersectPoint(firstRect, secondRect):
     else:
         return min_direction
 
-def checkPlatform(current, previous, platform, yvel):
-    intersect = intersectPoint(current, platform)
-    if platform.top >= previous.bottom-4-yvel and intersect is not None and intersect[1][1] < 0 and current.bottom >= platform.top:
+def checkPlatform(current, _previous, _platform, _yvel):
+    intersect = intersectPoint(_current, _platform)
+    if _platform.top >= _previous.bottom-4-_yvel and intersect is not None and intersect[1][1] < 0 and _current.bottom >= _platform.top:
         return True
     return False
     
-def directionalDisplacement(first_points, second_points, direction):
+def directionalDisplacement(_firstPoints, _secondPoints, _direction):
     #Given a direction to displace in, determine the displacement needed to get it out
-    first_dots = map(lambda x: numpy.dot(x, direction), first_points)
-    second_dots = map(lambda x: numpy.dot(x, direction), second_points)
+    first_dots = map(lambda x: numpy.dot(x, _direction), _firstPoints)
+    second_dots = map(lambda x: numpy.dot(x, _direction), _secondPoints)
     projected_displacement = max(second_dots)-min(first_dots)
-    norm_sqr = 1.0 if direction == [0, 0] else direction[0]*direction[0]+direction[1]*direction[1]
-    return [projected_displacement/norm_sqr*direction[0], projected_displacement/norm_sqr*direction[1]]
+    norm_sqr = 1.0 if _direction == [0, 0] else _direction[0]*_direction[0]+_direction[1]*_direction[1]
+    return [projected_displacement/norm_sqr*_direction[0], projected_displacement/norm_sqr*_direction[1]]
 
 # Returns a 2-entry array representing a range of time when the points and the rect intersect
 # If the range's min is greater than its max, it represents an empty interval
-def projectionIntersects(start_points, end_points, rectPoints, vector):
-    start_dots = map(lambda x: numpy.dot(x, vector), start_points)
-    end_dots = map(lambda x: numpy.dot(x, vector), end_points)
-    rect_dots = map(lambda x: numpy.dot(x, vector), rectPoints)
+def projectionIntersects(_startPoints, _endPoints, _rectPoints, _vector):
+    start_dots = map(lambda x: numpy.dot(x, _vector), _startPoints)
+    end_dots = map(lambda x: numpy.dot(x, _vector), _endPoints)
+    rect_dots = map(lambda x: numpy.dot(x, _vector), _rectPoints)
 
     if min(start_dots) == min(end_dots):
         if min(start_dots) <= max(rect_dots): #.O.|...
@@ -1410,17 +1410,17 @@ def projectionIntersects(start_points, end_points, rectPoints, vector):
 
     return [max(t_mins[0], t_maxs[0], t_open[0]), min(t_mins[1], t_maxs[1], t_open[1])]
 
-def pathRectIntersects(startRect, endRect, rect):
-    if startRect.colliderect(rect):
+def pathRectIntersects(_startRect, _endRect, _rect):
+    if _startRect.colliderect(_rect):
         return 0
-    start_corners = [startRect.midtop, startRect.midbottom, startRect.midleft, startRect.midright]
-    end_corners = [endRect.midtop, endRect.midbottom, endRect.midleft, endRect.midright]
-    rect_corners = [rect.topleft, rect.topright, rect.bottomleft, rect.bottomright]
+    start_corners = [_startRect.midtop, _startRect.midbottom, _startRect.midleft, _startRect.midright]
+    end_corners = [_endRect.midtop, _endRect.midbottom, _endRect.midleft, _endRect.midright]
+    rect_corners = [_rect.topleft, _rect.topright, _rect.bottomleft, _rect.bottomright]
 
     horizontal_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [1, 0])
     vertical_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [0, 1])
-    downward_diagonal_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [startRect.height, startRect.width])
-    upward_diagonal_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [-startRect.height, startRect.width])
+    downward_diagonal_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [_startRect.height, _startRect.width])
+    upward_diagonal_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [-_startRect.height, _startRect.width])
 
     total_intersects = [max(horizontal_intersects[0], vertical_intersects[0], downward_diagonal_intersects[0], upward_diagonal_intersects[0], 0), min(horizontal_intersects[1], vertical_intersects[1], downward_diagonal_intersects[1], upward_diagonal_intersects[1], 1)]
     if total_intersects[0] > total_intersects[1]:
@@ -1443,7 +1443,7 @@ class InputBuffer():
     def __init__(self):
         self.buffer = [[]]
         self.working_buff = []
-        self.lastIndex = 0
+        self.last_index = 0
       
     """
     Pushes the buttons for the frame into the buffer, then extends the index by one.
@@ -1451,15 +1451,15 @@ class InputBuffer():
     def push(self):
         self.buffer.append(dict(self.working_buff))
         self.working_buff = []
-        self.lastIndex += 1
+        self.last_index += 1
                 
     """
     Get a sub-buffer of N frames
     """
-    def getLastNFrames(self,n):
+    def getLastNFrames(self,_n):
         ret_buffer = []
-        if n > self.lastIndex: n = self.lastIndex
-        for i in range(self.lastIndex,self.lastIndex - n,-1):
+        if _n > self.last_index: _n = self.last_index
+        for i in range(self.last_index,self.last_index - _n,-1):
             ret_buffer.append(self.buffer[i])
         return ret_buffer
     
@@ -1467,8 +1467,8 @@ class InputBuffer():
     put a key into the current working buffer. The working buffer is all of the inputs for
     one frame, before the frame is actually executed.
     """
-    def append(self,key):
-        self.working_buff.append(key)
+    def append(self,_key):
+        self.working_buff.append(_key)
 
 
 ########################################################
@@ -1481,8 +1481,8 @@ be used for platform collision, and it'll know its previous location to know whi
 it's coming from.
 """
 class ECB():
-    def __init__(self,actor):
-        self.actor = actor
+    def __init__(self,_actor):
+        self.actor = _actor
 
         self.current_ecb = spriteManager.RectSprite(self.actor.sprite.boundingRect.copy(), pygame.Color('#ECB134'))
         self.original_size = self.current_ecb.rect.size
@@ -1495,7 +1495,7 @@ class ECB():
     xoff is the offset from the center of the x-bar, where 0 is dead center, negative is left and positive is right
     yoff is the offset from the center of the y-bar, where 0 is dead center, negative is up and positive is down
     """
-    def resize(self,height,width,center,xoff,yoff):
+    def resize(self,_height,_width,_center,_xoff,_yoff):
         pass
     
     """
@@ -1507,8 +1507,8 @@ class ECB():
     """
     This one moves the ECB without resizing it.
     """
-    def move(self,newCenter):
-        self.current_ecb.rect.center = newCenter
+    def move(self,_newCenter):
+        self.current_ecb.rect.center = _newCenter
     
     """
     This stores the previous location of the ECB
@@ -1538,6 +1538,6 @@ class ECB():
         self.current_ecb.rect.x += offsets[0]
         self.current_ecb.rect.y += offsets[1]
         
-    def draw(self,screen,offset,scale):
-        self.current_ecb.draw(screen,self.actor.game_state.stageToScreen(self.current_ecb.rect),scale)
-        self.previous_ecb.draw(screen,self.actor.game_state.stageToScreen(self.previous_ecb.rect),scale)
+    def draw(self,_screen,_offset,_scale):
+        self.current_ecb.draw(_screen,self.actor.game_state.stageToScreen(self.current_ecb.rect),_scale)
+        self.previous_ecb.draw(_screen,self.actor.game_state.stageToScreen(self.previous_ecb.rect),_scale)

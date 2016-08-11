@@ -4,24 +4,24 @@ import math
 import pprint
 
 class CPUplayer(controller.Controller):
-    def __init__(self,bindings):
-        controller.Controller.__init__(self,bindings)
+    def __init__(self,_bindings):
+        controller.Controller.__init__(self,_bindings)
         self.mode = 'duckling'
         self.jump_last_frame = 0
         self.type = 'CPU'
         
-    def getDistanceTo(self,target):
+    def getDistanceTo(self,_target):
         sx,sy = self.fighter.rect.center
-        tx,ty = target.rect.center
+        tx,ty = _target.rect.center
         return (tx - sx, ty - sy)
 
     def passInputs(self):
         self.update()
         controller.Controller.passInputs(self)
 
-    def getPathDistance(self, start_point, end_point):
+    def getPathDistance(self, _startPoint, _endPoint):
         import engine.abstractFighter as abstractFighter
-        nodes = [start_point, end_point]
+        nodes = [_startPoint, _endPoint]
         solid_list = []
         for platform in self.fighter.game_state.platform_list:
             if platform.solid:
@@ -35,7 +35,7 @@ class CPUplayer(controller.Controller):
         open_set = set([0])
         came_from = dict()
         dists = {0: 0}
-        estimates = {0: math.sqrt((start_point[0]-end_point[0])**2+(start_point[1]-end_point[1])**2)}
+        estimates = {0: math.sqrt((_startPoint[0]-_endPoint[0])**2+(_startPoint[1]-_endPoint[1])**2)}
 
         while (len(open_set) > 0):
             current = min(filter(lambda n: n[0] in open_set, estimates.items()), key=lambda x: x[1])[0] #Current now has the farthest-off point

@@ -96,11 +96,11 @@ class Stage():
     """
     Centers the camera on the given point
     """    
-    def centerCamera(self,center):
+    def centerCamera(self,_center):
         # First, build the rect, then center it
         self.camera_preferred_position.width  = round(settingsManager.getSetting('windowWidth')  * self.preferred_zoom_level)
         self.camera_preferred_position.height = round(settingsManager.getSetting('windowHeight') * self.preferred_zoom_level)
-        self.camera_preferred_position.center = center
+        self.camera_preferred_position.center = _center
         
         # If it's too far to one side, fix it.
         if self.camera_preferred_position.left < self.camera_maximum.left: self.camera_preferred_position.left = self.camera_maximum.left
@@ -113,14 +113,14 @@ class Stage():
     If Center is not given, will shift the camera by the given x and y
     If Center is True, will center the camera on the given x and y
     """
-    def moveCamera(self,x,y,center=False):
-        if center:
+    def moveCamera(self,_x,_y,_center=False):
+        if _center:
             new_rect = self.camera_preferred_position.copy()
-            new_rect.center = [x,y]
+            new_rect.center = [_x,_y]
         else:
             new_rect = self.camera_preferred_position.copy()
-            new_rect.x += x
-            new_rect.y += y
+            new_rect.x += _x
+            new_rect.y += _y
         self.camera_preferred_position = new_rect
         
     
@@ -182,9 +182,9 @@ class Stage():
     Calculates the port on screen of a given rect on the stage.
     These are the coordinates that will be passed to draw.
     """    
-    def stageToScreen(self,rect):
-        x = rect.x - self.camera_position.x
-        y = rect.y - self.camera_position.y
+    def stageToScreen(self,_rect):
+        x = _rect.x - self.camera_position.x
+        y = _rect.y - self.camera_position.y
         return (x,y)
     
     """
@@ -209,27 +209,27 @@ class Stage():
     """
     Draws the background elements in order.
     """
-    def drawBG(self,screen):
+    def drawBG(self,_screen):
         rects = []
         for sprite,paralax in self.background_sprites:
             x = sprite.rect.x - (self.camera_position.x * paralax)
             y = sprite.rect.y - (self.camera_position.y)
-            rect = sprite.draw(screen,(x,y),self.getScale())
+            rect = sprite.draw(_screen,(x,y),self.getScale())
             if rect: rects.append(rect)
         return rects
             
-    def drawFG(self,screen):
+    def drawFG(self,_screen):
         rects = []
         if settingsManager.getSetting('showPlatformLines'):
             for plat in self.platform_list: 
                 platSprite = spriteManager.RectSprite(pygame.Rect(plat.rect.topleft,plat.rect.size))
-                rect = platSprite.draw(screen,self.stageToScreen(platSprite.rect),self.getScale())
+                rect = platSprite.draw(_screen,self.stageToScreen(platSprite.rect),self.getScale())
                 if rect: rects.append(rect)
         #for ledge in self.platform_ledges:
             #ledgeSprite = spriteObject.RectSprite(ledge.rect.topleft,ledge.rect.size,[0,0,255])
             #ledgeSprite.draw(screen,self.stageToScreen(ledge.rect),self.getScale())
         for sprite in self.foreground_sprites:
-            rect = sprite.draw(screen,self.stageToScreen(sprite.rect),self.getScale())
+            rect = sprite.draw(_screen,self.stageToScreen(sprite.rect),self.getScale())
             if rect: rects.append(rect)
         return rects
     
@@ -237,8 +237,8 @@ class Stage():
     Adds an object to the background. Optionally pass a paralax factor which determines how much
     it is affected by paralax. 1.0 is full scrolling with screen, 0.0 is no scrolling.
     """
-    def addToBackground(self,sprite,paralaxFactor = 1.0):
-        self.background_sprites.append((sprite,paralaxFactor))
+    def addToBackground(self,_sprite,_paralaxFactor = 1.0):
+        self.background_sprites.append((_sprite,_paralaxFactor))
 """
 Platforms for the stage.
 Given two points (as a tuple of XY coordinates), it will
@@ -248,63 +248,63 @@ is grabble, so a (True,False) would mean the left edge is grabbable,
 but the right edge is not.
 """
 class Platform(pygame.sprite.Sprite):
-    def __init__(self,left_point, right_point,grabbable = (False,False)):
+    def __init__(self,_leftPoint, _rightPoint,_grabbable = (False,False)):
         pygame.sprite.Sprite.__init__(self)
-        self.left_point = left_point
-        self.right_point = right_point
-        self.x_dist = max(1,right_point[0] - left_point[0])
-        self.y_dist = max(1,right_point[1] - left_point[1])
-        self.angle = self.getDirectionBetweenPoints(left_point, right_point)
+        self.left_point = _leftPoint
+        self.right_point = _rightPoint
+        self.x_dist = max(1,_rightPoint[0] - _leftPoint[0])
+        self.y_dist = max(1,_rightPoint[1] - _leftPoint[1])
+        self.angle = self.getDirectionBetweenPoints(_leftPoint, _rightPoint)
         self.solid = True
         self.change_x = 0
         self.change_y = 0
         
         self.players_on = []
-        self.rect = pygame.Rect([left_point[0],min(left_point[1],right_point[1])], [self.x_dist,self.y_dist])
+        self.rect = pygame.Rect([_leftPoint[0],min(_leftPoint[1],_rightPoint[1])], [self.x_dist,self.y_dist])
         
         left_ledge = None
         right_ledge = None
-        if grabbable[0]: left_ledge = Ledge(self,'left')
-        if grabbable[1]: right_ledge = Ledge(self,'right')
+        if _grabbable[0]: left_ledge = Ledge(self,'left')
+        if _grabbable[1]: right_ledge = Ledge(self,'right')
         self.ledges = [left_ledge,right_ledge]
         
-    def playerCollide(self,player):
-        self.players_on.append(player)
+    def playerCollide(self,_player):
+        self.players_on.append(_player)
     
-    def playerLeaves(self,player):
-        self.players_on.remove(player)
+    def playerLeaves(self,_player):
+        self.players_on.remove(_player)
     
-    def ledgeGrabbed(self,fighter):
+    def ledgeGrabbed(self,_fighter):
         pass
         
-    def getDirectionBetweenPoints(self, p1, p2):
-        (x1, y1) = p1
-        (x2, y2) = p2
+    def getDirectionBetweenPoints(self, _p1, _p2):
+        (x1, y1) = _p1
+        (x2, y2) = _p2
         dx = x2 - x1
         dy = y1 - y2
         return (180 * math.atan2(dy, dx)) / math.pi
     
-    def getXYfromDM(self, direction,magnitude):
-        rad = math.radians(direction)
-        x = round(math.cos(rad) * magnitude,5)
-        y = -round(math.sin(rad) * magnitude,5)
+    def getXYfromDM(self, _direction,_magnitude):
+        rad = math.radians(_direction)
+        x = round(math.cos(rad) * _magnitude,5)
+        y = -round(math.sin(rad) * _magnitude,5)
         return (x,y)
     
 class PassthroughPlatform(Platform):
-    def __init__(self,left_point,right_point,grabbable = (False,False)):
-        Platform.__init__(self,left_point,right_point,grabbable)
+    def __init__(self,_leftPoint,_rightPoint,_grabbable = (False,False)):
+        Platform.__init__(self,_leftPoint,_rightPoint,_grabbable)
         self.solid = False 
         
 class MovingPlatform(Platform):
-    def __init__(self,left_point,right_point,end_point,moveSpeed = 1, grabbable = (False,False), solid = False):
-        Platform.__init__(self, left_point, right_point, grabbable)
-        self.solid = solid
+    def __init__(self,_leftPoint,_rightPoint,_endPoint,_moveSpeed = 1, _grabbable = (False,False), _solid = False):
+        Platform.__init__(self, _leftPoint, _rightPoint, _grabbable)
+        self.solid = _solid
         
         self.start_point = self.rect.center
-        self.end_point = end_point
+        self.end_point = _endPoint
         
         self.direction = self.getDirectionBetweenPoints(self.start_point, self.end_point)
-        self.speed = moveSpeed
+        self.speed = _moveSpeed
         self.delta_x, self.delta_y = self.getXYfromDM(self.direction,self.speed)
         self.change_x = 0
         self.change_y = 0
@@ -351,12 +351,12 @@ It has a parent platform, and a side of that platform.
 Most of the attributes of the ledge are altered by the settings.
 """
 class Ledge(pygame.sprite.Sprite):
-    def __init__(self,plat,side):
+    def __init__(self,_plat,_side):
         pygame.sprite.Sprite.__init__(self)
         self.rect = pygame.Rect([0,0],settingsManager.getSetting('ledgeSweetspotSize'))
-        self.side = side
-        if side == 'left': self.rect.midtop = plat.left_point
-        else: self.rect.midtop = [plat.right_point[0], plat.left_point[1]]
+        self.side = _side
+        if side == 'left': self.rect.midtop = _plat.left_point
+        else: self.rect.midtop = [_plat.right_point[0], _plat.left_point[1]]
         self.fighters_grabbed = [] # this is a list in case "Ledge Conflict" is set to "share"
         
     """
@@ -365,27 +365,27 @@ class Ledge(pygame.sprite.Sprite):
     (which will call doLedgeGrab on the fighter). It will also
     pop opponents off if conflict is set to trump.
     """
-    def fighterGrabs(self,fighter):
+    def fighterGrabs(self,_fighter):
         if len(self.fighters_grabbed) == 0: # if no one's on the ledge, we don't care about conflict resolution
-            self.fighters_grabbed.append(fighter)
-            fighter.doLedgeGrab(self)
+            self.fighters_grabbed.append(_fighter)
+            _fighter.doLedgeGrab(self)
         else: # someone's already here
             conflict = settingsManager.getSetting('ledgeConflict')
             if conflict == 'share':
-                self.fighters_grabbed.append(fighter)
-                fighter.doLedgeGrab(self)
+                self.fighters_grabbed.append(_fighter)
+                _fighter.doLedgeGrab(self)
             elif conflict == 'hog':
                 return
             elif conflict == 'trump':
                 for other in self.fighters_grabbed:
                     self.fighterLeaves(other)
                     other.doGetTrumped()
-                self.fighters_grabbed.append(fighter)
-                fighter.doLedgeGrab(self)
+                self.fighters_grabbed.append(_fighter)
+                _fighter.doLedgeGrab(self)
     
     """
     A simple wrapper function to take someone off of the
     ledge grab list.
     """
-    def fighterLeaves(self,fighter):
-        self.fighters_grabbed.remove(fighter)
+    def fighterLeaves(self,_fighter):
+        self.fighters_grabbed.remove(_fighter)

@@ -9,11 +9,11 @@ import pygame
 class ForwardSpecial(action.Action):
     def __init__(self):
         action.Action.__init__(self, 100)
-        self.spriteImage = 0
+        self.sprite_image = 0
         self.sprite_rate = 0
-        self.shouldContinue = True
+        self.should_continue = True
 
-    def setUp(self, actor):
+    def setUp(self, _actor):
         #TODO Attribute checking
         variables = {'center': [0,0],
                      'size': [80,80],
@@ -26,37 +26,37 @@ class ForwardSpecial(action.Action):
                      'transcendence': -1,
                      'priority': -7
                      }
-        self.chainHitbox = hitbox.AutolinkHitbox(actor, hitbox.HitboxLock(), variables)
-        self.flingHitbox = self.sideSpecialHitbox(actor)
-        self.numFrames = 0
+        self.chain_hitbox = hitbox.AutolinkHitbox(_actor, hitbox.HitboxLock(), variables)
+        self.fling_hitbox = self.sideSpecialHitbox(_actor)
+        self.num_frames = 0
         self.ecb_offset = [0,7]
         self.ecb_size = [64, 78]
-        if actor.sideSpecialUses == 1:
-            actor.sideSpecialUses = 0
+        if _actor.sideSpecialUses == 1:
+            _actor.sideSpecialUses = 0
         else:
-            self.shouldContinue = False
+            self.should_continue = False
             return
-        actor.change_x = 0
-        actor.preferred_xspeed = 0
-        actor.flinch_knockback_threshold = 4
-        actor.changeSprite("nair",0)
+        _actor.change_x = 0
+        _actor.preferred_xspeed = 0
+        _actor.flinch_knockback_threshold = 4
+        _actor.changeSprite("nair",0)
     
-    def onClank(self,actor):
-        self.chainHitbox.damage = 0
-        self.chainHitbox.base_knockback = 0
-        self.chainHitbox.knockback_growth = 0
-        self.flingHitbox.priority = -9999
-        self.chainHitbox.base_hitstun = 0
-        self.flingHitbox.damage = 0
-        self.flingHitbox.base_knockback = 0
-        self.flingHitbox.knockback_growth = 0
-        self.flingHitbox.priority = -9999
-        self.flingHitbox.base_hitstun = 0
+    def onClank(self,_actor):
+        self.chain_hitbox.damage = 0
+        self.chain_hitbox.base_knockback = 0
+        self.chain_hitbox.knockback_growth = 0
+        self.fling_hitbox.priority = -9999
+        self.chain_hitbox.base_hitstun = 0
+        self.fling_hitbox.damage = 0
+        self.fling_hitbox.base_knockback = 0
+        self.fling_hitbox.knockback_growth = 0
+        self.fling_hitbox.priority = -9999
+        self.fling_hitbox.base_hitstun = 0
 
-        actor.landing_lag = 60
+        _actor.landing_lag = 60
     
     class sideSpecialHitbox(hitbox.DamageHitbox):
-        def __init__(self,actor):
+        def __init__(self,_actor):
             variables = {'center':[0,0],
                          'size':[80,80],
                          'damage':6,
@@ -66,97 +66,97 @@ class ForwardSpecial(action.Action):
                          'shield_multiplier':10,
                          'hitlag_multiplier':2
                          }
-            hitbox.DamageHitbox.__init__(self, actor, hitbox.HitboxLock(), variables)
+            hitbox.DamageHitbox.__init__(self, _actor, hitbox.HitboxLock(), variables)
             
-        def onCollision(self, other):
-            hitbox.Hitbox.onCollision(self, other)
-            if 'AbstractFighter' in list(map(lambda x:x.__name__,other.__class__.__bases__)) + [other.__class__.__name__]:
-                if other.lockHitbox(self):
+        def onCollision(self, _other):
+            hitbox.Hitbox.onCollision(self, _other)
+            if 'AbstractFighter' in list(map(lambda x:x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
+                if _other.lockHitbox(self):
                     if self.article is None:
                         self.owner.applyPushback(self.damage/4.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
-                    if other.grounded:
-                        other.applyKnockback(self.damage, 0, 0, 0, 1, 1)
-                        (otherDirect,_) = other.getDirectionMagnitude()
-                        other.doTrip(50, other.getForwardWithOffset(otherDirect))
+                    if _other.grounded:
+                        _other.applyKnockback(self.damage, 0, 0, 0, 1, 1)
+                        (otherDirect,_) = _other.getDirectionMagnitude()
+                        _other.doTrip(50, _other.getForwardWithOffset(otherDirect))
                     else:
-                        other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier)
+                        _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier)
                             
-    def stateTransitions(self, actor):
-        if not self.shouldContinue:
-            actor.doAction('Fall')
-        if actor.grounded == False and self.frame >= 17:
-            baseActions.grabLedges(actor)
+    def stateTransitions(self, _actor):
+        if not self.should_continue:
+            _actor.doAction('Fall')
+        if _actor.grounded == False and self.frame >= 17:
+            baseActions.grabLedges(_actor)
 
-    def tearDown(self, actor, newAction):
-        self.chainHitbox.kill()
-        self.flingHitbox.kill()
-        actor.flinch_knockback_threshold = 0
-        actor.preferred_xspeed = 0
+    def tearDown(self, _actor, _newAction):
+        self.chain_hitbox.kill()
+        self.fling_hitbox.kill()
+        _actor.flinch_knockback_threshold = 0
+        _actor.preferred_xspeed = 0
 
-    def update(self, actor):
-        if not self.shouldContinue:
+    def update(self, _actor):
+        if not self.should_continue:
             return
-        if actor.grounded:
-            actor.sideSpecialUses = 1
-        actor.changeSpriteImage(self.spriteImage%16)
-        actor.hurtbox.rect.width = 64
-        actor.hurtbox.rect.height = 64
-        actor.hurtbox.rect.center = actor.sprite.boundingRect.center
-        actor.accel(actor.var['air_control'])
+        if _actor.grounded:
+            _actor.sideSpecialUses = 1
+        _actor.changeSpriteImage(self.sprite_image%16)
+        _actor.hurtbox.rect.width = 64
+        _actor.hurtbox.rect.height = 64
+        _actor.hurtbox.rect.center = _actor.sprite.boundingRect.center
+        _actor.accel(_actor.var['air_control'])
         if self.frame <= self.last_frame-2:
-            self.spriteImage += 1
+            self.sprite_image += 1
             if self.frame <= 16:
-                actor.preferred_xspeed = 0
-                actor.change_x = 0
-                if actor.change_y > 2:
-                    actor.change_y = 2
-                actor.preferred_yspeed = 2
-                if actor.keysContain('special') and self.frame == 16 and self.last_frame < 240:
+                _actor.preferred_xspeed = 0
+                _actor.change_x = 0
+                if _actor.change_y > 2:
+                    _actor.change_y = 2
+                _actor.preferred_yspeed = 2
+                if _actor.keysContain('special') and self.frame == 16 and self.last_frame < 240:
                     self.last_frame += 1
                     self.frame -= 1
             else: #Actually launch forwards
-                actor.preferred_yspeed = actor.var['max_fall_speed']
-                self.numFrames += 1
-                self.chainHitbox.update()
-                actor.active_hitboxes.add(self.chainHitbox)
-                (key, invkey) = actor.getForwardBackwardKeys()
+                _actor.preferred_yspeed = _actor.var['max_fall_speed']
+                self.num_frames += 1
+                self.chain_hitbox.update()
+                _actor.active_hitboxes.add(self.chain_hitbox)
+                (key, invkey) = _actor.getForwardBackwardKeys()
                 if self.frame == 17:
-                    actor.setSpeed(actor.var['run_speed'], actor.getForwardWithOffset(0))
-                    actor.change_y = -12
-                if self.spriteImage%6 == 0:
-                    self.chainHitbox.hitbox_lock = hitbox.HitboxLock()
-                if actor.keysContain(invkey):
-                    actor.preferred_xspeed = actor.var['run_speed']//2*actor.facing
+                    _actor.setSpeed(_actor.var['run_speed'], _actor.getForwardWithOffset(0))
+                    _actor.change_y = -12
+                if self.sprite_image%6 == 0:
+                    self.chain_hitbox.hitbox_lock = hitbox.HitboxLock()
+                if _actor.keysContain(invkey):
+                    _actor.preferred_xspeed = _actor.var['run_speed']//2*_actor.facing
                     self.frame += 2
                     if (self.frame > self.last_frame-2):
                         self.frame = self.last_frame-2
-                elif actor.keysContain(key):
-                    actor.preferred_xspeed = actor.var['run_speed']*actor.facing
+                elif _actor.keysContain(key):
+                    _actor.preferred_xspeed = _actor.var['run_speed']*_actor.facing
                     if (self.frame > self.last_frame-2):
                         self.frame = self.last_frame-2
                 else:
-                    actor.preferred_xspeed = actor.var['run_speed']*3//4*actor.facing
+                    _actor.preferred_xspeed = _actor.var['run_speed']*3//4*_actor.facing
                     self.frame += 1
                     if (self.frame > self.last_frame-2):
                         self.frame = self.last_frame-2
                 
         else:
             if self.frame == self.last_frame-1:
-                self.flingHitbox.damage += int(float(self.numFrames)/float(24))
-                self.flingHitbox.priority += int(float(self.numFrames)/float(24))
-                self.flingHitbox.base_knockback += float(self.numFrames)/float(24)
-                self.flingHitbox.update()
-                actor.active_hitboxes.add(self.flingHitbox)
+                self.fling_hitbox.damage += int(float(self.num_frames)/float(24))
+                self.fling_hitbox.priority += int(float(self.num_frames)/float(24))
+                self.fling_hitbox.base_knockback += float(self.num_frames)/float(24)
+                self.fling_hitbox.update()
+                _actor.active_hitboxes.add(self.fling_hitbox)
             else:
-                self.flingHitbox.kill()
-            self.chainHitbox.kill()
+                self.fling_hitbox.kill()
+            self.chain_hitbox.kill()
             if self.frame >= self.last_frame:
-                if actor.grounded:
-                    actor.landing_lag = 25
-                    actor.doAction('Land')
+                if _actor.grounded:
+                    _actor.landing_lag = 25
+                    _actor.doAction('Land')
                 else:
-                    actor.landing_lag = 25
-                    actor.doAction('Fall')
+                    _actor.landing_lag = 25
+                    _actor.doAction('Fall')
 
         self.frame += 1
             
@@ -166,10 +166,10 @@ class UpSpecial(action.Action):
         self.angle = 90
         self.sprite_rate = 0
         
-    def setUp(self, actor):
-        action.Action.setUp(self,actor)
-        sharedLock = hitbox.HitboxLock()
-        self.launchHitbox = hitbox.DamageHitbox(actor,sharedLock,
+    def setUp(self, _actor):
+        action.Action.setUp(self,_actor)
+        shared_lock = hitbox.HitboxLock()
+        self.launchHitbox = hitbox.DamageHitbox(_actor,shared_lock,
                                                 {'center':[0,0],
                                                  'size':[64,64],
                                                  'damage':14,
@@ -178,7 +178,7 @@ class UpSpecial(action.Action):
                                                  'trajectory': 90,
                                                  'hitstun_multiplier':2.8                                                 
                                                  })
-        self.flyingHitbox = hitbox.DamageHitbox(actor,sharedLock,
+        self.flyingHitbox = hitbox.DamageHitbox(_actor,shared_lock,
                                                 {'center':[0,0],
                                                  'size':[64,64],
                                                  'damage':8,
@@ -187,71 +187,71 @@ class UpSpecial(action.Action):
                                                  'trajectory': 90,
                                                  'hitstun_multiplier':2                                                
                                                  })
-        actor.changeSprite('dtilt')
-        actor.changeSpriteImage(4)
+        _actor.changeSprite('dtilt')
+        _actor.changeSpriteImage(4)
         
         
-    def tearDown(self, actor, newAction):
-        action.Action.tearDown(self,actor,newAction)
+    def tearDown(self, _actor, _newAction):
+        action.Action.tearDown(self,_actor,_newAction)
         self.launchHitbox.kill()
         self.flyingHitbox.kill()
-        actor.unRotate()
-        actor.preferred_yspeed = actor.var['max_fall_speed']
+        _actor.unRotate()
+        _actor.preferred_yspeed = _actor.var['max_fall_speed']
     
-    def stateTransitions(self,actor):
+    def stateTransitions(self,_actor):
         if self.frame < 19:
-            actor.change_y = 0
-            actor.preferred_yspeed = 0
+            _actor.change_y = 0
+            _actor.preferred_yspeed = 0
         if self.frame > 19:
-            baseActions.grabLedges(actor)
+            baseActions.grabLedges(_actor)
         if self.frame >= 45:
-            actor.preferred_yspeed = actor.var['max_fall_speed']
-            baseActions.airControl(actor)
+            _actor.preferred_yspeed = _actor.var['max_fall_speed']
+            baseActions.airControl(_actor)
     
-    def update(self,actor):
-        actor.landing_lag = 10
-        if actor.grounded:
-            actor.accel(actor.var['static_grip'])
+    def update(self,_actor):
+        _actor.landing_lag = 10
+        if _actor.grounded:
+            _actor.accel(_actor.var['static_grip'])
         else:
-            actor.accel(actor.var['air_control'])
+            _actor.accel(_actor.var['air_control'])
         if self.frame <= 19:
-            actor.unRotate()
-            actor.change_x = 0
-            actor.change_y = 0
-            self.angle = math.atan2(-actor.getSmoothedInput()[1]+0.0001, actor.getSmoothedInput()[0])*180.0/math.pi
+            _actor.unRotate()
+            _actor.change_x = 0
+            _actor.change_y = 0
+            self.angle = math.atan2(-_actor.getSmoothedInput()[1]+0.0001, _actor.getSmoothedInput()[0])*180.0/math.pi
             direction = abstractFighter.getXYFromDM(self.angle, 1.0)
-            actor.rotateSprite(self.angle)
+            _actor.rotateSprite(self.angle)
         if self.frame == 2:
-            actor.changeSpriteImage(5)
+            _actor.changeSpriteImage(5)
         if self.frame == 4:
-            actor.changeSpriteImage(6)
+            _actor.changeSpriteImage(6)
         if self.frame == 6:
-            actor.changeSpriteImage(7)
+            _actor.changeSpriteImage(7)
         if self.frame == 8:
-            actor.changeSpriteImage(8)
+            _actor.changeSpriteImage(8)
         if self.frame == 11:
-            actor.changeSpriteImage(9)
+            _actor.changeSpriteImage(9)
         if self.frame == 19:
             self.launchHitbox.trajectory = self.angle
             self.flyingHitbox.trajectory = self.angle
-            actor.active_hitboxes.add(self.launchHitbox)
-            actor.changeSprite('airjump')
+            _actor.active_hitboxes.add(self.launchHitbox)
+            _actor.changeSprite('airjump')
             self.ecb_size = [92, 92]
-            actor.preferred_yspeed = actor.var['max_fall_speed']
-            actor.change_x = direction[0] * 20
-            actor.preferred_xspeed = actor.var['max_air_speed'] * direction[0]
-            actor.change_y = direction[1] * 20
+            _actor.preferred_yspeed = _actor.var['max_fall_speed']
+            _actor.change_x = direction[0] * 20
+            _actor.preferred_xspeed = _actor.var['max_air_speed'] * direction[0]
+            _actor.change_y = direction[1] * 20
         if self.frame == 20:
             self.launchHitbox.kill()
-            actor.active_hitboxes.add(self.flyingHitbox)
+            _actor.active_hitboxes.add(self.flyingHitbox)
         if self.frame == 45:
             self.flyingHitbox.kill()
         if self.frame > 20:
             if self.frame % 2 == 0:
-                actor.changeSpriteImage((self.frame - 15) // 2,loop=True)
+                _actor.changeSpriteImage((self.frame - 15) // 2,_loop=True)
             self.flyingHitbox.update()
         if self.frame == self.last_frame:
-            actor.doAction('Helpless')
+            _actor.doAction('Helpless')
         self.frame += 1
         
 class NeutralAttack(action.Action):
@@ -259,30 +259,30 @@ class NeutralAttack(action.Action):
         action.Action.__init__(self,22)
         self.sprite_rate = 0
     
-    def setUp(self, actor):
-        actor.preferred_xspeed = 0
-        actor.changeSprite("neutral",0)
-        self.jabHitbox = self.outwardHitbox(actor)
+    def setUp(self, _actor):
+        _actor.preferred_xspeed = 0
+        _actor.changeSprite("neutral",0)
+        self.jab_hitbox = self.outwardHitbox(_actor)
         
-    def tearDown(self, actor, new):
-        self.jabHitbox.kill()
+    def tearDown(self, _actor, _newAction):
+        self.jab_hitbox.kill()
 
-    def onClank(self,actor):
-        actor.doAction('NeutralAction')
+    def onClank(self,_actor):
+        _actor.doAction('NeutralAction')
     
-    def stateTransitions(self, actor):
-        if not actor.grounded:
-            actor.doAction('Fall')
+    def stateTransitions(self, _actor):
+        if not _actor.grounded:
+            _actor.doAction('Fall')
         elif self.frame == self.last_frame:
-            if actor.keysContain('attack') and not actor.keysContain('left') and not actor.keysContain('right') and not actor.keysContain('up') and not actor.keysContain('down'):
-                self.jabHitbox.hitbox_lock = hitbox.HitboxLock()
+            if _actor.keysContain('attack') and not _actor.keysContain('left') and not _actor.keysContain('right') and not _actor.keysContain('up') and not _actor.keysContain('down'):
+                self.jab_hitbox.hitbox_lock = hitbox.HitboxLock()
                 self.frame = 0
                 
     # Here's an example of creating an anonymous hitbox class.
     # This one calculates its trajectory based off of the angle between the two fighters.
     # Since this hitbox if specifically for this attack, we can hard code in the values.
     class outwardHitbox(hitbox.DamageHitbox):
-        def __init__(self,actor):
+        def __init__(self,_actor):
             variables = {'center': [0,0],
                          'size': [80,80],
                          'damage': 3,
@@ -290,34 +290,34 @@ class NeutralAttack(action.Action):
                          'knockback_growth':0.02,
                          'trajectory':20
                          }
-            hitbox.DamageHitbox.__init__(self, actor, hitbox.HitboxLock(), variables)
+            hitbox.DamageHitbox.__init__(self, _actor, hitbox.HitboxLock(), variables)
             
-        def onCollision(self,other):
-            hitbox.Hitbox.onCollision(self, other)
-            self.trajectory = abstractFighter.getDirectionBetweenPoints(self.owner.rect.midbottom, other.rect.center)
-            hitbox.DamageHitbox.onCollision(self, other)
+        def onCollision(self,_other):
+            hitbox.Hitbox.onCollision(self, _other)
+            self.trajectory = abstractFighter.getDirectionBetweenPoints(self.owner.rect.midbottom, _other.rect.center)
+            hitbox.DamageHitbox.onCollision(self, _other)
             
-    def update(self, actor):
+    def update(self, _actor):
         if self.frame < 4:
-            actor.changeSpriteImage(self.frame)
+            _actor.changeSpriteImage(self.frame)
         elif self.frame == 4:
-            self.jabHitbox.update()
-            actor.active_hitboxes.add(self.jabHitbox)
+            self.jab_hitbox.update()
+            _actor.active_hitboxes.add(self.jab_hitbox)
         elif self.frame >= 5 and self.frame <= 8:
-            self.jabHitbox.update()
-            actor.changeSpriteImage(9)
+            self.jab_hitbox.update()
+            _actor.changeSpriteImage(9)
         elif self.frame >= 9 and self.frame <= 10:
-            self.jabHitbox.kill()
-            actor.changeSpriteImage(10)
+            self.jab_hitbox.kill()
+            _actor.changeSpriteImage(10)
         elif self.frame > 10:
-            self.jabHitbox.kill()
+            self.jab_hitbox.kill()
             if not self.frame > 14:
-                actor.changeSpriteImage(self.frame)
-        actor.hurtbox.rect.width -= 16
-        actor.hurtbox.rect.height -= 16
-        actor.hurtbox.rect.midbottom = actor.sprite.boundingRect.midbottom
+                _actor.changeSpriteImage(self.frame)
+        _actor.hurtbox.rect.width -= 16
+        _actor.hurtbox.rect.height -= 16
+        _actor.hurtbox.rect.midbottom = _actor.sprite.boundingRect.midbottom
         if self.frame == self.last_frame:
-            actor.doAction('NeutralAction')
+            _actor.doAction('NeutralAction')
         self.frame += 1
 
 class GroundGrab(action.Action):

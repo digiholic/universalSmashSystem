@@ -6,11 +6,11 @@ import settingsManager
 from ast import literal_eval as make_tuple
 
 class ArticleLoader():
-    def __init__(self,owner):
-        self.owner = owner
-        self.base_dir = owner.base_dir
-        xml_path = owner.article_loader_path
-        self.article_path = owner.article_path
+    def __init__(self,_owner):
+        self.owner = _owner
+        self.base_dir = _owner.base_dir
+        xml_path = _owner.article_loader_path
+        self.article_path = _owner.article_path
         if xml_path:
             self.articles_xml_path = os.path.join(self.base_dir,xml_path)
             self.articles_xml_full = ElementTree.parse(self.articles_xml_path)
@@ -19,8 +19,8 @@ class ArticleLoader():
     """
     Returns True if the XML data has the article of the given name.
     """
-    def hasArticle(self,article_name):
-        if self.articles_xml.find(article_name) is None:
+    def hasArticle(self,_articleName):
+        if self.articles_xml.find(_articleName) is None:
             return False
         return True
     
@@ -36,21 +36,21 @@ class ArticleLoader():
     """
     Save all articles to disk, defaults to original location
     """
-    def saveArticles(self,path=None):
-        if not path: path = self.articles_xml_path
-        self.articles_xml_full.write(path)
+    def saveArticles(self,_path=None):
+        if not _path: _path = self.articles_xml_path
+        self.articles_xml_full.write(_path)
         
     """
     Save a given article into the XML over the given name
     """
-    def modifyArticle(self,article_name,newArticle):
+    def modifyArticle(self,_articleName,_newArticle):
         pass
     
     """
     Creates a DynamicArticle from the given XML object
     """
-    def loadArticle(self,article_name):
-        article_xml = self.articles_xml.find(article_name)
+    def loadArticle(self,_articleName):
+        article_xml = self.articles_xml.find(_articleName)
         
         #Check if it's a Python article
         if article_xml is not None and article_xml.find('loadCodeAction') is not None:
@@ -155,11 +155,11 @@ class ArticleLoader():
     Helper method to load a node from XML, and default it to something if the node is not there.
     """
     @staticmethod
-    def loadNodeWithDefault(node,subnode,default):
-        if node is not None:
-            if node.find(subnode) is not None:
-                return node.find(subnode).text
+    def loadNodeWithDefault(_node,_subnode,_default):
+        if _node is not None:
+            if _node.find(_subnode) is not None:
+                return _node.find(_subnode).text
             else:
-                return default
+                return _default
         else:
-            return default
+            return _default

@@ -8,15 +8,15 @@ import xml.dom.minidom as minidom
 import os
 
 class ActionLoader():
-    def __init__(self, base_dir, actions):
-        self.actions_xml_data = os.path.join(base_dir,actions)
-        self.base_dir = base_dir
+    def __init__(self, _baseDir, _actions):
+        self.actions_xml_data = os.path.join(_baseDir,_actions)
+        self.base_dir = _baseDir
         self.actions_xml_full = ElementTree.parse(self.actions_xml_data)
         self.actions_xml = self.actions_xml_full.getroot()
         print('actions_xml: ' + str(self.actions_xml))
     
-    def hasAction(self, action_name):
-        if self.actions_xml.find(action_name) is None:
+    def hasAction(self, _actionName):
+        if self.actions_xml.find(_actionName) is None:
             return False
         return True
     
@@ -26,96 +26,96 @@ class ActionLoader():
             ret.append(item.tag)
         return ret
     
-    def saveActions(self,path=None):
-        if not path: path = self.actions_xml_data
-        self.actions_xml_full.write(path)
+    def saveActions(self,_path=None):
+        if not _path: _path = self.actions_xml_data
+        self.actions_xml_full.write(_path)
     
     """
     This function will take an action name, and a dynamicAction object,
     and rebuild the XML of that action, and then modify that in the actions_xml
     object of the fighter.
     """
-    def modifyAction(self,action_name,newAction):
-        action_xml = self.actions_xml.find(action_name)
+    def modifyAction(self,_actionName,_newAction):
+        action_xml = self.actions_xml.find(_actionName)
         if action_xml is not None:self.actions_xml.remove(action_xml)
         
-        elem = ElementTree.Element(action_name)
+        elem = ElementTree.Element(_actionName)
         
         #Set the base if it's different from normal
-        if newAction.parent:
+        if _newAction.parent:
             #if it's base is different than its name, set base. Otherwise, no need.
-            if not newAction.parent.__name__ == action_name:
+            if not _newAction.parent.__name__ == _actionName:
                 baseElem = ElementTree.Element('base')
-                baseElem.text = newAction.parent.__name__
+                baseElem.text = _newAction.parent.__name__
                 elem.append(baseElem)
         
         #action variables
         #length
         length_elem =  ElementTree.Element('length')
-        length_elem.text = str(newAction.last_frame)
+        length_elem.text = str(_newAction.last_frame)
         elem.append(length_elem)
         #sprite_name
         s_name_elem =  ElementTree.Element('sprite')
-        s_name_elem.text = str(newAction.sprite_name)
+        s_name_elem.text = str(_newAction.sprite_name)
         elem.append(s_name_elem)
         #sprite_rate
         s_rate_elem =  ElementTree.Element('sprite_rate')
-        s_rate_elem.text = str(newAction.base_sprite_rate)
+        s_rate_elem.text = str(_newAction.base_sprite_rate)
         elem.append(s_rate_elem)
         #loop
         loop_elem =  ElementTree.Element('loop')
-        loop_elem.text = str(newAction.loop)
+        loop_elem.text = str(_newAction.loop)
         elem.append(loop_elem)
         
-        if newAction.default_vars:
+        if _newAction.default_vars:
             vars_elem = ElementTree.Element('vars')
-            for tag,val in newAction.default_vars.iteritems():
+            for tag,val in _newAction.default_vars.iteritems():
                 new_elem = ElementTree.Element(tag)
                 new_elem.attrib['type'] = type(val).__name__
                 new_elem.text = str(val)
                 vars_elem.append(new_elem)
             elem.append(vars_elem)
         
-        if len(newAction.set_up_actions) > 0:
+        if len(_newAction.set_up_actions) > 0:
             set_up_elem = ElementTree.Element('setUp')
-            for subact in newAction.set_up_actions:
+            for subact in _newAction.set_up_actions:
                 set_up_elem.append(subact.getXmlElement())
             elem.append(set_up_elem)
-        if len(newAction.tear_down_actions) > 0:
+        if len(_newAction.tear_down_actions) > 0:
             tear_down_elem = ElementTree.Element('tearDown')
-            for subact in newAction.tear_down_actions:
+            for subact in _newAction.tear_down_actions:
                 tear_down_elem.append(subact.getXmlElement())
             elem.append(tear_down_elem)
-        if len(newAction.state_transition_actions) > 0:
+        if len(_newAction.state_transition_actions) > 0:
             transition_elem = ElementTree.Element('transitions')
-            for subact in newAction.state_transition_actions:
+            for subact in _newAction.state_transition_actions:
                 transition_elem.append(subact.getXmlElement())
             elem.append(transition_elem)
-        if len(newAction.actions_on_clank) > 0:
+        if len(_newAction.actions_on_clank) > 0:
             clank_elem = ElementTree.Element('onClank')
-            for subact in newAction.actions_on_clank:
+            for subact in _newAction.actions_on_clank:
                 clank_elem.append(subact.getXmlElement())
             elem.append(clank_elem)
-        if len(newAction.actions_before_frame) > 0:
+        if len(_newAction.actions_before_frame) > 0:
             before_elem = ElementTree.Element('frame')
             before_elem.attrib['number'] = 'before'
-            for subact in newAction.actions_before_frame:
+            for subact in _newAction.actions_before_frame:
                 before_elem.append(subact.getXmlElement())
             elem.append(before_elem)
-        if len(newAction.actions_after_frame) > 0:
+        if len(_newAction.actions_after_frame) > 0:
             after_elem = ElementTree.Element('frame')
             after_elem.attrib['number'] = 'after'
-            for subact in newAction.actions_after_frame:
+            for subact in _newAction.actions_after_frame:
                 after_elem.append(subact.getXmlElement())
             elem.append(after_elem)
-        if len(newAction.actions_at_last_frame) > 0:
+        if len(_newAction.actions_at_last_frame) > 0:
             last_elem = ElementTree.Element('frame')
             last_elem.attrib['number'] = 'last'
-            for subact in newAction.actions_at_last_frame:
+            for subact in _newAction.actions_at_last_frame:
                 last_elem.append(subact.getXmlElement())
             elem.append(last_elem)
         
-        for i,frameList in enumerate(newAction.actions_at_frame):
+        for i,frameList in enumerate(_newAction.actions_at_frame):
             if len(frameList) > 0:
                 frameElem = ElementTree.Element('frame')
                 frameElem.attrib['number'] = str(i)
@@ -123,7 +123,7 @@ class ActionLoader():
                     frameElem.append(subact.getXmlElement())
                 elem.append(frameElem)
         
-        for cond,cond_list in newAction.conditional_actions.iteritems():
+        for cond,cond_list in _newAction.conditional_actions.iteritems():
             if len(cond_list) > 0:
                 cond_elem = ElementTree.Element('conditional')
                 cond_elem.attrib['name'] = str(cond)
@@ -136,9 +136,9 @@ class ActionLoader():
         data = reparsed.toprettyxml(indent="\t")
         self.actions_xml.append(ElementTree.fromstring(data))
             
-    def loadAction(self,action_name):
+    def loadAction(self,_actionName):
         #Load the action XML
-        action_xml = self.actions_xml.find(action_name)
+        action_xml = self.actions_xml.find(_actionName)
         
         #Check if it's a Python action
         if action_xml is not None and action_xml.find('loadCodeAction') is not None:
@@ -153,8 +153,8 @@ class ActionLoader():
             if hasattr(baseActions, action_xml.find('base').text): 
                 class_ = getattr(baseActions, action_xml.find('base').text)
         else:
-            if hasattr(baseActions, action_name):
-                class_ = getattr(baseActions,action_name)
+            if hasattr(baseActions, _actionName):
+                class_ = getattr(baseActions,_actionName)
         
         if class_: base = class_
         else: base = action.Action
@@ -270,11 +270,11 @@ class ActionLoader():
         return dyn_action
     
     @staticmethod
-    def loadNodeWithDefault(node,subnode,default):
-        if node is not None:
-            if node.find(subnode) is not None:
-                return node.find(subnode).text
+    def loadNodeWithDefault(_node,_subnode,_default):
+        if _node is not None:
+            if _node.find(_subnode) is not None:
+                return _node.find(_subnode).text
             else:
-                return default
+                return _default
         else:
-            return default
+            return _default
