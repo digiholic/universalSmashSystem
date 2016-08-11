@@ -49,7 +49,7 @@ class Move(action.Action):
 class Dash(action.Action):
     def __init__(self,_length=1,_runStartFrame=0): 
         action.Action.__init__(self,_length)
-        self.runStartFrame = _runStartFrame
+        self.run_start_frame = _runStartFrame
         
     def setUp(self,_actor):
         if self.sprite_name=="": self.sprite_name = "dash"
@@ -78,7 +78,7 @@ class Dash(action.Action):
         self.frame += 1
         
         if self.frame > self.last_frame: 
-            self.frame = self.runStartFrame
+            self.frame = self.run_start_frame
             
     def stateTransitions(self,_actor):
         dashState(_actor,self.direction)
@@ -427,7 +427,7 @@ class HitStun(action.Action):
                     if _actor.grounded: 
                         _actor.doAction('Prone')
                 else:
-                    actor.landingLag = 40
+                    _actor.landingLag = 40
             else: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
         

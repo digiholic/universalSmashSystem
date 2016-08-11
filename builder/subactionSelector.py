@@ -662,7 +662,7 @@ class TransitionProperties(BasePropertiesFrame):
         self.addVariable(StringVar, 'transition')
         transitionLabel = Label(self,text='Transition State:')
         import engine
-        transitionEntry = OptionMenu(self,self.getVar('transition'),*engine.baseActions.stateDict.keys())
+        transitionEntry = OptionMenu(self,self.getVar('transition'),*engine.baseActions.state_dict.keys())
         
         self.initVars()
         
@@ -715,7 +715,7 @@ class ModifyHitboxProperties(BasePropertiesFrame):
         self.variableList.append((bkbVar,'base_knockback'))
         self.variableList.append((kbgVar,'knockback_growth'))
         self.variableList.append((trajectoryVar,'trajectory'))
-        self.variableList.append((hitstun_multiplierVar,'hitstun_multiplier'))
+        self.variableList.append((hitstunVar,'hitstun_multiplier'))
         
         damageEntry = Spinbox(damageFrame,textvariable=damageVar,from_=0,to=255,increment=0.5,format='%.1f')
         bkbEntry = Spinbox(damageFrame,textvariable=bkbVar,from_=-255,to=255)

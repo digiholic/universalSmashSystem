@@ -114,7 +114,7 @@ class AbstractFighter():
         except:
             self.article_loader_path = ''
             try:
-                self.article_loader = settingsManager.importFromURI(os.path.join(_baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(player_num))
+                self.article_loader = settingsManager.importFromURI(os.path.join(_baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(self.player_num))
             except:
                 self.article_loader = None
             
@@ -160,7 +160,6 @@ class AbstractFighter():
         
         color = self.color_palettes[self.player_num] #TODO: Pick colors
         
-        print(directory,prefix,default_sprite,img_width,color,scale)
         self.sprite = spriteManager.SpriteHandler(directory,prefix,default_sprite,img_width,color,scale)
         
         #try:
@@ -168,7 +167,7 @@ class AbstractFighter():
             actions = self.xml_data.find('actions').text
             self.action_file = actions
             if actions.endswith('.py'):
-                self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),actions,suffix=str(player_num))
+                self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),actions,suffix=str(self.player_num))
             else:
                 self.actions = actionLoader.ActionLoader(_baseDir,actions)
         except:

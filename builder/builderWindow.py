@@ -465,8 +465,6 @@ class ViewerPanel(BuilderPanel):
             action.frame = 0
             while action.frame <= frame:
                 action.updateAnimationOnly(fighter)
-        for hbox in fighter.active_hitboxes:
-            print(hbox.center,hbox.x_offset)
             
     def changeAction(self,*args):
         global action

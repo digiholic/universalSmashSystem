@@ -108,7 +108,7 @@
 	<PlatformDrop>
 		<length>12</length>
 		<sprite>airjump</sprite>
-		<spriterate>-2</spriterate>
+		<sprite_rate>-2</sprite_rate>
 		
 		<vars>
 			<phase_frame type="int">6</phase_frame>
@@ -120,8 +120,6 @@
 		<length>15</length>
 		<sprite>run</sprite>
 		<sprite_rate>3</sprite_rate>
-
-
 		
 		<frame number="0">
 			<if>
@@ -144,7 +142,7 @@
 		<sprite_rate>2</sprite_rate>
 
 		<vars>
-			<runStartFrame type="int">4</runStartFrame>
+			<run_start_frame type="int">4</run_start_frame>
 		</vars>
 		
 		<frame number="4">

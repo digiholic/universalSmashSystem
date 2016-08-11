@@ -5,11 +5,19 @@
 		<length>120</length>
 		<img_width>16</img_width>
 		<origin_point>0,0</origin_point>
-		<facing_direction>1</facing_Direction>
+		<facing_direction>1</facing_direction>
 		
 		<setUp>
 			<createHitbox>
 				<name>SplatHitbox</name>
+				<center>(0,0)</center>
+				<size>(12,12)</size>
+				<damage>3</damage>
+				<base_knockback>2</base_knockback>
+				<knockback_growth>0</knockback_growth>
+				<trajectory>0</trajectory>
+				<hitstun_multiplier>1</hitstun_multiplier>
+				<transcendence>-1</transcendence>
 			</createHitbox>
 			<changeFighterSpeed>
 				<xSpeed relative="True">24</xSpeed>

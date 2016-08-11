@@ -685,7 +685,7 @@ class nextFrame(SubAction):
     subact_group = 'Control'
     
     def execute(self, _action, _actor):
-        action.frame += 1
+        _action.frame += 1
     
     def getDisplayName(self):
         return 'Next Frame'
@@ -772,7 +772,7 @@ class createHitbox(SubAction):
         return 'Create New Hitbox: ' + self.hitbox_name
     
     def getPropertiesPanel(self, _root):
-        return subactionSelector.ModifyHitboxProperties(_root,self,_newHitbox=True)
+        return subactionSelector.ModifyHitboxProperties(_root,self,newHitbox=True)
        
     def getXmlElement(self):
         elem = ElementTree.Element('createHitbox')
@@ -846,7 +846,7 @@ class modifyHitbox(SubAction):
         return 'Modify Hitbox: ' + str(self.hitbox_name)
     
     def getPropertiesPanel(self, _root):
-        return subactionSelector.ModifyHitboxProperties(_root,self,_newHitbox=False)
+        return subactionSelector.ModifyHitboxProperties(_root,self,newHitbox=False)
         
     def getXmlElement(self):
         elem = ElementTree.Element('modifyHitbox')

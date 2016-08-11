@@ -56,7 +56,7 @@
 		<dodge_speed>10</dodge_speed>
 		<friction>0.3</friction>
 		<static_grip>0.3</static_grip>
-                <pivot_grip>0.6</pivot_grip>
+        <pivot_grip>0.6</pivot_grip>
 		<air_resistance>0.2</air_resistance>
 		<air_control>0.2</air_control>
 		<jumps>1</jumps>

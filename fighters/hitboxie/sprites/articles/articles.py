@@ -31,7 +31,7 @@ class SplatArticle(article.AnimatedArticle):
     # Override the onCollision of the hitbox
     def onCollision(self, _other):
         _others_classes = list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]
-        if ('AbstractFighter' in others_classes or 'Platform' in others_classes):
+        if ('AbstractFighter' in _others_classes or 'Platform' in _others_classes):
             self.deactivate()
         #TODO check for verticality of platform landing
             

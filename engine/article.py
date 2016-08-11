@@ -14,7 +14,7 @@ length - if this article has logic or animation, you can set this to be used in 
          just like a fighter's action.
 """
 class DynamicArticle(spriteManager.SheetSprite):
-    def __init__(self,_owner,_sheet,_imgWidth=0,_originPoint=(0,0),_length=1,_spriteRate=0,_startingDirection=0,_drawDepth=1):
+    def __init__(self,_owner,_sheet,_imgWidth=0,_originPoint=(0,0),_length=1,_spriteRate=0,_startingDirection=0,_draw_depth=1):
         self.owner = _owner
         spriteManager.SheetSprite.__init__(self, _sheet, _imgWidth)
         
@@ -23,7 +23,7 @@ class DynamicArticle(spriteManager.SheetSprite):
         self.change_x = 0
         self.change_y = 0
         self.sprite_rate = _spriteRate
-        self.draw_depth = _drawDepth
+        self.draw_depth = _draw_depth
         self.facing = 1
         self.origin_point = _originPoint
         self.starting_direction = _startingDirection
@@ -76,16 +76,20 @@ class DynamicArticle(spriteManager.SheetSprite):
             
         for act in self.actions_after_frame:
             act.execute(self,self)
+        
+        if not self.facing == 0 and not self.facing == self.starting_direction: 
+            self.flipX()
             
         self.frame += 1 
-        
+    
     def activate(self):
         self.owner.articles.add(self)
         self.rect.centerx = self.owner.rect.centerx + self.origin_point[0]
         self.rect.centery = self.owner.rect.centery + self.origin_point[1]
         self.facing = self.owner.facing
-        if not self.facing == 0 and not self.facing == self.starting_direction: self.flipX()
-        for act in self.setUpActions:
+        if not self.facing == 0 and not self.facing == self.starting_direction: 
+            self.flipX()
+        for act in self.set_up_actions:
             act.execute(self,self)
         
     def deactivate(self):
@@ -119,14 +123,14 @@ class DynamicArticle(spriteManager.SheetSprite):
             return 180 - _offSet
     
 class Article(spriteManager.ImageSprite):
-    def __init__(self, _spritePath, _owner, _origin, _length=1, _drawDepth = 1):
+    def __init__(self, _spritePath, _owner, _origin, _length=1, _draw_depth = 1):
         spriteManager.ImageSprite.__init__(self,_spritePath)
         self.rect.center = _origin
         self.owner = _owner
         self.frame = 0
         self.last_frame = _length
         self.tags = []
-        self.draw_depth = _drawDepth
+        self.draw_depth = _draw_depth
         
     def update(self):
         pass
@@ -143,14 +147,14 @@ class Article(spriteManager.ImageSprite):
 
          
 class AnimatedArticle(spriteManager.SheetSprite):
-    def __init__(self, _sprite, _owner, _origin, _imageWidth, _length=1, _drawDepth=1):
+    def __init__(self, _sprite, _owner, _origin, _imageWidth, _length=1, _draw_depth=1):
         spriteManager.SheetSprite.__init__(self, pygame.image.load(_sprite), _imageWidth)
         self.rect.center = _origin
         self.owner = _owner
         self.frame = 0
         self.last_frame = _length
         self.tags = []
-        self.draw_depth = _drawDepth
+        self.draw_depth = _draw_depth
     
     def update(self):
         self.getImageAtIndex(self.frame)
@@ -230,7 +234,7 @@ class RespawnPlatformArticle(Article):
         scaled_width = _owner.rect.width * 1.5
         scale_ratio = float(scaled_width) / float(width)
         
-        Article.__init__(self, settingsManager.createPath('sprites/platform.png'), _owner, _owner.rect.midbottom, 120, draw_depth = -1)
+        Article.__init__(self, settingsManager.createPath('sprites/platform.png'), _owner, _owner.rect.midbottom, 120, _draw_depth = -1)
         
         w,h = int(width * scale_ratio),int(height * scale_ratio)
         self.image = pygame.transform.smoothscale(self.image, (w,h))
