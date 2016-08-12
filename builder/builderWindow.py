@@ -117,8 +117,11 @@ class MainFrame(Tk):
         #update the views
         self.action_pane.action_selector_panel.refreshDropdowns()
         self.viewer_pane.viewer_panel.reloadFrame()
+        self.action_pane.subaction_panel.changeFrame()
+        self.action_pane.subaction_panel.groupChanged()
         for subact in self.action_pane.subaction_panel.subaction_list:
             subact.updateName()
+        print(action.set_up_actions)
                 
     def getFighterAction(self,_actionName,_getRawXml=False):
         global fighter
@@ -685,8 +688,8 @@ class Subaction_panel(BuilderPanel):
         root = ElementTree.fromstring(_xml)
         text = ""
         for child in root:
-            _text += self.printNode(child)
-        return _text
+            text += self.printNode(child)
+        return text
     
     def printNode(self,_node,_prefix=''):
         text = _prefix
@@ -694,7 +697,7 @@ class Subaction_panel(BuilderPanel):
         text += _node.text.lstrip() if _node.text is not None else ''
         if len(_node.attrib) > 0: #if it has attributes
             text += ' ('
-            for name,atr in node.attrib.iteritems():
+            for name,atr in _node.attrib.iteritems():
                 text+=name+': '+str(atr)
                 text+=','
             text = text[:-1] #chop off the last comma
@@ -703,7 +706,7 @@ class Subaction_panel(BuilderPanel):
         if len(list(_node)) > 0: #if it has children
             text += '\n'
             for child in _node:
-                text += self.printNode(child,'  '+prefix)
+                text += self.printNode(child,'  '+_prefix)
         else: text += '\n'
         return text
         
@@ -798,6 +801,7 @@ class Subaction_panel(BuilderPanel):
             
             for subact in subact_group:
                 selector = subactionSelector.SubactionSelector(self.scroll_frame,subact)
+                selector.subaction = subact
                 selector.updateName()
                 self.subaction_list.append(selector)
             
@@ -842,6 +846,7 @@ class Subaction_panel(BuilderPanel):
             self.clearSubActList()
             for subact in self.current_frame_subacts:
                 selector = subactionSelector.SubactionSelector(self.scroll_frame,subact)
+                selector.subaction = subact
                 selector.updateName()
                 self.subaction_list.append(selector)
             self.showSubactionList()

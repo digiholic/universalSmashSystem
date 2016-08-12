@@ -60,12 +60,19 @@ class SubactionSelector(Label):
 
     def deleteSubaction(self,*_args):
         action = self.root.getAction()
-        print(action)
-        print(self.root.group)
-        if self.root.group == 'Set Up':
-            action.set_up_actions.remove(self.subaction)
-            print(action.set_up_actions)
+        print(action.actions_at_frame[self.root.getFrame()])
+        print(self.subaction)
+        groupMap = {"Current Frame": action.actions_at_frame[self.root.getFrame()],
+                    "Set Up": action.set_up_actions,
+                    "Tear Down": action.tear_down_actions,
+                    "Transitions": action.state_transition_actions,
+                    "Before Frames": action.actions_before_frame,
+                    "After Frames": action.actions_after_frame,
+                    "Last Frame": action.actions_at_last_frame}
+        groupMap[self.root.group].remove(self.subaction)
         
+        self.root.root.actionModified()
+            
 class ChangeAttributeFrame(Frame):
     def __init__(self,_root,_attribSet):
         Frame.__init__(self,_root,height=_root.winfo_height())
@@ -258,7 +265,7 @@ class IfButtonProperties(BasePropertiesFrame):
         buffer_entry = Spinbox(self,textvariable=self.getVar('buffer_time'),from_=0,to=255)
         
         conditionals = ['']
-        conditionals.extend(root.getAction().conditional_actions.keys())
+        conditionals.extend(_root.getAction().conditional_actions.keys())
         if_entry = OptionMenu(self,self.getVar('if_actions'),*conditionals)
         else_entry = OptionMenu(self,self.getVar('else_actions'),*conditionals)
         
@@ -668,7 +675,7 @@ class TransitionProperties(BasePropertiesFrame):
         transition_entry.grid(row=0,column=1,sticky=E+W)
         
 class ModifyHitboxProperties(BasePropertiesFrame):
-    def __init__(self,root,subaction,newHitbox=False):
+    def __init__(self,_root,_subaction,newHitbox=False):
         BasePropertiesFrame.__init__(self, _root, _subaction)
         
         import engine
@@ -892,7 +899,7 @@ class UpdateHitboxProperties(BasePropertiesFrame):
         self.addVariable(StringVar, 'hitbox_name')
         
         hitbox_vals = ['No Hitboxes found']
-        if root.getAction():
+        if _root.getAction():
             hitbox_vals = _root.getAction().hitboxes.keys()
         
         hitbox_label = Label(self,text="Hitbox:")
