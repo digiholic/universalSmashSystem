@@ -332,8 +332,8 @@ def saveSettings(settings):
     parser.set('window','frameCap',str(settings['frameCap']))
     
     parser.add_section('sound')
-    parser.set('sound','musicVolume',str(settings['sfxVolume'] * 100))
-    parser.set('sound','sfxVolume',str(settings['musicVolume'] * 100))
+    parser.set('sound','musicVolume',str(settings['musicVolume'] * 100))
+    parser.set('sound','sfxVolume',str(settings['sfxVolume'] * 100))
     
     parser.add_section('graphics')
     parser.set('graphics','displayHitboxes',str(settings['showHitboxes']))
