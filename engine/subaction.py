@@ -78,8 +78,8 @@ class If(SubAction):
     def execute(self, _action, _actor):
         if self.variable == '': return
         if self.source == 'fighter':
-            if _actor.attr.has_key(self.variable):
-                variable = _actor.attr[self.variable]
+            if _actor.var.has_key(self.variable):
+                variable = _actor.var[self.variable]
             else: variable = getattr(_actor, self.variable)
         else:
             variable = getattr(_action, self.variable)
@@ -104,8 +104,8 @@ class If(SubAction):
                 for act in _action.conditional_actions[self.if_actions]:
                     act.execute(_action,_actor)
         else:
-            if self.else_actions and _action.conditional_actions.has_key(self.if_actions):
-                for act in _action.conditional_actions[self.if_actions]:
+            if self.else_actions and _action.conditional_actions.has_key(self.else_actions):
+                for act in _action.conditional_actions[self.else_actions]:
                     act.execute(_action,_actor)
     
     def getPropertiesPanel(self, _root):
@@ -158,13 +158,15 @@ class If(SubAction):
         value = _node.find('value').text
         if _node.find('value').attrib.has_key('type'):
             vartype = _node.find('value').attrib['type']
+        else: vartype="string"
+        
         if vartype == 'int':
             value = int(value)
         elif vartype == 'float':
             value = float(value)
         elif vartype == 'bool':
             value = bool(value)
-        
+            
         if_actions = load_nodeWithDefault(_node, 'pass', None)
         else_actions = load_nodeWithDefault(_node, 'fail', None)
         return If(variable,source,function,value,if_actions,else_actions)

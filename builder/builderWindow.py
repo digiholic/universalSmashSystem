@@ -116,12 +116,17 @@ class MainFrame(Tk):
         
         #update the views
         self.action_pane.action_selector_panel.refreshDropdowns()
+        self.viewer_pane.navigator_panel.changeFrameNumber(0)
+        
         self.viewer_pane.viewer_panel.reloadFrame()
-        self.action_pane.subaction_panel.changeFrame()
-        self.action_pane.subaction_panel.groupChanged()
+        
+        if action:
+            self.action_pane.subaction_panel.changeFrame()
+            self.action_pane.subaction_panel.groupChanged()
+        
+        
         for subact in self.action_pane.subaction_panel.subaction_list:
             subact.updateName()
-        print(action.set_up_actions)
                 
     def getFighterAction(self,_actionName,_getRawXml=False):
         global fighter

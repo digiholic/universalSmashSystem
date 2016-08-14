@@ -65,7 +65,7 @@ class ArticleLoader():
         sprite_rate = int(self.loadNodeWithDefault(article_xml, 'sprite_rate', 1))
         img_width = int(self.loadNodeWithDefault(article_xml, 'img_width', 0))
         draw_depth = int(self.loadNodeWithDefault(article_xml, 'draw_depth', 1))
-        origin_point = make_tuple(self.loadNodeWithDefault(article_xml, 'origin_point', (0,0)))
+        origin_point = make_tuple(self.loadNodeWithDefault(article_xml, 'origin_point', '(0,0)'))
         facing_direction = int(self.loadNodeWithDefault(article_xml, 'facing_direction', 0))
         
         #Load the SetUp subactions

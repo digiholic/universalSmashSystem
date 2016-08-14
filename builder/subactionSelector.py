@@ -55,8 +55,9 @@ class SubactionSelector(Label):
         self.root.selected = None
         
     def updateName(self,_string=None):
+        import engine
         if _string: self.display_name.set(_string)
-        else: self.display_name.set(self.data.getDisplayName())
+        elif isinstance(self.data,engine.subaction.SubAction): self.display_name.set(self.data.getDisplayName())
 
     def deleteSubaction(self,*_args):
         action = self.root.getAction()
@@ -135,6 +136,8 @@ class ChangeAttributeFrame(Frame):
             elif vartype == 'bool': val = bool(val)
             
             self.setFromAttrib(obj, prop, val)
+        
+        self.root.root.actionModified()
             
     def getFromAttrib(self,_obj,_prop):
         if isinstance(_obj, dict):

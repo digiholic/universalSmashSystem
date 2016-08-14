@@ -24,10 +24,8 @@
 			</changeFighterSpeed>
 			
 			<activateHitbox>SplatHitbox</activateHitbox>
-			<!-- Need to set origin point when creating an article in fighter-->
 		</setUp>
 		
-		<!-- Collision event if "other" is in the other object's class hierarchy -->
 		<collision other="AbstractFighter">
 			<deactivateSelf />
 		</collision>

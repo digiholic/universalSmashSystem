@@ -79,7 +79,7 @@ class GamepadController():
             if k and k in self.keys_held: k = None
             if k and k not in self.keys_held:
                 self.keys_held.append(k)
-            if k and push:
+            if k and _push:
                 self.keys_to_pass.append(k)
                 
             if k == 0:
@@ -136,9 +136,9 @@ class PadBindings():
         axis_tuple = self.axis_bindings.get(_axis) 
         if axis_tuple:
             #if the value is above deadzone
-            if value > 0.2750:
+            if _value > 0.2750:
                 return axis_tuple[1]
-            elif value < -0.2750:
+            elif _value < -0.2750:
                 return axis_tuple[0]
             else:
                 return 0
