@@ -4,7 +4,7 @@
 		<sprite>hitboxie_projectile.png</sprite>
 		<length>120</length>
 		<img_width>16</img_width>
-		<origin_point>0,0</origin_point>
+		<origin_point>0,6</origin_point>
 		<facing_direction>1</facing_direction>
 		
 		<setUp>

@@ -568,7 +568,7 @@ class Jump(action.Action):
                 self.doAction('UpSpecial')
             else:
                 self.doAction('UpGroundSpecial')
-        elif self.frame > self.jump_frame+2:
+        elif self.frame > self.jump_frame:
             jumpState(_actor)
         
     def update(self,_actor):
@@ -1150,7 +1150,6 @@ class AirDodge(action.Action):
         if self.frame == self.start_invuln_frame:
             _actor.createMask([255,255,255],16,True,24)
             _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
-        elif self.frame == self.start_invuln_frame+2:
             _actor.updateLandingLag(20)
         elif self.frame == self.end_invuln_frame:
             _actor.landing_lag = 20
