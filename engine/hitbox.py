@@ -345,3 +345,11 @@ def getDirectionBetweenPoints(_p1, _p2):
     dx = x2 - x1
     dy = y1 - y2
     return (180 * math.atan2(dy, dx)) / math.pi 
+
+transcendence_dict = {
+                     'shield': -5,
+                     'projectile': -1,
+                     'grounded': 0,
+                     'aerial': 1, 
+                     'transcendent': 5
+                     }
