@@ -421,7 +421,7 @@ class HitStun(action.Action):
                     _actor.doAction('Prone')
             elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
                 _actor.ground_elasticity = 0
-                if self.last_frame > 15: 
+                if self.last_frame > 10: 
                     if _actor.grounded: 
                         _actor.doAction('Prone')
                 else:
@@ -1613,14 +1613,19 @@ def grabbingState(_actor):
 def proneState(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
     if _actor.keyHeld('attack'):
+        print("Selecting getup attack")
         _actor.doAction('GetupAttack')
     elif _actor.keyHeld('up'):
+        print("Selecting normal getup")
         _actor.doAction('Getup')
     elif _actor.keyHeld(key):
+        print("Selecting forward getup")
         _actor.doAction('ForwardRoll')
     elif _actor.keyHeld(invkey):
+        print("Selecting backward getup")
         _actor.doAction('BackwardRoll')
     elif _actor.keyHeld('down'):
+        print("Selecting spotdodge getup")
         _actor.doAction('SpotDodge')
 
 ########################################################
