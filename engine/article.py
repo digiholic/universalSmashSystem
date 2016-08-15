@@ -77,7 +77,6 @@ class DynamicArticle(spriteManager.SheetSprite):
         for act in self.actions_after_frame:
             act.execute(self,self)
         
-            
         if self.frame == self.last_frame:
             self.deactivate()
         self.frame += 1 
@@ -105,7 +104,6 @@ class DynamicArticle(spriteManager.SheetSprite):
     def onCollision(self,_other):
         others_classes = list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]
         
-        print(self.collision_actions)    
         for classKey,subacts in self.collision_actions.iteritems():
             if (classKey in others_classes):
                 for subact in subacts:

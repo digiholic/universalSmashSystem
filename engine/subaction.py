@@ -78,9 +78,14 @@ class If(SubAction):
     def execute(self, _action, _actor):
         if self.variable == '': return
         if self.source == 'fighter':
-            if _actor.var.has_key(self.variable):
-                variable = _actor.var[self.variable]
-            else: variable = getattr(_actor, self.variable)
+            #If this is for an article, we want to use the owner as the actor
+            if isinstance(_actor, engine.article.DynamicArticle):
+                actor = _actor.owner
+            else: actor = _actor
+            
+            if actor.var.has_key(self.variable):
+                variable = actor.var[self.variable]
+            else: variable = getattr(actor, self.variable)
         else:
             variable = getattr(_action, self.variable)
         
@@ -98,12 +103,11 @@ class If(SubAction):
             function = lambda var,val: var < val
             
         cond = function(variable,self.value)
-        print(self.variable,self.value,cond)
         if cond:
             if self.if_actions and _action.conditional_actions.has_key(self.if_actions):
                 for act in _action.conditional_actions[self.if_actions]:
                     act.execute(_action,_actor)
-                    print(act.getDisplayName())
+                    
         else:
             if self.else_actions and _action.conditional_actions.has_key(self.else_actions):
                 for act in _action.conditional_actions[self.else_actions]:
@@ -283,7 +287,7 @@ class changeFighterSubimage(SubAction):
         _action.sprite_rate = 0 #sprite_rate has been broken, so we have to ignore it from now on
         #TODO changeSpriteRate subaction
         _actor.changeSpriteImage(self.index)
-    
+        
     def getDisplayName(self):
         return 'Change Subimage: '+str(self.index)
     

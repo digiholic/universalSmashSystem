@@ -412,7 +412,8 @@ class AbstractFighter():
         
         for art in self.articles:
             art.update()
-
+            
+            
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
 
