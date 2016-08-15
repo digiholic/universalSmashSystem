@@ -98,11 +98,12 @@ class If(SubAction):
             function = lambda var,val: var < val
             
         cond = function(variable,self.value)
-        
+        print(self.variable,self.value,cond)
         if cond:
             if self.if_actions and _action.conditional_actions.has_key(self.if_actions):
                 for act in _action.conditional_actions[self.if_actions]:
                     act.execute(_action,_actor)
+                    print(act.getDisplayName())
         else:
             if self.else_actions and _action.conditional_actions.has_key(self.else_actions):
                 for act in _action.conditional_actions[self.else_actions]:
@@ -396,8 +397,7 @@ class changeFighterSpeed(SubAction):
                     self.speed_y = getattr(self, value)
             if self.y_relative:_actor.change_y += self.speed_y
             else: _actor.change_y = self.speed_y
-            print('ySpeed',_actor.change_y)
-    
+            
     def getPropertiesPanel(self, _root):
         return subactionSelector.ChangeSpeedProperties(_root,self)
     
@@ -462,14 +462,13 @@ class shiftFighterPosition(SubAction):
         self.y_relative = _yRelative
         
     def execute(self, _action, _actor):
-        print(_actor.rect)
         if self.new_x:
             if self.x_relative: _actor.rect.x += self.new_x * _actor.facing
             else: _actor.rect.x = self.new_x
         if self.new_y:
             if self.y_relative: _actor.rect.y += self.new_y
             else: _actor.rect.y = self.new_y
-        print(_actor.rect)
+            
     def getDisplayName(self):
         return 'Shift Position: ' + str(self.new_x) + ' X, ' + str(self.new_y) + 'Y'
     
@@ -745,7 +744,6 @@ class createHitbox(SubAction):
         self.hitbox_name = _name
         self.hitbox_type = _hitboxType if _hitboxType is not None else "damage"
         self.hitbox_lock = _hitboxLock
-        print(_hitboxLock)
         self.hitbox_vars = _variables
         
     def execute(self, _action, _actor):

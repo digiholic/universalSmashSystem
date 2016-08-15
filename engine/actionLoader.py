@@ -255,6 +255,7 @@ class ActionLoader():
          
         #Create and populate the Dynamic Action
         dyn_action = action.DynamicAction(length, base, action_vars, starting_frame)
+        dyn_action.name = _actionName
         dyn_action.actions_before_frame = subactions_before_frame
         dyn_action.actions_at_frame = subactions_at_frame
         dyn_action.actions_after_frame = subactions_after_frame
