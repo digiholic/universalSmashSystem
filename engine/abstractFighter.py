@@ -257,8 +257,7 @@ class AbstractFighter():
         self.active_hitboxes = pygame.sprite.Group()
         self.articles = pygame.sprite.Group()
         if self.sound_path:
-            if settingsManager.sfxLib: #If there's no sfx library loaded, don't add to it
-                settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
+            settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
         
         self.shield = False
         self.shield_integrity = 100
