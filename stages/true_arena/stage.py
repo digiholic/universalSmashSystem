@@ -18,8 +18,9 @@ def getStagePreview():
     return None
 
 def getMusicList():
-    return [(settingsManager.createPath('music/Laszlo - Fall To Light.ogg'),1,"Laszlo - Fall To Light (NCS Release)"),
-            (settingsManager.createPath('music/Autumn Warriors.ogg'),1,"Autumn Warriors")]
+    return [(settingsManager.createPath('music/Laszlo - Fall To Light.ogg'),2,"Laszlo - Fall To Light (NCS Release)"),
+            (settingsManager.createPath('music/No Turning Back.ogg'),2,"No Turning Back"),
+            (settingsManager.createPath('music/True Arena.ogg'),1,"No Turning Back (Chiptune ver.)")]
 
 class wrapArticle(article.Article):
     def __init__(self,spritePath, center, speed):
