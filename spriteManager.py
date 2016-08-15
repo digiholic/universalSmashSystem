@@ -244,8 +244,10 @@ class SheetSprite(ImageSprite):
     def getImageAtIndex(self,index):
         self.index = index % self.maxIndex
         self.image = self.imageList[self.index]
-        return self.image
+        if self.flip:
+            self.image = pygame.transform.flip(self.image,True,False)
         self.changed = True
+        return self.image
         
     def draw(self,screen,offset,scale):
         return Sprite.draw(self, screen, offset, scale)

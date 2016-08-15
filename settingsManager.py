@@ -114,6 +114,7 @@ Creates or returns the SFX Library.
 def getSfx():
     global sfxLib
     if sfxLib == None:
+        print('CREATING NEW SFX LIBRARY')
         sfxLib = sfxLibrary()
     return sfxLib
     
