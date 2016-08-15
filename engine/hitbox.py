@@ -291,7 +291,7 @@ class PerfectShieldHitbox(Hitbox):
         Hitbox.update(self)
 
     def compareTo(self, _other):
-        if self.owner.lockHitbox(_other) and _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags:
+        if isinstance(_other, DamageHitbox) and self.owner.lockHitbox(_other) and _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags:
             if hasattr(_other.article, 'changeOwner'):
                 _other.article.changeOwner(self.owner)
             if hasattr(_other.article, 'change_x') and hasattr(_other.article, 'change_y'):
