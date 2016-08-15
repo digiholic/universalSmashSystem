@@ -472,10 +472,18 @@ class Tumble(action.Action):
         if self.sprite_name=="": self.sprite_name ="tumble"
         action.Action.setUp(self, _actor)    
         self.tech_cooldown = 0
+        self.do_reversal = 0
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
         tumbleState(_actor)
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if _actor.keyBuffered(invkey, 1) and self.do_reversal > 0:
+            _actor.flip()
+            print("Reverse")
+            self.do_reversal = 0
+        elif _actor.keyBuffered(invkey, 1, 0.6):
+            self.do_reversal = 9
         
         (direct,_) = _actor.getDirectionMagnitude()
 
@@ -503,6 +511,7 @@ class Tumble(action.Action):
         _actor.ground_elasticity = 0
         _actor.tech_window = 0
         _actor.unRotate()
+        _actor.preferred_xspeed = 0
         
     def update(self, _actor):
         action.Action.update(self, _actor)
@@ -644,10 +653,18 @@ class Fall(action.Action):
         action.Action.setUp(self, _actor)
         _actor.preferred_xspeed = 0
         _actor.preferred_yspeed = _actor.var['max_fall_speed']
+        self.do_reversal = 0
     
     def stateTransitions(self,_actor):
         airState(_actor)
         grabLedges(_actor)
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if _actor.keyBuffered(invkey, 1) and self.do_reversal > 0:
+            _actor.flip()
+            print("Reverse")
+            self.do_reversal = 0
+        elif _actor.keyBuffered(invkey, 1, 0.6):
+            self.do_reversal = 9
         
     def update(self,_actor):
         action.Action.update(self, _actor)
@@ -661,6 +678,7 @@ class Helpless(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="helpless"
         action.Action.setUp(self, _actor)
+        self.do_reversal = 0
     
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
@@ -669,6 +687,13 @@ class Helpless(action.Action):
     def stateTransitions(self, _actor):
         helplessControl(_actor)
         grabLedges(_actor)
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if _actor.keyBuffered(invkey, 1) and self.do_reversal > 0:
+            _actor.flip()
+            print("Reverse")
+            self.do_reversal = 0
+        elif _actor.keyBuffered(invkey, 1, 0.6):
+            self.do_reversal = 9
 
     def update(self, _actor):
         _actor.grounded = False
@@ -1133,6 +1158,8 @@ class AirDodge(action.Action):
             if not settingsManager.getSetting('enableWavedash'):
                 _actor.change_x = 0
             _actor.doAction('Land')
+        if self.frame > 0 and _actor.keyBuffered(invkey, 1):
+            _actor.flip()
                 
     def update(self,_actor):
         action.Action.update(self, _actor)
