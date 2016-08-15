@@ -166,7 +166,7 @@ class ActionLoader():
         starting_frame = int(self.loadNodeWithDefault(action_xml, 'starting_frame', 0))
         sprite_name = self.loadNodeWithDefault(action_xml, 'sprite', None)
         sprite_rate = int(self.loadNodeWithDefault(action_xml, 'sprite_rate', 1))
-        loop = bool(self.loadNodeWithDefault(action_xml, 'loop', False))
+        loop = self.loadNodeWithDefault(action_xml, 'loop', False) == 'True'
         
         action_vars = {}
         if action_xml.find('vars') is not None:
