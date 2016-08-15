@@ -136,6 +136,16 @@ class ArticleLoader():
                     conditional_list.append(subaction.subaction_dict[subact.tag].buildFromXml(subact))
             conditional_actions[cond.attrib['name']] = conditional_list
          
+         
+        collision_actions = dict()
+        collisions = article_xml.findall('collision')
+        for col in collisions:
+            collision_list = []
+            for subact in col:
+                if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                    collision_list.append(subaction.subaction_dict[subact.tag].buildFromXml(subact))
+            collision_actions[col.attrib['other']] = collision_list
+        
         #Create and populate the Dynamic Action
         dyn_article = article.DynamicArticle(self.owner, os.path.join(self.article_path,sprite_name),
                                              img_width, origin_point, length, sprite_rate, facing_direction,
@@ -149,6 +159,7 @@ class ArticleLoader():
         dyn_article.tear_down_actions = tear_down_actions
         dyn_article.actions_on_clank = actions_on_clank
         dyn_article.conditional_actions = conditional_actions
+        dyn_article.collision_actions = collision_actions
         if sprite_name: dyn_article.sprite_name = sprite_name
         if sprite_rate: dyn_article.base_sprite_rate = sprite_rate
         

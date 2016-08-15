@@ -104,13 +104,12 @@ class DynamicArticle(spriteManager.SheetSprite):
     
     def onCollision(self,_other):
         others_classes = list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]
-        if ('AbstractFighter' in others_classes or 'Platform' in others_classes):
-            self.deactivate()
-            
-        for classKey,subacts in self.collision_actions:
+        
+        print(self.collision_actions)    
+        for classKey,subacts in self.collision_actions.iteritems():
             if (classKey in others_classes):
                 for subact in subacts:
-                    subact.execute(self,_other)
+                    subact.execute(_other,self)
     
     """
     Articles need to know which way they're facing too.
