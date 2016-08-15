@@ -1612,19 +1612,19 @@ def grabbingState(_actor):
 
 def proneState(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyHeld('attack'):
+    if _actor.keysContain('attack'):
         print("Selecting getup attack")
         _actor.doAction('GetupAttack')
-    elif _actor.keyHeld('up'):
+    elif _actor.keysContain('up'):
         print("Selecting normal getup")
         _actor.doAction('Getup')
-    elif _actor.keyHeld(key):
+    elif _actor.keysContain(key):
         print("Selecting forward getup")
         _actor.doAction('ForwardRoll')
-    elif _actor.keyHeld(invkey):
+    elif _actor.keysContain(invkey):
         print("Selecting backward getup")
         _actor.doAction('BackwardRoll')
-    elif _actor.keyHeld('down'):
+    elif _actor.keysContain('down'):
         print("Selecting spotdodge getup")
         _actor.doAction('SpotDodge')
 
