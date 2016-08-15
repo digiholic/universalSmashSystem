@@ -806,6 +806,8 @@ class AbstractFighter():
         self.damage += float(math.floor(_damage))
         if self.damage >= 999:
             self.damage = 999
+        if self.damage <= 0:
+            self.damage = 0
     
     """
     Do Knockback to the fighter.
