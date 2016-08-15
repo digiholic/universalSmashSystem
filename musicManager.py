@@ -25,24 +25,24 @@ class musicManager():
         self.currentMusic = None
         self.pathIndex = -1
         
-    def createMusicSet(self,setName,musicList):
-        self.musicDict[setName] = musicList
+    def createMusicSet(self,setName,music_list):
+        self.musicDict[setName] = music_list
     
     def getTotalChance(self,setName):
-        musicList = self.musicDict[setName]
+        music_list = self.musicDict[setName]
         totalChance = 0
-        for path, chance, name in musicList:
+        for path, chance, name in music_list:
             totalChance += chance
         return totalChance
     
     def rollMusic(self,setName):
-        musicList = self.musicDict[setName]
+        music_list = self.musicDict[setName]
         roll = random.randint(0,self.getTotalChance(setName))
         print(roll, self.getTotalChance(setName))
-        for path, chance, name in musicList:
+        for path, chance, name in music_list:
             roll -= chance
             if roll <= 0:
-                pygame.mixer.music.set_volume(settingsManager.getSetting('musicVolume'))
+                pygame.mixer.music.set_volume(settingsManager.getSetting('music_volume'))
                 self.currentMusic = (path,chance,name)
                 if isinstance(path, list):
                     self.pathIndex = 0

@@ -24,7 +24,7 @@ class Menu():
         screen = pygame.display.set_mode((self.settings['windowSize'][0], self.settings['windowSize'][1]))
         pygame.display.set_caption(self.settings['windowName'])
             
-        self.currentScreen = StartScreen(self)
+        self.current_screen = StartScreen(self)
         
         self.music = musicManager.getMusicManager()
         self.music.createMusicSet('menu', [(settingsManager.createPath('music/Laszlo - Imaginary Friends.ogg'),4,"Laszlo - Imaginary Friends (NCS Release)"),
@@ -34,28 +34,28 @@ class Menu():
         
         self.bg = bgSpace()
         
-        self.currentScreen.executeMenu(screen)
+        self.current_screen.executeMenu(screen)
         
 class SubMenu():
-    def __init__(self,parent):
-        self.menuText = []
+    def __init__(self,_parent):
+        self.menu_text = []
         self.status = 0
-        self.parent = parent
+        self._parent = _parent
         
-    def update(self,screen):
-        self.parent.bg.update(screen)
-        self.parent.bg.draw(screen,(0,0),1.0)
+    def update(self,_screen):
+        self._parent.bg.update(_screen)
+        self._parent.bg.draw(_screen,(0,0),1.0)
                
-        for m in self.menuText:
-            m.draw(screen,m.rect.topleft,1.0)
+        for m in self.menu_text:
+            m.draw(_screen,m.rect.topleft,1.0)
             m.changeColor([255,255,255])
         
-        rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
-        self.menuText[self.selectedOption].changeColor(rgb)    
+        rgb = self._parent.bg.hsvtorgb(self._parent.bg.star_color)
+        self.menu_text[self.selected_option].changeColor(rgb)    
     
-    def executeMenu(self,screen):
+    def executeMenu(self,_screen):
         self.clock = pygame.time.Clock()
-        self.screen = screen
+        self.screen = _screen
         
         self.controls = []
         for i in range(0,4):
@@ -72,55 +72,55 @@ class SubMenu():
                 for control in self.controls:
                     k = control.getInputs(event,False,False)
                     if k == 'up':
-                        self.selectedOption = (self.selectedOption - 1) % len(self.menuText)
+                        self.selected_option = (self.selected_option - 1) % len(self.menu_text)
                     elif k == 'down':
-                        self.selectedOption = (self.selectedOption + 1) % len(self.menuText)
+                        self.selected_option = (self.selected_option + 1) % len(self.menu_text)
                     elif k == 'left':
-                        self.incrementOption(self.selectedOption,-1)
+                        self.incrementOption(self.selected_option,-1)
                     elif k == 'right':
-                        self.incrementOption(self.selectedOption,1)
+                        self.incrementOption(self.selected_option,1)
                     elif k == 'confirm' or k == 'attack':
-                        self.confirmOption(self.selectedOption)
+                        self.confirmOption(self.selected_option)
                     elif k == 'cancel' or k == 'special':
                         self.status = 1
-            self.update(screen)
+            self.update(_screen)
             self.clock.tick(60)    
             pygame.display.flip()    
         return self.status
     
-    def confirmOption(self,optionNum):
+    def confirmOption(self,_optionNum):
         pass
     
-    def incrementOption(self,optionNum,direction):
+    def incrementOption(self,_optionNum,_direction):
         pass
     
 class StartScreen(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self,parent)
+    def __init__(self,_parent):
+        SubMenu.__init__(self,_parent)
         self.logo = spriteManager.ImageSprite(settingsManager.createPath('sprites/logo.png'))
         
         self.start = spriteManager.TextSprite('PRESS START','full Pack 2025',18)
         self.start.rect.midbottom = (settingsManager.getSetting('windowSize')[0] / 2, 360)
-        self.startAlpha = 144
-        self.alphaRad = 0
+        self.start_alpha = 144
+        self.alpha_rad = 0
         
         #self.rgb = [89,56,255]
         self.hsv = [random.randint(0,100)/100.0,0.8,1.0]
         print(self.hsv)
         
-    def update(self,screen):
+    def update(self,_screen):
         self.hsv[0] += .001
         if self.hsv[0] >= 1: self.hsv[0] -= 1
             
         # Math is cool! Ease in, ease out fade done with a sin.
-        self.startAlpha = 127 * math.sin(self.alphaRad) + 128
-        self.alphaRad += 0.05
-        self.start.alpha(self.startAlpha)
+        self.start_alpha = 127 * math.sin(self.alpha_rad) + 128
+        self.alpha_rad += 0.05
+        self.start.alpha(self.start_alpha)
         
-    def executeMenu(self,screen):
+    def executeMenu(self,_screen):
         clock = pygame.time.Clock()
         while self.status == 0:
-            self.update(screen)
+            self.update(_screen)
             music = musicManager.getMusicManager()
             music.doMusicEvent()
             
@@ -129,12 +129,12 @@ class StartScreen(SubMenu):
                     if event.type == pygame.KEYDOWN and event.key == K_ESCAPE:
                         self.status = 1
                     else:
-                        menu = MainMenu(self.parent)
-                        self.parent.music.rollMusic('menu')
-                        menu.starColor = self.hsv
-                        retValue = menu.executeMenu(screen)
+                        menu = MainMenu(self._parent)
+                        self._parent.music.rollMusic('menu')
+                        menu.star_color = self.hsv
+                        ret_value = menu.executeMenu(_screen)
                         pygame.mixer.music.fadeout(1000)
-                        if retValue == -1: return -1
+                        if ret_value == -1: return -1
 
                 if event.type == QUIT:
                     self.status = -1
@@ -142,9 +142,9 @@ class StartScreen(SubMenu):
             
             
             rgb = tuple(i * 255 for i in colorsys.hsv_to_rgb(self.hsv[0],self.hsv[1],self.hsv[2]))
-            screen.fill(rgb)
-            self.logo.draw(screen, self.logo.rect.topleft, 1.0)
-            self.start.draw(screen, self.start.rect.topleft, 1.0)
+            _screen.fill(rgb)
+            self.logo.draw(_screen, self.logo.rect.topleft, 1.0)
+            self.start.draw(_screen, self.start.rect.topleft, 1.0)
             
             clock.tick(60)    
             pygame.display.flip()
@@ -152,216 +152,216 @@ class StartScreen(SubMenu):
         return self.status
         
 class MainMenu(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self,parent)
-        self.menuText = [spriteManager.TextSprite('TUSSLE','full Pack 2025',24,[255,255,255]),
+    def __init__(self,_parent):
+        SubMenu.__init__(self,_parent)
+        self.menu_text = [spriteManager.TextSprite('TUSSLE','full Pack 2025',24,[255,255,255]),
                          spriteManager.TextSprite('Settings','full Pack 2025',24,[255,255,255]),
                          spriteManager.TextSprite('Modules','full Pack 2025',24,[255,255,255]),
                          #spriteManager.TextSprite('Update','full Pack 2025',24,[255,255,255]),
                          spriteManager.TextSprite('Quit','full Pack 2025',24,[255,255,255])]
         
-        for i in range(0,len(self.menuText)):
-            self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
-            self.menuText[i].rect.centery = 100 + i*100
+        for i in range(0,len(self.menu_text)):
+            self.menu_text[i].rect.centerx = self._parent.settings['windowSize'][0] / 2
+            self.menu_text[i].rect.centery = 100 + i*100
                 
-        self.selectedOption = 0
+        self.selected_option = 0
     
-    def update(self, screen):
-        SubMenu.update(self, screen)    
+    def update(self, _screen):
+        SubMenu.update(self, _screen)    
     
-    def confirmOption(self, optionNum):
-        SubMenu.confirmOption(self, optionNum)
-        if optionNum == 0: #play game
-            status = RulesMenu(self.parent).executeMenu(self.screen)
-        elif optionNum == 1: #settings menu
-            status = OptionsMenu(self.parent).executeMenu(self.screen)
+    def confirmOption(self, _optionNum):
+        SubMenu.confirmOption(self, _optionNum)
+        if _optionNum == 0: #play game
+            status = RulesMenu(self._parent).executeMenu(self.screen)
+        elif _optionNum == 1: #settings menu
+            status = OptionsMenu(self._parent).executeMenu(self.screen)
             self.controls = []
             for i in range(0,4):
                 self.controls.append(settingsManager.getControls(i))
-        elif optionNum == 2: #module manager
-            status = ModulesMenu(self.parent).executeMenu(self.screen)
-        elif optionNum == 3: #updates
-            #status = UpdateMenu(self.parent).executeMenu(self.screen)
+        elif _optionNum == 2: #module manager
+            status = ModulesMenu(self._parent).executeMenu(self.screen)
+        elif _optionNum == 3: #updates
+            #status = UpdateMenu(self._parent).executeMenu(self.screen)
             self.status = 1
             return
-        elif optionNum == 4: #quit
+        elif _optionNum == 4: #quit
             self.status = 1
             return
         if status == -1: self.status = -1
         
-    def executeMenu(self,screen):
-        return SubMenu.executeMenu(self, screen)
+    def executeMenu(self,_screen):
+        return SubMenu.executeMenu(self, _screen)
         
 """ Options Screen and related Submenus """
 class OptionsMenu(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self,parent)
-        self.menuText = [spriteManager.TextSprite('Controls','full Pack 2025',20,[255,255,255]),
+    def __init__(self,_parent):
+        SubMenu.__init__(self,_parent)
+        self.menu_text = [spriteManager.TextSprite('Controls','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Graphics','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Sound','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Game','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Back','full Pack 2025',20,[255,255,255])]
         
-        for i in range(0,len(self.menuText)):
-            self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
-            self.menuText[i].rect.centery = 90 + i*60
+        for i in range(0,len(self.menu_text)):
+            self.menu_text[i].rect.centerx = self._parent.settings['windowSize'][0] / 2
+            self.menu_text[i].rect.centery = 90 + i*60
                 
-        self.selectedOption = 0
+        self.selected_option = 0
     
-    def confirmOption(self, optionNum):
-        SubMenu.confirmOption(self, optionNum)
-        if optionNum == 0: #controls
-            status = ControlsMenu(self.parent).executeMenu(self.screen)
+    def confirmOption(self, _optionNum):
+        SubMenu.confirmOption(self, _optionNum)
+        if _optionNum == 0: #controls
+            status = ControlsMenu(self._parent).executeMenu(self.screen)
             self.controls = []
             for i in range(0,4):
                 self.controls.append(settingsManager.getControls(i))
-        elif optionNum == 1: #graphics
-            status = GraphicsMenu(self.parent).executeMenu(self.screen)
-        elif optionNum == 2: #sound
-            status = SoundMenu(self.parent).executeMenu(self.screen)
-        elif optionNum == 3: #game
-            status = GameSettingsMenu(self.parent).executeMenu(self.screen)
-        elif optionNum == 4: #quit
+        elif _optionNum == 1: #graphics
+            status = GraphicsMenu(self._parent).executeMenu(self.screen)
+        elif _optionNum == 2: #sound
+            status = SoundMenu(self._parent).executeMenu(self.screen)
+        elif _optionNum == 3: #game
+            status = GameSettingsMenu(self._parent).executeMenu(self.screen)
+        elif _optionNum == 4: #quit
             self.status = 1
             return
         if status == -1: self.status = -1
         
-    def executeMenu(self,screen):
-        return SubMenu.executeMenu(self, screen)
+    def executeMenu(self,_screen):
+        return SubMenu.executeMenu(self, _screen)
 
 class RulesMenu (SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self,parent)
-        self.menuText = [spriteManager.TextSprite('Play','full Pack 2025',20,[255,255,255]),
+    def __init__(self,_parent):
+        SubMenu.__init__(self,_parent)
+        self.menu_text = [spriteManager.TextSprite('Play','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('3 Stocks','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('8 Minutes','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Teams Enabled','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Team Attack On','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Cancel','full Pack 2025',24,[255,255,255])]
 
-        for i in range(0,len(self.menuText)):
-            self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
-            self.menuText[i].rect.centery = 90 + i*40
+        for i in range(0,len(self.menu_text)):
+            self.menu_text[i].rect.centerx = self._parent.settings['windowSize'][0] / 2
+            self.menu_text[i].rect.centery = 90 + i*40
         
-        self.selectedOption = 0
+        self.selected_option = 0
         self.rules = {'Stocks':3,'Time':8,'Teams':False,'Team Attack':True}
         
-    def confirmOption(self, optionNum):
-        SubMenu.confirmOption(self, optionNum)
-        if optionNum == 0: #play
-            gameRules = battle.Rules(self.rules['Stocks'],self.rules['Time'],[])
-            status = css.CSSScreen(gameRules)
+    def confirmOption(self, _optionNum):
+        SubMenu.confirmOption(self, _optionNum)
+        if _optionNum == 0: #play
+            game_rules = battle.Rules(self.rules['Stocks'],self.rules['Time'],[])
+            status = css.CSSScreen(game_rules)
             if status == -1: self.status = -1
-        elif optionNum == 3: #teams
+        elif _optionNum == 3: #teams
             self.rules['Teams'] = not self.rules['Teams']
-        elif optionNum == 4: #team attack
+        elif _optionNum == 4: #team attack
             self.rules['Team Attack'] = not self.rules['Team Attack']
-        elif optionNum == 5: #quit
+        elif _optionNum == 5: #quit
             self.status = 1
             return
             
-    def incrementOption(self, optionNum, direction):
-        SubMenu.incrementOption(self, optionNum, direction)
-        if optionNum == 1:
-            self.rules['Stocks'] += direction
-        elif optionNum == 2:
-            self.rules['Time'] += direction
-        elif optionNum == 3:
+    def incrementOption(self, _optionNum, _direction):
+        SubMenu.incrementOption(self, _optionNum, _direction)
+        if _optionNum == 1:
+            self.rules['Stocks'] += _direction
+        elif _optionNum == 2:
+            self.rules['Time'] += _direction
+        elif _optionNum == 3:
             self.rules['Teams'] = not self.rules['Teams']
-        elif optionNum == 4:
+        elif _optionNum == 4:
             self.rules['Team Attack'] = not self.rules['Team Attack']
         self.rules['Stocks'] = self.rules['Stocks'] % 100
         self.rules['Time'] = self.rules['Time'] % 100
                 
         
-    def executeMenu(self, screen):
-        return SubMenu.executeMenu(self,screen)
+    def executeMenu(self, _screen):
+        return SubMenu.executeMenu(self,_screen)
         
-    def update(self,screen):
-        SubMenu.update(self,screen)
+    def update(self,_screen):
+        SubMenu.update(self,_screen)
         
-        self.menuText[1].changeText(str(self.rules['Stocks'])+' Stock Battle')
-        self.menuText[2].changeText(str(self.rules['Time'])+' Minute Match')
+        self.menu_text[1].changeText(str(self.rules['Stocks'])+' Stock Battle')
+        self.menu_text[2].changeText(str(self.rules['Time'])+' Minute Match')
         
         if (self.rules['Stocks'] == 0):
-            self.menuText[1].changeText('Unlimited Stock Battle')
+            self.menu_text[1].changeText('Unlimited Stock Battle')
         if (self.rules['Time'] == 0):
-            self.menuText[2].changeText('Unlimited Time Match')
+            self.menu_text[2].changeText('Unlimited Time Match')
         
         if self.rules['Teams']:
-            self.menuText[3].changeText('Teams Enabled')
+            self.menu_text[3].changeText('Teams Enabled')
         else:
-            self.menuText[3].changeText('Teams Disabled')
+            self.menu_text[3].changeText('Teams Disabled')
 
         if self.rules['Team Attack']:
-            self.menuText[4].changeText('Team Attack Enabled')
+            self.menu_text[4].changeText('Team Attack Enabled')
         else:
-            self.menuText[4].changeText('Team Attack Disabled')
+            self.menu_text[4].changeText('Team Attack Disabled')
 
 class ControlsMenu(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self,parent)
-        self.menuText = [spriteManager.TextSprite('Player Controls','full Pack 2025',20,[255,255,255]),
+    def __init__(self,_parent):
+        SubMenu.__init__(self,_parent)
+        self.menu_text = [spriteManager.TextSprite('Player Controls','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Gamepad Settings','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Exit','full Pack 2025',20,[255,255,255])]
         
-        for i in range(0,len(self.menuText)):
-            self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
-            self.menuText[i].rect.centery = 90 + i*60
+        for i in range(0,len(self.menu_text)):
+            self.menu_text[i].rect.centerx = self._parent.settings['windowSize'][0] / 2
+            self.menu_text[i].rect.centery = 90 + i*60
                 
-        self.selectedOption = 0
+        self.selected_option = 0
     
-    def confirmOption(self, optionNum):
-        SubMenu.confirmOption(self, optionNum)
-        if optionNum == 0:
-            status = PlayerControlsMenu(self.parent).executeMenu(self.screen)
+    def confirmOption(self, _optionNum):
+        SubMenu.confirmOption(self, _optionNum)
+        if _optionNum == 0:
+            status = PlayerControlsMenu(self._parent).executeMenu(self.screen)
             self.controls = []
             for i in range(0,4):
                 self.controls.append(settingsManager.getControls(i))
         
-        elif optionNum == 1:
-            status = GamepadMenu(self.parent).executeMenu(self.screen)
+        elif _optionNum == 1:
+            status = GamepadMenu(self._parent).executeMenu(self.screen)
             self.controls = []
             for i in range(0,4):
                 self.controls.append(settingsManager.getControls(i))
-        elif optionNum == 2:
+        elif _optionNum == 2:
             self.status = 1
             return
         if status == -1: self.status = -1
-    def executeMenu(self, screen):
-        return SubMenu.executeMenu(self, screen)
+    def executeMenu(self, _screen):
+        return SubMenu.executeMenu(self, _screen)
         
 class GamepadMenu(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self, parent)
+    def __init__(self,_parent):
+        SubMenu.__init__(self, _parent)
         
-        self.controllerList = []
-        self.connectedControllers = []
+        self.controller_list = []
+        self.connected_controllers = []
         for i in range(0,pygame.joystick.get_count()):
-            controllerName = pygame.joystick.Joystick(i).get_name()
-            self.controllerList.append((controllerName,settingsManager.getSetting().loadGamepad(controllerName)))
-            self.connectedControllers.append(pygame.joystick.Joystick(i).get_name())
+            controller_name = pygame.joystick.Joystick(i).get_name()
+            self.controller_list.append((controller_name,settingsManager.getSetting().loadGamepad(controller_name)))
+            self.connected_controllers.append(pygame.joystick.Joystick(i).get_name())
         
-        for controllerName in settingsManager.getSetting().getGamepadList():
-            if not controllerName in [data[0] for data in self.controllerList]:
-                self.controllerList.append((controllerName,settingsManager.getSetting().loadGamepad(controllerName)))
+        for controller_name in settingsManager.getSetting().getGamepadList():
+            if not controller_name in [data[0] for data in self.controller_list]:
+                self.controller_list.append((controller_name,settingsManager.getSetting().loadGamepad(controller_name)))
                 
-        if self.controllerList:
-            self.currentController = 0
+        if self.controller_list:
+            self.current_controller = 0
         
-        self.menuText = [spriteManager.TextSprite(self.controllerList[self.currentController][0],'rexlia rg',18,[255,255,255]),
+        self.menu_text = [spriteManager.TextSprite(self.controller_list[self.current_controller][0],'rexlia rg',18,[255,255,255]),
                          spriteManager.TextSprite('Exit','full Pack 2025',20,[255,255,255])]
         
-        self.statusText = spriteManager.TextSprite('Controller not connected','rexlia rg',16,[255,255,255])
+        self.status_text = spriteManager.TextSprite('Controller not connected','rexlia rg',16,[255,255,255])
         
-        if self.controllerList[self.currentController][0] in self.connectedControllers:
-            self.statusText.changeText('Controller connected')
-            self.statusText.changeColor([255,255,255])
+        if self.controller_list[self.current_controller][0] in self.connected_controllers:
+            self.status_text.changeText('Controller connected')
+            self.status_text.changeColor([255,255,255])
         else:
-            self.statusText.changeText('Controller not connected')
-            self.statusText.changeColor([55,55,55])
+            self.status_text.changeText('Controller not connected')
+            self.status_text.changeColor([55,55,55])
                             
-        self.actionColumn = [spriteManager.TextSprite('left','rexlia rg',16,[55,55,55]),
+        self.action_column = [spriteManager.TextSprite('left','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('right','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('up','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('down','rexlia rg',16,[55,55,55]),
@@ -371,7 +371,7 @@ class GamepadMenu(SubMenu):
                              spriteManager.TextSprite('shield','rexlia rg',16,[55,55,55]),
                              ]
         
-        self.keyColumn = [spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+        self.key_column = [spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
                           spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
                           spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
                           spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
@@ -382,76 +382,76 @@ class GamepadMenu(SubMenu):
                           ]
         
         
-        for i in range(0,len(self.actionColumn)):
-            self.actionColumn[i].rect.left = self.parent.settings['windowSize'][0] / 4
-            self.keyColumn[i].rect.right = (self.parent.settings['windowSize'][0] / 4) * 3
-            self.actionColumn[i].rect.centery = 76 + 16*i
-            self.keyColumn[i].rect.centery = 76 + 16*i
+        for i in range(0,len(self.action_column)):
+            self.action_column[i].rect.left = self._parent.settings['windowSize'][0] / 4
+            self.key_column[i].rect.right = (self._parent.settings['windowSize'][0] / 4) * 3
+            self.action_column[i].rect.centery = 76 + 16*i
+            self.key_column[i].rect.centery = 76 + 16*i
             
-        self.menuText[0].rect.midtop = (self.parent.settings['windowSize'][0] / 2,20)
-        self.menuText[-1].rect.midbottom = (self.parent.settings['windowSize'][0] / 2,self.parent.settings['windowSize'][1] - 20)
-        self.statusText.rect.midtop = self.menuText[0].rect.midbottom
+        self.menu_text[0].rect.midtop = (self._parent.settings['windowSize'][0] / 2,20)
+        self.menu_text[-1].rect.midbottom = (self._parent.settings['windowSize'][0] / 2,self._parent.settings['windowSize'][1] - 20)
+        self.status_text.rect.midtop = self.menu_text[0].rect.midbottom
         
-        self.selectedOption = 0
+        self.selected_option = 0
     
-    def confirmOption(self, optionNum):
-        SubMenu.confirmOption(self, optionNum)    
-        if optionNum == 0:
-            status = self.bindControls(self.screen,settingsManager.getSetting().getGamepadByName(self.controllerList[self.currentController][0]))
+    def confirmOption(self, _optionNum):
+        SubMenu.confirmOption(self, _optionNum)    
+        if _optionNum == 0:
+            status = self.bindControls(self.screen,settingsManager.getSetting().getGamepadByName(self.controller_list[self.current_controller][0]))
             self.controls = []
             for i in range(0,4):
                 self.controls.append(settingsManager.getControls(i))
-        elif optionNum == 1:
+        elif _optionNum == 1:
             self.status = 1
             return
         if status == -1: self.status = -1
         
-    def incrementOption(self, optionNum, direction):
-        SubMenu.incrementOption(self, optionNum, direction)
-        if optionNum == 0:
-            self.currentController = (self.currentController + direction) % len(self.controllerList)
-            if self.controllerList[self.currentController][0] in self.connectedControllers:
-                self.statusText.changeText('Controller connected')
-                self.statusText.changeColor([255,255,255])
+    def incrementOption(self, _optionNum, _direction):
+        SubMenu.incrementOption(self, _optionNum, _direction)
+        if _optionNum == 0:
+            self.current_controller = (self.current_controller + _direction) % len(self.controller_list)
+            if self.controller_list[self.current_controller][0] in self.connected_controllers:
+                self.status_text.changeText('Controller connected')
+                self.status_text.changeColor([255,255,255])
             else:
-                self.statusText.changeText('Controller not connected')
-                self.statusText.changeColor([55,55,55])
+                self.status_text.changeText('Controller not connected')
+                self.status_text.changeColor([55,55,55])
     
-    def update(self, screen):
-        SubMenu.update(self, screen)
+    def update(self, _screen):
+        SubMenu.update(self, _screen)
         
-        for i,action in enumerate(self.actionColumn):
-            padControls = settingsManager.getSetting(self.controllerList[self.currentController][0]) 
+        for i,action in enumerate(self.action_column):
+            pad_controls = settingsManager.getSetting(self.controller_list[self.current_controller][0]) 
             
-            self.keyColumn[i].changeText('---')
-            if padControls:
-                k = padControls.getKeysForAction(action.text)
+            self.key_column[i].changeText('---')
+            if pad_controls:
+                k = pad_controls.getKeysForAction(action.text)
                 if k:
-                    self.keyColumn[i].changeText(str(k))
+                    self.key_column[i].changeText(str(k))
                 
-        for m in self.actionColumn:
-            m.draw(screen,m.rect.topleft,1.0)
+        for m in self.action_column:
+            m.draw(_screen,m.rect.topleft,1.0)
             m.changeColor([55,55,55])
-        for m in self.keyColumn:
-            m.draw(screen,m.rect.topleft,1.0)
+        for m in self.key_column:
+            m.draw(_screen,m.rect.topleft,1.0)
             m.changeColor([55,55,55])
         
-        self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
-        self.menuText[0].changeText(self.controllerList[self.currentController][0])
+        self.status_text.draw(_screen, self.status_text.rect.topleft, 1.0)
+        self.menu_text[0].changeText(self.controller_list[self.current_controller][0])
         
         
-    def executeMenu(self, screen):
-        return SubMenu.executeMenu(self, screen)
+    def executeMenu(self, _screen):
+        return SubMenu.executeMenu(self, _screen)
             
-    def bindControls(self,screen,joystick):
-        selectedSubOption = 0
-        newAxisBinding = {}
-        newButtonBinding = {}
+    def bindControls(self,_screen,_joystick):
+        selected_suboption = 0
+        new_axis_binding = {}
+        new_button_binding = {}
         
-        heldButtons = []
-        heldAxis = []
-        workingAxis = []
-        workingButton = []
+        held_buttons = []
+        held_axis = []
+        working_axis = []
+        working_button = []
         
         status = 0
         ready = False
@@ -464,95 +464,95 @@ class GamepadMenu(SubMenu):
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     return 0
                 elif event.type == pygame.JOYBUTTONDOWN:
-                    if event.joy == joystick.get_id():
-                        value = (self.actionColumn[selectedSubOption].text,event.button)
-                        if value not in workingButton:
-                            workingButton.append(value)
-                        heldButtons.append(event.button)
+                    if event.joy == _joystick.get_id():
+                        value = (self.action_column[selected_suboption].text,event.button)
+                        if value not in working_button:
+                            working_button.append(value)
+                        held_buttons.append(event.button)
                 elif event.type == pygame.JOYBUTTONUP:
-                    if event.joy == joystick.get_id():
-                        if event.button in heldButtons:
-                            heldButtons.remove(event.button)
-                            if not heldAxis and not heldButtons:
+                    if event.joy == _joystick.get_id():
+                        if event.button in held_buttons:
+                            held_buttons.remove(event.button)
+                            if not held_axis and not held_buttons:
                                 ready = True
                 elif event.type == pygame.JOYAXISMOTION:
-                    if event.joy == joystick.get_id():
+                    if event.joy == _joystick.get_id():
                         if abs(event.value) > 0.5: #joy motion
                             if event.value > 0: #positive
-                                value = (self.actionColumn[selectedSubOption].text,event.axis,1)
+                                value = (self.action_column[selected_suboption].text,event.axis,1)
                             else:
-                                value = (self.actionColumn[selectedSubOption].text,event.axis,0)
-                            if value not in workingAxis:
-                                workingAxis.append(value)
-                                heldAxis.append(event.axis)
+                                value = (self.action_column[selected_suboption].text,event.axis,0)
+                            if value not in working_axis:
+                                working_axis.append(value)
+                                held_axis.append(event.axis)
                             
                         else: #joy released
-                            if event.axis in heldAxis:
-                                heldAxis.remove(event.axis)
-                                if not heldAxis and not heldButtons:
+                            if event.axis in held_axis:
+                                held_axis.remove(event.axis)
+                                if not held_axis and not held_buttons:
                                     ready = True
                 
                 if ready:
-                    buttonList = []
-                    for action,button in workingButton:
-                        newButtonBinding[button] = action
-                        buttonList.append('Button '+str(button))
-                    workingButton = []
+                    button_list = []
+                    for action,button in working_button:
+                        new_button_binding[button] = action
+                        button_list.append('Button '+str(button))
+                    working_button = []
                     
-                    for action,axis,direction in workingAxis:
-                        if axis in newAxisBinding: #if we already have one of the axis points set, we need to pull it
-                            newBinding = list(newAxisBinding[axis])
+                    for action,axis,direction in working_axis:
+                        if axis in new_axis_binding: #if we already have one of the axis points set, we need to pull it
+                            new_binding = list(new_axis_binding[axis])
                         else: #If it's fresh, we need to build it
-                            newBinding = ['','']
-                        newBinding[direction] = action
-                        newAxisBinding[axis] = tuple(newBinding)
+                            new_binding = ['','']
+                        new_binding[direction] = action
+                        new_axis_binding[axis] = tuple(new_binding)
                         
                         #get the string value of the direction of the axis
                         if direction == 1: string = ' Positive'
                         else: string = ' Negative'
-                        buttonList.append('Axis '+str(axis)+string)
-                    workingAxis = []
+                        button_list.append('Axis '+str(axis)+string)
+                    working_axis = []
                      
-                    self.keyColumn[selectedSubOption].changeText(str(buttonList))
-                    selectedSubOption += 1
+                    self.key_column[selected_suboption].changeText(str(button_list))
+                    selected_suboption += 1
                     ready = False
-                    if selectedSubOption >= len(self.actionColumn):
-                        name = self.controllerList[self.currentController][0]
-                        newPadBindings = engine.controller.PadBindings(name,joystick.get_id(),newAxisBinding,newButtonBinding)
-                        newController = engine.controller.GamepadController(newPadBindings)
+                    if selected_suboption >= len(self.action_column):
+                        name = self.controller_list[self.current_controller][0]
+                        new_pad_bindings = engine.controller.PadBindings(name,_joystick.get_id(),new_axis_binding,new_button_binding)
+                        new_controller = engine.controller.GamepadController(new_pad_bindings)
                         settingsManager.getSetting().newGamepads.append(name)
-                        settingsManager.getSetting().setting[name] = newController
+                        settingsManager.getSetting().setting[name] = new_controller
                         settingsManager.saveSettings(settingsManager.getSetting().setting)
                         return 0
                         
-            self.parent.bg.update(screen)
-            self.parent.bg.draw(screen,(0,0),1.0)
+            self._parent.bg.update(_screen)
+            self._parent.bg.draw(_screen,(0,0),1.0)
             
-            for m in self.menuText:
-                m.draw(screen,m.rect.topleft,1.0)
+            for m in self.menu_text:
+                m.draw(_screen,m.rect.topleft,1.0)
                 m.changeColor([55,55,55])
-            for m in self.actionColumn:
-                m.draw(screen,m.rect.topleft,1.0)
+            for m in self.action_column:
+                m.draw(_screen,m.rect.topleft,1.0)
                 m.changeColor([255,255,255])
-            for m in self.keyColumn:
-                m.draw(screen,m.rect.topleft,1.0)
+            for m in self.key_column:
+                m.draw(_screen,m.rect.topleft,1.0)
                 m.changeColor([255,255,255])
             
-            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
-            self.actionColumn[selectedSubOption].changeColor(rgb)
-            self.keyColumn[selectedSubOption].changeColor(rgb)
+            rgb = self._parent.bg.hsvtorgb(self._parent.bg.star_color)
+            self.action_column[selected_suboption].changeColor(rgb)
+            self.key_column[selected_suboption].changeColor(rgb)
             
             self.clock.tick(60)    
             pygame.display.update()
 
 class PlayerControlsMenu(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self, parent)
+    def __init__(self,_parent):
+        SubMenu.__init__(self, _parent)
         
-        self.menuText = [spriteManager.TextSprite('Player 1','rexlia rg',18,[255,255,255]),
+        self.menu_text = [spriteManager.TextSprite('Player 1','rexlia rg',18,[255,255,255]),
                          spriteManager.TextSprite('Exit','full Pack 2025',20,[255,255,255])]
         
-        self.actionColumn = [spriteManager.TextSprite('left','rexlia rg',16,[55,55,55]),
+        self.action_column = [spriteManager.TextSprite('left','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('right','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('up','rexlia rg',16,[55,55,55]),
                              spriteManager.TextSprite('down','rexlia rg',16,[55,55,55]),
@@ -562,7 +562,7 @@ class PlayerControlsMenu(SubMenu):
                              spriteManager.TextSprite('shield','rexlia rg',16,[55,55,55]),
                              ]
         
-        self.keyColumn = [spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+        self.key_column = [spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
                           spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
                           spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
                           spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
@@ -572,78 +572,78 @@ class PlayerControlsMenu(SubMenu):
                           spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
                           ]
         
-        self.statusText = spriteManager.TextSprite('','rexlia rg',16,[255,255,255])
+        self.status_text = spriteManager.TextSprite('','rexlia rg',16,[255,255,255])
         
         self.player_num = 0
         
-        for i in range(0,len(self.actionColumn)):
-            self.actionColumn[i].rect.left = self.parent.settings['windowSize'][0] / 4
-            self.keyColumn[i].rect.right = (self.parent.settings['windowSize'][0] / 4) * 3
-            self.actionColumn[i].rect.centery = 76 + 16*i
-            self.keyColumn[i].rect.centery = 76 + 16*i
+        for i in range(0,len(self.action_column)):
+            self.action_column[i].rect.left = self._parent.settings['windowSize'][0] / 4
+            self.key_column[i].rect.right = (self._parent.settings['windowSize'][0] / 4) * 3
+            self.action_column[i].rect.centery = 76 + 16*i
+            self.key_column[i].rect.centery = 76 + 16*i
             
-        self.menuText[0].rect.midtop = (self.parent.settings['windowSize'][0] / 2,20)
-        self.menuText[-1].rect.midbottom = (self.parent.settings['windowSize'][0] / 2,self.parent.settings['windowSize'][1] - 20)
+        self.menu_text[0].rect.midtop = (self._parent.settings['windowSize'][0] / 2,20)
+        self.menu_text[-1].rect.midbottom = (self._parent.settings['windowSize'][0] / 2,self._parent.settings['windowSize'][1] - 20)
         
-        self.statusText.rect.midtop = self.menuText[0].rect.midbottom
-        self.selectedOption = 0
+        self.status_text.rect.midtop = self.menu_text[0].rect.midbottom
+        self.selected_option = 0
     
-    def confirmOption(self, optionNum):
-        SubMenu.confirmOption(self, optionNum)    
-        if optionNum == 0:
+    def confirmOption(self, _optionNum):
+        SubMenu.confirmOption(self, _optionNum)    
+        if _optionNum == 0:
             status = self.bindControls(self.screen)
             self.controls = []
             for i in range(0,4):
                 self.controls.append(settingsManager.getControls(i))
-        elif optionNum == 1:
+        elif _optionNum == 1:
             self.status = 1
             return
         if status == -1: self.status = -1
         
-    def incrementOption(self, optionNum, direction):
-        SubMenu.incrementOption(self, optionNum, direction)
-        if optionNum == 0:
-            self.player_num += direction
+    def incrementOption(self, _optionNum, _direction):
+        SubMenu.incrementOption(self, _optionNum, _direction)
+        if _optionNum == 0:
+            self.player_num += _direction
             self.player_num = self.player_num % 4
     
-    def update(self, screen):
-        SubMenu.update(self, screen)
+    def update(self, _screen):
+        SubMenu.update(self, _screen)
         
-        for i,action in enumerate(self.actionColumn):
-            keyControls = settingsManager.getSetting('controls_'+str(self.player_num)) 
-            self.keyColumn[i].changeText('---')
-            if keyControls:
-                k = keyControls.getKeysForAction(action.text)
+        for i,action in enumerate(self.action_column):
+            key_controls = settingsManager.getSetting('controls_'+str(self.player_num)) 
+            self.key_column[i].changeText('---')
+            if key_controls:
+                k = key_controls.getKeysForAction(action.text)
                 if k:
-                    self.keyColumn[i].changeText(str(k))
+                    self.key_column[i].changeText(str(k))
                 
-        for m in self.actionColumn:
-            m.draw(screen,m.rect.topleft,1.0)
+        for m in self.action_column:
+            m.draw(_screen,m.rect.topleft,1.0)
             m.changeColor([55,55,55])
-        for m in self.keyColumn:
-            m.draw(screen,m.rect.topleft,1.0)
+        for m in self.key_column:
+            m.draw(_screen,m.rect.topleft,1.0)
             m.changeColor([55,55,55])
         
-        self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
-        self.menuText[0].changeText('Player '+str(self.player_num+1))
+        self.status_text.draw(_screen, self.status_text.rect.topleft, 1.0)
+        self.menu_text[0].changeText('Player '+str(self.player_num+1))
         
         
-    def executeMenu(self, screen):
-        return SubMenu.executeMenu(self, screen)
+    def executeMenu(self, _screen):
+        return SubMenu.executeMenu(self, _screen)
             
-    def bindControls(self,screen):
-        keyIdMap = {}
+    def bindControls(self,_screen):
+        key_id_map = {}
         for name, value in vars(pygame.constants).items():
             if name.startswith("K_"):
-                keyIdMap[value] = name
+                key_id_map[value] = name
         
-        self.statusText.changeText('To use a gamepad, press a button on that gamepad now')        
-        selectedSubOption = 0
+        self.status_text.changeText('To use a gamepad, press a button on that gamepad now')        
+        selected_suboption = 0
         
-        newKeybinding = {}
+        new_key_binding = {}
         
-        heldKeys = []
-        workingKeys = []
+        held_keys = []
+        working_keys = []
         
         status = 0
         ready = False
@@ -654,17 +654,17 @@ class PlayerControlsMenu(SubMenu):
                 if event.type == pygame.QUIT:
                     return -1
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    self.statusText.changeText('')
+                    self.status_text.changeText('')
                     return 0
                 elif event.type == pygame.KEYDOWN:
-                    value = (self.actionColumn[selectedSubOption].text, event.key)
-                    if value not in workingKeys:
-                        workingKeys.append(value)
-                    heldKeys.append(event.key)
+                    value = (self.action_column[selected_suboption].text, event.key)
+                    if value not in working_keys:
+                        working_keys.append(value)
+                    held_keys.append(event.key)
                 elif event.type == pygame.KEYUP:
-                    if event.key in heldKeys:
-                        heldKeys.remove(event.key)
-                        if not heldKeys:
+                    if event.key in held_keys:
+                        held_keys.remove(event.key)
+                        if not held_keys:
                             ready = True
                 elif event.type == pygame.JOYBUTTONDOWN:
                     joystick = pygame.joystick.Joystick(event.joy)
@@ -676,81 +676,81 @@ class PlayerControlsMenu(SubMenu):
                         settings['controlType_'+str(self.player_num)] = name
                     
                     settingsManager.saveSettings(settings)
-                    self.statusText.changeText('')
+                    self.status_text.changeText('')
                     return 0
                 
                 if ready:
-                    buttonList = []
-                    for action,key in workingKeys:
-                        newKeybinding[key] = action
-                        buttonList.append(keyIdMap[key])
-                    workingKeys = []
+                    button_list = []
+                    for action,key in working_keys:
+                        new_key_binding[key] = action
+                        button_list.append(key_id_map[key])
+                    working_keys = []
                      
-                    self.keyColumn[selectedSubOption].changeText(str(buttonList))
-                    selectedSubOption += 1
+                    self.key_column[selected_suboption].changeText(str(button_list))
+                    selected_suboption += 1
                     ready = False
                     
-                    if selectedSubOption >= len(self.actionColumn):
-                        newController = engine.controller.Controller(newKeybinding)
-                        settingsManager.getSetting().setting['controls_'+str(self.player_num)] = newController
+                    if selected_suboption >= len(self.action_column):
+                        new_controller = engine.controller.Controller(new_key_binding)
+                        settingsManager.getSetting().setting['controls_'+str(self.player_num)] = new_controller
                         settingsManager.getSetting().setting['controlType_'+str(self.player_num)] = 'Keyboard'
                         settingsManager.saveSettings(settingsManager.getSetting().setting)
-                        self.statusText.changeText('')
+                        self.status_text.changeText('')
                         return 0
                         
-            self.parent.bg.update(screen)
-            self.parent.bg.draw(screen,(0,0),1.0)
+            self._parent.bg.update(_screen)
+            self._parent.bg.draw(_screen,(0,0),1.0)
             
-            for m in self.menuText:
-                m.draw(screen,m.rect.topleft,1.0)
+            for m in self.menu_text:
+                m.draw(_screen,m.rect.topleft,1.0)
                 m.changeColor([55,55,55])
-            for m in self.actionColumn:
-                m.draw(screen,m.rect.topleft,1.0)
+            for m in self.action_column:
+                m.draw(_screen,m.rect.topleft,1.0)
                 m.changeColor([255,255,255])
-            for m in self.keyColumn:
-                m.draw(screen,m.rect.topleft,1.0)
+            for m in self.key_column:
+                m.draw(_screen,m.rect.topleft,1.0)
                 m.changeColor([255,255,255])
             
-            self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
+            self.status_text.draw(_screen, self.status_text.rect.topleft, 1.0)
         
-            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
-            self.actionColumn[selectedSubOption].changeColor(rgb)
-            self.keyColumn[selectedSubOption].changeColor(rgb)
+            rgb = self._parent.bg.hsvtorgb(self._parent.bg.star_color)
+            self.action_column[selected_suboption].changeColor(rgb)
+            self.key_column[selected_suboption].changeColor(rgb)
             
             self.clock.tick(60)    
             pygame.display.update()
 
 """               
 class PlayerControlsMenu(SubMenu):
-    def __init__(self, parent):
-        SubMenu.__init__(self, parent)
-        self.menuText = [spriteManager.TextSprite('Player 1','full Pack 2025',20,[255,255,255]),
+    def __init__(self, _parent):
+        SubMenu.__init__(self, _parent)
+        self.menu_text = [spriteManager.TextSprite('Player 1','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Use Gamepad: None','full Pack 2025',20,[255,255,255]),
                          spriteManager.TextSprite('Exit','full Pack 2025',20,[255,255,255])]
         
         
-        for i in range(0,len(self.menuText)):
-            self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
-            self.menuText[i].rect.centery = 90 + i*60
+        for i in range(0,len(self.menu_text)):
+            self.menu_text[i].rect.centerx = self._parent.settings['windowSize'][0] / 2
+            self.menu_text[i].rect.centery = 90 + i*60
                 
-        self.selectedOption = 0
+        self.selected_option = 0
     
-    def executeMenu(self, screen):
-        return SubMenu.executeMenu(self, screen)
+    def executeMenu(self, _screen):
+        return SubMenu.executeMenu(self, _screen)
 """
  
 class GraphicsMenu(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self,parent)
+    def __init__(self,_parent):
+        SubMenu.__init__(self,_parent)
         
-        self.categoryList = ['Window', 'Debug']
-        self.currentCategory = 0
+        self.category_list = ['Window', 'Debug']
+        self.current_category = 0
         
-        self.leftColumn = {'Window': ['Resolution'],
+        self.left_column = {'Window': ['Resolution'],
                            'Debug': ['Display Hitboxes','Display Hurtboxes', 'Display Sprite Bounds', 'Display Platform Lines']
                            }
         
-        self.rightColumn = {'Resolution': ['640 x 480','1024 x 768'],
+        self.right_column = {'Resolution': ['640 x 480','1024 x 768'],
                             'Display Hitboxes': ['On','Off'],
                             'Display Hurtboxes': ['On','Off'],
                             'Display Sprite Bounds': ['On','Off'],
@@ -758,94 +758,94 @@ class GraphicsMenu(SubMenu):
                             }
         self.selected = 0
         
-        self.categoryText = spriteManager.TextSprite('Window','full Pack 2025',24,[255,255,255])
+        self.category_text = spriteManager.TextSprite('Window','full Pack 2025',24,[255,255,255])
         
         
-        self.selectedOption = 0
+        self.selected_option = 0
         
-    def executeMenu(self,screen):
+    def executeMenu(self,_screen):
         return 1
         
 
 class SoundMenu(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self, parent)
+    def __init__(self,_parent):
+        SubMenu.__init__(self, _parent)
         
         self.settings = settingsManager.getSetting().setting
                 
-        self.selectedOption = 0
-        self.selectedBlock = 0
+        self.selected_option = 0
+        self.selected_block = 0
         
-        self.musicVol = int(self.settings['musicVolume'] * 10)
-        self.soundVol = int(self.settings['sfxVolume'] * 10)
+        self.music_vol = int(self.settings['music_volume'] * 10)
+        self.sound_vol = int(self.settings['sfxVolume'] * 10)
         
-        self.menuText = [spriteManager.TextSprite('Music Volume: '+str(self.musicVol),'rexlia rg',16,[255,255,255]),
-                         spriteManager.TextSprite('SFX Volume: '+str(self.soundVol),'rexlia rg',16,[255,255,255]),
+        self.menu_text = [spriteManager.TextSprite('Music Volume: '+str(self.music_vol),'rexlia rg',16,[255,255,255]),
+                         spriteManager.TextSprite('SFX Volume: '+str(self.sound_vol),'rexlia rg',16,[255,255,255]),
                          spriteManager.TextSprite('Save', 'full Pack 2025', 24, [255,255,255]),
                          spriteManager.TextSprite('Cancel', 'full Pack 2025', 24, [255,255,255]),
                          ]
         
-        self.menuText[0].rect.midtop = (self.settings['windowWidth'] / 2,80)
-        self.menuText[1].rect.midtop = (self.settings['windowWidth'] / 2,180)
+        self.menu_text[0].rect.midtop = (self.settings['windowWidth'] / 2,80)
+        self.menu_text[1].rect.midtop = (self.settings['windowWidth'] / 2,180)
         
-        self.menuText[2].rect.center = (self.settings['windowWidth'] / 3,self.settings['windowHeight'] - 64)
-        self.menuText[3].rect.center = ((self.settings['windowWidth'] / 3) * 2,self.settings['windowHeight'] - 64)
+        self.menu_text[2].rect.center = (self.settings['windowWidth'] / 3,self.settings['windowHeight'] - 64)
+        self.menu_text[3].rect.center = ((self.settings['windowWidth'] / 3) * 2,self.settings['windowHeight'] - 64)
     
-    def confirmOption(self, optionNum):
-        SubMenu.confirmOption(self, optionNum)
-        if optionNum == 2:
-            self.settings['musicVolume'] = float(self.musicVol)/10
-            self.settings['sfxVolume'] = float(self.soundVol)/10
-            pygame.mixer.music.set_volume(float(self.musicVol)/10)
+    def confirmOption(self, _optionNum):
+        SubMenu.confirmOption(self, _optionNum)
+        if _optionNum == 2:
+            self.settings['music_volume'] = float(self.music_vol)/10
+            self.settings['sfxVolume'] = float(self.sound_vol)/10
+            pygame.mixer.music.set_volume(float(self.music_vol)/10)
             settingsManager.saveSettings(self.settings)
             self.status = 1
-        elif optionNum == 3:
+        elif _optionNum == 3:
             self.status = 1
     
-    def incrementOption(self, optionNum, direction):
-        SubMenu.incrementOption(self, optionNum, direction)
-        if optionNum == 0:
-            self.musicVol += direction
-            if self.musicVol > 10: self.musicVol = 10
-        elif optionNum == 1:
-            self.soundVol += direction
-            if self.soundVol > 10: self.soundVol = 10
+    def incrementOption(self, _optionNum, _direction):
+        SubMenu.incrementOption(self, _optionNum, _direction)
+        if _optionNum == 0:
+            self.music_vol += _direction
+            if self.music_vol > 10: self.music_vol = 10
+        elif _optionNum == 1:
+            self.sound_vol += _direction
+            if self.sound_vol > 10: self.sound_vol = 10
     
-    def update(self, screen):
-        self.menuText[0].changeText('Music Volume: '+str(self.musicVol))
-        self.menuText[1].changeText('SFX Volume: '+str(self.soundVol))
-        SubMenu.update(self, screen)        
+    def update(self, _screen):
+        self.menu_text[0].changeText('Music Volume: '+str(self.music_vol))
+        self.menu_text[1].changeText('SFX Volume: '+str(self.sound_vol))
+        SubMenu.update(self, _screen)        
         
-    def executeMenu(self,screen):
-        return SubMenu.executeMenu(self, screen)
+    def executeMenu(self,_screen):
+        return SubMenu.executeMenu(self, _screen)
 
 """ Modules and related Submenus """
 class ModulesMenu(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self, parent)
-        self.menuText = [
+    def __init__(self,_parent):
+        SubMenu.__init__(self, _parent)
+        self.menu_text = [
                          spriteManager.TextSprite('Back','full Pack 2025',24,[255,255,255])
                          ]
-        self.statusText = spriteManager.TextSprite('Module Manager not yet available','rexlia rg',18,[255,255,255])
+        self.status_text = spriteManager.TextSprite('Module Manager not yet available','rexlia rg',18,[255,255,255])
         
-        self.menuText[0].rect.centerx = settingsManager.getSetting('windowSize')[0] / 2
-        self.menuText[0].rect.bottom = settingsManager.getSetting('windowSize')[1] - 100
+        self.menu_text[0].rect.centerx = settingsManager.getSetting('windowSize')[0] / 2
+        self.menu_text[0].rect.bottom = settingsManager.getSetting('windowSize')[1] - 100
         
-        self.statusText.rect.top = 50
-        self.statusText.rect.centerx = settingsManager.getSetting('windowSize')[0] / 2
+        self.status_text.rect.top = 50
+        self.status_text.rect.centerx = settingsManager.getSetting('windowSize')[0] / 2
         
-        self.selectedOption = 0
+        self.selected_option = 0
     
-    def update(self, screen):
-        SubMenu.update(self, screen)
-        self.statusText.draw(screen,self.statusText.rect.topleft,1.0)
+    def update(self, _screen):
+        SubMenu.update(self, _screen)
+        self.status_text.draw(_screen,self.status_text.rect.topleft,1.0)
         
-    def confirmOption(self, optionNum):
+    def confirmOption(self, _optionNum):
         self.status = 1
-        SubMenu.confirmOption(self, optionNum)
+        SubMenu.confirmOption(self, _optionNum)
         
-    def executeMenu(self,screen):
-        return SubMenu.executeMenu(self, screen)
+    def executeMenu(self,_screen):
+        return SubMenu.executeMenu(self, _screen)
         
 class bgSpace(spriteManager.ImageSprite):
     def __init__(self):
@@ -854,92 +854,92 @@ class bgSpace(spriteManager.ImageSprite):
         self.rect = pygame.rect.Rect((0,0),self.image.get_size())
         
         self.stars = pygame.sprite.Group()
-        self.starColor = [float(random.randint(0,100))/100,1.0,1.0]
-        self.starTimer = 3
+        self.star_color = [float(random.randint(0,100))/100,1.0,1.0]
+        self.star_timer = 3
         
         for i in range(0,30):
             st = bgStar(random.randint(1,10))
             st.rect.x = random.randint(1,settingsManager.getSetting('windowSize')[0])
-            st.changeColor(self.starColor)
+            st.changeColor(self.star_color)
             self.stars.add(st)
             
-    def update(self,screen):
+    def update(self,_screen):
         # create more stars
-        self.starTimer -= 1
-        if self.starTimer == 0:
+        self.star_timer -= 1
+        if self.star_timer == 0:
             self.stars.add(bgStar(random.randint(1,10)))
-            self.starTimer = 3
+            self.star_timer = 3
             
         # recolor stars
-        self.starColor[0] += .001
-        if self.starColor[0] > 1: self.starColor[0] -= 1
+        self.star_color[0] += .001
+        if self.star_color[0] > 1: self.star_color[0] -= 1
         
         for star in self.stars:
-            star.changeColor(self.starColor)
+            star.changeColor(self.star_color)
             star.update()
         
         self.image.fill([0,0,0])
     
-    def hsvtorgb(self,hsv):
-        return tuple(i * 255 for i in colorsys.hsv_to_rgb(hsv[0],hsv[1],hsv[2]))
+    def hsvtorgb(self,_hsv):
+        return tuple(i * 255 for i in colorsys.hsv_to_rgb(_hsv[0],_hsv[1],_hsv[2]))
         
-    def draw(self, screen, offset, scale):
-        screen.blit(self.image,self.rect.topleft)
-        self.stars.draw(screen)
+    def draw(self, _screen, _offset, _scale):
+        _screen.blit(self.image,self.rect.topleft)
+        self.stars.draw(_screen)
         
 class bgStar(engine.article.Article):
-    def __init__(self,dist):
+    def __init__(self,_dist):
         engine.article.Article.__init__(self, settingsManager.createPath("sprites/star.png"), None,
                                         (settingsManager.getSetting('windowSize')[0],random.randint(0,settingsManager.getSetting('windowSize')[1])), 1)
-        self.dist = dist
+        self.dist = _dist
         self.color = [0,0,1]
         
-        self.image = pygame.transform.scale(self.image, (9*(11-dist)//10,9*(11-dist)//10))
+        self.image = pygame.transform.scale(self.image, (9*(11-_dist)//10,9*(11-_dist)//10))
         
     def update(self):
         self.rect.x -= 11 - self.dist
         if self.rect.right <= 0: self.kill()
     
-    def hsvtorgb(self,hsv):
-        return tuple(i * 255 for i in colorsys.hsv_to_rgb(hsv[0],hsv[1],hsv[2]))
+    def hsvtorgb(self,_hsv):
+        return tuple(i * 255 for i in colorsys.hsv_to_rgb(_hsv[0],_hsv[1],_hsv[2]))
     
-    def changeColor(self,to_color):
+    def changeColor(self,_toColor):
         from_color = self.hsvtorgb(self.color)
-        trueColor = self.hsvtorgb(to_color)
+        true_color = self.hsvtorgb(_toColor)
         
-        self.recolor(self.image, from_color, trueColor)
-        self.color = [to_color[0],to_color[1],to_color[2]]
+        self.recolor(self.image, from_color, true_color)
+        self.color = [_toColor[0],_toColor[1],_toColor[2]]
         
 
 """
 Dirty, awful code that must be rewritten
 """
 class GameSettingsMenu(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self, parent)
+    def __init__(self,_parent):
+        SubMenu.__init__(self, _parent)
         
         self.settings = settingsManager.getSetting().setting
         self.presets = self.settings['presetLists']
         
         self.current_preset = self.presets.index(self.settings['current_preset'])
-        self.selectionSlice = (0,10)
+        self.selection_slice = (0,10)
         
-        self.selectedOption = 0
-        self.selectedBlock = 0
-        self.menuText = [spriteManager.TextSprite(self.presets[self.current_preset], 'full Pack 2025', 24, [255,255,255])]
+        self.selected_option = 0
+        self.selected_block = 0
+        self.menu_text = [spriteManager.TextSprite(self.presets[self.current_preset], 'full Pack 2025', 24, [255,255,255])]
                          #spriteManager.TextSprite('Cancel','full Pack 2025', 22, [255,255,255]),
                          #spriteManager.TextSprite('Save','full Pack 2025', 22, [255,255,255]),
                          #]
         
-        numList = [0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]
+        num_list = [0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]
         
-        self.options = [OptionButton('Gravity Multiplier', numList, (self.settings['gravity'])),
-                        OptionButton('Weight Multiplier', numList, (self.settings['weight'])),
-                        OptionButton('Friction Multiplier', numList, (self.settings['friction'])),
-                        OptionButton('Air Mobility Multiplier', numList, (self.settings['airControl'])),
-                        OptionButton('Hit Stun Multiplier', numList, (self.settings['hitstun'])),
-                        OptionButton('Hit Lag Multiplier', numList, (self.settings['hitlag'])),
-                        OptionButton('Shield Stun Multiplier', numList, (self.settings['shieldStun'])),
+        self.options = [OptionButton('Gravity Multiplier', num_list, (self.settings['gravity'])),
+                        OptionButton('Weight Multiplier', num_list, (self.settings['weight'])),
+                        OptionButton('Friction Multiplier', num_list, (self.settings['friction'])),
+                        OptionButton('Air Mobility Multiplier', num_list, (self.settings['airControl'])),
+                        OptionButton('Hit Stun Multiplier', num_list, (self.settings['hitstun'])),
+                        OptionButton('Hit Lag Multiplier', num_list, (self.settings['hitlag'])),
+                        OptionButton('Shield Stun Multiplier', num_list, (self.settings['shieldStun'])),
                         
                         OptionButton('Ledge Conflict Type', ['hog','trump','share'], (self.settings['ledgeConflict'])),
                         OptionButton('Ledge Sweetspot Size', [[128,128],[64,64],[32,32]], (self.settings['ledgeSweetspotSize'])),
@@ -951,22 +951,22 @@ class GameSettingsMenu(SubMenu):
                         
                         ]
             
-        self.menuText[0].rect.centerx = self.settings['windowSize'][0] / 2
-        self.menuText[0].rect.top = 50
+        self.menu_text[0].rect.centerx = self.settings['windowSize'][0] / 2
+        self.menu_text[0].rect.top = 50
     
     def updateMenuText(self):
         settingsManager.getSetting().loadGameSettings(self.presets[self.current_preset])
-        self.selectionSlice = (0,10)
+        self.selection_slice = (0,10)
         
-        numList = [0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]
+        num_list = [0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]
         
-        self.options = [OptionButton('Gravity Multiplier', numList, (self.settings['gravity'])),
-                        OptionButton('Weight Multiplier', numList, (self.settings['weight'])),
-                        OptionButton('Friction Multiplier', numList, (self.settings['friction'])),
-                        OptionButton('Air Mobility Multiplier', numList, (self.settings['airControl'])),
-                        OptionButton('Hit Stun Multiplier', numList, (self.settings['hitstun'])),
-                        OptionButton('Hit Lag Multiplier', numList, (self.settings['hitlag'])),
-                        OptionButton('Shield Stun Multiplier', numList, (self.settings['shieldStun'])),
+        self.options = [OptionButton('Gravity Multiplier', num_list, (self.settings['gravity'])),
+                        OptionButton('Weight Multiplier', num_list, (self.settings['weight'])),
+                        OptionButton('Friction Multiplier', num_list, (self.settings['friction'])),
+                        OptionButton('Air Mobility Multiplier', num_list, (self.settings['airControl'])),
+                        OptionButton('Hit Stun Multiplier', num_list, (self.settings['hitstun'])),
+                        OptionButton('Hit Lag Multiplier', num_list, (self.settings['hitlag'])),
+                        OptionButton('Shield Stun Multiplier', num_list, (self.settings['shieldStun'])),
                         
                         OptionButton('Ledge Conflict Type', ['hog','trump','share'], (self.settings['ledgeConflict'])),
                         OptionButton('Ledge Sweetspot Size', [[128,128],[64,64],[32,32]], (self.settings['ledgeSweetspotSize'])),
@@ -979,80 +979,80 @@ class GameSettingsMenu(SubMenu):
                         ]
         
     def updateSlice(self):
-        if self.selectedOption <= self.selectionSlice[0] and self.selectionSlice[0] > 0:
-            diff = self.selectionSlice[0] - self.selectedOption
-            self.selectionSlice = (self.selectionSlice[0]-diff, self.selectionSlice[1]-diff)
-        if self.selectedOption >= (self.selectionSlice[1]-1) and self.selectionSlice[1] <= len(self.options):
-            diff = self.selectedOption - (self.selectionSlice[1] -1)
-            self.selectionSlice = (self.selectionSlice[0]+diff, self.selectionSlice[1]+diff)
+        if self.selected_option <= self.selection_slice[0] and self.selection_slice[0] > 0:
+            diff = self.selection_slice[0] - self.selected_option
+            self.selection_slice = (self.selection_slice[0]-diff, self.selection_slice[1]-diff)
+        if self.selected_option >= (self.selection_slice[1]-1) and self.selection_slice[1] <= len(self.options):
+            diff = self.selected_option - (self.selection_slice[1] -1)
+            self.selection_slice = (self.selection_slice[0]+diff, self.selection_slice[1]+diff)
         
-    def executeMenu(self,screen):
+    def executeMenu(self,_screen):
         return 1 #this one needs a total overhaul
         clock = pygame.time.Clock()
         controls = settingsManager.getControls('menu')
-        canPress = True
+        can_press = True
         holding = {'up': False,'down': False,'left': False,'right': False}
         
         while self.status == 0:
-            self.update(screen)
+            self.update(_screen)
             music = musicManager.getMusicManager()
             music.doMusicEvent()
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
                     holding[controls.get(event.key)] = True
                     if event.key == K_ESCAPE or controls.get(event.key) == 'cancel':
-                        if self.selectedBlock == 0:
+                        if self.selected_block == 0:
                             self.status = 1
                         else:
-                            self.selectedBlock = 0
-                            self.selectionSlice = (0,10)
-                            self.selectedOption = 0
+                            self.selected_block = 0
+                            self.selection_slice = (0,10)
+                            self.selected_option = 0
                             for opt in self.options:
                                 opt.changeColor([100,100,100])
                                 
                     '''if controls.get(event.key) == 'left':
-                        if self.selectedBlock == 0 and self.selectedOption == 0: #currently selecting preset switcher
+                        if self.selected_block == 0 and self.selected_option == 0: #currently selecting preset switcher
                             self.current_preset -= 1
                             self.current_preset = self.current_preset % len(self.presets)
-                            self.menuText[0].changeText(self.presets[self.current_preset])
+                            self.menu_text[0].changeText(self.presets[self.current_preset])
                             self.updateMenuText()
-                        if self.selectedBlock == 1:
-                            self.options[self.selectedOption].incVal(-1)
+                        if self.selected_block == 1:
+                            self.options[self.selected_option].incVal(-1)
                             
                             
                     if controls.get(event.key) == 'right':
-                        if self.selectedBlock == 0 and self.selectedOption == 0: #currently selecting preset switcher
+                        if self.selected_block == 0 and self.selected_option == 0: #currently selecting preset switcher
                             self.current_preset += 1
                             self.current_preset = self.current_preset % len(self.presets)
-                            self.menuText[0].changeText(self.presets[self.current_preset])
+                            self.menu_text[0].changeText(self.presets[self.current_preset])
                             self.updateMenuText()
-                        if self.selectedBlock == 1:
-                            self.options[self.selectedOption].incVal(1)
+                        if self.selected_block == 1:
+                            self.options[self.selected_option].incVal(1)
                             
                     if controls.get(event.key) == 'down':
-                        if self.selectedBlock == 0:
-                            self.selectedOption += 1
-                            self.selectedOption = self.selectedOption % len(self.menuText)
+                        if self.selected_block == 0:
+                            self.selected_option += 1
+                            self.selected_option = self.selected_option % len(self.menu_text)
                         else:
-                            self.selectedOption += 1
-                            self.selectedOption = self.selectedOption % len(self.options)
+                            self.selected_option += 1
+                            self.selected_option = self.selected_option % len(self.options)
                             self.updateSlice()
                             
                     if controls.get(event.key) == 'up':
-                        if self.selectedBlock == 0:
-                            self.selectedOption -= 1
-                            self.selectedOption = self.selectedOption % len(self.menuText)
+                        if self.selected_block == 0:
+                            self.selected_option -= 1
+                            self.selected_option = self.selected_option % len(self.menu_text)
                         else:
-                            self.selectedOption -= 1
-                            self.selectedOption = self.selectedOption % len(self.options)
+                            self.selected_option -= 1
+                            self.selected_option = self.selected_option % len(self.options)
                             self.updateSlice()'''
                                         
                     if controls.get(event.key) == 'confirm':
-                        if self.selectedBlock == 0: #not editing a preset
-                            if self.selectedOption == 0: #selecting a preset
-                                self.selectedBlock = 1
-                                self.selectedOption = 0
-                                self.selectionSlice = (0,10)
+                        if self.selected_block == 0: #not editing a preset
+                            if self.selected_option == 0: #selecting a preset
+                                self.selected_block = 1
+                                self.selected_option = 0
+                                self.selection_slice = (0,10)
                                 for opt in self.options:
                                     opt.changeColor([255,255,255])
 
@@ -1060,72 +1060,72 @@ class GameSettingsMenu(SubMenu):
                     holding[controls.get(event.key)] = False;
 
                 if event.type == pygame.USEREVENT+1:
-                    canPress = True;
+                    can_press = True;
                                     
                 if event.type == QUIT:
                     self.status = -1
 
-            for keyName,key_value in holding.items():
-                if key_value and canPress: 
-                    canPress = False
+            for key_name,key_value in holding.items():
+                if key_value and can_press: 
+                    can_press = False
                     pygame.time.set_timer(pygame.USEREVENT+1,200)
-                    if keyName == 'left':
-                        if self.selectedBlock == 0 and self.selectedOption == 0: #currently selecting preset switcher
+                    if key_name == 'left':
+                        if self.selected_block == 0 and self.selected_option == 0: #currently selecting preset switcher
                             self.current_preset -= 1
                             self.current_preset = self.current_preset % len(self.presets)
-                            self.menuText[0].changeText(self.presets[self.current_preset])
+                            self.menu_text[0].changeText(self.presets[self.current_preset])
                             self.updateMenuText()
-                        if self.selectedBlock == 1:
-                            self.options[self.selectedOption].incVal(-1)
-                    if keyName == 'right':
-                        if self.selectedBlock == 0 and self.selectedOption == 0: #currently selecting preset switcher
+                        if self.selected_block == 1:
+                            self.options[self.selected_option].incVal(-1)
+                    if key_name == 'right':
+                        if self.selected_block == 0 and self.selected_option == 0: #currently selecting preset switcher
                             self.current_preset += 1
                             self.current_preset = self.current_preset % len(self.presets)
-                            self.menuText[0].changeText(self.presets[self.current_preset])
+                            self.menu_text[0].changeText(self.presets[self.current_preset])
                             self.updateMenuText()
-                        if self.selectedBlock == 1:
-                            self.options[self.selectedOption].incVal(1)
-                    if keyName == 'down':
-                        if self.selectedBlock == 0:
-                            self.selectedOption += 1
-                            self.selectedOption = self.selectedOption % len(self.menuText)
+                        if self.selected_block == 1:
+                            self.options[self.selected_option].incVal(1)
+                    if key_name == 'down':
+                        if self.selected_block == 0:
+                            self.selected_option += 1
+                            self.selected_option = self.selected_option % len(self.menu_text)
                         else:
-                            self.selectedOption += 1
-                            self.selectedOption = self.selectedOption % len(self.options)
+                            self.selected_option += 1
+                            self.selected_option = self.selected_option % len(self.options)
                             self.updateSlice()
-                    if keyName == 'up':
-                        if self.selectedBlock == 0:
-                            self.selectedOption -= 1
-                            self.selectedOption = self.selectedOption % len(self.menuText)
+                    if key_name == 'up':
+                        if self.selected_block == 0:
+                            self.selected_option -= 1
+                            self.selected_option = self.selected_option % len(self.menu_text)
                         else:
-                            self.selectedOption -= 1
-                            self.selectedOption = self.selectedOption % len(self.options)
+                            self.selected_option -= 1
+                            self.selected_option = self.selected_option % len(self.options)
                             self.updateSlice()
 
-            self.parent.bg.update(screen)
-            self.parent.bg.draw(screen,(0,0),1.0)
+            self._parent.bg.update(_screen)
+            self._parent.bg.draw(_screen,(0,0),1.0)
             
-            self.menuText[0].draw(screen,self.menuText[0].rect.topleft,1.0)
+            self.menu_text[0].draw(_screen,self.menu_text[0].rect.topleft,1.0)
             
-            for m in self.menuText:
-                m.draw(screen,m.rect.topleft,1.0)
+            for m in self.menu_text:
+                m.draw(_screen,m.rect.topleft,1.0)
                 m.changeColor([255,255,255])
             
-            vertOff = 100
-            for opt in self.options[self.selectionSlice[0]:self.selectionSlice[1]]:
-                opt.setHeight(vertOff)
-                opt.draw(screen,(0,0),1.0)
-                if self.selectedBlock == 1:
+            vert_off = 100
+            for opt in self.options[self.selection_slice[0]:self.selection_slice[1]]:
+                opt.setHeight(vert_off)
+                opt.draw(_screen,(0,0),1.0)
+                if self.selected_block == 1:
                     opt.changeColor([255,255,255])
-                vertOff += 25
+                vert_off += 25
                 
-            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
-            if self.selectedBlock == 0:
-                self.menuText[self.selectedOption].changeColor(rgb)
+            rgb = self._parent.bg.hsvtorgb(self._parent.bg.star_color)
+            if self.selected_block == 0:
+                self.menu_text[self.selected_option].changeColor(rgb)
             else:
-                self.options[self.selectedOption].changeColor(rgb)
+                self.options[self.selected_option].changeColor(rgb)
                 
-            #self.menuText.draw(screen, (128,128), 1.0)
+            #self.menu_text.draw(_screen, (128,128), 1.0)
             clock.tick(60)    
             pygame.display.flip()
             
@@ -1133,130 +1133,130 @@ class GameSettingsMenu(SubMenu):
 
         
 class OptionButton(spriteManager.TextSprite):
-    def __init__(self, name, vals, startingVal):
+    def __init__(self, _name, _vals, _startingVal):
         spriteManager.Sprite.__init__(self)
         
-        self.possibleVals = vals
-        if startingVal in vals:
-            self.selectedValue = self.possibleVals.index(startingVal) 
+        self.possibleVals = _vals
+        if _startingVal in _vals:
+            self.selected_value = self.possibleVals.index(_startingVal) 
         else:
             print("Not in list of options")
-            self.selectedValue = 0
+            self.selected_value = 0
         
-        self.nameText = spriteManager.TextSprite(name, 'rexlia rg',18,[100,100,100])
-        self.nameText.rect.left = 20
+        self.name_text = spriteManager.TextSprite(_name, 'rexlia rg',18,[100,100,100])
+        self.name_text.rect.left = 20
         
-        self.valText = spriteManager.TextSprite(str(self.possibleVals[self.selectedValue]), 'rexlia rg',18,[100,100,100])
-        self.valText.rect.right = 620
+        self.val_text = spriteManager.TextSprite(str(self.possibleVals[self.selected_value]), 'rexlia rg',18,[100,100,100])
+        self.val_text.rect.right = 620
         
-    def changeColor(self,color):
-        self.nameText.changeColor(color)
-        self.valText.changeColor(color)
+    def changeColor(self,_color):
+        self.name_text.changeColor(_color)
+        self.val_text.changeColor(_color)
         
     def getValue(self):
-        return self.possibleVals[self.selectedValue]
+        return self.possibleVals[self.selected_value]
     
     def update(self):
         pass
     
-    def incVal(self,inc):
-        self.selectedValue += inc
-        self.selectedValue = self.selectedValue % len(self.possibleVals)
+    def incVal(self,_inc):
+        self.selected_value += _inc
+        self.selected_value = self.selected_value % len(self.possibleVals)
         
-    def changeVal(self,val):
-        if val in self.possibleVals:
-            self.selectedValue = self.possibleVals.index(val)
+    def changeVal(self,_val):
+        if _val in self.possibleVals:
+            self.selected_value = self.possibleVals.index(_val)
     
-    def setHeight(self,top):
-        self.nameText.rect.top = top
-        self.valText.rect.top = top
+    def setHeight(self,_top):
+        self.name_text.rect.top = _top
+        self.val_text.rect.top = _top
         
-    def draw(self,screen,offset,scale):
-        self.valText.text = str(self.getValue())
-        self.nameText.draw(screen, self.nameText.rect.topleft, scale)
-        self.valText.draw(screen, self.valText.rect.topleft, scale)  
+    def draw(self,_screen,_offset,_scale):
+        self.val_text.text = str(self.getValue())
+        self.name_text.draw(_screen, self.name_text.rect.topleft, _scale)
+        self.val_text.draw(_screen, self.val_text.rect.topleft, _scale)  
 
 class RebindMenu(SubMenu):
-    def __init__(self,parent):
-        self.KeyIdMap = {}
-        self.KeyNameMap = {}
+    def __init__(self,_parent):
+        self.key_id_map = {}
+        self.key_name_map = {}
         for name, value in vars(pygame.constants).items():
             if name.startswith("K_"):
-                self.KeyIdMap[value] = name
-                self.KeyNameMap[name] = value
-        SubMenu.__init__(self,parent)
-        self.menuText = [spriteManager.TextSprite('','full Pack 2025',25,[255,255,255]),
+                self.key_id_map[value] = name
+                self.key_name_map[name] = value
+        SubMenu.__init__(self,_parent)
+        self.menu_text = [spriteManager.TextSprite('','full Pack 2025',25,[255,255,255]),
                          spriteManager.TextSprite('Hold keys to bind multiple','full Pack 2025',15,[255,255,255]),
                          spriteManager.TextSprite('Press ','full Pack 2025',15,[255,255,255])]
-        self.menuText[0].rect.center = (self.parent.settings['windowSize'][0] / 2,self.parent.settings['windowSize'][1] / 2)
-        self.menuText[1].rect.center = (self.parent.settings['windowSize'][0] / 2,self.parent.settings['windowSize'][1] / 6) 
-        self.menuText[2].rect.center = (self.parent.settings['windowSize'][0] / 2,self.parent.settings['windowSize'][1] *  5 / 6)
+        self.menu_text[0].rect.center = (self._parent.settings['windowSize'][0] / 2,self._parent.settings['windowSize'][1] / 2)
+        self.menu_text[1].rect.center = (self._parent.settings['windowSize'][0] / 2,self._parent.settings['windowSize'][1] / 6) 
+        self.menu_text[2].rect.center = (self._parent.settings['windowSize'][0] / 2,self._parent.settings['windowSize'][1] *  5 / 6)
         self.status = 0
         
-    def executeMenu(self,screen,toBind):
+    def executeMenu(self,_screen,_toBind):
         clock = pygame.time.Clock()
-        notBound = True
+        not_bound = True
         bindings = []
-        currentString = ''
-        keysDown = 0
-        self.menuText[2].changeText('Press '+ toBind)
+        current_string = ''
+        keys_down = 0
+        self.menu_text[2].changeText('Press '+ _toBind)
         
         while self.status == 0:
             music = musicManager.getMusicManager()
             music.doMusicEvent()
-            currentString = ''
+            current_string = ''
             for i in range(0,len(bindings)):
-                currentString += self.KeyIdMap[bindings[i]][2:]
+                current_string += self.key_id_map[bindings[i]][2:]
                 if i < len(bindings) - 1:
-                    currentString += ' - '
-            self.menuText[0].changeText(currentString)
+                    current_string += ' - '
+            self.menu_text[0].changeText(current_string)
             for event in pygame.event.get():
                 if event.type == KEYDOWN:
                     bindings.append(event.key);
-                    keysDown += 1
+                    keys_down += 1
                 if event.type == KEYUP:
-                    keysDown -= 1
-                    notBound = False
-            if keysDown < 0:
-                notBound = True
-                keysDown = 0
-            if keysDown == 0 and not notBound:
+                    keys_down -= 1
+                    not_bound = False
+            if keys_down < 0:
+                not_bound = True
+                keys_down = 0
+            if keys_down == 0 and not not_bound:
                 return bindings
-            self.parent.bg.update(screen)
-            self.parent.bg.draw(screen,(0,0),1.0)
-            for text in self.menuText:
-                text.draw(screen, text.rect.topleft, 1.0)
+            self._parent.bg.update(_screen)
+            self._parent.bg.draw(_screen,(0,0),1.0)
+            for text in self.menu_text:
+                text.draw(_screen, text.rect.topleft, 1.0)
             
-            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
-            self.menuText[0].changeColor(rgb)
+            rgb = self._parent.bg.hsvtorgb(self._parent.bg.star_color)
+            self.menu_text[0].changeColor(rgb)
             pygame.display.flip()
             clock.tick(60)
 
 class RebindIndividual(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self,parent)
-        self.menuText = []
+    def __init__(self,_parent):
+        SubMenu.__init__(self,_parent)
+        self.menu_text = []
         self.labels = ('left','right','up','down','attack','special','jump','shield')
         for label in self.labels:
-            self.menuText.append(spriteManager.TextSprite(label + ' - ','full Pack 2025',20,[255,255,255]))
-        self.menuText.append(spriteManager.TextSprite('Save','full Pack 2025',20,[255,255,255]))
-        self.menuText.append(spriteManager.TextSprite('Cancel','full Pack 2025',20,[255,255,255]))
-        for i in range(0,len(self.menuText)):
-            self.menuText[i].rect.centerx = self.parent.settings['windowSize'][0] / 2
-            self.menuText[i].rect.centery = 60 + i*50
-        self.menuText[len(self.menuText)-2].rect.centerx = self.parent.settings['windowSize'][0] / 3
-        self.menuText[len(self.menuText)-1].rect.centerx = self.parent.settings['windowSize'][0] * 2 / 3
-        self.menuText[len(self.menuText)-2].rect.centery = self.parent.settings['windowSize'][1] - 25 
-        self.menuText[len(self.menuText)-1].rect.centery = self.parent.settings['windowSize'][1] - 25
-        self.selectedOption = 0
+            self.menu_text.append(spriteManager.TextSprite(label + ' - ','full Pack 2025',20,[255,255,255]))
+        self.menu_text.append(spriteManager.TextSprite('Save','full Pack 2025',20,[255,255,255]))
+        self.menu_text.append(spriteManager.TextSprite('Cancel','full Pack 2025',20,[255,255,255]))
+        for i in range(0,len(self.menu_text)):
+            self.menu_text[i].rect.centerx = self._parent.settings['windowSize'][0] / 2
+            self.menu_text[i].rect.centery = 60 + i*50
+        self.menu_text[len(self.menu_text)-2].rect.centerx = self._parent.settings['windowSize'][0] / 3
+        self.menu_text[len(self.menu_text)-1].rect.centerx = self._parent.settings['windowSize'][0] * 2 / 3
+        self.menu_text[len(self.menu_text)-2].rect.centery = self._parent.settings['windowSize'][1] - 25 
+        self.menu_text[len(self.menu_text)-1].rect.centery = self._parent.settings['windowSize'][1] - 25
+        self.selected_option = 0
 
-    def executeMenu(self,screen):
+    def executeMenu(self,_screen):
         controls = settingsManager.getControls('menu')
         clock = pygame.time.Clock()
         holding = {'up': False,'down': False,'left': False,'right': False}
         
         while self.status == 0:
-            self.update(screen)
+            self.update(_screen)
             music = musicManager.getMusicManager()
             music.doMusicEvent()
             for event in pygame.event.get():
@@ -1270,35 +1270,35 @@ class RebindIndividual(SubMenu):
                 if event.type == QUIT:
                     self.status = -1
                 if event.type == pygame.USEREVENT+1: 
-                    canPress = True;
+                    can_press = True;
 
-            for keyName,key_value in holding.items():
-                if key_value and canPress:
-                    canPress = False
+            for key_name,key_value in holding.items():
+                if key_value and can_press:
+                    can_press = False
                     pygame.time.set_timer(pygame.USEREVENT+1,150)
-                    if keyName == 'down':
-                        self.selectedOption += 1
-                        self.selectedOption = self.selectedOption % len(self.menuText)
-                    if keyName == 'up':
-                        self.selectedOption -= 1
-                        self.selectedOption = self.selectedOption % len(self.menuText)
-                    if keyName == 'left' or keyName == 'right':
-                        if self.selectedOption == 8:
-                            self.selectedOption = 9
-                        elif self.selectedOption == 9:
-                            self.selectedOption = 8
+                    if key_name == 'down':
+                        self.selected_option += 1
+                        self.selected_option = self.selected_option % len(self.menu_text)
+                    if key_name == 'up':
+                        self.selected_option -= 1
+                        self.selected_option = self.selected_option % len(self.menu_text)
+                    if key_name == 'left' or key_name == 'right':
+                        if self.selected_option == 8:
+                            self.selected_option = 9
+                        elif self.selected_option == 9:
+                            self.selected_option = 8
                     
 
-            self.parent.bg.update(screen)
-            self.parent.bg.draw(screen,(0,0),1.0)
+            self._parent.bg.update(_screen)
+            self._parent.bg.draw(_screen,(0,0),1.0)
             
-            for m in self.menuText:
-                m.draw(screen,m.rect.topleft,1.0)
+            for m in self.menu_text:
+                m.draw(_screen,m.rect.topleft,1.0)
                 m.changeColor([255,255,255])
-            rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
-            self.menuText[self.selectedOption].changeColor(rgb)
+            rgb = self._parent.bg.hsvtorgb(self._parent.bg.star_color)
+            self.menu_text[self.selected_option].changeColor(rgb)
                 
-            #self.menuText.draw(screen, (128,128), 1.0)
+            #self.menu_text.draw(_screen, (128,128), 1.0)
             clock.tick(60)    
             pygame.display.flip()
                     
@@ -1308,83 +1308,83 @@ class RebindIndividual(SubMenu):
 
 """
 class UpdateMenu(SubMenu):
-    def __init__(self,parent):
-        SubMenu.__init__(self, parent)
-        self.menuText = [spriteManager.TextSprite('Check','full Pack 2025',24,[255,255,255]),
+    def __init__(self,_parent):
+        SubMenu.__init__(self, _parent)
+        self.menu_text = [spriteManager.TextSprite('Check','full Pack 2025',24,[255,255,255]),
                          spriteManager.TextSprite('Cancel','full Pack 2025',24,[255,255,255])]
         
-        self.statusText = spriteManager.TextSprite('','rexlia rg',24,[255,255,255])
+        self.status_text = spriteManager.TextSprite('','rexlia rg',24,[255,255,255])
         
-        self.menuText[0].rect.centerx = self.parent.settings['windowSize'][0] / 3
-        self.menuText[1].rect.centerx = (self.parent.settings['windowSize'][0] / 3)*2
-        self.menuText[0].rect.centery = self.parent.settings['windowSize'][1] - 100
-        self.menuText[1].rect.centery = self.parent.settings['windowSize'][1] - 100
+        self.menu_text[0].rect.centerx = self._parent.settings['windowSize'][0] / 3
+        self.menu_text[1].rect.centerx = (self._parent.settings['windowSize'][0] / 3)*2
+        self.menu_text[0].rect.centery = self._parent.settings['windowSize'][1] - 100
+        self.menu_text[1].rect.centery = self._parent.settings['windowSize'][1] - 100
         
-        self.changeList = None
-        self.checkedList = False
-        self.confirmEnabled = True
+        self.change_list = None
+        self.checked_list = False
+        self.confirm_enabled = True
         
-        self.selectedOption = 0
+        self.selected_option = 0
         
-        self.updateThread = updater.UpdateThread(self)
+        self.update_thread = updater.UpdateThread(self)
         
-    def executeMenu(self, screen):
-        SubMenu.executeMenu(self, screen)
+    def executeMenu(self, _screen):
+        SubMenu.executeMenu(self, _screen)
     
-    def incrementOption(self,option,direction):
-        if self.selectedOption == 0:
-            self.selectedOption = 1
-        elif self.selectedOption == 1:
-            self.selectedOption = 0
+    def incrementOption(self,_option,_direction):
+        if self.selected_option == 0:
+            self.selected_option = 1
+        elif self.selected_option == 1:
+            self.selected_option = 0
     
-    def confirmOption(self,optionNum):
-        if optionNum == 0 and not self.updateThread.running:
-            if not self.checkedList:
-                self.updateThread.start()
-                self.confirmEnabled = False
-                self.menuText[0].changeColor([55,55,55])
+    def confirmOption(self,_optionNum):
+        if _optionNum == 0 and not self.update_thread.running:
+            if not self.checked_list:
+                self.update_thread.start()
+                self.confirm_enabled = False
+                self.menu_text[0].changeColor([55,55,55])
             else:
-                if self.changeList:
-                    self.updateThread.start()
+                if self.change_list:
+                    self.update_thread.start()
            
-        elif optionNum == 1:
-            self.updateThread
+        elif _optionNum == 1:
+            self.update_thread
             self.status = 1
         
-    def update(self, screen):
-        self.parent.bg.update(screen)
-        self.parent.bg.draw(screen,(0,0),1.0)
+    def update(self, _screen):
+        self._parent.bg.update(_screen)
+        self._parent.bg.draw(_screen,(0,0),1.0)
         
-        if not self.confirmEnabled:
-            self.menuText[0].changeColor([55,55,55])
-            if self.selectedOption == 0:
-                self.selectedOption = 1
+        if not self.confirm_enabled:
+            self.menu_text[0].changeColor([55,55,55])
+            if self.selected_option == 0:
+                self.selected_option = 1
         
-        for m in self.menuText:
-            m.draw(screen,m.rect.topleft,1.0)
+        for m in self.menu_text:
+            m.draw(_screen,m.rect.topleft,1.0)
             m.changeColor([255,255,255])
         
-        rgb = self.parent.bg.hsvtorgb(self.parent.bg.starColor)
-        self.menuText[self.selectedOption].changeColor(rgb)    
+        rgb = self._parent.bg.hsvtorgb(self._parent.bg.star_color)
+        self.menu_text[self.selected_option].changeColor(rgb)    
         
-        if self.checkedList:
-            if self.changedList == False:
-                self.statusText.changeText('Unable to update. Please try again later')
-            elif self.changeList == []:
-                self.statusText.changeText('No update available')
+        if self.checked_list:
+            if self.changed_list == False:
+                self.status_text.changeText('Unable to update. Please try again later')
+            elif self.change_list == []:
+                self.status_text.changeText('No update available')
             else:
-                self.statusText.changeText('Update is available')
-                self.updateThread.mode = 1
-                self.confirmEnabled = True
-                self.menuText[0].changeText('Update')
-                self.menuText[0].changeColor(rgb)
-                self.selectedOption = 0
+                self.status_text.changeText('Update is available')
+                self.update_thread.mode = 1
+                self.confirm_enabled = True
+                self.menu_text[0].changeText('Update')
+                self.menu_text[0].changeColor(rgb)
+                self.selected_option = 0
                 
             self.recenterStatus()
-        self.statusText.draw(screen, self.statusText.rect.topleft, 1.0)
+        self.status_text.draw(_screen, self.status_text.rect.topleft, 1.0)
      
     def recenterStatus(self):
-        self.statusText.rect.centerx = self.parent.settings['windowSize'][0] / 2
+        self.status_text.rect.centerx = self._parent.settings['windowSize'][0] / 2
 """
 
 if __name__  == '__main__': main()

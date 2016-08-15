@@ -12,10 +12,10 @@ import sss
     
 import musicManager
 class CSSScreen():
-    def __init__(self,rules=None):
+    def __init__(self,_rules=None):
         settings = settingsManager.getSetting().setting
         
-        self.rules = rules
+        self.rules = _rules
         self.height = settings['windowHeight']
         self.width = settings['windowWidth']
         
@@ -26,14 +26,14 @@ class CSSScreen():
         background = background.convert()
     
         clock = pygame.time.Clock()
-        self.playerControls = []
-        self.playerPanels = []
+        self.player_controls = []
+        self.player_panels = []
         
         for i in range(0,4):
-            self.playerControls.append(settingsManager.getControls(i))
-            self.playerPanels.append(PlayerPanel(i))
-            self.playerControls[i].fighter = self.playerPanels[i] #So playerPanel will take the inputs
-            self.playerControls[i].flushInputs()
+            self.player_controls.append(settingsManager.getControls(i))
+            self.player_panels.append(PlayerPanel(i))
+            self.player_controls[i].fighter = self.player_panels[i] #So playerPanel will take the inputs
+            self.player_controls[i].flushInputs()
         
         status = 0
         musicManager.getMusicManager().stopMusic(100)
@@ -45,23 +45,23 @@ class CSSScreen():
                 musicManager.getMusicManager().rollMusic('css')
             
             #Start event loop
-            for bindings in self.playerControls:
+            for bindings in self.player_controls:
                 bindings.passInputs()
                 
             for event in pygame.event.get():
                 
-                for bindings in self.playerControls:
+                for bindings in self.player_controls:
                     k = bindings.getInputs(event)
                     if k == 'attack':
                         if self.checkForSelections():
                             sss.StageScreen(self.rules,self.getFightersFromPanels())
-                            for panel in self.playerPanels:
-                                panel.activeObject = panel.wheel
-                                panel.chosenFighter = None
-                                panel.bgSurface = None                
+                            for panel in self.player_panels:
+                                panel.active_object = panel.wheel
+                                panel.chosen_fighter = None
+                                panel.bg_surface = None                
                             for i in range(0,4):
-                                self.playerControls[i].fighter = self.playerPanels[i] #So playerPanel will take the inputs
-                                self.playerControls[i].flushInputs()
+                                self.player_controls[i].fighter = self.player_panels[i] #So playerPanel will take the inputs
+                                self.player_controls[i].flushInputs()
                 if event.type == pygame.QUIT:
                     status = -1
                 elif event.type == pygame.KEYDOWN:
@@ -70,7 +70,7 @@ class CSSScreen():
             #End event loop
             
             screen.fill((128, 128, 128))
-            for panel in self.playerPanels:
+            for panel in self.player_panels:
                 panel.update()
                 panel.draw(screen)
                 
@@ -78,28 +78,28 @@ class CSSScreen():
             clock.tick(60)
 
     def checkForSelections(self):
-        for panel in self.playerPanels:
-            if panel.active and panel.chosenFighter == None:
+        for panel in self.player_panels:
+            if panel.active and panel.chosen_fighter == None:
                 return False
-        if not any([x.active for x in self.playerPanels]):
+        if not any([x.active for x in self.player_panels]):
             return False
         return True
     
     def getFightersFromPanels(self):
-        fighterList = []
-        for panel in self.playerPanels:
+        fighter_list = []
+        for panel in self.player_panels:
             if panel.active:
-                fighterList.append(panel.chosenFighter)
-        return fighterList
+                fighter_list.append(panel.chosen_fighter)
+        return fighter_list
     
 class CSSWidget():
-    def __init__(self,panel,displayList,choicesList):
-        self.previousWidget = None
-        self.nextWidget = None
-        self.panel = panel
+    def __init__(self,_panel,_displayList,_choicesList):
+        self.previous_widget = None
+        self.next_widget = None
+        self.panel = _panel
         self.choices = []
-        for i,key in displayList:
-            self.choices.append((key,choicesList[i]))
+        for i,key in _displayList:
+            self.choices.append((key,_choicesList[i]))
         
     def onConfirm(self):
         pass
@@ -108,144 +108,144 @@ class CSSWidget():
         pass
        
 class FighterWheel():
-    def __init__(self,player_num):
+    def __init__(self,_playerNum):
         self.fighters = []
         
         # Load all files.
         directory = settingsManager.createPath("fighters")
-        fightercount = 0
+        fighter_count = 0
         for subdir in next(os.walk(directory))[1]:
             if(subdir == '__pycache__'):
                 continue
-            fighterpy = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"fighter.py"),suffix=str(fightercount))
+            fighter_py = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"fighter.py"),suffix=str(fighter_count))
             #try:
-            if fighterpy:
-                fighter = fighterpy.getFighter(os.path.join(directory,subdir),player_num)
+            if fighter_py:
+                fighter = fighter_py.getFighter(os.path.join(directory,subdir),_playerNum)
             else:
-                fighter = abstractFighter.AbstractFighter(os.path.join(directory,subdir),player_num)
+                fighter = abstractFighter.AbstractFighter(os.path.join(directory,subdir),_playerNum)
             if (fighter == None):
                 print("No fighter found at " + os.path.join(directory,subdir,"fighter.py"))
             else:
-                fightercount += 1
+                fighter_count += 1
                 self.fighters.append(fighter)      
         
-        self.currentIndex = 0
-        self.currentFighter = self.fighters[0]
-        self.wheelSize = 9
-        self.visibleSprites = [None for _ in range(self.wheelSize)]
+        self.current_index = 0
+        self.current_fighter = self.fighters[0]
+        self.wheel_size = 9
+        self.visible_sprites = [None for _ in range(self.wheel_size)]
         self.animateWheel()
-        self.wheelShadow = spriteManager.ImageSprite(settingsManager.createPath(os.path.join("sprites","cssbar_shadow.png")))
+        self.wheel_shadow = spriteManager.ImageSprite(settingsManager.createPath(os.path.join("sprites","cssbar_shadow.png")))
         
-    def changeSelected(self,increment):
-        self.currentIndex = self.currentIndex + increment
-        self.currentFighter = self.fighters[self.currentIndex % len(self.fighters)]
+    def changeSelected(self,_increment):
+        self.current_index = self.current_index + _increment
+        self.current_fighter = self.fighters[self.current_index % len(self.fighters)]
         self.animateWheel()
         
-    def fighterAt(self,offset):
-        return self.fighters[(self.currentIndex + offset) % len(self.fighters)]
+    def fighterAt(self,_offset):
+        return self.fighters[(self.current_index + _offset) % len(self.fighters)]
     
     def animateWheel(self):
-        self.visibleSprites[0] = self.fighterAt(0).css_icon
-        for i in range(1,(self.wheelSize//2)+1):
-            self.visibleSprites[2*i-1] = self.fighterAt(i).css_icon
-            self.visibleSprites[2*i] = self.fighterAt(-1 * i).css_icon
+        self.visible_sprites[0] = self.fighterAt(0).css_icon
+        for i in range(1,(self.wheel_size//2)+1):
+            self.visible_sprites[2*i-1] = self.fighterAt(i).css_icon
+            self.visible_sprites[2*i] = self.fighterAt(-1 * i).css_icon
                         
-        [spriteManager.ImageSprite.alpha(sprite, 128) for sprite in self.visibleSprites]
-        self.visibleSprites[0].alpha(255)
+        [spriteManager.ImageSprite.alpha(sprite, 128) for sprite in self.visible_sprites]
+        self.visible_sprites[0].alpha(255)
         
-    def draw(self, screen, location):
+    def draw(self, _screen, _location):
         center = 112
-        blankImage = pygame.Surface([256,32], pygame.SRCALPHA, 32).convert_alpha()
-        blankImage.blit(self.visibleSprites[0].image, [center,0])
-        for i in range(1,(self.wheelSize//2)+1):
-            blankImage.blit(self.visibleSprites[2*i-1].image, [center + (32*i),0])
-            blankImage.blit(self.visibleSprites[2*i].image, [center - (32*i),0])
+        blank_image = pygame.Surface([256,32], pygame.SRCALPHA, 32).convert_alpha()
+        blank_image.blit(self.visible_sprites[0].image, [center,0])
+        for i in range(1,(self.wheel_size//2)+1):
+            blank_image.blit(self.visible_sprites[2*i-1].image, [center + (32*i),0])
+            blank_image.blit(self.visible_sprites[2*i].image, [center - (32*i),0])
         
-        blankImage.blit(self.wheelShadow.image,[0,0])
-        screen.blit(blankImage, location)
+        blank_image.blit(self.wheel_shadow.image,[0,0])
+        _screen.blit(blank_image, _location)
                      
 class PlayerPanel(pygame.Surface):
-    def __init__(self,player_num):
+    def __init__(self,_playerNum):
         pygame.Surface.__init__(self,(settingsManager.getSetting('windowWidth')//2,
                                 settingsManager.getSetting('windowHeight')//2))
         
-        self.keys = settingsManager.getControls(player_num)
-        self.player_num = player_num
-        self.wheel = FighterWheel(player_num)
+        self.keys = settingsManager.getControls(_playerNum)
+        self.player_num = _playerNum
+        self.wheel = FighterWheel(_playerNum)
         self.active = False
-        self.activeObject = self.wheel
-        self.chosenFighter = None
+        self.active_object = self.wheel
+        self.chosen_fighter = None
         
-        self.wheelIncrement = 0
-        self.holdtime = 0
-        self.holdDistance = 0
-        self.wheelOffset = [(self.get_width() - 256) // 2,
+        self.wheel_increment = 0
+        self.hold_time = 0
+        self.hold_distance = 0
+        self.wheel_offset = [(self.get_width() - 256) // 2,
                             (self.get_height() - 32)]
-        self.bgSurface = None
+        self.bg_surface = None
     
     def update(self):
-        if self.wheelIncrement != 0:
-            if self.holdtime > self.holdDistance:
-                if self.holdDistance == 0:
-                    self.holdDistance = 30
-                elif self.holdDistance == 30:
-                    self.holdDistance = 20
-                elif self.holdDistance == 20:
-                    self.holdDistance = 10
+        if self.wheel_increment != 0:
+            if self.hold_time > self.hold_distance:
+                if self.hold_distance == 0:
+                    self.hold_distance = 30
+                elif self.hold_distance == 30:
+                    self.hold_distance = 20
+                elif self.hold_distance == 20:
+                    self.hold_distance = 10
                 settingsManager.getSfx().playSound('selectL')
-                self.wheel.changeSelected(self.wheelIncrement)
-                self.holdtime = 0
+                self.wheel.changeSelected(self.wheel_increment)
+                self.hold_time = 0
             else:
-                self.holdtime += 1
+                self.hold_time += 1
                 
-        if self.bgSurface and self.bgSurface.get_alpha() > 128:
-            self.bgSurface.set_alpha(self.bgSurface.get_alpha() - 10)
+        if self.bg_surface and self.bg_surface.get_alpha() > 128:
+            self.bg_surface.set_alpha(self.bg_surface.get_alpha() - 10)
                 
-    def keyPressed(self,key):
-        if key != 'special' and self.active == False:
+    def keyPressed(self,_key):
+        if _key != 'special' and self.active == False:
             self.active = True
             return
-        if key == 'special' and self.active == True:
-            if self.activeObject == self.wheel:
+        if _key == 'special' and self.active == True:
+            if self.active_object == self.wheel:
                 self.active = False
                 return
             else:
-                self.activeObject = self.wheel
-                self.chosenFighter = None
-                self.bgSurface = None
+                self.active_object = self.wheel
+                self.chosen_fighter = None
+                self.bg_surface = None
                 return
         #TODO: Add more sound effects and shutter sprite
         
-        if key == 'left':
-            if self.activeObject == self.wheel:
-                self.wheelIncrement = -1
-        elif key == 'right':
-            if self.activeObject == self.wheel:
-                self.wheelIncrement = 1
-        elif key == 'attack':
-            if self.activeObject == self.wheel:
-                self.bgSurface = self.copy()
-                self.bgSurface.set_alpha(240)
-                self.activeObject = None
-                self.chosenFighter = self.wheel.fighterAt(0)
+        if _key == 'left':
+            if self.active_object == self.wheel:
+                self.wheel_increment = -1
+        elif _key == 'right':
+            if self.active_object == self.wheel:
+                self.wheel_increment = 1
+        elif _key == 'attack':
+            if self.active_object == self.wheel:
+                self.bg_surface = self.copy()
+                self.bg_surface.set_alpha(240)
+                self.active_object = None
+                self.chosen_fighter = self.wheel.fighterAt(0)
                 
-    def key_released(self,key):
-        if key == 'right' or key == 'left':
-            self.wheelIncrement = 0
-            self.holdDistance = 0
-            self.holdtime = 0
+    def keyReleased(self,_key):
+        if _key == 'right' or _key == 'left':
+            self.wheel_increment = 0
+            self.hold_distance = 0
+            self.hold_time = 0
     
-    def draw(self,screen):
+    def draw(self,_screen):
         if self.active:
             self.fill((0,0,0))
-            if self.bgSurface:
-                self.blit(self.bgSurface,[0,0])
+            if self.bg_surface:
+                self.blit(self.bg_surface,[0,0])
             else:
-                self.wheel.draw(self,self.wheelOffset)
+                self.wheel.draw(self,self.wheel_offset)
         else:
             self.fill(pygame.Color(settingsManager.getSetting('playerColor' + str(self.player_num))))
             #draw closed shutter
         offset = [0,0]
         if self.player_num == 1 or self.player_num == 3: offset[0] = self.get_width()
         if self.player_num == 2 or self.player_num == 3: offset[1] = self.get_height()
-        screen.blit(self,offset)
+        _screen.blit(self,offset)

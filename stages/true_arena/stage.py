@@ -109,9 +109,9 @@ class TrueArena(stage.Stage):
         
         self.articles.extend([backgroundElement0a,backgroundElement0b,backgroundElement1a,backgroundElement1b,backgroundElement2a,backgroundElement2b])
         
-        bgSprite0 = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TrueArenaBack.png"))
-        bgSprite0.rect.topleft = [self.size.centerx - 383,self.size.centery-44]
-        self.addToBackground(bgSprite0)
+        bg_sprite0 = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TrueArenaBack.png"))
+        bg_sprite0.rect.topleft = [self.size.centerx - 383,self.size.centery-44]
+        self.addToBackground(bg_sprite0)
         
         
         self.background_color = [0,0,0]
