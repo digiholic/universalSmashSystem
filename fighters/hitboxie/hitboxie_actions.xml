@@ -931,9 +931,11 @@
 				<base_knockback type="int">0</base_knockback>
 				<hitstun_multiplier type="float">0.5</hitstun_multiplier>
 			</modifyHitbox>
-			<updateLandingLag reset="true">2</updateLandingLag>
 		</frame>
 		<frame number="28">
+			<updateLandingLag reset="true">2</updateLandingLag>
+		</frame>
+		<frame number="32">
 			<updateLandingLag>10</updateLandingLag>
 		</frame>
 	</NeutralAir>

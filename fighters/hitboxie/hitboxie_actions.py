@@ -256,7 +256,7 @@ class UpSpecial(action.Action):
         
 class NeutralAttack(action.Action):
     def __init__(self):
-        action.Action.__init__(self,22)
+        action.Action.__init__(self,17)
         self.sprite_rate = 0
     
     def setUp(self, _actor):
@@ -411,10 +411,10 @@ class DashGrab(action.Action):
 
 class Pummel(baseActions.BaseGrabbing):
     def __init__(self):
-        baseActions.BaseGrabbing.__init__(self,22)
+        baseActions.BaseGrabbing.__init__(self,17)
         self.sprite_rate = 0
 
-    def update(self, actor):
+    def update(self, _actor):
         baseActions.BaseGrabbing.update(self, _actor)
         if self.frame == 0:
             _actor.changeSprite("neutral", self.frame)
@@ -649,7 +649,7 @@ class Released(baseActions.Released):
         baseActions.Released.__init__(self)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
+    def setUp(self, _actor):
         baseActions.Released.setUp(self, _actor)
         _actor.changeSprite("jump")
 
