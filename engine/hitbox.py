@@ -322,12 +322,8 @@ class PerfectShieldHitbox(Hitbox):
         return True
 
 class InvulnerableHitbox(Hitbox):
-    def __init__(self, _center, _size, _owner, _hitboxLock):
-        Hitbox.__init__(self,_owner,_hitboxLock,{'center':_center,
-                                                'size':_size,
-                                                'transcendence':-5,
-                                                'priority':float("inf")
-                                                })
+    def __init__(self,_owner,_hitboxLock,_hitboxVars):
+        Hitbox.__init__(self, _owner, _hitboxLock, _hitboxVars)
         self.hitbox_type = 'invulnerable'
 
     def update(self):
