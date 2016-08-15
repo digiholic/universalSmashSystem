@@ -1046,13 +1046,13 @@ class AbstractFighter():
     """
 
     #A key press
-    def keyBuffered(self, _key, _distanceBack = 1, _state = 0.1):
-        return any(map(lambda k: _key in k and k[_key] >= _state,self.input_buffer.getLastNFrames(_distanceBack)))
+    def keyBuffered(self, _key, _from = 1, _state = 0.1, _to = 0):
+        return any(map(lambda k: _key in k and k[_key] >= _state,self.input_buffer.getLastNFrames(_from, _to)))
 
     #A key tap (press, then release)
-    def keyTapped(self, _key, _distanceBack = 8, _state = 0.1):
-        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_distanceBack))
-        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_distanceBack))
+    def keyTapped(self, _key, _from = 8, _state = 0.1, _to = 0):
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames) or not any(up_frames):
             return False
         first_down_frame = reduce(lambda j, k: j if j != None else (k if down_frames[k] else None), range(len(down_frames)), None)
@@ -1060,9 +1060,9 @@ class AbstractFighter():
         return first_down_frame <= last_up_frame
 
     #A key press which hasn't been released yet
-    def keyHeld(self, _key, _distanceBack = 8, _state = 0.1):
-        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_distanceBack))
-        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_distanceBack))
+    def keyHeld(self, _key, _from = 8, _state = 0.1, _to = 0):
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames):
             return False
         if any(down_frames) and not any(up_frames):
@@ -1072,13 +1072,13 @@ class AbstractFighter():
         return first_down_frame > last_up_frame
 
     #A key release
-    def keyUp(self, _key, _distanceBack = 1, _state = 0.1):
-        return any(map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_distanceBack)))
+    def keyUp(self, _key, _from = 1, _state = 0.1, _to = 0):
+        return any(map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to)))
 
     #A key reinput (release, then press)
-    def keyReinput(self, _key, _distanceBack = 8, _state = 0.1):
-        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_distanceBack))
-        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_distanceBack))
+    def keyReinput(self, _key, _from = 8, _state = 0.1, _to = 0):
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames) or not any(down_frames):
             return False
         first_up_frame = reduce(lambda j, k: j if j != None else (k if up_frames[k] else None), range(len(up_frames)), None)
@@ -1086,9 +1086,9 @@ class AbstractFighter():
         return first_up_frame <= last_down_frame
 
     #A key release which hasn't been pressed yet
-    def keyIdle(self, _key, _distanceBack = 8, _state = 0.1):
-        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_distanceBack))
-        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_distanceBack))
+    def keyIdle(self, _key, _from = 8, _state = 0.1, _to = 0):
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(up_frames):
             return False
         if any(up_frames) and not any(down_frames):
@@ -1459,11 +1459,12 @@ class InputBuffer():
     """
     Get a sub-buffer of N frames
     """
-    def getLastNFrames(self,_n):
+    def getLastNFrames(self,_from,_to=0):
         ret_buffer = []
-        if _n > self.last_index: _n = self.last_index
-        for i in range(self.last_index,self.last_index - _n,-1):
-            ret_buffer.append(self.buffer[i])
+        if _from > self.last_index: _from = self.last_index
+        if _to > self.last_index: _to = self.last_index
+        for i in range(self.last_index - _to,self.last_index - _from,-1):
+            ret_buffer.append(self.buffer[i - _to])
         return ret_buffer
     
     """

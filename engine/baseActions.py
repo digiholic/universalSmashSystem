@@ -41,9 +41,9 @@ class Move(action.Action):
         if _actor.grounded is False:
             _actor.doAction('Fall')
         (key,invkey) = _actor.getForwardBackwardKeys()
-        if self.frame > 0 and _actor.keyBuffered(invkey, 0, _state = 1):
+        if self.frame > 0 and _actor.keyBuffered(invkey, 1, _state = 1):
             _actor.doDash(-_actor.getFacingDirection())
-        elif self.frame > 0 and _actor.keyBuffered(key, 0, _state = 1):
+        elif self.frame > 0 and _actor.keyBuffered(key, 1, _state = 1):
             _actor.doDash(_actor.getFacingDirection())
 
 class Dash(action.Action):
@@ -472,18 +472,10 @@ class Tumble(action.Action):
         if self.sprite_name=="": self.sprite_name ="tumble"
         action.Action.setUp(self, _actor)    
         self.tech_cooldown = 0
-        self.do_reversal = 0
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
         tumbleState(_actor)
-        (key, invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyBuffered(invkey, 1) and self.do_reversal > 0:
-            _actor.flip()
-            print("Reverse")
-            self.do_reversal = 0
-        elif _actor.keyBuffered(invkey, 1, 0.6):
-            self.do_reversal = 9
         
         (direct,_) = _actor.getDirectionMagnitude()
 
@@ -653,18 +645,10 @@ class Fall(action.Action):
         action.Action.setUp(self, _actor)
         _actor.preferred_xspeed = 0
         _actor.preferred_yspeed = _actor.var['max_fall_speed']
-        self.do_reversal = 0
     
     def stateTransitions(self,_actor):
         airState(_actor)
         grabLedges(_actor)
-        (key, invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyBuffered(invkey, 1) and self.do_reversal > 0:
-            _actor.flip()
-            print("Reverse")
-            self.do_reversal = 0
-        elif _actor.keyBuffered(invkey, 1, 0.6):
-            self.do_reversal = 9
         
     def update(self,_actor):
         action.Action.update(self, _actor)
@@ -678,7 +662,6 @@ class Helpless(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="helpless"
         action.Action.setUp(self, _actor)
-        self.do_reversal = 0
     
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
@@ -687,13 +670,6 @@ class Helpless(action.Action):
     def stateTransitions(self, _actor):
         helplessControl(_actor)
         grabLedges(_actor)
-        (key, invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyBuffered(invkey, 1) and self.do_reversal > 0:
-            _actor.flip()
-            print("Reverse")
-            self.do_reversal = 0
-        elif _actor.keyBuffered(invkey, 1, 0.6):
-            self.do_reversal = 9
 
     def update(self, _actor):
         _actor.grounded = False
@@ -760,9 +736,6 @@ class HelplessLand(action.Action):
             _actor.change_y = 0
             _actor.preferred_yspeed = _actor.var['max_fall_speed']
             self.last_frame = _actor.landing_lag
-            if _actor.keyHeld('shield', 20):
-                print("l-cancel")
-                self.last_frame = self.last_frame // 2
         if _actor.keyHeld('down', 8):
             blocks = _actor.checkGround()
             if blocks:
@@ -797,6 +770,10 @@ class PlatformDrop(action.Action):
             else:
                 self.doAction('DownGroundSpecial')
         if self.frame > self.phase_frame:
+            (key, invkey) = _actor.getForwardBackwardKeys()
+            if _actor.keyBuffered(invkey, 1) and _actor.keyBuffered(invkey, 8, 0.6, 1):
+                _actor.flip()
+                print("Reverse")
             airControl(_actor)
         
     def update(self,_actor):
@@ -821,24 +798,6 @@ class Shield(action.Action):
         
     def stateTransitions(self, _actor):
         shieldState(_actor)
-        (key, invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyBuffered(key, 1, 0.6) and self.forward_last > 0:
-            _actor.doAction('ForwardRoll')
-        elif _actor.keyBuffered(invkey, 1, 0.6) and self.backward_last > 0:
-            _actor.doAction('BackwardRoll')
-        elif _actor.keyBuffered('down', 1, 0.6) and self.down_last > 0:
-            _actor.doAction('SpotDodge')
-
-        if _actor.keyBuffered(key, 1, 0.6):
-            self.forward_last = 9
-            self.backward_last = 0
-        if _actor.keyBuffered(invkey, 1, 0.6):
-            self.backward_last = 9
-            self.forward_last = 0
-        if _actor.keyBuffered('down', 1, 0.6):
-            self.down_last = 9
-        if _actor.keyBuffered('up', 1, 0.6):
-            self.down_last = 0
    
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
@@ -866,9 +825,6 @@ class Shield(action.Action):
         elif self.frame >= self.last_frame:
             _actor.doAction('NeutralAction')
         else: self.frame += 1
-        if self.forward_last > 0: self.forward_last -= 1
-        if self.backward_last > 0: self.backward_last -= 1
-        if self.down_last > 0: self.down_last -= 1
 
 class ShieldStun(action.Action):
     def __init__(self, _length=1):
@@ -986,6 +942,11 @@ class Released(action.Action):
     
     def stateTransitions(self,_actor):
         (key, invkey) = _actor.getForwardBackwardKeys()
+        if _actor.keyBuffered(invkey, 1) and _actor.keyBuffered(invkey, 8, 0.6, 1):
+            _actor.flip()
+            print("Reverse")
+
+        (key, invkey) = _actor.getForwardBackwardKeys()
         if _actor.keysContain(key):
             _actor.preferred_xspeed = _actor.facing * _actor.var['max_air_speed']
         elif _actor.keysContain(invkey):
@@ -1009,7 +970,6 @@ class Released(action.Action):
         
     def update(self,_actor):
         action.Action.update(self, _actor)
-        _actor.grounded = False
         if self.frame >= self.last_frame:
             _actor.doAction('Fall')
         self.frame += 1
@@ -1146,6 +1106,9 @@ class AirDodge(action.Action):
         
     def tearDown(self,_actor,_nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if _actor.keysContain(invkey, 1):
+            _actor.flip()
         if settingsManager.getSetting('airDodgeType') == 'directional':
             _actor.preferred_yspeed = _actor.var['max_fall_speed']
             _actor.preferred_xspeed = 0
@@ -1158,8 +1121,6 @@ class AirDodge(action.Action):
             if not settingsManager.getSetting('enableWavedash'):
                 _actor.change_x = 0
             _actor.doAction('Land')
-        if self.frame > 0 and _actor.keyBuffered(invkey, 1):
-            _actor.flip()
                 
     def update(self,_actor):
         action.Action.update(self, _actor)
@@ -1491,6 +1452,10 @@ def crouchState(_actor):
 
 def airState(_actor):
     airControl(_actor)
+    (key, invkey) = _actor.getForwardBackwardKeys()
+    if _actor.keyBuffered(invkey, 1) and _actor.keyBuffered(invkey, 8, 0.6, 1):
+        _actor.flip()
+        print("Reverse")
     if _actor.keyHeld('shield'):
         _actor.doAction('AirDodge')
     elif _actor.keyHeld('attack'):
@@ -1505,6 +1470,9 @@ def airState(_actor):
 
 def tumbleState(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
+    if _actor.keyBuffered(invkey, 1) and _actor.keyBuffered(invkey, 8, 0.6, 1):
+        _actor.flip()
+        print("Reverse")
     if _actor.keysContain(key):
         _actor.preferred_xspeed = _actor.facing * _actor.var['max_air_speed']
     elif _actor.keysContain(invkey):
@@ -1575,6 +1543,10 @@ def dashState(_actor, direction):
 
 def jumpState(_actor):
     airControl(_actor)
+    (key, invkey) = _actor.getForwardBackwardKeys()
+    if _actor.keyBuffered(invkey, 1) and _actor.keyBuffered(invkey, 8, 0.6, 1):
+        _actor.flip()
+        print("Reverse")
     if _actor.keyHeld('shield'):
         _actor.doAction('AirDodge')
     elif _actor.keyHeld('attack'):
@@ -1586,7 +1558,14 @@ def jumpState(_actor):
         _actor.calcGrav(_actor.var['fastfall_multiplier'])
             
 def shieldState(_actor):
-    if _actor.keyHeld('attack'):
+    (key, invkey) = _actor.getForwardBackwardKeys()
+    if _actor.keyBuffered(key, 1, 0.6) and _actor.keyBuffered(key, 8, 0.6, 1) and not _actor.keyBuffered(invkey, 8, 0.6):
+        _actor.doAction('ForwardRoll')
+    elif _actor.keyBuffered(invkey, 1, 0.6) and _actor.keyBuffered(key, 8, 0.6, 1) and not _actor.keyBuffered(key, 8, 0.6):
+        _actor.doAction('BackwardRoll')
+    elif _actor.keyBuffered('down', 1, 0.6) and _actor.keyBuffered(key, 8, 0.6, 1) and not _actor.keyBuffered(up, 8, 0.6):
+        _actor.doAction('SpotDodge')
+    elif _actor.keyHeld('attack'):
         _actor.doAction('GroundGrab')
     elif _actor.keyHeld('special'):
         _actor.doGroundSpecial()
