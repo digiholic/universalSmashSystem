@@ -251,7 +251,7 @@ class ReflectorHitbox(InertHitbox):
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
 
-class AbsorberHitbox(Hitbox):
+class AbsorberHitbox(InertHitbox):
     def __init__(self,_owner,_hitboxLock,_hitboxVars):
         InertHitbox.__init__(self,_owner,_hitboxLock,_hitboxVars)
         self.hitbox_type = 'absorber'
