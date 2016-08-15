@@ -1265,7 +1265,7 @@
 			<!-- if keysContainAttack frame -1 -->
 			<ifButton>
 				<button held="true">attack</button>
-				<pass>frameHold</pass>
+				<pass>frame_hold</pass>
 			</ifButton>
 		</frame>
 		<frame number="31">
@@ -1302,7 +1302,7 @@
 				<ySpeed>0</ySpeed>
 			</changeFighterSpeed>
 		</conditional>
-		<conditional name="frameHold">
+		<conditional name="frame_hold">
 			<setFrame relative="true">-1</setFrame>
 		</conditional>
 	</DownAir>
@@ -1524,7 +1524,7 @@
 		<frame number="12">
 			<ifButton>
 				<button held="true">special</button>
-				<pass>frameHold</pass>
+				<pass>frame_hold</pass>
 			</ifButton>
 			<changeFighterPreferredSpeed>
 				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
@@ -1535,7 +1535,7 @@
 			<deactivateHitbox>reflect</deactivateHitbox>
 			<removeMask></removeMask>
 		</frame>
-		<conditional name="frameHold">
+		<conditional name="frame_hold">
 			<setFrame relative="true">-1</setFrame>
 		</conditional>
 	</DownSpecial>

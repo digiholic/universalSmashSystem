@@ -40,7 +40,7 @@ class Controller():
         for key in self.keys_to_pass:
             self.fighter.keyPressed(key)
         for key in self.keys_to_release:
-            self.fighter.key_released(key)
+            self.fighter.keyReleased(key)
         self.keys_to_pass = []
         self.keys_to_release = []
     
@@ -48,7 +48,7 @@ class Controller():
         list_of_bindings = []
         for binding,name in self.key_bindings.items():
             if name == _action:
-                list_of_bindings.append(settingsManager.getSetting().KeyIdMap[binding])
+                list_of_bindings.append(settingsManager.getSetting().key_id_map[binding])
         return list_of_bindings
     
 class GamepadController():
@@ -114,7 +114,7 @@ class GamepadController():
         for key in self.keys_to_pass:
             self.fighter.keyPressed(key)
         for key in self.keys_to_release:
-            self.fighter.key_released(key)
+            self.fighter.keyReleased(key)
         self.keys_to_pass = []
         self.keys_to_release = []
     

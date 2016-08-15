@@ -124,12 +124,12 @@ def getSfx():
 ########################################################           
 class Settings():
     def __init__(self):
-        self.KeyIdMap = {}
-        self.KeyNameMap = {}
+        self.key_id_map = {}
+        self.key_name_map = {}
         for name, value in vars(pygame.constants).items():
             if name.startswith("K_"):
-                self.KeyIdMap[value] = name.lower()
-                self.KeyNameMap[name.lower()] = value
+                self.key_id_map[value] = name.lower()
+                self.key_name_map[name.lower()] = value
         
         
         self.parser = SafeConfigParser()
@@ -156,7 +156,7 @@ class Settings():
         self.setting['frameCap']      = getNumber(self.parser, 'window', 'frameCap')
         self.setting['windowSize']    = [self.setting['windowWidth'], self.setting['windowHeight']]
 
-        self.setting['musicVolume']       = getNumber(self.parser, 'sound', 'musicVolume') / 100.0
+        self.setting['music_volume']       = getNumber(self.parser, 'sound', 'music_volume') / 100.0
         self.setting['sfxVolume']         = getNumber(self.parser, 'sound', 'sfxVolume') / 100.0
         self.setting['showHitboxes']      = getBoolean(self.parser, 'graphics', 'displayHitboxes')
         self.setting['showHurtboxes']     = getBoolean(self.parser,'graphics','displayHurtboxes')
@@ -234,8 +234,8 @@ class Settings():
                 self.setting['controlType_'+str(player_num)] = 'Keyboard'
             
             for opt in self.parser.options(groupName):
-                if self.KeyNameMap.has_key(opt):
-                    bindings[self.KeyNameMap[opt]] = self.parser.get(groupName, opt)
+                if self.key_name_map.has_key(opt):
+                    bindings[self.key_name_map[opt]] = self.parser.get(groupName, opt)
             self.setting[groupName] = engine.controller.Controller(bindings)
             #self.setting[groupName] = engine.cpuPlayer.CPUplayer(bindings) #Here be CPU players
                     
@@ -244,15 +244,15 @@ class Settings():
     """
     Check all connected gamepads and add them to the settings.
     """
-    def loadGamepad(self,controllerName):
+    def loadGamepad(self,controller_name):
         pygame.joystick.init()
         controllerParser = SafeConfigParser()
         controllerParser.read(os.path.join(os.path.join(self.datadir.replace('main.exe',''),'settings'),'gamepads.ini'))
-        if controllerParser.has_section(controllerName):
+        if controllerParser.has_section(controller_name):
             joystick = None
             for pad in range(pygame.joystick.get_count()):
                 joy = pygame.joystick.Joystick(pad)
-                if joy.get_name() == controllerName:
+                if joy.get_name() == controller_name:
                     joystick = joy
                     joystick.init()
             
@@ -263,19 +263,19 @@ class Settings():
             
             axes = {}
             buttons = {}
-            for opt in controllerParser.options(controllerName):
+            for opt in controllerParser.options(controller_name):
                 if opt[0] == 'a':
-                    axes[int(opt[1:])] = tuple(controllerParser.get(controllerName, opt)[1:-1].split(','))
+                    axes[int(opt[1:])] = tuple(controllerParser.get(controller_name, opt)[1:-1].split(','))
                 elif opt[0] == 'b':
-                    buttons[int(opt[1:])] = controllerParser.get(controllerName, opt)
+                    buttons[int(opt[1:])] = controllerParser.get(controller_name, opt)
         
-            pad_bindings = engine.controller.PadBindings(controllerName,jid,axes,buttons)
+            pad_bindings = engine.controller.PadBindings(controller_name,jid,axes,buttons)
             return engine.controller.GamepadController(pad_bindings)
         else:
             joystick = None
             for pad in range(pygame.joystick.get_count()):
                 joy = pygame.joystick.Joystick(pad)
-                if joy.get_name() == controllerName:
+                if joy.get_name() == controller_name:
                     joystick = joy
                     joystick.init()
             
@@ -287,7 +287,7 @@ class Settings():
             axes = dict()
             buttons = dict()
             
-            pad_bindings = engine.controller.PadBindings(controllerName,jid,axes,buttons)
+            pad_bindings = engine.controller.PadBindings(controller_name,jid,axes,buttons)
             self.setting[joystick.get_name()] = pad_bindings
             
             return engine.controller.GamepadController(pad_bindings)
@@ -295,11 +295,11 @@ class Settings():
     def getGamepadList(self,store=False):
         controllerParser = SafeConfigParser()
         controllerParser.read(os.path.join(os.path.join(self.datadir.replace('main.exe',''),'settings'),'gamepads.ini'))
-        controllerList = []
+        controller_list = []
         
         for control in controllerParser.sections():
             controls = self.loadGamepad(control)
-            controllerList.append(controls)
+            controller_list.append(controls)
             if store: self.setting[control] = controls
             
         retlist = controllerParser.sections()
@@ -316,12 +316,12 @@ class Settings():
 Save a modified settings object to the settings.ini file.
 """
 def saveSettings(settings):
-    keyIdMap = {}
-    keyNameMap = {}
+    key_id_map = {}
+    key_nameMap = {}
     for name, value in vars(pygame.constants).items():
         if name.startswith("K_"):
-            keyIdMap[value] = name
-            keyNameMap[name] = value
+            key_id_map[value] = name
+            key_nameMap[name] = value
     
     parser = SafeConfigParser()
     
@@ -333,7 +333,7 @@ def saveSettings(settings):
     parser.set('window','frameCap',str(settings['frameCap']))
     
     parser.add_section('sound')
-    parser.set('sound','musicVolume',str(settings['musicVolume'] * 100))
+    parser.set('sound','music_volume',str(settings['music_volume'] * 100))
     parser.set('sound','sfxVolume',str(settings['sfxVolume'] * 100))
     
     parser.add_section('graphics')
@@ -358,7 +358,7 @@ def saveSettings(settings):
         parser.set(sect,'controlType',settings['controlType_'+str(i)])
         for key in settings[sect].key_bindings:
             parser.set(sect,'controlType',settings['controlType_'+str(i)])
-            parser.set(sect,keyIdMap[key],str(settings[sect].key_bindings[key]))
+            parser.set(sect,key_id_map[key],str(settings[sect].key_bindings[key]))
             
     with open(os.path.join(getSetting().datadir.replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
         parser.write(configfile)
@@ -367,19 +367,19 @@ def saveSettings(settings):
 
 def saveGamepad(settings):
     parser = SafeConfigParser()
-    for controllerName in getSetting().getGamepadList():
-        gamepad = getSetting(controllerName)
-        if not parser.has_section(controllerName):
-            parser.add_section(controllerName)
+    for controller_name in getSetting().getGamepadList():
+        gamepad = getSetting(controller_name)
+        if not parser.has_section(controller_name):
+            parser.add_section(controller_name)
         
         for key,value in gamepad.pad_bindings.axis_bindings.iteritems():
             neg,pos = value
             if not neg: neg = 'none'
             if not pos: pos = 'none'
-            parser.set(controllerName,'a'+str(key),'('+str(neg)+','+str(pos)+')' )
+            parser.set(controller_name,'a'+str(key),'('+str(neg)+','+str(pos)+')' )
         
         for key,value in gamepad.pad_bindings.button_bindings.iteritems():
-            parser.set(controllerName,'b'+str(key),str(value))
+            parser.set(controller_name,'b'+str(key),str(value))
             
     with open(os.path.join(getSetting().datadir.replace('main.exe',''),'settings','gamepads.ini'), 'w') as configfile:
         parser.write(configfile)

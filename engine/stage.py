@@ -227,7 +227,7 @@ class Stage():
                 if rect: rects.append(rect)
         #for ledge in self.platform_ledges:
             #ledgeSprite = spriteObject.RectSprite(ledge.rect.topleft,ledge.rect.size,[0,0,255])
-            #ledgeSprite.draw(screen,self.stageToScreen(ledge.rect),self.getScale())
+            #ledgeSprite.draw(_screen,self.stageToScreen(ledge.rect),self.getScale())
         for sprite in self.foreground_sprites:
             rect = sprite.draw(_screen,self.stageToScreen(sprite.rect),self.getScale())
             if rect: rects.append(rect)

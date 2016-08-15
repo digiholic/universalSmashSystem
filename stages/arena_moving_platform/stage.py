@@ -53,9 +53,9 @@ class ArenaMovingPlatform(stage.Stage):
                                [1079,453],
                                [1079,713]]
         
-        bgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaBack.png"))
-        bgSprite.rect.topleft = [self.size.centerx - 351,self.size.centery+140-125]
-        self.addToBackground(bgSprite)
+        bg_sprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaBack.png"))
+        bg_sprite.rect.topleft = [self.size.centerx - 351,self.size.centery+140-125]
+        self.addToBackground(bg_sprite)
         
         
         plat0front = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatFrontL.png"))

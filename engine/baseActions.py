@@ -413,8 +413,6 @@ class HitStun(action.Action):
             self.tech_cooldown = 40
         _actor.elasticity = _actor.var['hitstun_elasticity']
         if self.frame > 2:
-            hitstunLanding(_actor)
-        if self.frame > 2:
             if self.frame < self.last_frame and _actor.change_y >= _actor.var['max_fall_speed']: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']
             elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
@@ -428,6 +426,7 @@ class HitStun(action.Action):
                         _actor.doAction('Prone')
                 else:
                     _actor.landingLag = 40
+                    hitstunLanding(_actor)
             else: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
         
@@ -436,6 +435,7 @@ class HitStun(action.Action):
         if not isinstance(_nextAction, Tumble):
             _actor.elasticity = 0
             _actor.ground_elasticity = 0
+            _actor.tech_window = 0
             _actor.unRotate()
         
     def update(self,_actor):
@@ -475,7 +475,7 @@ class Tumble(action.Action):
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
-        airState(_actor)
+        tumbleState(_actor)
         
         (direct,_) = _actor.getDirectionMagnitude()
 
@@ -501,6 +501,7 @@ class Tumble(action.Action):
         action.Action.tearDown(self, _actor, _nextAction)
         _actor.elasticity = 0
         _actor.ground_elasticity = 0
+        _actor.tech_window = 0
         _actor.unRotate()
         
     def update(self, _actor):
@@ -977,7 +978,7 @@ class Released(action.Action):
             _actor.preferred_xspeed = 0
             _actor.preferred_yspeed = _actor.var['max_fall_speed']
             _actor.doAction('Prone')
-            _actor.current_action.last_frame = 15 - self.last_frame
+            _actor.current_action.last_frame = self.last_frame - self.frame
 
         grabLedges(_actor)
         
@@ -1139,7 +1140,7 @@ class AirDodge(action.Action):
             if self.frame == 0:
                 _actor.preferred_xspeed = _actor.change_x
                 _actor.preferred_yspeed = _actor.change_y
-            elif self.frame >= 16:
+            elif self.frame >= self.end_invuln_frame:
                 _actor.change_x = 0
                 _actor.change_y = 0
                 _actor.preferred_xspeed = 0
@@ -1148,7 +1149,7 @@ class AirDodge(action.Action):
                 _actor.preferred_yspeed = _actor.var['max_fall_speed']
                 
         if self.frame == self.start_invuln_frame:
-            _actor.createMask([255,255,255],16,True,24)
+            _actor.createMask([255,255,255],self.end_invuln_frame-self.start_invuln_frame,True,24)
             _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
             _actor.updateLandingLag(20)
         elif self.frame == self.end_invuln_frame:
@@ -1476,7 +1477,23 @@ def airState(_actor):
         _actor.calcGrav(_actor.var['fastfall_multiplier'])
 
 def tumbleState(_actor):
-    airControl(_actor)
+    (key, invkey) = _actor.getForwardBackwardKeys()
+    if _actor.keysContain(key):
+        _actor.preferred_xspeed = _actor.facing * _actor.var['max_air_speed']
+    elif _actor.keysContain(invkey):
+        _actor.preferred_xspeed = -_actor.facing * _actor.var['max_air_speed']
+    
+    if (_actor.change_x < 0) and not _actor.keysContain('left'):
+        _actor.preferred_xspeed = 0
+    if (_actor.change_x > 0) and not _actor.keysContain('right'):
+        _actor.preferred_xspeed = 0
+
+    if not (_actor.change_x < -_actor.var['max_air_speed'] and _actor.keysContain('left')) or not (_actor.change_x > _actor.var['max_air_speed'] and _actor.keysContain('right')):
+        _actor.accel(_actor.var['air_control'])
+
+    if _actor.change_y >= _actor.var['max_fall_speed'] and _actor.landing_lag < _actor.var['heavy_land_lag']:
+        _actor.landing_lag = _actor.var['heavy_land_lag']
+
     if _actor.keyHeld('attack'):
         _actor.doAirAttack()
     elif _actor.keyHeld('special'):
@@ -1628,7 +1645,7 @@ def airControl(_actor):
     if _actor.change_y >= _actor.var['max_fall_speed'] and _actor.landing_lag < _actor.var['heavy_land_lag']:
         _actor.landing_lag = _actor.var['heavy_land_lag']
 
-    if _actor.grounded and _actor.ground_elasticity == 0:
+    if _actor.grounded and _actor.ground_elasticity == 0 and _actor.tech_window == 0:
         _actor.preferred_xspeed = 0
         _actor.preferred_yspeed = _actor.var['max_fall_speed']
         _actor.doAction('Land')
@@ -1651,13 +1668,13 @@ def helplessControl(_actor):
     if _actor.change_y >= _actor.var['max_fall_speed'] and _actor.landing_lag < _actor.var['heavy_land_lag']:
         _actor.landing_lag = _actor.var['heavy_land_lag']
 
-    if _actor.grounded and _actor.ground_elasticity == 0:
+    if _actor.grounded and _actor.ground_elasticity == 0 and _actor.tech_window == 0:
         _actor.preferred_xspeed = 0
         _actor.preferred_yspeed = _actor.var['max_fall_speed']
         _actor.doAction('HelplessLand')
 
 def hitstunLanding(_actor):
-    if _actor.grounded and _actor.ground_elasticity == 0:
+    if _actor.grounded and _actor.ground_elasticity == 0 and _actor.tech_window == 0:
         _actor.preferred_xspeed = 0
         _actor.preferred_yspeed = _actor.var['max_fall_speed']
         _actor.doAction('Land')

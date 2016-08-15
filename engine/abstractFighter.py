@@ -179,7 +179,7 @@ class AbstractFighter():
         self.game_state = None
         self.players = None
         
-        # dataLog holds information for the post-game results screen
+        # data_log holds information for the post-game results screen
         self.data_log = None
         
     def saveFighter(self,_path=None):
@@ -911,7 +911,7 @@ class AbstractFighter():
         self.jumps = self.var['jumps']
         self.data_log.setData('Falls',1,lambda x,y: x+y)
         if self.hit_tagged != None:
-            if hasattr(self.hit_tagged, 'dataLog'):
+            if hasattr(self.hit_tagged, 'data_log'):
                 self.hit_tagged.data_log.setData('KOs',1,lambda x,y: x+y)
         
         if _respawn:
@@ -1012,7 +1012,7 @@ class AbstractFighter():
     """
     As above, but opposite.
     """
-    def key_released(self,_key):
+    def keyReleased(self,_key):
         if _key in self.keys_held:
             self.input_buffer.append((_key,0))	
             del self.keys_held[_key]
@@ -1025,7 +1025,7 @@ class AbstractFighter():
                 
     def joyButtonReleased(self,_pad,_button):
         # TODO: Check gamepad first
-        self.key_released(_button)
+        self.keyReleased(_button)
         
     def joyAxisMotion(self,_pad,_axis):
         #TODO - Actually check if this the right gamePad

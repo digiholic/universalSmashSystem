@@ -41,9 +41,9 @@ class Arena(stage.Stage):
                                [self.size.centerx + 445,1005]]
         
         
-        bgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TreeHouseBack.png"))
-        bgSprite.rect.midbottom = self.size.midbottom
-        self.addToBackground(bgSprite)
+        bg_sprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TreeHouseBack.png"))
+        bg_sprite.rect.midbottom = self.size.midbottom
+        self.addToBackground(bg_sprite)
         
         fgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TreeHouseFront.png"))
         fgSprite.rect.midbottom = self.size.midbottom

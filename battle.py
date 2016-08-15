@@ -18,69 +18,69 @@ It takes a Rules object (see below), a list of players, and a stage.
 
 """
 class Battle():
-    def __init__(self,rules,players,stage):
+    def __init__(self,_rules,_players,_stage):
         self.settings = settingsManager.getSetting().setting
         
-        if rules is None: rules = Rules()
+        if _rules is None: _rules = Rules()
         
-        self.rules = rules
-        self.players = players
+        self.rules = _rules
+        self.players = _players
         self.controllers = []
-        for player in players:
+        for player in _players:
             player.initialize()
             player.key_bindings.loadFighter(player)
             self.controllers.append(player.key_bindings)
             
-        self.stage = stage
+        self.stage = _stage
         self.input_buffer = None
         self.data_logs = []
         
         #TODO bring over InputBuffer from fighter.
         random.seed
-        self.randomstate = random.getstate
+        self.random_state = random.getstate
         
-    def startBattle(self,screen):
+    def startBattle(self,_screen):
         # Fill background
-        background = pygame.Surface(screen.get_size())
+        background = pygame.Surface(_screen.get_size())
         background = background.convert()
         background.fill((128, 128, 128))
         
-        screen.fill(self.stage.background_color)
+        _screen.fill(self.stage.background_color)
         current_stage = self.stage
         active_hitboxes = pygame.sprite.Group()
         active_hurtboxes = pygame.sprite.Group()
         
-        #gameObjects
-        currentFighters = self.players[:] #We have to slice this list so it passes by value instead of reference
-        gameObjects = []
-        gameObjects.extend(currentFighters)
+        #game_objects
+        current_fighters = self.players[:] #We have to slice this list so it passes by value instead of reference
+        game_objects = []
+        game_objects.extend(current_fighters)
         
-        trackStocks = True
-        trackTime = True
+        track_stocks = True
+        track_time = True
         if self.rules.stocks == 0:
-            trackStocks = False
+            track_stocks = False
         if self.rules.time == 0:
-            trackTime = False
+            track_time = False
             
-        clockTime = self.rules.time * 60
+        clock_time = self.rules.time * 60
         
-        guiObjects = []
+        gui_objects = []
         
-        if trackTime:
+        if track_time:
             pygame.time.set_timer(pygame.USEREVENT+2, 1000)
-            countdownSprite = spriteManager.TextSprite('5','full Pack 2025',128,[0,0,0])
-            countdownSprite.rect.center = screen.get_rect().center
-            countAlpha = 0
-            countdownSprite.alpha(countAlpha)
-            guiObjects.append(countdownSprite)
+            countdown_sprite = spriteManager.TextSprite('5','full Pack 2025',128,[0,0,0])
+            countdown_sprite.rect.center = _screen.get_rect().center
+            count_alpha = 0
+            countdown_sprite.alpha(count_alpha)
+            gui_objects.append(countdown_sprite)
             
-            clockSprite = spriteManager.TextSprite('8:00','rexlia rg',32,[0,0,0])
-            clockSprite.rect.topright = screen.get_rect().topright
-            clockSprite.changeText(str(clockTime / 60)+':'+str(clockTime % 60).zfill(2))
-            guiObjects.append(clockSprite)
+            clock_sprite = spriteManager.TextSprite('8:00','rexlia rg',32,[0,0,0])
+            clock_sprite.rect.topright = _screen.get_rect().topright
+            clock_sprite.changeText(str(clock_time / 60)+':'+str(clock_time % 60).zfill(2))
+            gui_objects.append(clock_sprite)
         
-        guiOffset = screen.get_rect().width / (len(self.players) + 1)
-        for fighter in currentFighters:
+        gui_offset = _screen.get_rect().width / (len(self.players) + 1)
+        for fighter in current_fighters:
             fighter.rect.midbottom = current_stage.spawn_locations[fighter.player_num]
             fighter.sprite.updatePosition(fighter.rect)
             fighter.ecb.normalize()
@@ -91,16 +91,16 @@ class Battle():
             log = DataLog()
             self.data_logs.append(log)
             fighter.data_log = log
-            if trackStocks: fighter.stocks = self.rules.stocks
+            if track_stocks: fighter.stocks = self.rules.stocks
             
-            percentSprite = HealthTracker(fighter)
+            percent_sprite = HealthTracker(fighter)
             
-            percentSprite.rect.bottom = screen.get_rect().bottom
-            percentSprite.rect.centerx = guiOffset
+            percent_sprite.rect.bottom = _screen.get_rect().bottom
+            percent_sprite.rect.centerx = gui_offset
 
-            guiOffset += screen.get_rect().width / (len(self.players) + 1)
+            gui_offset += _screen.get_rect().width / (len(self.players) + 1)
             
-            guiObjects.append(percentSprite)
+            gui_objects.append(percent_sprite)
             
         current_stage.initializeCamera()
             
@@ -116,13 +116,13 @@ class Battle():
         ExitStatus == 2: Battle ended by time or stock, decide winner, show victory screen
         ExitStatus == -1: Battle ended in error.
         """
-        exitStatus = 0
+        exit_status = 0
         
-        dataLog = DataLog();
-        dataLog.addSection('test', 1)
-        dataLog.setData('test', 3, (lambda x,y: x + y))
+        data_log = DataLog();
+        data_log.addSection('test', 1)
+        data_log.setData('test', 3, (lambda x,y: x + y))
         self.dirty_rects = [pygame.Rect(0,0,self.settings['windowWidth'],self.settings['windowHeight'])]
-        while exitStatus == 0:
+        while exit_status == 0:
             for cont in self.controllers:
                 cont.passInputs()
                 
@@ -137,32 +137,32 @@ class Battle():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         print("saving screenshot")
-                        pygame.image.save(screen,settingsManager.createPath('screenshot.jpg'))
+                        pygame.image.save(_screen,settingsManager.createPath('screenshot.jpg'))
                     elif event.key == pygame.K_RSHIFT:
                         debug_mode = not debug_mode
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_ESCAPE:
-                        exitStatus = 1
+                        exit_status = 1
                             
                 if event.type == pygame.USEREVENT+2:
                     pygame.time.set_timer(pygame.USEREVENT+2, 1000)
-                    clockSprite.changeText(str(clockTime / 60)+':'+str(clockTime % 60).zfill(2))
-                    clockTime -= 1
-                    if clockTime <= 5 and clockTime > 0:
-                        countdownSprite.changeText(str(clockTime))
-                        countAlpha = 255
-                    if clockTime == 0:
-                        exitStatus = 2
+                    clock_sprite.changeText(str(clock_time / 60)+':'+str(clock_time % 60).zfill(2))
+                    clock_time -= 1
+                    if clock_time <= 5 and clock_time > 0:
+                        countdown_sprite.changeText(str(clock_time))
+                        count_alpha = 255
+                    if clock_time == 0:
+                        exit_status = 2
             # End pygame event loop
                                    
-            screen.fill(self.stage.background_color)
+            _screen.fill(self.stage.background_color)
             
             current_stage.update()
             current_stage.cameraUpdate()
-            drawRects = current_stage.drawBG(screen)
-            self.dirty_rects.extend(drawRects)
+            draw_rects = current_stage.drawBG(_screen)
+            self.dirty_rects.extend(draw_rects)
             
-            for obj in gameObjects:
+            for obj in game_objects:
                 obj.update()
                 
                 foreground_articles = []
@@ -171,8 +171,8 @@ class Battle():
                         if art.draw_depth == -1:
                             offset = current_stage.stageToScreen(art.rect)
                             scale =  current_stage.getScale()
-                            drawRect = art.draw(screen,offset,scale)
-                            if drawRect: self.dirty_rects.append(drawRect)
+                            draw_rect = art.draw(_screen,offset,scale)
+                            if draw_rect: self.dirty_rects.append(draw_rect)
                         else: foreground_articles.append(art)
                 
                 if hasattr(obj,'active_hitboxes'):
@@ -182,24 +182,24 @@ class Battle():
                 
                 offset = current_stage.stageToScreen(obj.rect)
                 scale =  current_stage.getScale()
-                drawRect = obj.draw(screen,offset,scale)
-                if drawRect: self.dirty_rects.append(drawRect)
+                draw_rect = obj.draw(_screen,offset,scale)
+                if draw_rect: self.dirty_rects.append(draw_rect)
                 
                 for art in foreground_articles:
                     offset = current_stage.stageToScreen(art.rect)
                     scale =  current_stage.getScale()
-                    drawRect = art.draw(screen,offset,scale)
-                    if drawRect: self.dirty_rects.append(drawRect)
+                    draw_rect = art.draw(_screen,offset,scale)
+                    if draw_rect: self.dirty_rects.append(draw_rect)
                 
                 if hasattr(obj, 'hurtbox'):
                     if (self.settings['showHurtboxes']): 
                         offset = current_stage.stageToScreen(obj.hurtbox.rect)
-                        drawRect = obj.hurtbox.draw(screen,offset,scale)
-                        if drawRect: self.dirty_rects.append(drawRect)
+                        draw_rect = obj.hurtbox.draw(_screen,offset,scale)
+                        if draw_rect: self.dirty_rects.append(draw_rect)
                 if (self.settings['showHitboxes']):
                     for hbox in active_hitboxes:
-                        drawRect = hbox.draw(screen,current_stage.stageToScreen(hbox.rect),scale)
-                        if drawRect: self.dirty_rects.append(drawRect)
+                        draw_rect = hbox.draw(_screen,current_stage.stageToScreen(hbox.rect),scale)
+                        if draw_rect: self.dirty_rects.append(draw_rect)
 
             hitbox_hits = pygame.sprite.groupcollide(active_hitboxes, active_hitboxes, False, False)
             hurtbox_hits = pygame.sprite.groupcollide(active_hitboxes, active_hurtboxes, False, False)
@@ -211,30 +211,30 @@ class Battle():
                 if hitbox_clank: print(hitbox_clank)
                 for other in hitbox_clank:
                     print('Other hitbox: '+str(other))
-                    hboxClank = False
-                    otherClank = False
+                    hbox_clank = False
+                    other_clank = False
                     if not hbox.compareTo(other) and other.owner.lockHitbox(hbox):
                         if hbox.article == None and hasattr(hbox.owner,'current_action'):
-                            hboxClank = True
+                            hbox_clank = True
                         print("CLANK!")
                     if not other.compareTo(hbox) and hbox.owner.lockHitbox(other):
                         if other.article == None and hasattr(other.owner,'current_action'):
-                            otherClank = True
+                            other_clank = True
                         print("CLANK!")
                     if not isinstance(hbox, hitbox.InertHitbox) and not isinstance(other, hitbox.InertHitbox):
-                        if hboxClank:
+                        if hbox_clank:
                             if isinstance(hbox, hitbox.DamageHitbox):
                                 hbox.owner.applyPushback(hbox.damage/4.0, hbox.trajectory+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
                             else:
                                 hbox.owner.hitstop = 8
                             hbox.owner.current_action.onClank(hbox.owner)
-                        if otherClank:
+                        if other_clank:
                             if isinstance(other, hitbox.DamageHitbox):
                                 other.owner.applyPushback(other.damage/4.0, other.trajectory+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
                             else:
                                 other.owner.hitstop = 8
                             other.owner.current_action.onClank(other.owner)
-                    elif hboxClank and otherClank:
+                    elif hbox_clank and other_clank:
                         if isinstance(hbox, hitbox.DamageHitbox):
                             hbox.owner.applyPushback(hbox.damage/4.0, hbox.trajectory+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
                         else:
@@ -257,9 +257,9 @@ class Battle():
                 for wall in platform_collisions:
                     hbox.onCollision(wall)            
             
-            for fight in currentFighters:
+            for fight in current_fighters:
                 if fight.rect.right < current_stage.blast_line.left or fight.rect.left > current_stage.blast_line.right or fight.rect.top > current_stage.blast_line.bottom or fight.rect.bottom < current_stage.blast_line.top:
-                    if not trackStocks:
+                    if not track_stocks:
                         # Get score
                         fight.die()
                     else:
@@ -267,22 +267,22 @@ class Battle():
                         print(fight.stocks)
                         if fight.stocks == 0:
                             fight.die(False)
-                            currentFighters.remove(fight)
+                            current_fighters.remove(fight)
                             current_stage.follows.remove(fight.rect)
                             #If someon's eliminated and there's 1 or fewer people left
-                            if len(currentFighters) < 2:
-                                exitStatus = 2 #Game set
+                            if len(current_fighters) < 2:
+                                exit_status = 2 #Game set
                         else: fight.die()
             # End object updates
-            drawRects = current_stage.drawFG(screen)    
-            self.dirty_rects.extend(drawRects)
+            draw_rects = current_stage.drawFG(_screen)    
+            self.dirty_rects.extend(draw_rects)
             
-            for obj in guiObjects:
-                drawRect = obj.draw(screen, obj.rect.topleft,1)
-                if drawRect: self.dirty_rects.append(drawRect)
-            if trackTime and clockTime <= 5:
-                countAlpha = max(0,countAlpha - 5)
-                countdownSprite.alpha(countAlpha)
+            for obj in gui_objects:
+                draw_rect = obj.draw(_screen, obj.rect.topleft,1)
+                if draw_rect: self.dirty_rects.append(draw_rect)
+            if track_time and clock_time <= 5:
+                count_alpha = max(0,count_alpha - 5)
+                countdown_sprite.alpha(count_alpha)
                 
             
             clock.tick(clock_speed) #change back
@@ -307,76 +307,76 @@ class Battle():
                 
         # End while loop
         
-        if exitStatus == 1:
+        if exit_status == 1:
             musicManager.getMusicManager().stopMusic(1000)
             print("NO CONTEST")
-        elif exitStatus == 2:
+        elif exit_status == 2:
             musicManager.getMusicManager().stopMusic()
-            frameHold = 0
-            gameSprite = spriteManager.TextSprite('GAME!','full Pack 2025',128,[0,0,0])
-            gameSprite.rect.center = screen.get_rect().center
-            while frameHold < 150:
-                gameSprite.draw(screen, gameSprite.rect.topleft, 1)
+            frame_hold = 0
+            game_sprite = spriteManager.TextSprite('GAME!','full Pack 2025',128,[0,0,0])
+            game_sprite.rect.center = _screen.get_rect().center
+            while frame_hold < 150:
+                game_sprite.draw(_screen, game_sprite.rect.topleft, 1)
                 clock.tick(60)
                 pygame.display.flip()
-                frameHold += 1
+                frame_hold += 1
             print("GAME SET")
-        elif exitStatus == -1:
+        elif exit_status == -1:
             print("ERROR!")
         
-        self.endBattle(exitStatus,screen)    
-        return exitStatus # This'll pop us back to the character select screen.
+        self.endBattle(exit_status,_screen)    
+        return exit_status # This'll pop us back to the character select screen.
         
          
     """
     In a normal game, the frame input won't matter.
     It will matter in replays and (eventually) online.
     """
-    def getInputsforFrame(self,frame):
+    def getInputsforFrame(self,_frame):
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 pass
             if event.type == pygame.KEYUP:
                 pass
              
-    def saveReplay(self,path):
+    def saveReplay(self,_path):
         pass
     
     """
     Ends the battle and goes to a relevant menu or error page depending on how the
     battle ended.
     """    
-    def endBattle(self,exitStatus,screen):
-        if exitStatus == -1:
+    def endBattle(self,_exitStatus,_screen):
+        if _exitStatus == -1:
             #Don't show a results screen on error
             return
-        elif exitStatus == 2:
-            resultSprites = []
+        elif _exitStatus == 2:
+            result_sprites = []
             width = settingsManager.getSetting('windowWidth')
             height = settingsManager.getSetting('windowHeight')
             for i in range(0,len(self.players)):
                 print(self.players)
                 print("player"+str(i))
                 fighter = self.players[i]
-                resultSprite = spriteManager.RectSprite(pygame.Rect((width / 4) * i,0,(width / 4),height), pygame.Color(settingsManager.getSetting('playerColor'+str(i))))
-                resultSprite.image.set_alpha(255)
-                nameSprite = spriteManager.TextSprite(fighter.name,size=24)
-                nameSprite.rect.midtop = (resultSprite.rect.width / 2,0)
-                resultSprite.image.blit(nameSprite.image,nameSprite.rect.topleft)
+                result_sprite = spriteManager.RectSprite(pygame.Rect((width / 4) * i,0,(width / 4),height), pygame.Color(settingsManager.getSetting('playerColor'+str(i))))
+                result_sprite.image.set_alpha(255)
+                name_sprite = spriteManager.TextSprite(fighter.name,size=24)
+                name_sprite.rect.midtop = (result_sprite.rect.width / 2,0)
+                result_sprite.image.blit(name_sprite.image,name_sprite.rect.topleft)
                 
                 score = fighter.data_log.getData('KOs') - fighter.data_log.getData('Falls')
                 text = spriteManager.TextSprite('Score: ' + str(score))
-                resultSprite.image.blit(text.image,(0,32))
+                result_sprite.image.blit(text.image,(0,32))
                     
                 dist = 48
                 
                 print(fighter.data_log.data)
                 for item,val in fighter.data_log.data.items():
                     text = spriteManager.TextSprite(str(item) + ': ' + str(val))
-                    resultSprite.image.blit(text.image,(0,dist))
+                    result_sprite.image.blit(text.image,(0,dist))
                     dist += 16
-                resultSprites.append(resultSprite)
-                confirmedList = [False] * len(resultSprites) #This pythonic hacking will make a list of falses equal to the result panels
+                result_sprites.append(result_sprite)
+                confirmed_list = [False] * len(result_sprites) #This pythonic hacking will make a list of falses equal to the result panels
            
             while 1:
                 for event in pygame.event.get():
@@ -387,27 +387,27 @@ class Battle():
                         controls = settingsManager.getControls(i)
                         k = controls.getInputs(event)
                         if k == 'attack':
-                            resultSprites[i].image.set_alpha(0)
-                            confirmedList[i] = True
+                            result_sprites[i].image.set_alpha(0)
+                            confirmed_list[i] = True
                         elif k == 'special':
-                            resultSprites[i].image.set_alpha(255)
-                            confirmedList[i] = False
+                            result_sprites[i].image.set_alpha(255)
+                            confirmed_list[i] = False
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_RETURN:
                             print("saving screenshot")
-                            pygame.image.save(screen,settingsManager.createPath('screenshot.jpg'))
+                            pygame.image.save(_screen,settingsManager.createPath('screenshot.jpg'))
                         if event.key == pygame.K_ESCAPE:
                             return
                                 
-                screen.fill((0,0,0))
-                for sprite in resultSprites:
-                    sprite.draw(screen, sprite.rect.topleft, 1.0)
+                _screen.fill((0,0,0))
+                for sprite in result_sprites:
+                    sprite.draw(_screen, sprite.rect.topleft, 1.0)
                 
-                if all(confirmedList):
+                if all(confirmed_list):
                     return
                 pygame.display.flip()
             return
-        elif exitStatus == 1:
+        elif _exitStatus == 1:
             #Game ended in no contest
             return
         
@@ -424,10 +424,10 @@ self.teams = [(0, [0,3]), (1, [1,2])]
 Remember that PlayerNum is zero-indexed, so player 1 is PlayerNum 0, and so on.
 """
 class Rules():
-    def __init__(self,stocks=3,time=480,teams=[]):
-        self.stocks = stocks #default to 3 stock
-        self.time = time #default to 8 minutes
-        self.teams = teams #teams off
+    def __init__(self,_stocks=3,_time=480,_teams=[]):
+        self.stocks = _stocks #default to 3 stock
+        self.time = _time #default to 8 minutes
+        self.teams = _teams #teams off
     
 class Replay(Battle):
     def __init__(self):
@@ -440,74 +440,72 @@ The HealthTracker object contains the sprites needed to display the percentages 
 It is itself a SpriteObject, with an overloaded draw method.
 """
 class HealthTracker(spriteManager.Sprite):
-    def __init__(self,fighter):
+    def __init__(self,_fighter):
         spriteManager.Sprite.__init__(self)
-        self.fighter = fighter
-        self.percent = int(fighter.damage)
+        self.fighter = _fighter
+        self.percent = int(_fighter.damage)
         
-        self.bgSprite = fighter.franchise_icon
-        self.bgSprite.recolor(self.bgSprite.image,pygame.Color('#cccccc'),pygame.Color(settingsManager.getSetting('playerColor'+str(fighter.player_num))))
-        self.bgSprite.alpha(128)
+        self.bg_sprite = _fighter.franchise_icon
+        self.bg_sprite.recolor(self.bg_sprite.image,pygame.Color('#cccccc'),pygame.Color(settingsManager.getSetting('playerColor'+str(_fighter.player_num))))
+        self.bg_sprite.alpha(128)
         
-        self.image = self.bgSprite.image
-        self.rect = self.bgSprite.image.get_rect()
+        self.image = self.bg_sprite.image
+        self.rect = self.bg_sprite.image.get_rect()
         
         #Until I can figure out the percentage sprites
-        self.percentSprites = spriteManager.SheetSprite(settingsManager.createPath('sprites/guisheet.png'), 64)
-        self.kerningValues = [49,33,44,47,48,43,43,44,49,43,48] #This is the width of each sprite, for kerning purposes
+        self.percent_sprites = spriteManager.SheetSprite(settingsManager.createPath('sprites/guisheet.png'), 64)
+        self.kerning_values = [49,33,44,47,48,43,43,44,49,43,48] #This is the width of each sprite, for kerning purposes
         
-        self.percentSprite = spriteManager.Sprite()
-        self.percentSprite.image = pygame.Surface((196,64), pygame.SRCALPHA, 32).convert_alpha()
+        self.percent_sprite = spriteManager.Sprite()
+        self.percent_sprite.image = pygame.Surface((196,64), pygame.SRCALPHA, 32).convert_alpha()
         self.redness = 0
         
         self.updateDamage()
-        self.percentSprite.rect = self.percentSprite.image.get_rect()
-        self.percentSprite.rect.center = self.rect.center
+        self.percent_sprite.rect = self.percent_sprite.image.get_rect()
+        self.percent_sprite.rect.center = self.rect.center
         
-        
-    
     def updateDamage(self):
         #recolor the percentage
-        oldredness = self.redness
+        old_redness = self.redness
         self.redness = min(1.0,float(self.percent) / 300)
         #the lighter color first
-        rgbFrom = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,oldredness,1.0))
-        rgbTo = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,self.redness,1.0))
-        self.percentSprites.recolor(self.percentSprites.sheet, rgbFrom, rgbTo)
+        rgb_from = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,old_redness,1.0))
+        rgb_to = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,self.redness,1.0))
+        self.percent_sprites.recolor(self.percent_sprites.sheet, rgb_from, rgb_to)
         #the darker color next
-        rgbFrom = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,oldredness,0.785))
-        rgbTo = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,self.redness,0.785))
-        self.percentSprites.recolor(self.percentSprites.sheet, rgbFrom, rgbTo)
+        rgb_from = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,old_redness,0.785))
+        rgb_to = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(0,self.redness,0.785))
+        self.percent_sprites.recolor(self.percent_sprites.sheet, rgb_from, rgb_to)
         
         
-        self.percentSprite.image = pygame.Surface((196,64), pygame.SRCALPHA, 32).convert_alpha()
+        self.percent_sprite.image = pygame.Surface((196,64), pygame.SRCALPHA, 32).convert_alpha()
         
-        percentString = str(int(self.percent)) #converting it to a string so we can iterate over it.
+        percent_string = str(int(self.percent)) #converting it to a string so we can iterate over it.
         length = 0
-        for ch in percentString:
+        for ch in percent_string:
             i = int(ch)
-            self.percentSprite.image.blit(self.percentSprites.getImageAtIndex(i), (length,0))
-            length += self.kerningValues[i]
+            self.percent_sprite.image.blit(self.percent_sprites.getImageAtIndex(i), (length,0))
+            length += self.kerning_values[i]
         
         #add the % sign at the end
-        self.percentSprite.image.blit(self.percentSprites.getImageAtIndex(10), (length,0))
+        self.percent_sprite.image.blit(self.percent_sprites.getImageAtIndex(10), (length,0))
         
-        self.percentSprite.image = pygame.transform.smoothscale(self.percentSprite.image, (96,32))
-        length += self.kerningValues[10]
+        self.percent_sprite.image = pygame.transform.smoothscale(self.percent_sprite.image, (96,32))
+        length += self.kerning_values[10]
         
-    def draw(self,screen,offset,scale):
+    def draw(self,_screen,_offset,_scale):
         if not self.percent == int(self.fighter.damage):
             self.percent = int(self.fighter.damage)
             self.updateDamage()
         
-        h = int(round(self.rect.height * scale))
-        w = int(round(self.rect.width * scale))
-        new_off = (int(offset[0] * scale), int(offset[1] * scale))
+        h = int(round(self.rect.height * _scale))
+        w = int(round(self.rect.width * _scale))
+        new_off = (int(_offset[0] * _scale), int(_offset[1] * _scale))
         
-        screen.blit(self.image,pygame.Rect(new_off,(w,h)))
+        _screen.blit(self.image,pygame.Rect(new_off,(w,h)))
         
-        rect = self.percentSprite.rect
-        self.percentSprite.draw(screen, (new_off[0] + rect.left,new_off[1] + rect.top), scale)
+        rect = self.percent_sprite.rect
+        self.percent_sprite.draw(_screen, (new_off[0] + rect.left,new_off[1] + rect.top), _scale)
 
 """
 The Data Log object keeps track of information that happens in-game, such as score, deaths, total damage dealt/received, etc.
@@ -525,14 +523,14 @@ class DataLog(object):
                      'Damage Taken' : 0
                      }
         
-    def addSection(self,section,initial):
-        self.data[section] = initial
+    def addSection(self,_section,_initial):
+        self.data[_section] = _initial
             
-    def getData(self,section):
-        return self.data[section]
+    def getData(self,_section):
+        return self.data[_section]
     
     # If this last function looks scary to you, don't worry. Leave it out, and it changes the value at section to value.
     # You can pass a function to it to apply to section and value and it'll do a cool thing!
-    def setData(self,section,value,function = (lambda x,y: y)):
-        self.data[section] = function(self.getData(section),value)
-        print(str(section) + ": " + str(self.data[section]))
+    def setData(self,_section,_value,_function = (lambda x,y: y)):
+        self.data[_section] = _function(self.getData(_section),_value)
+        print(str(_section) + ": " + str(self.data[_section]))
