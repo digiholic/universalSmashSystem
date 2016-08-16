@@ -48,15 +48,15 @@
 		<weight>100</weight>
 		<gravity>0.5</gravity>
 		<max_fall_speed>20</max_fall_speed>
-		<max_ground_speed>6</max_ground_speed>
-		<run_speed>9</run_speed>
-		<max_air_speed>6</max_air_speed>
-		<aerial_transition_speed>7.5</aerial_transition_speed>
-		<crawl_speed>3</crawl_speed>
+		<max_ground_speed>7</max_ground_speed>
+		<run_speed>11</run_speed>
+		<max_air_speed>5.5</max_air_speed>
+		<aerial_transition_speed>9.0</aerial_transition_speed>
+		<crawl_speed>2.5</crawl_speed>
 		<dodge_speed>10</dodge_speed>
 		<friction>0.3</friction>
 		<static_grip>0.3</static_grip>
-        <pivot_grip>0.6</pivot_grip>
+		<pivot_grip>0.6</pivot_grip>
 		<air_resistance>0.2</air_resistance>
 		<air_control>0.2</air_control>
 		<jumps>1</jumps>

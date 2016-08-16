@@ -28,24 +28,24 @@
 		
 	</color_palette>
 	<stats>
-		<weight>200</weight>
-		<gravity>1.0</gravity>
+		<weight>100</weight>
+		<gravity>0.5</gravity>
 		<max_fall_speed>20</max_fall_speed>
-		<max_ground_speed>4.5</max_ground_speed>
-		<run_speed>5</run_speed>
-		<max_air_speed>4</max_air_speed>
-		<aerial_transition_speed>4.5</aerial_transition_speed>
-		<crawl_speed>0</crawl_speed>
+		<max_ground_speed>7</max_ground_speed>
+		<run_speed>11</run_speed>
+		<max_air_speed>5.5</max_air_speed>
+		<aerial_transition_speed>9.0</aerial_transition_speed>
+		<crawl_speed>2.5</crawl_speed>
 		<dodge_speed>10</dodge_speed>
-		<friction>1.0</friction>
-		<static_grip>1.0</static_grip>
-                <pivot_grip>2.0</pivot_grip>
-		<air_resistance>0.1</air_resistance>
-		<air_control>0.1</air_control>
+		<friction>0.3</friction>
+		<static_grip>0.3</static_grip>
+		<pivot_grip>0.6</pivot_grip>
+		<air_resistance>0.2</air_resistance>
+		<air_control>0.2</air_control>
 		<jumps>1</jumps>
-		<jump_height>8</jump_height>
-		<short_hop_height>4</short_hop_height>
-		<air_jump_height>10</air_jump_height>
+		<jump_height>12.5</jump_height>
+		<short_hop_height>8.5</short_hop_height>
+		<air_jump_height>15</air_jump_height>
 		<heavy_land_lag>4</heavy_land_lag>
 		<wavedash_lag>8</wavedash_lag>
 		<fastfall_multiplier>2</fastfall_multiplier>
