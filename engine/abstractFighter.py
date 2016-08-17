@@ -1087,7 +1087,7 @@ class AbstractFighter():
 
     #A key release which hasn't been pressed yet
     def keyIdle(self, _key, _from = 8, _state = 0.1, _to = 0):
-        up_frames = map(lambda k: _key not k or k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
+        up_frames = map(lambda k: _key not in k or k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(up_frames):
             return False
