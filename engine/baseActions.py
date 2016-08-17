@@ -119,7 +119,7 @@ class Pivot(action.Action):
         if self.frame == self.last_frame:
             (key, _) = _actor.getForwardBackwardKeys()
             if _actor.keysContain(key):
-                if _actor.checkSmash(key):
+                if _actor.keyBuffered(key, min(self.last_frame, _actor.key_bindings.timing_window['repeat_window']), 1):
                     if _actor.facing == 1:
                         _actor.doDash(0)
                     else:
@@ -158,7 +158,7 @@ class Stop(action.Action):
             print("pivot")
             _actor.doAction('Pivot')
         if self.frame == self.last_frame:
-            if _actor.keyHeld('jump'):
+            if _actor.keyHeld('jump', _actor.key_bindings.timing_window['buffer_window']):
                 _actor.doAction('Jump')
             else: _actor.doAction('NeutralAction')
 

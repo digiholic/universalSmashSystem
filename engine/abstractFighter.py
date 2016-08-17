@@ -1050,7 +1050,9 @@ class AbstractFighter():
         return any(map(lambda k: _key in k and k[_key] >= _state,self.input_buffer.getLastNFrames(_from, _to)))
 
     #A key tap (press, then release)
-    def keyTapped(self, _key, _from = 8, _state = 0.1, _to = 0):
+    def keyTapped(self, _key, _from = None, _state = 0.1, _to = 0):
+        if _from is None:
+            _from = self.key_bindings.timing_window['buffer_window']
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         up_frames = map(lambda k: _key not in k or k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames) or not any(up_frames):
@@ -1060,7 +1062,9 @@ class AbstractFighter():
         return first_down_frame <= last_up_frame
 
     #A key press which hasn't been released yet
-    def keyHeld(self, _key, _from = 8, _state = 0.1, _to = 0):
+    def keyHeld(self, _key, _from = None, _state = 0.1, _to = 0):
+        if _from is None:
+            _from = self.key_bindings.timing_window['buffer_window']
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         up_frames = map(lambda k: _key not in k or k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames):
@@ -1076,7 +1080,9 @@ class AbstractFighter():
         return any(map(lambda k: _key not in k or k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to)))
 
     #A key reinput (release, then press)
-    def keyReinput(self, _key, _from = 8, _state = 0.1, _to = 0):
+    def keyReinput(self, _key, _from = None, _state = 0.1, _to = 0):
+        if _from is None:
+            _from = self.key_bindings.timing_window['buffer_window']
         up_frames = map(lambda k: _key not in k or k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames) or not any(down_frames):
@@ -1086,7 +1092,9 @@ class AbstractFighter():
         return first_up_frame <= last_down_frame
 
     #A key release which hasn't been pressed yet
-    def keyIdle(self, _key, _from = 8, _state = 0.1, _to = 0):
+    def keyIdle(self, _key, _from = None, _state = 0.1, _to = 0):
+        if _from is None:
+            _from = self.key_bindings.timing_window['buffer_window']
         up_frames = map(lambda k: _key not in k or k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(up_frames):
@@ -1098,8 +1106,10 @@ class AbstractFighter():
         return first_up_frame > last_down_frame
 
     #Analog directional input
-    def getSmoothedInput(self, _distanceBack = 64, _maxMagnitude = 1.0):
+    def getSmoothedInput(self, _distanceBack = None, _maxMagnitude = 1.0):
         #TODO If this is a gamepad, simply return its analog input
+        if _distanceBack is None:
+            _distanceBack = self.key_bindings.timing_window['smoothing_window']
         hold_buffer = reversed(self.input_buffer.getLastNFrames(_distanceBack))
         smoothed_x = 0.0
         smoothed_y = 0.0
@@ -1156,7 +1166,7 @@ class AbstractFighter():
     """
     def checkSmash(self,_direction):
         #TODO different for buttons than joysticks
-        return self.keyBuffered(_direction, 4, 1.0)
+        return self.keyBuffered(_direction, self.key_bindings.timing_window['smash_window'], 1.0)
     
     """
     This checks for keys that are currently being held, whether or not they've actually been pressed recently.

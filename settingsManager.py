@@ -94,7 +94,7 @@ def getControls(player_num):
     controls = None
     
     controlType = settings.setting['controlType_'+str(player_num)]  
-    if not controlType == 'Keyobard':
+    if not controlType == 'Keyboard':
         try:
             controls = settings.setting[controlType]
         except:
