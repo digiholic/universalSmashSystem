@@ -931,9 +931,11 @@
 				<base_knockback type="int">0</base_knockback>
 				<hitstun_multiplier type="float">0.5</hitstun_multiplier>
 			</modifyHitbox>
-			<updateLandingLag reset="true">2</updateLandingLag>
 		</frame>
 		<frame number="28">
+			<updateLandingLag reset="true">2</updateLandingLag>
+		</frame>
+		<frame number="32">
 			<updateLandingLag>10</updateLandingLag>
 		</frame>
 	</NeutralAir>
@@ -1264,7 +1266,7 @@
 		<frame number="30">
 			<!-- if keysContainAttack frame -1 -->
 			<ifButton>
-				<button held="true">attack</button>
+				<button check="keysContain">attack</button>
 				<pass>frame_hold</pass>
 			</ifButton>
 		</frame>
@@ -1388,7 +1390,7 @@
 
 		<frame number="18">
 			<ifButton>
-				<button held="true">special</button>
+				<button check="keysContain">special</button>
 				<pass>repeatAttack</pass>
 			</ifButton>
 		</frame>
@@ -1435,7 +1437,7 @@
 
 		<frame number="15">
 			<ifButton>
-				<button held="true">special</button>
+				<button check="keysContain">special</button>
 				<pass>repeatAttack</pass>
 			</ifButton>
 		</frame>
@@ -1523,7 +1525,7 @@
 		</frame>
 		<frame number="12">
 			<ifButton>
-				<button held="true">special</button>
+				<button check="keysContain">special</button>
 				<pass>frame_hold</pass>
 			</ifButton>
 			<changeFighterPreferredSpeed>

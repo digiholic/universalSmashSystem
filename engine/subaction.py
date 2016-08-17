@@ -179,19 +179,33 @@ class If(SubAction):
 class ifButton(SubAction):
     subact_group = 'Control'
     
-    def __init__(self,_button='',_held=False,_bufferTime=0,_ifActions='',_elseActions=''):
+    def __init__(self,_button='',_check='keyBuffered',_bufferTime=0,_ifActions='',_elseActions=''):
         self.button = _button
-        self.held = _held
+        self.check = _check
         self.buffer_time = _bufferTime
         self.if_actions = _ifActions
         self.else_actions = _elseActions
         
     def execute(self, _action, _actor):
         if self.button == '': return
-        if self.held:
+
+        if self.check == 'keysContain':
             cond = self.button in _actor.keys_held
-        else:
+        elif self.check == 'keyBuffered':
             cond = _actor.keyBuffered(self.button, self.buffer_time)
+        elif self.check == 'keyTapped':
+            cond = _actor.keyTapped(self.button, self.buffer_time)
+        elif self.check == 'keyHeld':
+            cond = _actor.keyHeld(self.button, self.buffer_time)
+        elif self.check == 'keyUp':
+            cond = _actor.keyUp(self.button, self.buffer_time)
+        elif self.check == 'keyReinput':
+            cond = _actor.keyReinput(self.button, self.buffer_time)
+        elif self.check == 'keyIdle':
+            cond = _actor.keyIdle(self.button, self.buffer_time)
+        else:
+            return
+
         if cond:
             if self.if_actions and _action.conditional_actions.has_key(self.if_actions):
                 for act in _action.conditional_actions[self.if_actions]:
@@ -205,16 +219,33 @@ class ifButton(SubAction):
         return subactionSelector.IfButtonProperties(_root,self)
     
     def getDisplayName(self):
-        pressed_text = 'is held: ' if self.held else 'was pressed within '+str(self.buffer_time)+' frames: '
+        if self.check == 'keysContain':
+            pressed_text = 'is held: '
+        elif self.check == 'keyBuffered':
+            pressed_text = 'was pressed within ' + str(self.buffer_time) + ' frames: '
+        elif self.check == 'keyTapped':
+            pressed_text = 'was tapped within ' + str(self.buffer_time) + 'frames: '
+        elif self.check == 'keyHeld':
+            pressed_text = 'was pressed within ' + str(self.buffer_time) + 'frames and remains held: '
+        elif self.check == 'keyUp':
+            pressed_text = 'was released within ' + str(self.buffer_time) + 'frames: '
+        elif self.check == 'keyReinput':
+            pressed_text = 'was released and pressed within ' + str(self.buffer_time) + 'frames: '
+        elif self.check == 'keyIdle':
+            pressed_text = 'was released within ' + str(self.buffer_time) + 'frames and remains released: '
+        else:
+            return 'Unknown check type: ' + self.check
+
         return 'If '+self.button+' '+pressed_text+self.if_actions
     
     def getXmlElement(self):
         elem = ElementTree.Element('ifButton')
         
         button_elem = ElementTree.Element('button')
-        if self.held: button_elem.attrib['held'] = True
-        button_elem.text = str(self.button)
-        elem.append(button_elem)
+        
+        check_elem = ElementTree.Element('check')
+        check_elem.text = self.check
+        elem.append(check_elem)
         
         buffer_elem = ElementTree.Element('buffer')
         buffer_elem.text = str(self.buffer_time)
@@ -234,14 +265,13 @@ class ifButton(SubAction):
     @staticmethod
     def buildFromXml(_node):
         button = _node.find('button').text
-        if _node.find('button').attrib.has_key('held'): held = True
-        else: held = False
+        check = load_nodeWithDefault(_node, 'check', 'keyBuffered')
         buffer_time = int(load_nodeWithDefault(_node, 'buffer', 1))
         
         if_actions = load_nodeWithDefault(_node, 'pass', None)
         else_actions = load_nodeWithDefault(_node, 'fail', None)
         
-        return ifButton(button, held, buffer_time, if_actions, else_actions)
+        return ifButton(button, check, buffer_time, if_actions, else_actions)
                   
 ########################################################
 #                SPRITE CHANGERS                       #
@@ -776,6 +806,10 @@ class createHitbox(SubAction):
         elif self.hitbox_type == "reflector":
             print(self.hitbox_vars)
             hitbox = engine.hitbox.ReflectorHitbox(_actor,hitbox_lock,self.hitbox_vars)
+        elif self.hitbox_type == "absorber":
+            hitbox = engine.hitbox.AbsorberHitbox(_actor,hitbox_lock,self.hitbox_vars)
+        elif self.hitbox_type == "invulnerable":
+            hitbox = engine.hitbox.InvulnerableHitbox(_actor, hitbox_lock, self.hitbox_vars)
         _action.hitboxes[self.hitbox_name] = hitbox
     
     def getDisplayName(self):

@@ -222,7 +222,7 @@ class ReflectorHitbox(InertHitbox):
         self.hitbox_type = 'reflector'
         
     def compareTo(self, _other):
-        if self.owner.lockHitbox(_other) and _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags:
+        if _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags and self.owner.lockHitbox(_other):
             if hasattr(_other.article, 'changeOwner'):
                 _other.article.changeOwner(self.owner)
             if hasattr(_other.article, 'change_x') and hasattr(_other.article, 'change_y'):
@@ -244,6 +244,23 @@ class ReflectorHitbox(InertHitbox):
                 self.owner.change_y = -15
                 self.owner.invincible = 20
                 self.owner.doStunned(400)
+        return True
+
+    def onCollision(self, _other):
+        Hitbox.onCollision(self, _other)
+        if self.article and hasattr(self.article, 'onCollision'):
+            self.article.onCollision(_other)
+
+class AbsorberHitbox(InertHitbox):
+    def __init__(self,_owner,_hitboxLock,_hitboxVars):
+        InertHitbox.__init__(self,_owner,_hitboxLock,_hitboxVars)
+        self.hitbox_type = 'absorber'
+        
+    def compareTo(self, _other):
+        if _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'absorbable' in _other.article.tags and self.owner.lockHitbox(_other) :
+            _other.article.deactivate()
+            if hasattr(_other, 'damage'):
+                self.owner.dealDamage(-_other.damage*self.damage_multiplier)
         return True
 
     def onCollision(self, _other):
@@ -304,6 +321,18 @@ class PerfectShieldHitbox(Hitbox):
                 (_other.article.change_x, _other.article.change_y) = (2*projection[0]-v_other[0], 2*projection[1]-v_other[1])
         return True
 
+class InvulnerableHitbox(Hitbox):
+    def __init__(self,_owner,_hitboxLock,_hitboxVars):
+        Hitbox.__init__(self, _owner, _hitboxLock, _hitboxVars)
+        self.hitbox_type = 'invulnerable'
+
+    def update(self):
+        Hitbox.update(self)
+   
+    def compareTo(self, _other):
+        self.owner.lockHitbox(_other)
+        return True
+
 def getXYFromDM(_direction,_magnitude):
     rad = math.radians(_direction)
     x = round(math.cos(rad) * _magnitude,5)
@@ -316,3 +345,11 @@ def getDirectionBetweenPoints(_p1, _p2):
     dx = x2 - x1
     dy = y1 - y2
     return (180 * math.atan2(dy, dx)) / math.pi 
+
+transcendence_dict = {
+                     'shield': -5,
+                     'projectile': -1,
+                     'grounded': 0,
+                     'aerial': 1, 
+                     'transcendent': 5
+                     }

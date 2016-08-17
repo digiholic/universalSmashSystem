@@ -218,7 +218,10 @@ class UpSpecial(action.Action):
             _actor.unRotate()
             _actor.change_x = 0
             _actor.change_y = 0
-            self.angle = math.atan2(-_actor.getSmoothedInput()[1]+0.0001, _actor.getSmoothedInput()[0])*180.0/math.pi
+            if (_actor.getSmoothedInput() == [0, 0]):
+                self.angle = 90
+            else:
+                self.angle = math.atan2(-_actor.getSmoothedInput()[1], _actor.getSmoothedInput()[0])*180.0/math.pi
             direction = abstractFighter.getXYFromDM(self.angle, 1.0)
             _actor.rotateSprite(self.angle)
         if self.frame == 2:
@@ -256,7 +259,7 @@ class UpSpecial(action.Action):
         
 class NeutralAttack(action.Action):
     def __init__(self):
-        action.Action.__init__(self,22)
+        action.Action.__init__(self,17)
         self.sprite_rate = 0
     
     def setUp(self, _actor):
@@ -411,10 +414,10 @@ class DashGrab(action.Action):
 
 class Pummel(baseActions.BaseGrabbing):
     def __init__(self):
-        baseActions.BaseGrabbing.__init__(self,22)
+        baseActions.BaseGrabbing.__init__(self,17)
         self.sprite_rate = 0
 
-    def update(self, actor):
+    def update(self, _actor):
         baseActions.BaseGrabbing.update(self, _actor)
         if self.frame == 0:
             _actor.changeSprite("neutral", self.frame)
@@ -649,7 +652,7 @@ class Released(baseActions.Released):
         baseActions.Released.__init__(self)
         self.sprite_rate = 0
 
-    def setUp(self, actor):
+    def setUp(self, _actor):
         baseActions.Released.setUp(self, _actor)
         _actor.changeSprite("jump")
 
@@ -660,6 +663,7 @@ class LedgeGetup(baseActions.LedgeGetup):
 
     def setUp(self, _actor):
         baseActions.LedgeGetup.setUp(self, _actor)
+        _actor.invulnerable = 20
         if _actor.facing == 1:
             _actor.rect.left -= _actor.rect.width//2
         else:
@@ -668,15 +672,13 @@ class LedgeGetup(baseActions.LedgeGetup):
     def update(self,_actor):
         if self.frame == 0:
             _actor.changeSprite("getup",0)
-            _actor.createMask([255,255,255], 24, True, 24)
+            _actor.createMask([255,255,255], 20, True, 24)
         if (self.frame >= 0) and (self.frame <= 6):
             _actor.changeSpriteImage(self.frame)
-            self.ecb_size = [0, 100]
             if self.frame > 2:
                 _actor.change_y = -19
             _actor.change_x = 0
         if (self.frame >= 8) and (self.frame <= 14):
-            self.ecb_size = [0, 0]
             _actor.change_y = 0
             _actor.change_x = 11.5*_actor.facing
             if (self.frame % 2 == 0):
@@ -694,7 +696,7 @@ class LedgeAttack(baseActions.LedgeGetup):
 
     def setUp(self,_actor):
         baseActions.LedgeGetup.setUp(self, _actor)
-        _actor.invincibility = 24
+        _actor.invulnerable = 24
         _actor.createMask([255,255,255], 24, True, 24)
         self.dash_hitbox = hitbox.DamageHitbox(_actor,hitbox.HitboxLock(),{
                                                                          'center': [0,0],
@@ -736,12 +738,15 @@ class LedgeAttack(baseActions.LedgeGetup):
             if (self.frame % 2 == 0):
                 _actor.changeSpriteImage(self.frame//2+4)
         if self.frame == 15:
+            self.ecb_offset = [0,7]
+            self.ecb_size = [96, 78]
             _actor.change_x = _actor.var['max_ground_speed']*_actor.facing
             _actor.preferred_xspeed = _actor.var['max_ground_speed']*_actor.facing
-        if self.frame >= 15 and self.frame <= 22:
-            _actor.changeSprite("nair", (self.frame-15)%16)
-        if self.frame%2 == 0 and self.frame > 22:
-            _actor.changeSprite("nair", (self.frame//2-4)%16)
+            _actor.changeSprite("nair", 0)
+            self.sprite_rate = 1
+            self.loop = True
+        if self.frame == 22:
+            self.sprite_rate = 2
         self.dash_hitbox.update()
         self.chain_hitbox.update()
         if self.frame == 17:
