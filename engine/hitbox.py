@@ -85,7 +85,16 @@ class Hurtbox(spriteManager.RectSprite):
     def __init__(self,_owner,_rect,_color):
         self.owner = _owner
         spriteManager.RectSprite.__init__(self, _rect, _color)
-
+    
+    """
+    This function is called when a hurtbox is hit by a hitbox. Does nothing by default,
+    but can be overridden for a custom Hurtbox class.
+    
+    @_other: The hitbox that hit this hurtbox
+    """
+    def onHit(self,_other):
+        pass
+    
 class InertHitbox(Hitbox):
     def __init__(self, _owner, _hitboxLock, _hitboxVars):
         Hitbox.__init__(self, _owner, _hitboxLock, _hitboxVars)
