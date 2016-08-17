@@ -233,12 +233,22 @@ class Settings():
             except:
                 self.setting['controlType_'+str(player_num)] = 'Keyboard'
             
+            timing_window = {'smash_window': 4,
+                             'repeat_window': 8,
+                             'buffer_window': 8,
+                             'smoothing_window': 64
+                             }
+            
+            for key in timing_window.keys():
+                if self.parser.has_option(groupName, key):
+                    timing_window[key] = self.parser.get(groupName,key)
+            
             for opt in self.parser.options(groupName):
                 if self.key_name_map.has_key(opt):
                     bindings[self.key_name_map[opt]] = self.parser.get(groupName, opt)
-            self.setting[groupName] = engine.controller.Controller(bindings)
+            self.setting[groupName] = engine.controller.Controller(bindings,timing_window)
             #self.setting[groupName] = engine.cpuPlayer.CPUplayer(bindings) #Here be CPU players
-                    
+            
             player_num += 1
     
     """
@@ -270,6 +280,7 @@ class Settings():
                     buttons[int(opt[1:])] = controllerParser.get(controller_name, opt)
         
             pad_bindings = engine.controller.PadBindings(controller_name,jid,axes,buttons)
+            
             return engine.controller.GamepadController(pad_bindings)
         else:
             joystick = None
