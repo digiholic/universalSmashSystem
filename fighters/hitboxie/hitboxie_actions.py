@@ -218,7 +218,10 @@ class UpSpecial(action.Action):
             _actor.unRotate()
             _actor.change_x = 0
             _actor.change_y = 0
-            self.angle = math.atan2(-_actor.getSmoothedInput()[1]+0.0001, _actor.getSmoothedInput()[0])*180.0/math.pi
+            if (_actor.getSmoothedInput() == [0, 0]):
+                self.angle = 90
+            else:
+                self.angle = math.atan2(-_actor.getSmoothedInput()[1], _actor.getSmoothedInput()[0])*180.0/math.pi
             direction = abstractFighter.getXYFromDM(self.angle, 1.0)
             _actor.rotateSprite(self.angle)
         if self.frame == 2:
