@@ -8,7 +8,7 @@ from ast import literal_eval as make_tuple
 ########################################################
 #               ABSTRACT ACTIONS                       #
 ########################################################
-def load_nodeWithDefault(_node,_sub_node,_default):
+def loadNodeWithDefault(_node,_sub_node,_default):
     if _node is not None:
         return _node.find(_sub_node).text if _node.find(_sub_node)is not None else _default
     else:
@@ -172,17 +172,19 @@ class If(SubAction):
         elif vartype == 'bool':
             value = bool(value)
             
-        if_actions = load_nodeWithDefault(_node, 'pass', None)
-        else_actions = load_nodeWithDefault(_node, 'fail', None)
+        if_actions = loadNodeWithDefault(_node, 'pass', None)
+        else_actions = loadNodeWithDefault(_node, 'fail', None)
         return If(variable,source,function,value,if_actions,else_actions)
 
 class ifButton(SubAction):
     subact_group = 'Control'
     
-    def __init__(self,_button='',_check='keyBuffered',_bufferTime=0,_ifActions='',_elseActions=''):
+    def __init__(self,_button='',_check='keyBuffered',_bufferFrom=0,_bufferTo=0,_threshold=0.1,_ifActions='',_elseActions=''):
         self.button = _button
         self.check = _check
-        self.buffer_time = _bufferTime
+        self.buffer_from = _bufferFrom
+        self.buffer_to = _bufferTo
+        self.threshold = _threshold
         self.if_actions = _ifActions
         self.else_actions = _elseActions
         
@@ -190,19 +192,19 @@ class ifButton(SubAction):
         if self.button == '': return
 
         if self.check == 'keysContain':
-            cond = self.button in _actor.keys_held
+            cond = _actor.keysContain(self.button, self.threshold)
         elif self.check == 'keyBuffered':
-            cond = _actor.keyBuffered(self.button, self.buffer_time)
+            cond = _actor.keyBuffered(self.button, self.buffer_from, self.threshold, self.buffer_to)
         elif self.check == 'keyTapped':
-            cond = _actor.keyTapped(self.button, self.buffer_time)
+            cond = _actor.keyTapped(self.button, self.buffer_from, self.threshold, self.buffer_to)
         elif self.check == 'keyHeld':
-            cond = _actor.keyHeld(self.button, self.buffer_time)
+            cond = _actor.keyHeld(self.button, self.buffer_from, self.threshold, self.buffer_to)
         elif self.check == 'keyUp':
-            cond = _actor.keyUp(self.button, self.buffer_time)
+            cond = _actor.keyUp(self.button, self.buffer_from, self.threshold, self.buffer_to)
         elif self.check == 'keyReinput':
-            cond = _actor.keyReinput(self.button, self.buffer_time)
+            cond = _actor.keyReinput(self.button, self.buffer_from, self.threshold, self.buffer_to)
         elif self.check == 'keyIdle':
-            cond = _actor.keyIdle(self.button, self.buffer_time)
+            cond = _actor.keyIdle(self.button, self.buffer_from, self.threshold, self.buffer_to)
         else:
             return
 
@@ -220,19 +222,19 @@ class ifButton(SubAction):
     
     def getDisplayName(self):
         if self.check == 'keysContain':
-            pressed_text = 'is held: '
+            pressed_text = 'is pressed to a depth of at least ' + str(self.threshold) + ':'
         elif self.check == 'keyBuffered':
-            pressed_text = 'was pressed within ' + str(self.buffer_time) + ' frames: '
+            pressed_text = 'was pressed to a depth of at least ' + str(self.threshold) + ' between frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
         elif self.check == 'keyTapped':
-            pressed_text = 'was tapped within ' + str(self.buffer_time) + 'frames: '
+            pressed_text = 'was tapped to a depth of at least ' + str(self.threshold) + ' within frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
         elif self.check == 'keyHeld':
-            pressed_text = 'was pressed within ' + str(self.buffer_time) + 'frames and remains held: '
+            pressed_text = 'was held to a depth of at least ' + str(self.threshold) + ' through frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
         elif self.check == 'keyUp':
-            pressed_text = 'was released within ' + str(self.buffer_time) + 'frames: '
+            pressed_text = 'was released from a depth of at least ' + str(self.threshold) + ' between frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
         elif self.check == 'keyReinput':
-            pressed_text = 'was released and pressed within ' + str(self.buffer_time) + 'frames: '
+            pressed_text = 'was released and reinput from a depth of at least ' + str(self.threshold) + ' within frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
         elif self.check == 'keyIdle':
-            pressed_text = 'was released within ' + str(self.buffer_time) + 'frames and remains released: '
+            pressed_text = 'was released from a depth of at least ' + str(self.threshold) + ' through frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
         else:
             return 'Unknown check type: ' + self.check
 
@@ -247,9 +249,17 @@ class ifButton(SubAction):
         check_elem.text = self.check
         elem.append(check_elem)
         
-        buffer_elem = ElementTree.Element('buffer')
-        buffer_elem.text = str(self.buffer_time)
-        elem.append(buffer_elem)
+        from_elem = ElementTree.Element('from')
+        from_elem.text = str(self.buffer_from)
+        elem.append(from_elem)
+        
+        to_elem = ElementTree.Element('to')
+        to_elem.text = str(self.buffer_to)
+        elem.append(to_elem)
+        
+        threshold_elem = ElementTree.Element('threshold')
+        threshold_elem.text = str(self.threshold)
+        elem.append(threshold_elem)
         
         if self.if_actions:
             pass_elem = ElementTree.Element('pass')
@@ -265,13 +275,44 @@ class ifButton(SubAction):
     @staticmethod
     def buildFromXml(_node):
         button = _node.find('button').text
-        check = load_nodeWithDefault(_node, 'check', 'keyBuffered')
-        buffer_time = int(load_nodeWithDefault(_node, 'buffer', 1))
+        check = loadNodeWithDefault(_node, 'check', 'keyBuffered')
+        if check == 'keysContain':
+            buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
+            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
+            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
+        elif check == 'keyBuffered':
+            buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
+            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
+            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
+        elif check == 'keyTapped':
+            buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
+            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
+            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
+        elif check == 'keyHeld':
+            buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
+            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
+            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
+        elif check == 'keyUp':
+            buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
+            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
+            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
+        elif check == 'keyReinput':
+            buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
+            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
+            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
+        elif check == 'keyIdle':
+            buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
+            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
+            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
+        else:
+            buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
+            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
+            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
         
-        if_actions = load_nodeWithDefault(_node, 'pass', None)
-        else_actions = load_nodeWithDefault(_node, 'fail', None)
+        if_actions = loadNodeWithDefault(_node, 'pass', None)
+        else_actions = loadNodeWithDefault(_node, 'fail', None)
         
-        return ifButton(button, check, buffer_time, if_actions, else_actions)
+        return ifButton(button, check, buffer_from, buffer_to, threshold, if_actions, else_actions)
                   
 ########################################################
 #                SPRITE CHANGERS                       #
@@ -528,8 +569,8 @@ class shiftFighterPosition(SubAction):
     
     @staticmethod
     def buildFromXml(_node):
-        new_x = load_nodeWithDefault(_node, 'xPos', None)
-        new_y = load_nodeWithDefault(_node, 'yPos', None)
+        new_x = loadNodeWithDefault(_node, 'xPos', None)
+        new_y = loadNodeWithDefault(_node, 'yPos', None)
         x_rel = False
         y_rel = False
         if _node.find('xPos') is not None:
@@ -584,8 +625,8 @@ class shiftSpritePosition(SubAction):
         
     @staticmethod
     def buildFromXml(_node):
-        new_x = load_nodeWithDefault(_node, 'xPos', None)
-        new_y = load_nodeWithDefault(_node, 'yPos', None)
+        new_x = loadNodeWithDefault(_node, 'xPos', None)
+        new_y = loadNodeWithDefault(_node, 'yPos', None)
         x_rel = False
         if _node.find('xPos') is not None:
             new_x = int(new_x)
@@ -1197,7 +1238,7 @@ class createMask(SubAction):
     def buildFromXml(_node):
         color = pygame.color.Color(_node.find('color').text)
         duration = int(_node.find('duration').text)
-        pulse_length = int(load_nodeWithDefault(_node, 'pulse', 0))
+        pulse_length = int(loadNodeWithDefault(_node, 'pulse', 0))
         return createMask(color,duration,pulse_length)
 
 class removeMask(SubAction):
