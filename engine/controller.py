@@ -2,12 +2,13 @@ import settingsManager
 import pygame
 
 class Controller():
-    def __init__(self,_bindings):
+    def __init__(self,_bindings,_timing_window = dict()):
         self.keys_to_pass = []
         self.keys_to_release = []
         self.keys_held = []
         self.key_bindings = _bindings
         self.type = 'Keyboard'
+        self.timing_window = _timing_window
     
     def loadFighter(self,_fighter):
         self.fighter = _fighter
