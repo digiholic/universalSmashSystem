@@ -23,6 +23,8 @@ class Stage():
         self.zoom_level = 1.0
     
         self.active_hitboxes = pygame.sprite.Group()
+        self.active_hurtboxes = pygame.sprite.Group()
+        
         self.follows = []
         self.spawn_locations = []
         

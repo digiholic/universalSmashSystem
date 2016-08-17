@@ -472,7 +472,8 @@ class changeFighterSpeed(SubAction):
                     self.speed_y = getattr(self, value)
             if self.y_relative:_actor.change_y += self.speed_y
             else: _actor.change_y = self.speed_y
-            
+        
+        
     def getPropertiesPanel(self, _root):
         return subactionSelector.ChangeSpeedProperties(_root,self)
     

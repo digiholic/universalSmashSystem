@@ -118,7 +118,7 @@ class Battle():
         """
         exit_status = 0
         
-        data_log = DataLog();
+        data_log = DataLog()
         data_log.addSection('test', 1)
         data_log.setData('test', 3, (lambda x,y: x + y))
         self.dirty_rects = [pygame.Rect(0,0,self.settings['windowWidth'],self.settings['windowHeight'])]
@@ -159,6 +159,9 @@ class Battle():
             
             current_stage.update()
             current_stage.cameraUpdate()
+            active_hitboxes.add(current_stage.active_hitboxes)
+            active_hurtboxes.add(current_stage.active_hurtboxes)
+            
             draw_rects = current_stage.drawBG(_screen)
             self.dirty_rects.extend(draw_rects)
             
@@ -250,6 +253,7 @@ class Battle():
                 for hurtbox in hitbox_collisions:
                     if hbox.owner != hurtbox.owner:
                         hbox.onCollision(hurtbox.owner)
+                        hurtbox.onHit(hbox)
                         
             for hbox in platform_hits:
                 #then platform collisions
