@@ -98,7 +98,7 @@ class Pivot(action.Action):
         #_actor.flip()
 
     def stateTransitions(self, _actor):
-        if _actor.keyHeld('jump', self.frame):
+        if _actor.keyHeld('jump'):
             _actor.doAction('Jump')
         (key, invkey) = _actor.getForwardBackwardKeys()
         if _actor.keysContain(invkey):
@@ -119,7 +119,7 @@ class Pivot(action.Action):
         if self.frame == self.last_frame:
             (key, _) = _actor.getForwardBackwardKeys()
             if _actor.keysContain(key):
-                if _actor.keyBuffered(key, min(self.last_frame, _actor.key_bindings.timing_window['repeat_window']), 1):
+                if _actor.keyHeld(key, self.frame, 1, 0):
                     if _actor.facing == 1:
                         _actor.doDash(0)
                     else:
@@ -151,14 +151,14 @@ class Stop(action.Action):
             _actor.doAction('Fall')
         _actor.accel(_actor.var['static_grip'])
         (key,invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyHeld(key,self.frame):
+        if _actor.keyHeld(key, int(_actor.key_bindings.timing_window['repeat_window'])):
             print("run")
             _actor.doDash(_actor.getFacingDirection())
-        if _actor.keyHeld(invkey,self.frame):
+        elif _actor.keyHeld(invkey):
             print("pivot")
             _actor.doAction('Pivot')
-        if self.frame == self.last_frame:
-            if _actor.keyHeld('jump', _actor.key_bindings.timing_window['buffer_window']):
+        elif self.frame == self.last_frame:
+            if _actor.keyHeld('jump'):
                 _actor.doAction('Jump')
             else: _actor.doAction('NeutralAction')
 
@@ -186,7 +186,7 @@ class RunPivot(action.Action):
         
         
     def stateTransitions(self, _actor):
-        if _actor.keyHeld('jump', self.frame):
+        if _actor.keyHeld('jump'):
             _actor.doAction('Jump')
         (key, invkey) = _actor.getForwardBackwardKeys()
         if _actor.keysContain(invkey):
@@ -233,14 +233,14 @@ class RunStop(action.Action):
             _actor.doAction('Fall')
         _actor.accel(_actor.var['static_grip'])
         (key,invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyHeld(key,self.frame):
+        if _actor.keyHeld(key, int(_actor.key_bindings.timing_window['repeat_window']), 1):
             print("run")
             _actor.doDash(_actor.getFacingDirection())
-        if _actor.keyHeld(invkey,self.frame):
+        elif _actor.keyHeld(invkey):
             print("run pivot")
             _actor.doAction('RunPivot')
-        if self.frame == self.last_frame:
-            if _actor.keyHeld('jump', 8, 1):
+        elif self.frame == self.last_frame:
+            if _actor.keyHeld('jump', int(_actor.key_bindings.timing_window['buffer_window']), 1):
                 _actor.doAction('Jump')
             else: _actor.doAction('NeutralAction')
 
@@ -421,12 +421,8 @@ class HitStun(action.Action):
                     _actor.doAction('Prone')
             elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
                 _actor.ground_elasticity = 0
-                if self.last_frame > 10: 
-                    if _actor.grounded: 
-                        _actor.doAction('Prone')
-                else:
-                    _actor.landingLag = 40
-                    hitstunLanding(_actor)
+                if _actor.grounded: 
+                    _actor.doAction('Prone')
             else: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
         
@@ -703,16 +699,9 @@ class Land(action.Action):
         if self.frame == 0:
             _actor.preferred_yspeed = _actor.var['max_fall_speed']
             self.last_frame = _actor.landing_lag
-            if _actor.keyHeld('shield', 1):
+            if _actor.keyHeld('shield', 1) and not _actor.keyBuffered('shield', 20, 0.1, 1):
                 print("l-cancel")
                 self.last_frame = self.last_frame // 2
-
-        if _actor.keyHeld('down') and self.frame*2 > self.last_frame:
-            blocks = _actor.checkGround()
-            if blocks:   
-                blocks = map(lambda x: x.solid, blocks)
-                if not any(blocks):
-                    _actor.doAction('PlatformDrop')
 
         if self.frame == 1:
             #_actor.articles.add(article.LandingArticle(_actor)) #this looks awful don't try it
@@ -741,12 +730,6 @@ class HelplessLand(action.Action):
             _actor.change_y = 0
             _actor.preferred_yspeed = _actor.var['max_fall_speed']
             self.last_frame = _actor.landing_lag
-        if _actor.keyHeld('down', 8):
-            blocks = _actor.checkGround()
-            if blocks:
-                blocks = map(lambda x: x.solid, blocks)
-                if not any(blocks):
-                    _actor.doAction('PlatformDrop')
         if self.frame >= self.last_frame:
             _actor.landing_lag = 0
             _actor.doAction('NeutralAction')
@@ -775,10 +758,7 @@ class PlatformDrop(action.Action):
             else:
                 self.doAction('DownGroundSpecial')
         if self.frame > self.phase_frame:
-            (key, invkey) = _actor.getForwardBackwardKeys()
-            if _actor.keyBuffered(invkey, 1) and _actor.keyBuffered(invkey, 8, 0.6, 1):
-                _actor.flip()
-                print("Reverse")
+            tapReversible(_actor)
             airControl(_actor)
         
     def update(self,_actor):
@@ -946,10 +926,7 @@ class Released(action.Action):
         _actor.preferred_yspeed = _actor.var['max_fall_speed']
     
     def stateTransitions(self,_actor):
-        (key, invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyBuffered(invkey, 1):
-            _actor.flip()
-            print("Reverse")
+        tapReversible(_actor)
 
         (key, invkey) = _actor.getForwardBackwardKeys()
         if _actor.keysContain(key):
@@ -1457,10 +1434,10 @@ def crouchState(_actor):
 
 def airState(_actor):
     airControl(_actor)
-    if _actor.change_x < 0 and _actor.facing == 1 and _actor.keyBuffered('left', 1) and _actor.keyBuffered('left', 8, 0.6, 1):
+    if _actor.change_x < 0 and _actor.facing == 1 and _actor.keyBuffered('left', 1) and _actor.keyBuffered('left', int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1):
         _actor.flip()
         print ("Reverse")
-    if _actor.change_x > 0 and _actor.facing == -1 and _actor.keyBuffered('right', 1) and _actor.keyBuffered('right', 8, 0.6, 1):
+    if _actor.change_x > 0 and _actor.facing == -1 and _actor.keyBuffered('right', 1) and _actor.keyBuffered('right', int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1):
         _actor.flip()
         print ("Reverse")
     if _actor.keyHeld('shield'):
@@ -1546,10 +1523,7 @@ def dashState(_actor, direction):
 
 def jumpState(_actor):
     airControl(_actor)
-    (key, invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyBuffered(invkey, 1) and _actor.keyBuffered(invkey, 8, 0.6, 1):
-        _actor.flip()
-        print("Reverse")
+    tapReversible(_actor)
     if _actor.keyHeld('shield'):
         _actor.doAction('AirDodge')
     elif _actor.keyHeld('attack'):
@@ -1562,11 +1536,11 @@ def jumpState(_actor):
             
 def shieldState(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyBuffered(key, 1, 0.6) and _actor.keyBuffered(key, 8, 0.6, 1) and not _actor.keyBuffered(invkey, 8, 0.6):
+    if _actor.keyBuffered(key, 1, 0.6) and _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1) and not _actor.keyBuffered(invkey, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
         _actor.doAction('ForwardRoll')
-    elif _actor.keyBuffered(invkey, 1, 0.6) and _actor.keyBuffered(key, 8, 0.6, 1) and not _actor.keyBuffered(key, 8, 0.6):
+    elif _actor.keyBuffered(invkey, 1, 0.6) and _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1) and not _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
         _actor.doAction('BackwardRoll')
-    elif _actor.keyBuffered('down', 1, 0.6) and _actor.keyBuffered(key, 8, 0.6, 1) and not _actor.keyBuffered(up, 8, 0.6):
+    elif _actor.keyBuffered('down', 1, 0.6) and _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1) and not _actor.keyBuffered(up, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
         _actor.doAction('SpotDodge')
     elif _actor.keyHeld('attack'):
         _actor.doAction('GroundGrab')
@@ -1714,7 +1688,7 @@ def tiltReversible(_actor):
 
 def tapReversible(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyBuffered(invkey, 1) and _actor.keyBuffered(invkey, 8, 0.6, 1):
+    if _actor.keyBuffered(invkey, 1) and _actor.keyBuffered(invkey, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1):
         _actor.flip()
         print("Reverse")
 
