@@ -1109,7 +1109,7 @@ class AbstractFighter():
     def getSmoothedInput(self, _distanceBack = None, _maxMagnitude = 1.0):
         #TODO If this is a gamepad, simply return its analog input
         if _distanceBack is None:
-            _distanceBack = float(self.key_bindings.timing_window['smoothing_window'])
+            _distanceBack = int(self.key_bindings.timing_window['smoothing_window'])
         hold_buffer = reversed(self.input_buffer.getLastNFrames(_distanceBack))
         smoothed_x = 0.0
         smoothed_y = 0.0
