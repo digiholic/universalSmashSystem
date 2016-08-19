@@ -222,6 +222,9 @@ class AbstractFighter():
         return elem
     
     def initialize(self):     
+
+        self.action_frame = 0
+
         # Super armor variables
         # Set with attacks to make them super armored
         # Remember to set them back at some point
@@ -311,6 +314,7 @@ class AbstractFighter():
         self.ecb.store()
         #Step one, push the input buffer
         self.input_buffer.push()
+        self.action_frame += 1
         
         if self.hitstop > 0:
 
