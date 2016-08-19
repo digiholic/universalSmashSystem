@@ -179,7 +179,7 @@ class If(SubAction):
 class ifButton(SubAction):
     subact_group = 'Control'
     
-    def __init__(self,_button='',_check='keyBuffered',_bufferFrom=0,_bufferTo=0,_threshold=0.1,_ifActions='',_elseActions=''):
+    def __init__(self,_button='',_check='keyBuffered',_bufferFrom=0,_bufferTo=0,_threshold=0.1,_ifActions='',_elseActions='',_beyondAction=False):
         self.button = _button
         self.check = _check
         self.buffer_from = _bufferFrom
@@ -187,24 +187,30 @@ class ifButton(SubAction):
         self.threshold = _threshold
         self.if_actions = _ifActions
         self.else_actions = _elseActions
+        self.beyond_action = _beyondAction
         
     def execute(self, _action, _actor):
         if self.button == '': return
 
+        if self.beyond_action:
+            working_from = self.buffer_from
+        else:
+            working_from = min(_actor.action_frame, self.buffer_from, 1)
+
         if self.check == 'keysContain':
             cond = _actor.keysContain(self.button, self.threshold)
         elif self.check == 'keyBuffered':
-            cond = _actor.keyBuffered(self.button, self.buffer_from, self.threshold, self.buffer_to)
+            cond = _actor.keyBuffered(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyTapped':
-            cond = _actor.keyTapped(self.button, self.buffer_from, self.threshold, self.buffer_to)
+            cond = _actor.keyTapped(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyHeld':
-            cond = _actor.keyHeld(self.button, self.buffer_from, self.threshold, self.buffer_to)
+            cond = _actor.keyHeld(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyUp':
-            cond = _actor.keyUp(self.button, self.buffer_from, self.threshold, self.buffer_to)
+            cond = _actor.keyUp(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyReinput':
-            cond = _actor.keyReinput(self.button, self.buffer_from, self.threshold, self.buffer_to)
+            cond = _actor.keyReinput(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyIdle':
-            cond = _actor.keyIdle(self.button, self.buffer_from, self.threshold, self.buffer_to)
+            cond = _actor.keyIdle(self.button, working_from, self.threshold, self.buffer_to)
         else:
             return
 
@@ -222,21 +228,27 @@ class ifButton(SubAction):
     
     def getDisplayName(self):
         if self.check == 'keysContain':
-            pressed_text = 'is pressed to a depth of at least ' + str(self.threshold) + ':'
+            pressed_text = 'is pressed to a depth of at least ' + str(self.threshold)
         elif self.check == 'keyBuffered':
-            pressed_text = 'was pressed to a depth of at least ' + str(self.threshold) + ' between frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
+            pressed_text = 'was pressed to a depth of at least ' + str(self.threshold) + ' between frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from)
         elif self.check == 'keyTapped':
-            pressed_text = 'was tapped to a depth of at least ' + str(self.threshold) + ' within frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
+            pressed_text = 'was tapped to a depth of at least ' + str(self.threshold) + ' within frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from)
         elif self.check == 'keyHeld':
-            pressed_text = 'was held to a depth of at least ' + str(self.threshold) + ' through frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
+            pressed_text = 'was held to a depth of at least ' + str(self.threshold) + ' through frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from)
         elif self.check == 'keyUp':
-            pressed_text = 'was released from a depth of at least ' + str(self.threshold) + ' between frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
+            pressed_text = 'was released from a depth of at least ' + str(self.threshold) + ' between frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from)
         elif self.check == 'keyReinput':
-            pressed_text = 'was released and reinput from a depth of at least ' + str(self.threshold) + ' within frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
+            pressed_text = 'was released and reinput from a depth of at least ' + str(self.threshold) + ' within frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from)
         elif self.check == 'keyIdle':
-            pressed_text = 'was released from a depth of at least ' + str(self.threshold) + ' through frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from) + ':'
+            pressed_text = 'was released from a depth of at least ' + str(self.threshold) + ' through frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from)
         else:
             return 'Unknown check type: ' + self.check
+
+        if self.beyond_action:
+            pressed_text += ':'
+        else:
+            pressed_text += ' during this action:'
+            
 
         return 'If '+self.button+' '+pressed_text+self.if_actions
     
@@ -251,6 +263,7 @@ class ifButton(SubAction):
         
         from_elem = ElementTree.Element('from')
         from_elem.text = str(self.buffer_from)
+        if self.beyond_action: from_elem.attrib['beyondAction'] = 'True'
         elem.append(from_elem)
         
         to_elem = ElementTree.Element('to')
@@ -312,7 +325,7 @@ class ifButton(SubAction):
         if_actions = loadNodeWithDefault(_node, 'pass', None)
         else_actions = loadNodeWithDefault(_node, 'fail', None)
         
-        return ifButton(button, check, buffer_from, buffer_to, threshold, if_actions, else_actions)
+        return ifButton(button, check, buffer_from, buffer_to, threshold, if_actions, else_actions, _node.attrib.has_key('beyondAction'))
                   
 ########################################################
 #                SPRITE CHANGERS                       #

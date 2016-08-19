@@ -76,7 +76,6 @@ class AbstractFighter():
                 'short_hop_height': 8.5,
                 'air_jump_height': 15.0,
                 'heavy_land_lag': 4,
-                'wavedash_lag': 8,
                 'fastfall_multiplier': 2.0,
                 'hitstun_elasticity': .8,
                 'shield_size': 1.0
@@ -857,7 +856,7 @@ class AbstractFighter():
             self.dealDamage(_damage*self.armor_damage_multiplier)
             return 0
 
-        di_vec = self.getSmoothedInput()
+        di_vec = self.getSmoothedInput(int(self.key_bindings.timing_window['smoothing_window']))
 
         trajectory_vec = [math.cos(_trajectory/180*math.pi), math.sin(_trajectory/180*math.pi)]
 
@@ -866,7 +865,7 @@ class AbstractFighter():
         di_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
         _trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
 
-        hitstun_frames = math.floor(total_kb*_hitstunMultiplier+_baseHitstun) #Tweak this constant
+        hitstun_frames = math.floor((total_kb+additional_kb)*_hitstunMultiplier+_baseHitstun) #Tweak this constant
         print(hitstun_frames)
 
         if self.no_flinch_hits > 0:
@@ -1056,7 +1055,7 @@ class AbstractFighter():
     #A key tap (press, then release)
     def keyTapped(self, _key, _from = None, _state = 0.1, _to = 0):
         if _from is None:
-            _from = int(self.key_bindings.timing_window['buffer_window'])
+            _from = min(int(self.key_bindings.timing_window['buffer_window']), self.action_frame)
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames) or not any(up_frames):
@@ -1068,7 +1067,7 @@ class AbstractFighter():
     #A key press which hasn't been released yet
     def keyHeld(self, _key, _from = None, _state = 0.1, _to = 0):
         if _from is None:
-            _from = int(self.key_bindings.timing_window['buffer_window'])
+            _from = min(int(self.key_bindings.timing_window['buffer_window']), self.action_frame)
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames):
@@ -1086,7 +1085,7 @@ class AbstractFighter():
     #A key reinput (release, then press)
     def keyReinput(self, _key, _from = None, _state = 0.1, _to = 0):
         if _from is None:
-            _from = int(self.key_bindings.timing_window['buffer_window'])
+            _from = min(int(self.key_bindings.timing_window['buffer_window']), self.action_frame)
         up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames) or not any(down_frames):
@@ -1098,7 +1097,7 @@ class AbstractFighter():
     #A key release which hasn't been pressed yet
     def keyIdle(self, _key, _from = None, _state = 0.1, _to = 0):
         if _from is None:
-            _from = int(self.key_bindings.timing_window['buffer_window'])
+            _from = min(int(self.key_bindings.timing_window['buffer_window']), self.action_frame)
         up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(up_frames):
@@ -1113,27 +1112,31 @@ class AbstractFighter():
     def getSmoothedInput(self, _distanceBack = None, _maxMagnitude = 1.0):
         #TODO If this is a gamepad, simply return its analog input
         if _distanceBack is None:
-            _distanceBack = int(self.key_bindings.timing_window['smoothing_window'])
+            smooth_distance = int(self.key_bindings.timing_window['smoothing_window'])
+            _distanceBack = min(int(self.key_bindings.timing_window['smoothing_window']), self.action_frame)
+        else:
+            smooth_distance = _distanceBack
+        
         hold_buffer = reversed(self.input_buffer.getLastNFrames(_distanceBack))
         smoothed_x = 0.0
         smoothed_y = 0.0
         for frame_input in hold_buffer:
             working_x = 0.0
             working_y = 0.0
-            x_decay = float(1.5)/_distanceBack
-            y_decay = float(1.5)/_distanceBack
+            x_decay = float(1.5)/smooth_distance
+            y_decay = float(1.5)/smooth_distance
             if 'left' in frame_input: working_x -= frame_input['left']
             if 'right' in frame_input: working_x += frame_input['right']
             if 'up' in frame_input: working_y -= frame_input['up']
             if 'down' in frame_input: working_y += frame_input['down']
             if (working_x > 0 and smoothed_x > 0) or (working_x < 0 and smoothed_x < 0):
-                x_decay = float(1)/_distanceBack
+                x_decay = float(1)/smooth_distance
             elif (working_x < 0 and smoothed_x > 0) or (working_x > 0 and smoothed_x < 0):
-                x_decay = float(4)/_distanceBack
+                x_decay = float(4)/smooth_distance
             if (working_y < 0 and smoothed_y < 0) or (working_y > 0 and smoothed_y > 0):
-                y_decay = float(1)/_distanceBack
+                y_decay = float(1)/smooth_distance
             elif (working_y < 0 and smoothed_y > 0) or (working_y > 0 and smoothed_y < 0):
-                ySmooth = float(4)/_distanceBack
+                ySmooth = float(4)/smooth_distance
             magnitude = numpy.linalg.norm([working_x, working_y])
             if magnitude > _maxMagnitude:
                 working_x /= magnitude/_maxMagnitude

@@ -41,9 +41,9 @@ class Move(action.Action):
         if _actor.grounded is False:
             _actor.doAction('Fall')
         (key,invkey) = _actor.getForwardBackwardKeys()
-        if self.frame > 0 and _actor.keyBuffered(invkey, 1, _state = 1):
+        if self.frame > 0 and _actor.keyBuffered(invkey, _state = 1):
             _actor.doDash(-_actor.getFacingDirection())
-        elif self.frame > 0 and _actor.keyBuffered(key, 1, _state = 1):
+        elif self.frame > 0 and _actor.keyBuffered(key, _state = 1):
             _actor.doDash(_actor.getFacingDirection())
 
 class Dash(action.Action):
@@ -119,7 +119,7 @@ class Pivot(action.Action):
         if self.frame == self.last_frame:
             (key, _) = _actor.getForwardBackwardKeys()
             if _actor.keysContain(key):
-                if _actor.keyHeld(key, self.frame, 1, 0):
+                if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.action_frame), 1, 0):
                     if _actor.facing == 1:
                         _actor.doDash(0)
                     else:
@@ -151,7 +151,7 @@ class Stop(action.Action):
             _actor.doAction('Fall')
         _actor.accel(_actor.var['static_grip'])
         (key,invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyHeld(key, int(_actor.key_bindings.timing_window['repeat_window'])):
+        if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.action_frame)):
             print("run")
             _actor.doDash(_actor.getFacingDirection())
         elif _actor.keyHeld(invkey):
@@ -233,14 +233,14 @@ class RunStop(action.Action):
             _actor.doAction('Fall')
         _actor.accel(_actor.var['static_grip'])
         (key,invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyHeld(key, int(_actor.key_bindings.timing_window['repeat_window']), 1):
+        if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.action_frame), 1):
             print("run")
             _actor.doDash(_actor.getFacingDirection())
         elif _actor.keyHeld(invkey):
             print("run pivot")
             _actor.doAction('RunPivot')
         elif self.frame == self.last_frame:
-            if _actor.keyHeld('jump', int(_actor.key_bindings.timing_window['buffer_window']), 1):
+            if _actor.keyHeld('jump', _state=1):
                 _actor.doAction('Jump')
             else: _actor.doAction('NeutralAction')
 
@@ -303,7 +303,7 @@ class Crouch(action.Action):
         crouchState(_actor)
         if _actor.grounded is False:
             _actor.doAction('Fall')
-        if self.frame > 0 and _actor.keyBuffered('down', 1, _state = 1):
+        if self.frame > 0 and _actor.keyBuffered('down', _state = 1):
             blocks = _actor.checkGround()
             if blocks:
                 #Turn it into a list of true/false if the block is solid
@@ -342,7 +342,7 @@ class CrouchGetup(action.Action):
     def stateTransitions(self, _actor):
         if _actor.grounded is False:
             _actor.doAction('Fall')
-        elif _actor.keyBuffered('down', 1, _state = 1):
+        elif _actor.keyBuffered('down', _state = 1):
             blocks = _actor.checkGround()
             if blocks:
                 #Turn it into a list of true/false if the block is solid
@@ -505,11 +505,6 @@ class Tumble(action.Action):
         action.Action.update(self, _actor)
         _actor.rotateSprite((_actor.sprite.angle+90)+2)
         if self.tech_cooldown > 0: self.tech_cooldown -= 1
-        
-        (key, invkey) = _actor.getForwardBackwardKeys()
-        if _actor.tech_window == 0 and _actor.keyBuffered(invkey, 1) and _actor.keyBuffered(invkey, 8, 0.6, 1):
-            _actor.flip()
-            print("Reverse")
         
 class Prone(action.Action):
     def __init__(self,_length=40):
@@ -777,9 +772,6 @@ class Shield(action.Action):
    
     def setUp(self, _actor):
         action.Action.setUp(self, _actor)
-        self.forward_last = 0
-        self.backward_last = 0
-        self.down_last = 0
         
     def stateTransitions(self, _actor):
         shieldState(_actor)
@@ -831,7 +823,8 @@ class ShieldStun(action.Action):
         if self.frame >= self.last_frame and _actor.keysContain('shield'):
             _actor.doShield(False)
         elif self.frame >= self.last_frame:
-            _actor.doAction('NeutralAction')
+            _actor.landing_lag = 6
+            _actor.doAction('Land')
         self.frame += 1
 
 class Stunned(action.Action):
@@ -1075,14 +1068,11 @@ class AirDodge(action.Action):
         action.Action.setUp(self, _actor)
         self.start_invuln_frame = 4
         self.end_invuln_frame = 20
+        self.wavedash_lag = 8
         self.move_vec = [0,0]
         
-        if settingsManager.getSetting('enableWavedash'):
-            _actor.updateLandingLag(_actor.var['wavedash_lag'])
-        else:
-            _actor.updateLandingLag(20)
         if settingsManager.getSetting('airDodgeType') == 'directional':
-            self.move_vec = _actor.getSmoothedInput()
+            self.move_vec = _actor.getSmoothedInput(int(_actor.key_bindings.timing_window['smoothing_window']))
             _actor.change_x = self.move_vec[0]*_actor.var['dodge_speed']
             _actor.change_y = self.move_vec[1]*_actor.var['dodge_speed']
         
@@ -1114,6 +1104,12 @@ class AirDodge(action.Action):
                 _actor.preferred_yspeed = 0
             elif self.frame == self.last_frame:
                 _actor.preferred_yspeed = _actor.var['max_fall_speed']
+
+        if self.frame == 0:
+            if settingsManager.getSetting('enableWavedash'):
+                _actor.updateLandingLag(self.wavedash_lag)
+            else:
+                _actor.updateLandingLag(20)
                 
         if self.frame == self.start_invuln_frame:
             (key, invkey) = _actor.getForwardBackwardKeys()
@@ -1408,11 +1404,20 @@ def neutralState(_actor):
     elif _actor.keyHeld('jump'):
         _actor.doAction('Jump')
     elif _actor.keysContain('down', 0.5):
-        _actor.doAction('Crouch')
+        if _actor.keyBuffered('down', int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.5, 1):
+            _actor.doAction('PlatformDrop')
+        else:
+            _actor.doAction('Crouch')
     elif _actor.keysContain(invkey):
-        _actor.doGroundMove(_actor.getForwardWithOffset(180))
+        if _actor.keyBuffered(invkey, int(_actor.key_bindings.timing_window['repeat_window'])+1, _to=1):
+            _actor.doDash(-_actor.getFacingDirection())
+        else:
+            _actor.doGroundMove(_actor.getForwardWithOffset(180))
     elif _actor.keysContain(key):
-        _actor.doGroundMove(_actor.getForwardWithOffset(0))
+        if _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, _to=1):
+            _actor.doDash(_actor.getFacingDirection())
+        else:
+            _actor.doGroundMove(_actor.getForwardWithOffset(0))
 
 def crouchState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
@@ -1453,6 +1458,7 @@ def airState(_actor):
         _actor.calcGrav(_actor.var['fastfall_multiplier'])
 
 def tumbleState(_actor):
+    (key,invkey) = _actor.getForwardBackwardKeys()
     if _actor.keysContain(key):
         _actor.preferred_xspeed = _actor.facing * _actor.var['max_air_speed']
     elif _actor.keysContain(invkey):
@@ -1468,6 +1474,9 @@ def tumbleState(_actor):
 
     if _actor.change_y >= _actor.var['max_fall_speed'] and _actor.landing_lag < _actor.var['heavy_land_lag']:
         _actor.landing_lag = _actor.var['heavy_land_lag']
+
+    if _actor.tech_window == 0:
+        tapReversible(_actor)
 
     if _actor.keyHeld('attack'):
         _actor.doAirAttack()
@@ -1538,9 +1547,9 @@ def shieldState(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
     if _actor.keyBuffered(key, 1, 0.6) and _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1) and not _actor.keyBuffered(invkey, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
         _actor.doAction('ForwardRoll')
-    elif _actor.keyBuffered(invkey, 1, 0.6) and _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1) and not _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
+    elif _actor.keyBuffered(invkey, 1, 0.6) and _actor.keyBuffered(invkey, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1) and not _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
         _actor.doAction('BackwardRoll')
-    elif _actor.keyBuffered('down', 1, 0.6) and _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1) and not _actor.keyBuffered(up, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
+    elif _actor.keyBuffered('down', 1, 0.6) and _actor.keyBuffered('down', int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1) and not _actor.keyBuffered('up', int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
         _actor.doAction('SpotDodge')
     elif _actor.keyHeld('attack'):
         _actor.doAction('GroundGrab')
@@ -1562,14 +1571,14 @@ def ledgeState(_actor):
         _actor.ledge_lock = True
         _actor.invincible = 6
         _actor.doAction('Jump')
-    elif _actor.keyBuffered(key):
+    elif _actor.keyHeld(key):
         _actor.ledge_lock = True
         _actor.doAction('LedgeGetup')
-    elif _actor.keyBuffered(invkey):
+    elif _actor.keyHeld(invkey):
         _actor.ledge_lock = True
         _actor.invincible = 6
         _actor.doAction('Fall')
-    elif _actor.keyBuffered('down'):
+    elif _actor.keyHeld('down'):
         _actor.ledge_lock = True
         _actor.invincible = 6
         _actor.doAction('Fall')
@@ -1580,9 +1589,9 @@ def grabbingState(_actor):
     # If they did, release them
     if not _actor.isGrabbing():
         _actor.doAction('Release')
-    elif _actor.keyHeld('shield', 1):
+    elif _actor.keyHeld('shield'):
         _actor.doAction('Release')
-    elif _actor.keyHeld('attack', 1):
+    elif _actor.keyHeld('attack'):
         _actor.doAction('Pummel')
     elif _actor.keyHeld(key):
         _actor.doAction('ForwardThrow')
@@ -1682,31 +1691,31 @@ def grabLedges(_actor):
 
 def tiltReversible(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyBuffered(invkey, 1, 0.3):
+    if _actor.keyBuffered(invkey, _state=0.3):
         _actor.flip()
         print("Reverse")
 
 def tapReversible(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyBuffered(invkey, 1) and _actor.keyBuffered(invkey, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1):
+    if _actor.keyBuffered(invkey, _state=1) and _actor.keyBuffered(invkey, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.action_frame), 0.6, 1):
         _actor.flip()
         print("Reverse")
 
 def shieldCancellable(_actor):
-    if _actor.keyBuffered('shield', 1) and _actor.grounded:
+    if _actor.keyBuffered('shield') and _actor.grounded:
         _actor.changeAction('Shield')
-    elif _actor.keyBuffered('shield', 1) and not (_actor.keysContain('left', 0.2) or _actor.keysContain('right', 0.2) or _actor.keysContain('up', 0.2) or _actor.keysContain('down', 0.2)) and not _actor.grounded:
+    elif _actor.keyBuffered('shield') and not (_actor.keysContain('left', 0.2) or _actor.keysContain('right', 0.2) or _actor.keysContain('up', 0.2) or _actor.keysContain('down', 0.2)) and not _actor.grounded:
         _actor.changeAction('Fall')
 
 def dodgeCancellable(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyBuffered('shield', 1) and _actor.keysContain(key, 0.6) and _actor.grounded:
+    if _actor.keyBuffered('shield') and _actor.keysContain(key, 0.6) and _actor.grounded:
         _actor.changeAction('ForwardRoll')
-    elif _actor.keyBuffered('shield', 1) and _actor.keysContain(invkey, 0.6) and _actor.grounded:
+    elif _actor.keyBuffered('shield') and _actor.keysContain(invkey, 0.6) and _actor.grounded:
         _actor.changeAction('BackwardRoll')
-    elif _actor.keyBuffered('shield', 1) and _actor.keysContain('down', 0.6) and _actor.grounded:
+    elif _actor.keyBuffered('shield') and _actor.keysContain('down', 0.6) and _actor.grounded:
         _actor.changeAction('SpotDodge')
-    elif _actor.keyBuffered('shield', 1) and (_actor.keysContain('left', 0.2) or _actor.keysContain('right', 0.2) or _actor.keysContain('up', 0.2) or _actor.keysContain('down', 0.2)) and not _actor.grounded:
+    elif _actor.keyBuffered('shield') and (_actor.keysContain('left', 0.2) or _actor.keysContain('right', 0.2) or _actor.keysContain('up', 0.2) or _actor.keysContain('down', 0.2)) and not _actor.grounded:
         _actor.changeAction('AirDodge')
         
 def autoDodgeCancellable(_actor):
@@ -1721,9 +1730,9 @@ def autoDodgeCancellable(_actor):
         _actor.changeAction('AirDodge')
 
 def jumpCancellable(_actor):
-    if _actor.keyBuffered('jump', 1) and _actor.grounded:
+    if _actor.keyBuffered('jump') and _actor.grounded:
         _actor.changeAction('Jump')
-    elif _actor.keyBuffered('jump', 1) and _actor.jumps > 0 and not _actor.grounded:
+    elif _actor.keyBuffered('jump') and _actor.jumps > 0 and not _actor.grounded:
         _actor.changeAction('AirJump')
                     
 

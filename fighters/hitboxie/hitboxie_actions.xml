@@ -54,7 +54,7 @@
 	</Fall>
 	
 	<Jump>
-		<length>8</length>
+		<length>6</length>
 		<sprite>land</sprite>
 		<sprite_rate>1</sprite_rate>
 		
@@ -68,7 +68,7 @@
 	</Jump>
 	
 	<AirJump>
-		<length>12</length>
+		<length>8</length>
 		<sprite>airjump</sprite>
 		<sprite_rate>2</sprite_rate>
 		
@@ -253,6 +253,10 @@
 		<length>24</length>
 		<sprite>nair</sprite>
 		<sprite_rate>0</sprite_rate>
+
+		<vars>
+			<wavedash_lag type="int">8</wavedash_lag>
+		</vars>
 		
 		<frame number="4">
 			<changeSubimage>2</changeSubimage>
