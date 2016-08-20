@@ -616,16 +616,19 @@ class AbstractFighter():
         self.current_action.tearDown(self,_newAction)
         _newAction.setUp(self)
         self.current_action = _newAction
+        
     
     def doAction(self,_actionName):
         if hasattr(self.actions,'loadAction'):
             action = self.actions.loadAction(_actionName)
             if action.last_frame > 0: self.changeAction(action)
+            else: action.setUp(self)
         elif hasattr(self.actions, _actionName):
             class_ = getattr(self.actions,_actionName)
             action = class_()
             if action.last_frame > 0: self.changeAction(action)
-    
+            else: action.setUp(self)
+            
     def getAction(self,_actionName):
         action = None
         if hasattr(self.actions,'loadAction'):
