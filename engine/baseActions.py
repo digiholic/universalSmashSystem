@@ -1086,6 +1086,11 @@ class AirDodge(action.Action):
             _actor.invulnerable = 0
     
     def stateTransitions(self, _actor):
+        if self.frame == 0:
+            if settingsManager.getSetting('enableWavedash'):
+                _actor.updateLandingLag(self.wavedash_lag)
+            else:
+                _actor.updateLandingLag(20)
         if _actor.grounded:
             if not settingsManager.getSetting('enableWavedash'):
                 _actor.change_x = 0
@@ -1105,11 +1110,6 @@ class AirDodge(action.Action):
             elif self.frame == self.last_frame:
                 _actor.preferred_yspeed = _actor.var['max_fall_speed']
 
-        if self.frame == 0:
-            if settingsManager.getSetting('enableWavedash'):
-                _actor.updateLandingLag(self.wavedash_lag)
-            else:
-                _actor.updateLandingLag(20)
                 
         if self.frame == self.start_invuln_frame:
             (key, invkey) = _actor.getForwardBackwardKeys()
