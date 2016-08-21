@@ -1209,10 +1209,7 @@ class AbstractFighter():
     """
     def keysContain(self,_key,_threshold=0.1):
         if _key in self.keys_held:
-            if self.keys_held[_key] >= _threshold:
-                self.last_input_frame = 0
-                return True
-            return False
+            return self.keys_held[_key] >= _threshold
         return False
     
     """
