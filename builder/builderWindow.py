@@ -864,13 +864,13 @@ class PropertiesPanel(BuilderPanel):
         self.selected = None
         self.parent.subaction_panel.selected_string.trace('w',self.onSelect)
         
-        self.new_subaction_frame = ttk.Notebook(self)
+        self.new_sublast_input_frame = ttk.Notebook(self)
         
-        self.control_window = ttk.Frame(self.new_subaction_frame)
-        self.sprite_window = ttk.Frame(self.new_subaction_frame)
-        self.behavior_window = ttk.Frame(self.new_subaction_frame)
-        self.hitbox_window = ttk.Frame(self.new_subaction_frame)
-        self.article_window = ttk.Frame(self.new_subaction_frame)
+        self.control_window = ttk.Frame(self.new_sublast_input_frame)
+        self.sprite_window = ttk.Frame(self.new_sublast_input_frame)
+        self.behavior_window = ttk.Frame(self.new_sublast_input_frame)
+        self.hitbox_window = ttk.Frame(self.new_sublast_input_frame)
+        self.article_window = ttk.Frame(self.new_sublast_input_frame)
         
         subact_windows = {'Control': self.control_window,
                          'Sprite': self.sprite_window,
@@ -880,7 +880,7 @@ class PropertiesPanel(BuilderPanel):
                          }
         
         for name,window in subact_windows.iteritems():
-            self.new_subaction_frame.add(window,text=name)
+            self.new_sublast_input_frame.add(window,text=name)
             
         subaction_lists = {'Control':[],
                           'Sprite':[],
@@ -904,7 +904,7 @@ class PropertiesPanel(BuilderPanel):
                     y += 1
                     x = 0
         
-        self.sub_frame = self.new_subaction_frame
+        self.sub_frame = self.new_sublast_input_frame
         self.sub_frame.pack(fill=BOTH)
         
     def addSubaction(self,_subaction):
@@ -936,7 +936,7 @@ class PropertiesPanel(BuilderPanel):
                 self.sub_frame = self.selected.property_frame
                 self.sub_frame.pack(fill=BOTH)
         else:
-            self.sub_frame = self.new_subaction_frame
+            self.sub_frame = self.new_sublast_input_frame
             self.sub_frame.pack(fill=BOTH)
             
 """

@@ -57,7 +57,6 @@ class Action():
         return
     
     def setUp(self,_actor):
-        _actor.action_frame = 0
         self.sprite_rate = self.base_sprite_rate
         if self.last_frame > 0:
             _actor.changeSprite(self.sprite_name)
