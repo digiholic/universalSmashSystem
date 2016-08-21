@@ -196,7 +196,7 @@ class SheetSprite(ImageSprite):
         Sprite.__init__(self)
         
         self.sheet = sheet
-        if isinstance(sheet,str):
+        if isinstance(sheet,str) or isinstance(sheet, unicode):
             self.sheet = pygame.image.load(sheet)
         
         self.color_map = color_map
