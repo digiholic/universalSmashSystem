@@ -170,7 +170,7 @@ class If(SubAction):
         elif vartype == 'float':
             value = float(value)
         elif vartype == 'bool':
-            value = bool(value)
+            value = value == 'True'
             
         if_actions = loadNodeWithDefault(_node, 'pass', None)
         else_actions = loadNodeWithDefault(_node, 'fail', None)
@@ -195,11 +195,12 @@ class ifButton(SubAction):
         if self.beyond_action:
             working_from = self.buffer_from
         else:
-            working_from = min(_actor.action_frame, self.buffer_from, 1)
-
+            working_from = max(min(_actor.action_frame, self.buffer_from), 1)
+        
         if self.check == 'keysContain':
             cond = _actor.keysContain(self.button, self.threshold)
         elif self.check == 'keyBuffered':
+            print(self.button,working_from,self.buffer_to)
             cond = _actor.keyBuffered(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyTapped':
             cond = _actor.keyTapped(self.button, working_from, self.threshold, self.buffer_to)

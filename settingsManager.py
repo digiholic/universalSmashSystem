@@ -370,6 +370,8 @@ def saveSettings(settings):
         for key in settings[sect].key_bindings:
             parser.set(sect,'controlType',settings['controlType_'+str(i)])
             parser.set(sect,key_id_map[key],str(settings[sect].key_bindings[key]))
+        for key,val in settings[sect].timing_window.iteritems():
+            parser.set(sect,key,str(val))
             
     with open(os.path.join(getSetting().datadir.replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
         parser.write(configfile)

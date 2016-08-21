@@ -967,6 +967,7 @@ class ForwardRoll(action.Action):
         _actor.mask = None
         
     def update(self, _actor):
+        action.Action.update(self,_actor)
         if _actor.grounded is False:
             _actor.doAction('Fall')
         if self.frame == 1:
@@ -1002,6 +1003,7 @@ class BackwardRoll(action.Action):
         _actor.mask = None
         
     def update(self, _actor):
+        action.Action.update(self, _actor)
         if _actor.grounded is False:
             _actor.doAction('Fall')
         if self.frame == 1:

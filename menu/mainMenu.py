@@ -550,6 +550,10 @@ class PlayerControlsMenu(SubMenu):
         SubMenu.__init__(self, _parent)
         
         self.menu_text = [spriteManager.TextSprite('Player 1','rexlia rg',18,[255,255,255]),
+                         spriteManager.TextSprite('Smash Timing Window: 4','rexlia rg',18,[255,255,255]),
+                         spriteManager.TextSprite('Repeat Timing Window: 8','rexlia rg',18,[255,255,255]),
+                         spriteManager.TextSprite('Buffer Window: 8','rexlia rg',18,[255,255,255]),
+                         spriteManager.TextSprite('Smoothing Window: 64','rexlia rg',18,[255,255,255]),
                          spriteManager.TextSprite('Exit','full Pack 2025',20,[255,255,255])]
         
         self.action_column = [spriteManager.TextSprite('left','rexlia rg',16,[55,55,55]),
@@ -572,6 +576,11 @@ class PlayerControlsMenu(SubMenu):
                           spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
                           ]
         
+        self.smash_window = 4
+        self.repeat_window = 8
+        self.buffer_window = 8
+        self.smoothing_window = 64
+        
         self.status_text = spriteManager.TextSprite('','rexlia rg',16,[255,255,255])
         
         self.player_num = 0
@@ -581,22 +590,30 @@ class PlayerControlsMenu(SubMenu):
             self.key_column[i].rect.right = (self._parent.settings['windowSize'][0] / 4) * 3
             self.action_column[i].rect.centery = 76 + 16*i
             self.key_column[i].rect.centery = 76 + 16*i
+        
+        key_bottom = self.key_column[-1].rect.bottom
             
         self.menu_text[0].rect.midtop = (self._parent.settings['windowSize'][0] / 2,20)
+        
+        for i in range(1,len(self.menu_text)):
+            self.menu_text[i].rect.midtop = (self._parent.settings['windowSize'][0] /2, key_bottom + 18*i)
+            
         self.menu_text[-1].rect.midbottom = (self._parent.settings['windowSize'][0] / 2,self._parent.settings['windowSize'][1] - 20)
         
         self.status_text.rect.midtop = self.menu_text[0].rect.midbottom
         self.selected_option = 0
     
     def confirmOption(self, _optionNum):
-        SubMenu.confirmOption(self, _optionNum)    
+        SubMenu.confirmOption(self, _optionNum)
+        status = 0    
         if _optionNum == 0:
             status = self.bindControls(self.screen)
             self.controls = []
             for i in range(0,4):
                 self.controls.append(settingsManager.getControls(i))
-        elif _optionNum == 1:
+        elif _optionNum == 5:
             self.status = 1
+            settingsManager.saveSettings(settingsManager.getSetting().setting)
             return
         if status == -1: self.status = -1
         
@@ -605,7 +622,20 @@ class PlayerControlsMenu(SubMenu):
         if _optionNum == 0:
             self.player_num += _direction
             self.player_num = self.player_num % 4
-    
+        if _optionNum == 1:
+            self.smash_window = max(1,self.smash_window + _direction)
+            settingsManager.getControls(self.player_num).timing_window['smash_window'] = self.smash_window
+            print(settingsManager.getControls(self.player_num).timing_window['smash_window'])
+        if _optionNum == 2:
+            self.repeat_window = max(1,self.repeat_window + _direction)
+            settingsManager.getControls(self.player_num).timing_window['repeat_window'] = self.repeat_window
+        if _optionNum == 3:
+            self.buffer_window = max(1,self.buffer_window + _direction)
+            settingsManager.getControls(self.player_num).timing_window['buffer_window'] = self.buffer_window
+        if _optionNum == 4:
+            self.smoothing_window = max(1,self.smoothing_window + _direction)
+            settingsManager.getControls(self.player_num).timing_window['smoothing_window'] = self.smoothing_window
+            
     def update(self, _screen):
         SubMenu.update(self, _screen)
         
@@ -616,7 +646,12 @@ class PlayerControlsMenu(SubMenu):
                 k = key_controls.getKeysForAction(action.text)
                 if k:
                     self.key_column[i].changeText(str(k))
-                
+        
+        timings = settingsManager.getControls(self.player_num).timing_window
+        self.menu_text[1].changeText('Smash Window: ' + str(timings['smash_window']))
+        self.menu_text[2].changeText('Repeat Window: ' + str(timings['repeat_window']))
+        self.menu_text[3].changeText('Buffer Window: ' + str(timings['buffer_window']))
+        self.menu_text[4].changeText('Smoothing Window: ' + str(timings['smoothing_window']))  
         for m in self.action_column:
             m.draw(_screen,m.rect.topleft,1.0)
             m.changeColor([55,55,55])
