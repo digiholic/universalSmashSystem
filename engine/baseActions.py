@@ -1405,7 +1405,18 @@ def neutralState(_actor):
         _actor.doAction('Jump')
     elif _actor.keysContain('down', 0.5):
         if _actor.keyBuffered('down', int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.5, 1):
-            _actor.doAction('PlatformDrop')
+
+            blocks = _actor.checkGround()
+            if blocks:
+                #Turn it into a list of true/false if the block is solid
+                blocks = map(lambda x:x.solid,blocks)
+                #If none of the ground is solid
+                if not any(blocks):
+                    _actor.doAction('PlatformDrop')
+                else:
+                    _actor.doAction('Crouch')
+            else:
+                _actor.doAction('Crouch')
         else:
             _actor.doAction('Crouch')
     elif _actor.keysContain(invkey):
