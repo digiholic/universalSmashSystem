@@ -195,7 +195,7 @@ class ifButton(SubAction):
         if self.beyond_action:
             working_from = self.buffer_from
         else:
-            working_from = max(min(_actor.action_frame, self.buffer_from), 1)
+            working_from = min(_actor.last_input_frame, self.buffer_from)
         
         if self.check == 'keysContain':
             cond = _actor.keysContain(self.button, self.threshold)

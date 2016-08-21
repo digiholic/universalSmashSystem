@@ -119,7 +119,7 @@ class Pivot(action.Action):
         if self.frame == self.last_frame:
             (key, _) = _actor.getForwardBackwardKeys()
             if _actor.keysContain(key):
-                if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.action_frame), 1, 0):
+                if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1, 0):
                     if _actor.facing == 1:
                         _actor.doDash(0)
                     else:
@@ -151,7 +151,7 @@ class Stop(action.Action):
             _actor.doAction('Fall')
         _actor.accel(_actor.var['static_grip'])
         (key,invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.action_frame)):
+        if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame)):
             print("run")
             _actor.doDash(_actor.getFacingDirection())
         elif _actor.keyHeld(invkey):
@@ -233,7 +233,7 @@ class RunStop(action.Action):
             _actor.doAction('Fall')
         _actor.accel(_actor.var['static_grip'])
         (key,invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.action_frame), 1):
+        if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1):
             print("run")
             _actor.doDash(_actor.getFacingDirection())
         elif _actor.keyHeld(invkey):
@@ -1710,7 +1710,7 @@ def tiltReversible(_actor):
 
 def tapReversible(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyBuffered(invkey, _state=1) and _actor.keyBuffered(invkey, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.action_frame), 0.6, 1):
+    if _actor.keyBuffered(invkey, _state=1) and _actor.keyBuffered(invkey, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 0.6, 1):
         _actor.flip()
         print("Reverse")
 
