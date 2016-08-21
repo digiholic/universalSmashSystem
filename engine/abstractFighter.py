@@ -1080,7 +1080,11 @@ class AbstractFighter():
         first_down_frame = reduce(lambda j, k: j if j != None else (k if down_frames[k] else None), range(len(down_frames)), None)
         last_up_frame = reduce(lambda j, k: k if up_frames[k] else j, range(len(up_frames)), None)
         return first_down_frame > last_up_frame
-
+    
+    #If the button is still being held
+    def keyUnreleased(self,_key):
+        return _key in self.keys_held
+    
     #A key release
     def keyUp(self, _key, _from = 1, _state = 0.1, _to = 0):
         return any(map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to)))
