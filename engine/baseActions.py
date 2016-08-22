@@ -1522,10 +1522,10 @@ def moveState(_actor, direction):
 
 def dashState(_actor, direction):
     (key,invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keysContain('shield') and _actor.keyHeld('attack'):
-        _actor.doAction('DashGrab')
-    elif _actor.keyHeld('attack'):
-        if _actor.checkSmash(key):
+    if _actor.keyHeld('attack'):
+        if _actor.keysContain('shield'):
+            _actor.doAction('DashGrab')
+        elif _actor.checkSmash(key):
             print("Dash cancelled into forward smash")
             _actor.doAction('ForwardSmash')
         else:
