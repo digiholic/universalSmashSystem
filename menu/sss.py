@@ -98,7 +98,7 @@ class StageScreen():
         for subdir in next(os.walk(directory))[1]:
             if(subdir == '__pycache__'):
                 continue
-            stage = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"stage.py"),suffix=str(stage_count))
+            stage = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"stage.py"),_suffix=str(stage_count))
             if (stage == None):
                 raise ValueError("No stages found at " + os.path.join(directory,subdir,"stage.py"))
             stage_count += 1

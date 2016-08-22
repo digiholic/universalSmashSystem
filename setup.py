@@ -3,7 +3,7 @@ import sys
 
 # Dependencies are automatically detected, but it might need
 # fine tuning.
-buildOptions = dict(packages = ['numpy', 'pygame', 'requests', 'xml', 'Tkinter'], 
+build_options = dict(packages = ['numpy', 'pygame', 'requests', 'xml', 'Tkinter'], 
                     excludes = [], 
                     include_files = ['rexlia rg.ttf', 'full Pack 2025.ttf', 'settingsManager.py',
                                      'battle.py', 'main.py', 'musicManager.py', 'spriteManager.py',
@@ -23,5 +23,5 @@ executables = [
 setup(name='TUSSLE',
       version = '0.5',
       description = 'The Universal Smash System and Legacy Editor',
-      options = dict(build_exe = buildOptions),
+      options = dict(build_exe = build_options),
       executables = executables)

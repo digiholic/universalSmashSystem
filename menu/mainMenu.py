@@ -520,7 +520,7 @@ class GamepadMenu(SubMenu):
                         name = self.controller_list[self.current_controller][0]
                         new_pad_bindings = engine.controller.PadBindings(name,_joystick.get_id(),new_axis_binding,new_button_binding)
                         new_controller = engine.controller.GamepadController(new_pad_bindings)
-                        settingsManager.getSetting().newGamepads.append(name)
+                        settingsManager.getSetting().new_gamepads.append(name)
                         settingsManager.getSetting().setting[name] = new_controller
                         settingsManager.saveSettings(settingsManager.getSetting().setting)
                         return 0
@@ -708,7 +708,7 @@ class PlayerControlsMenu(SubMenu):
                     settings = settingsManager.getSetting().setting
                     
                     if settingsManager.getSetting().loadGamepad(name):
-                        settings['controlType_'+str(self.player_num)] = name
+                        settings['control_type_'+str(self.player_num)] = name
                     
                     settingsManager.saveSettings(settings)
                     self.status_text.changeText('')
@@ -728,7 +728,7 @@ class PlayerControlsMenu(SubMenu):
                     if selected_suboption >= len(self.action_column):
                         new_controller = engine.controller.Controller(new_key_binding)
                         settingsManager.getSetting().setting['controls_'+str(self.player_num)] = new_controller
-                        settingsManager.getSetting().setting['controlType_'+str(self.player_num)] = 'Keyboard'
+                        settingsManager.getSetting().setting['control_type_'+str(self.player_num)] = 'Keyboard'
                         settingsManager.saveSettings(settingsManager.getSetting().setting)
                         self.status_text.changeText('')
                         return 0

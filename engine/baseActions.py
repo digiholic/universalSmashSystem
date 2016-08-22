@@ -119,7 +119,7 @@ class Pivot(action.Action):
         if self.frame == self.last_frame:
             (key, _) = _actor.getForwardBackwardKeys()
             if _actor.keysContain(key):
-                if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1, 0):
+                if _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1), 1, 0):
                     if _actor.facing == 1:
                         _actor.doDash(0)
                     else:
@@ -151,7 +151,7 @@ class Stop(action.Action):
             _actor.doAction('Fall')
         _actor.accel(_actor.var['static_grip'])
         (key,invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame)):
+        if _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
             print("run")
             _actor.doDash(_actor.getFacingDirection())
         elif _actor.keyHeld(invkey):
@@ -233,7 +233,7 @@ class RunStop(action.Action):
             _actor.doAction('Fall')
         _actor.accel(_actor.var['static_grip'])
         (key,invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyHeld(key, min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1):
+        if _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1), 1):
             print("run")
             _actor.doDash(_actor.getFacingDirection())
         elif _actor.keyHeld(invkey):
@@ -451,7 +451,7 @@ class HitStun(action.Action):
                 art = article.AnimatedArticle(settingsManager.createPath('sprites/circlepuff.png'),_actor,_actor.rect.center,86,6)
                 art.angle = _actor.sprite.angle
                 if _actor.hit_tagged and hasattr(_actor.hit_tagged, 'player_num'):
-                    for image in art.imageList:
+                    for image in art.image_list:
                         art.recolor(image, [255,255,255], pygame.Color(settingsManager.getSetting('playerColor' + str(_actor.hit_tagged.player_num))))
                 _actor.articles.add(art)
                     

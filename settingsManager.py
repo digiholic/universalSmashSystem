@@ -12,7 +12,7 @@ except ImportError:
 
 
 settings = None
-sfxLib = None
+sfx_lib = None
 
 
 ########################################################
@@ -31,7 +31,7 @@ to be able to get back to the root of the program.
 It will use the proper os.join calls to build a platform-apropriate path
 from the main game to whatever you pass in the path argument.
 """
-def createPath(path):
+def createPath(_path):
     if getattr(sys, 'frozen', False):
         # The application is frozen
         datadir = os.path.dirname(sys.executable)
@@ -39,7 +39,7 @@ def createPath(path):
         # The application is not frozen
         # Change this bit to match where you store your data files:
         datadir = os.path.dirname(__file__)
-    return os.path.join(datadir.replace('main.exe',''),path)
+    return os.path.join(datadir.replace('main.exe',''),_path)
 
 """
 This function imports a module from it's file path.
@@ -48,20 +48,20 @@ It returns the imported module.
 
 """
 #TODO refactor the variables to make this less confusing
-def importFromURI(filePath, uri, absl=False, suffix=""):
-    if not absl:
-        uri = os.path.normpath(os.path.join(os.path.dirname(filePath).replace('main.exe',''), uri))
-    #print(uri)
-    path, fname = os.path.split(uri)
+def importFromURI(_filePath, _uri, _absl=False, _suffix=""):
+    if not _absl:
+        _uri = os.path.normpath(os.path.join(os.path.dirname(_filePath).replace('main.exe',''), _uri))
+    #print(_uri)
+    path, fname = os.path.split(_uri)
     mname, ext = os.path.splitext(fname)
     
     no_ext = os.path.join(path, mname)
 
-    #print ((mname + suffix), no_ext + '.py')
+    #print ((mname + _suffix), no_ext + '.py')
     
     if os.path.exists(no_ext + '.py'):
         try:
-            return imp.load_source((mname + suffix), no_ext + '.py')
+            return imp.load_source((mname + _suffix), no_ext + '.py')
         except Exception as e:
             print(mname, e)
 """
@@ -71,13 +71,13 @@ If a key is given, it will return the value of that setting. If no key is given,
 it returns the setting dictionary in its entirety (to make using lots of settings in
 another file a lot easier)
 """
-def getSetting(key = None):
+def getSetting(_key = None):
     global settings
     if settings == None:
         settings = Settings()
         return settings
-    if key:
-        return settings.setting[key]
+    if _key:
+        return settings.setting[_key]
     else:
         return settings
 
@@ -86,23 +86,23 @@ Gets the Keybindings object for the given player_num.
 
 If it can't find those controls, it'll make a blank Keybinding
 """
-def getControls(player_num):
+def getControls(_playerNum):
     global settings
     if settings == None:
         settings = Settings()
     
     controls = None
     
-    controlType = settings.setting['controlType_'+str(player_num)]  
-    if not controlType == 'Keyboard':
+    control_type = settings.setting['controlType_'+str(_playerNum)]  
+    if not control_type == 'Keyboard':
         try:
-            controls = settings.setting[controlType]
+            controls = settings.setting[control_type]
         except:
             pass #Can't find controller, gonna load normal
     
     if not controls:
         try:
-            controls = settings.setting['controls_' + str(player_num)]
+            controls = settings.setting['controls_' + str(_playerNum)]
         except:
             controls = engine.controller.Controller({})
     
@@ -112,11 +112,11 @@ def getControls(player_num):
 Creates or returns the SFX Library.
 """
 def getSfx():
-    global sfxLib
-    if sfxLib == None:
+    global sfx_lib
+    if sfx_lib == None:
         print('CREATING NEW SFX LIBRARY')
-        sfxLib = sfxLibrary()
-    return sfxLib
+        sfx_lib = sfx_library()
+    return sfx_lib
     
 
 ########################################################
@@ -183,18 +183,18 @@ class Settings():
         self.setting['presetLists'] = presets
         preset = self.parser.get('game','rulePreset')
         
-        self.newGamepads = []
+        self.new_gamepads = []
         
         self.loadGameSettings(preset)
         self.loadControls()
         
         
-    def loadGameSettings(self,preset_suf):
+    def loadGameSettings(self,_presetSuf):
         preset_parser = SafeConfigParser()
-        preset_parser.read(os.path.join(os.path.join(self.datadir.replace('main.exe','').replace('main.exe',''),'settings/rules',),preset_suf+'.ini'))
+        preset_parser.read(os.path.join(os.path.join(self.datadir.replace('main.exe','').replace('main.exe',''),'settings/rules',),_presetSuf+'.ini'))
         
-        preset = 'preset_' + preset_suf
-        self.setting['current_preset'] = preset_suf
+        preset = 'preset_' + _presetSuf
+        self.setting['current_preset'] = _presetSuf
         
         self.setting['gravity'] = float(getNumber(preset_parser, preset, 'gravityMultiplier')) / 100
         self.setting['weight'] = float(getNumber(preset_parser, preset, 'weightMultiplier')) / 100
@@ -224,12 +224,12 @@ class Settings():
         self.getGamepadList(True)
         while self.parser.has_section('controls_' + str(player_num)):
             bindings = {}
-            groupName = 'controls_' + str(player_num)
-            controlType = self.parser.get(groupName, 'controlType')
+            group_name = 'controls_' + str(player_num)
+            control_type = self.parser.get(group_name, 'controlType')
             
-            self.setting['controlType_'+str(player_num)] = controlType
+            self.setting['controlType_'+str(player_num)] = control_type
             try:
-                self.setting[controlType]
+                self.setting[control_type]
             except:
                 self.setting['controlType_'+str(player_num)] = 'Keyboard'
             
@@ -240,29 +240,29 @@ class Settings():
                              }
             
             for key in timing_window.keys():
-                if self.parser.has_option(groupName, key):
-                    timing_window[key] = self.parser.get(groupName,key)
+                if self.parser.has_option(group_name, key):
+                    timing_window[key] = self.parser.get(group_name,key)
             
-            for opt in self.parser.options(groupName):
+            for opt in self.parser.options(group_name):
                 if self.key_name_map.has_key(opt):
-                    bindings[self.key_name_map[opt]] = self.parser.get(groupName, opt)
-            self.setting[groupName] = engine.controller.Controller(bindings,timing_window)
-            #self.setting[groupName] = engine.cpuPlayer.CPUplayer(bindings) #Here be CPU players
+                    bindings[self.key_name_map[opt]] = self.parser.get(group_name, opt)
+            self.setting[group_name] = engine.controller.Controller(bindings,timing_window)
+            #self.setting[group_name] = engine.cpuPlayer.CPUplayer(bindings) #Here be CPU players
             
             player_num += 1
     
     """
     Check all connected gamepads and add them to the settings.
     """
-    def loadGamepad(self,controller_name):
+    def loadGamepad(self,_controllerName):
         pygame.joystick.init()
-        controllerParser = SafeConfigParser()
-        controllerParser.read(os.path.join(os.path.join(self.datadir.replace('main.exe',''),'settings'),'gamepads.ini'))
-        if controllerParser.has_section(controller_name):
+        controller_parser = SafeConfigParser()
+        controller_parser.read(os.path.join(os.path.join(self.datadir.replace('main.exe',''),'settings'),'gamepads.ini'))
+        if controller_parser.has_section(_controllerName):
             joystick = None
             for pad in range(pygame.joystick.get_count()):
                 joy = pygame.joystick.Joystick(pad)
-                if joy.get_name() == controller_name:
+                if joy.get_name() == _controllerName:
                     joystick = joy
                     joystick.init()
             
@@ -273,20 +273,20 @@ class Settings():
             
             axes = {}
             buttons = {}
-            for opt in controllerParser.options(controller_name):
+            for opt in controller_parser.options(_controllerName):
                 if opt[0] == 'a':
-                    axes[int(opt[1:])] = tuple(controllerParser.get(controller_name, opt)[1:-1].split(','))
+                    axes[int(opt[1:])] = tuple(controller_parser.get(_controllerName, opt)[1:-1].split(','))
                 elif opt[0] == 'b':
-                    buttons[int(opt[1:])] = controllerParser.get(controller_name, opt)
+                    buttons[int(opt[1:])] = controller_parser.get(_controllerName, opt)
         
-            pad_bindings = engine.controller.PadBindings(controller_name,jid,axes,buttons)
+            pad_bindings = engine.controller.PadBindings(_controllerName,jid,axes,buttons)
             
             return engine.controller.GamepadController(pad_bindings)
         else:
             joystick = None
             for pad in range(pygame.joystick.get_count()):
                 joy = pygame.joystick.Joystick(pad)
-                if joy.get_name() == controller_name:
+                if joy.get_name() == _controllerName:
                     joystick = joy
                     joystick.init()
             
@@ -298,35 +298,35 @@ class Settings():
             axes = dict()
             buttons = dict()
             
-            pad_bindings = engine.controller.PadBindings(controller_name,jid,axes,buttons)
+            pad_bindings = engine.controller.PadBindings(_controllerName,jid,axes,buttons)
             self.setting[joystick.get_name()] = pad_bindings
             
             return engine.controller.GamepadController(pad_bindings)
     
-    def getGamepadList(self,store=False):
-        controllerParser = SafeConfigParser()
-        controllerParser.read(os.path.join(os.path.join(self.datadir.replace('main.exe',''),'settings'),'gamepads.ini'))
+    def getGamepadList(self,_store=False):
+        controller_parser = SafeConfigParser()
+        controller_parser.read(os.path.join(os.path.join(self.datadir.replace('main.exe',''),'settings'),'gamepads.ini'))
         controller_list = []
         
-        for control in controllerParser.sections():
+        for control in controller_parser.sections():
             controls = self.loadGamepad(control)
             controller_list.append(controls)
-            if store: self.setting[control] = controls
+            if _store: self.setting[control] = controls
             
-        retlist = controllerParser.sections()
-        retlist.extend(self.newGamepads)
+        retlist = controller_parser.sections()
+        retlist.extend(self.new_gamepads)
         return retlist
     
-    def getGamepadByName(self,joyName):
+    def getGamepadByName(self,_joyName):
         for i in range(pygame.joystick.get_count()):
             joystick = pygame.joystick.Joystick(i)
-            if joystick.get_name() == joyName:
+            if joystick.get_name() == _joyName:
                 return joystick
         return None
 """
 Save a modified settings object to the settings.ini file.
 """
-def saveSettings(settings):
+def saveSettings(_settings):
     key_id_map = {}
     key_nameMap = {}
     for name, value in vars(pygame.constants).items():
@@ -337,48 +337,48 @@ def saveSettings(settings):
     parser = SafeConfigParser()
     
     parser.add_section('window')
-    parser.set('window','windowName',str(settings['windowName']))
-    parser.set('window','windowSize',str(settings['windowSize']))
-    parser.set('window','windowWidth',str(settings['windowSize'][0]))
-    parser.set('window','windowHeight',str(settings['windowSize'][1]))
-    parser.set('window','frameCap',str(settings['frameCap']))
+    parser.set('window','windowName',str(_settings['windowName']))
+    parser.set('window','windowSize',str(_settings['windowSize']))
+    parser.set('window','windowWidth',str(_settings['windowSize'][0]))
+    parser.set('window','windowHeight',str(_settings['windowSize'][1]))
+    parser.set('window','frameCap',str(_settings['frameCap']))
     
     parser.add_section('sound')
-    parser.set('sound','music_volume',str(settings['music_volume'] * 100))
-    parser.set('sound','sfxVolume',str(settings['sfxVolume'] * 100))
+    parser.set('sound','music_volume',str(_settings['music_volume'] * 100))
+    parser.set('sound','sfxVolume',str(_settings['sfxVolume'] * 100))
     
     parser.add_section('graphics')
-    parser.set('graphics','displayHitboxes',str(settings['showHitboxes']))
-    parser.set('graphics','displayHurtboxes',str(settings['showHurtboxes']))
-    parser.set('graphics','displaySpriteArea',str(settings['showSpriteArea']))
-    parser.set('graphics','displayPlatformLines',str(settings['showPlatformLines']))
-    parser.set('graphics','displayECB',str(settings['showECB']))
+    parser.set('graphics','displayHitboxes',str(_settings['showHitboxes']))
+    parser.set('graphics','displayHurtboxes',str(_settings['showHurtboxes']))
+    parser.set('graphics','displaySpriteArea',str(_settings['showSpriteArea']))
+    parser.set('graphics','displayPlatformLines',str(_settings['showPlatformLines']))
+    parser.set('graphics','displayECB',str(_settings['showECB']))
     
     parser.add_section('playerColors')
-    parser.set('playerColors','Player0',str(settings['playerColor0']))
-    parser.set('playerColors','Player1',str(settings['playerColor1']))
-    parser.set('playerColors','Player2',str(settings['playerColor2']))
-    parser.set('playerColors','Player3',str(settings['playerColor3']))
+    parser.set('playerColors','Player0',str(_settings['playerColor0']))
+    parser.set('playerColors','Player1',str(_settings['playerColor1']))
+    parser.set('playerColors','Player2',str(_settings['playerColor2']))
+    parser.set('playerColors','Player3',str(_settings['playerColor3']))
     
     parser.add_section('game')
-    parser.set('game','rulePreset',str(settings['current_preset']))
+    parser.set('game','rulePreset',str(_settings['current_preset']))
     
     for i in range(0,4):
         sect = 'controls_'+str(i)
         parser.add_section(sect)
-        parser.set(sect,'controlType',settings['controlType_'+str(i)])
-        for key in settings[sect].key_bindings:
-            parser.set(sect,'controlType',settings['controlType_'+str(i)])
-            parser.set(sect,key_id_map[key],str(settings[sect].key_bindings[key]))
-        for key,val in settings[sect].timing_window.iteritems():
+        parser.set(sect,'controlType',_settings['controlType_'+str(i)])
+        for key in _settings[sect].key_bindings:
+            parser.set(sect,'controlType',_settings['controlType_'+str(i)])
+            parser.set(sect,key_id_map[key],str(_settings[sect].key_bindings[key]))
+        for key,val in _settings[sect].timing_window.iteritems():
             parser.set(sect,key,str(val))
             
     with open(os.path.join(getSetting().datadir.replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
         parser.write(configfile)
 
-    saveGamepad(settings)
+    saveGamepad(_settings)
 
-def saveGamepad(settings):
+def saveGamepad(_settings):
     parser = SafeConfigParser()
     for controller_name in getSetting().getGamepadList():
         gamepad = getSetting(controller_name)
@@ -398,40 +398,40 @@ def saveGamepad(settings):
         parser.write(configfile)
 
         
-def savePreset(settings, preset):
+def savePreset(_settings, _preset):
     parser = SafeConfigParser()
     
-    parser.set(preset,'gravityMultiplier',settings['gravity'] * 100)
-    parser.set(preset,'weightMultiplier',settings['weight'] * 100)
-    parser.set(preset,'frictionMultiplier',settings['friction'] * 100)
-    parser.set(preset,'airControlMultiplier',settings['airControl'] * 100)
-    parser.set(preset,'hitstunMultiplier',settings['hitstun'] * 100)
-    parser.set(preset,'hitlagMultiplier',settings['hitlag'] * 100)
-    parser.set(preset,'shieldStunMultiplier',settings['shieldStun'] * 100)
+    parser.set(_preset,'gravityMultiplier',_settings['gravity'] * 100)
+    parser.set(_preset,'weightMultiplier',_settings['weight'] * 100)
+    parser.set(_preset,'frictionMultiplier',_settings['friction'] * 100)
+    parser.set(_preset,'airControlMultiplier',_settings['airControl'] * 100)
+    parser.set(_preset,'hitstunMultiplier',_settings['hitstun'] * 100)
+    parser.set(_preset,'hitlagMultiplier',_settings['hitlag'] * 100)
+    parser.set(_preset,'shieldStunMultiplier',_settings['shieldStun'] * 100)
     
-    parser.set(preset,'ledgeConflict',settings['ledgeConflict'])
+    parser.set(_preset,'ledgeConflict',_settings['ledgeConflict'])
     sweetSpotDict = {[128,128]: 'large', [64,64]: 'medium', [32,32]: 'small'}
-    parser.set(preset,'ledgeSweetspotSize',sweetSpotDict[settings['ledgeSweetspotSize']])
-    parser.set(preset,'ledgeSweetspotForwardOnly',settings['ledgeSweetspotForwardOnly'])
-    parser.set(preset,'teamLedgeConflict',settings['teamLedgeConflict'])
-    parser.set(preset,'ledgeInvincibilityTime',settings['ledgeInvincibilityTime'])
-    parser.set(preset,'regrabInvincibility',settings['regrabInvincibility'])
-    parser.set(preset,'slowLedgeWakeupThreshold',settings['slowLedgeWakeupThreshold'])
+    parser.set(_preset,'ledgeSweetspotSize',sweetSpotDict[_settings['ledgeSweetspotSize']])
+    parser.set(_preset,'ledgeSweetspotForwardOnly',_settings['ledgeSweetspotForwardOnly'])
+    parser.set(_preset,'teamLedgeConflict',_settings['teamLedgeConflict'])
+    parser.set(_preset,'ledgeInvincibilityTime',_settings['ledgeInvincibilityTime'])
+    parser.set(_preset,'regrabInvincibility',_settings['regrabInvincibility'])
+    parser.set(_preset,'slowLedgeWakeupThreshold',_settings['slowLedgeWakeupThreshold'])
     
-    parser.set(preset,'airDodgeType',settings['airDodgeType'])
-    parser.set(preset,'freeDodgeSpecialFall',settings['freeDodgeSpecialFall'])
-    parser.set(preset,'enableWavedash',settings['enableWavedash'])
+    parser.set(_preset,'airDodgeType',_settings['airDodgeType'])
+    parser.set(_preset,'freeDodgeSpecialFall',_settings['freeDodgeSpecialFall'])
+    parser.set(_preset,'enableWavedash',_settings['enableWavedash'])
     
-    parser.write(os.path.join(settings.datadir.replace('main.exe',''),'settings.ini'))
+    parser.write(os.path.join(_settings.datadir.replace('main.exe',''),'settings.ini'))
     
 """
 The SFXLibrary object contains a dict of all sound effects that are being used.
 It handles the playing of the sounds.
 """                    
-class sfxLibrary():
+class sfx_library():
     def __init__(self):
         self.sounds = {}
-        self.supportedFileTypes = ['.wav', '.ogg']
+        self.supported_file_types = ['.wav', '.ogg']
         self.initializeLibrary()
     
     """
@@ -444,13 +444,13 @@ class sfxLibrary():
         
         for f in os.listdir(directory):
             fname, ext = os.path.splitext(f)
-            if self.supportedFileTypes.count(ext):
+            if self.supported_file_types.count(ext):
                 self.sounds["base_" + fname] = pygame.mixer.Sound(os.path.join(directory,f)) 
                 
-    def playSound(self,name,category = "base"):
-        print(category,name,getSetting().setting['sfxVolume'])
-        self.sounds[category + "_" + name].set_volume(getSetting().setting['sfxVolume'])
-        self.sounds[category + "_" + name].play()
+    def playSound(self,_name,_category = "base"):
+        print(_category,_name,getSetting().setting['sfxVolume'])
+        self.sounds[_category + "_" + _name].set_volume(getSetting().setting['sfxVolume'])
+        self.sounds[_category + "_" + _name].play()
     
     """
     Check if a sound exists.
@@ -464,12 +464,12 @@ class sfxLibrary():
     This is called to add a directory of sound effects to the library.
     It is usually called when loading a fighter or a stage.
     """
-    def addSoundsFromDirectory(self,path,category):
-        for f in os.listdir(path):
+    def addSoundsFromDirectory(self,_path,_category):
+        for f in os.listdir(_path):
             fname, ext = os.path.splitext(f)
-            if self.supportedFileTypes.count(ext):
-                self.sounds[category + "_" + fname] = pygame.mixer.Sound(os.path.join(path,f))
-                print(category + "_" + fname,self.sounds[category + "_" + fname])
+            if self.supported_file_types.count(ext):
+                self.sounds[_category + "_" + fname] = pygame.mixer.Sound(os.path.join(_path,f))
+                print(_category + "_" + fname,self.sounds[_category + "_" + fname])
                 
     
 ########################################################
@@ -481,27 +481,27 @@ the actual numbers. If Many is given, the parser will look
 for all numbers and return them in a list, otherwise, it will get the
 first number.
 """
-def getNumbersFromString(string, many = False):
-    if many:
-        return list(map(int, re.findall(r'\d+', string)))
+def getNumbersFromString(_string, _many = False):
+    if _many:
+        return list(map(int, re.findall(r'\d+', _string)))
     else:
-        return int(re.search(r'\d+', string).group())
+        return int(re.search(r'\d+', _string).group())
 
 """
 Convert basically whatever stupid thing people could possibly think to mean "yes" into
 a True boolean. If it's not True, it's false, so feel free to set some of those debug
 options to "Eat a dick" if you want to, it'll read as False
 """
-def boolean(string):
+def boolean(_string):
     # Well, I already have the function made, might as well cover all the bases.
-    return string in ['true', 'True', 't', 'T', '1', '#T', 'y', 'yes', 'on', 'enabled']
+    return _string in ['true', 'True', 't', 'T', '1', '#T', 'y', 'yes', 'on', 'enabled']
 
 """
 A wrapper that'll get a lowercase String from the parser, or return gracefully with an error.
 """    
-def getString(parser,preset,key):
+def getString(_parser,_preset,_key):
     try:
-        return str(parser.get(preset,key).lower())
+        return str(_parser.get(_preset,_key).lower())
     except Exception as e:
         print(e)
         return ""
@@ -509,9 +509,9 @@ def getString(parser,preset,key):
 """
 A wrapper that'll get a boolean from the parser, or return gracefully with an error.
 """
-def getBoolean(parser,preset,key):
+def getBoolean(_parser,_preset,_key):
     try:
-        return boolean(parser.get(preset,key))
+        return boolean(_parser.get(_preset,_key))
     except Exception as e:
         print(e)
         return False
@@ -519,9 +519,9 @@ def getBoolean(parser,preset,key):
 """
 A wrapper that'll get a number from the parser, or return gracefully with an error.
 """    
-def getNumber(parser,preset,key,islist = False):
+def getNumber(_parser,_preset,_key,_islist = False):
     try:
-        return getNumbersFromString(parser.get(preset,key),islist)
+        return getNumbersFromString(_parser.get(_preset,_key),_islist)
     except Exception as e:
         print(e)
         return 0

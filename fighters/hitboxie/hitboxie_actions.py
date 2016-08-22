@@ -101,7 +101,7 @@ class ForwardSpecial(action.Action):
         _actor.changeSpriteImage(self.sprite_image%16)
         _actor.hurtbox.rect.width = 64
         _actor.hurtbox.rect.height = 64
-        _actor.hurtbox.rect.center = _actor.sprite.boundingRect.center
+        _actor.hurtbox.rect.center = _actor.sprite.bounding_rect.center
         _actor.accel(_actor.var['air_control'])
         if self.frame <= self.last_frame-2:
             self.sprite_image += 1
@@ -318,7 +318,7 @@ class NeutralAttack(action.Action):
                 _actor.changeSpriteImage(self.frame)
         _actor.hurtbox.rect.width -= 16
         _actor.hurtbox.rect.height -= 16
-        _actor.hurtbox.rect.midbottom = _actor.sprite.boundingRect.midbottom
+        _actor.hurtbox.rect.midbottom = _actor.sprite.bounding_rect.midbottom
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
@@ -434,7 +434,7 @@ class Pummel(baseActions.BaseGrabbing):
                 _actor.changeSpriteImage(self.frame)
         _actor.hurtbox.rect.width -= 16
         _actor.hurtbox.rect.height -= 16
-        _actor.hurtbox.rect.midbottom = _actor.sprite.boundingRect.midbottom
+        _actor.hurtbox.rect.midbottom = _actor.sprite.bounding_rect.midbottom
         if self.frame == self.last_frame:
             _actor.doAction('Grabbing')
 

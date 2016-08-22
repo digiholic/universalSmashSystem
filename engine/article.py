@@ -234,6 +234,15 @@ class LandingArticle(AnimatedArticle):
     def draw(self, _screen, _offset, _scale):
         return AnimatedArticle.draw(self, _screen, _offset, _scale * self.scale_ratio)
 
+class HitArticle(Article):
+    def __init__(self, _owner, _origin, _scale, _angle, _speed, _resistance):
+        self.scaled_size = math.floor(64*_scale)
+        Article.__init__(self, settingsManager.createPath('sprites/hit_particle.png'), _owner, _origin, 64, -1)
+        self.rect.center = _origin
+        self.angle = _angle
+        self.speed = _speed
+        self.resistance = _resistance
+
 class RespawnPlatformArticle(Article):
     def __init__(self,_owner):
         width, height = (256,69)

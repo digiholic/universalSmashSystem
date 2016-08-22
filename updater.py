@@ -10,22 +10,22 @@ import glob
 import shutil
 import zipfile
 
-def recursive_overwrite(src, dest, ignore=None):
-    if os.path.isdir(src):
-        if not os.path.isdir(dest):
-            os.makedirs(dest)
-        files = os.listdir(src)
-        if ignore is not None:
-            ignored = ignore(src, files)
+def recursive_overwrite(_src, _dest, _ignore=None):
+    if os.path.isdir(_src):
+        if not os.path.isdir(_dest):
+            os.makedirs(_dest)
+        files = os.listdir(_src)
+        if _ignore is not None:
+            ignored = ignore(_src, files)
         else:
             ignored = set()
         for f in files:
             if f not in ignored:
-                recursive_overwrite(os.path.join(src, f), 
-                                    os.path.join(dest, f), 
-                                    ignore)
+                recursive_overwrite(os.path.join(_src, f), 
+                                    os.path.join(_dest, f), 
+                                    _ignore)
     else:
-        shutil.copyfile(src, dest)
+        shutil.copyfile(_src, _dest)
         
 def main():
     print('Downloading Update from HEAD...')

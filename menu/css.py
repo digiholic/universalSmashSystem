@@ -117,7 +117,7 @@ class FighterWheel():
         for subdir in next(os.walk(directory))[1]:
             if(subdir == '__pycache__'):
                 continue
-            fighter_py = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"fighter.py"),suffix=str(fighter_count))
+            fighter_py = settingsManager.importFromURI(directory, os.path.join(directory,subdir,"fighter.py"),_suffix=str(fighter_count))
             #try:
             if fighter_py:
                 fighter = fighter_py.getFighter(os.path.join(directory,subdir),_playerNum)

@@ -115,7 +115,7 @@ class ChangeAttributeFrame(Frame):
             elif vartype == 'sprite':
                 attrib_var = StringVar(self)
                 attrib_var.set(self.getFromAttrib(obj, prop))
-                attrib_entry = OptionMenu(self,attrib_var,*self.root.getFighter().sprite.imageLibrary["right"].keys())
+                attrib_entry = OptionMenu(self,attrib_var,*self.root.getFighter().sprite.image_library["right"].keys())
                 
             attrib_label.grid(row=current_row,column=0)
             attrib_entry.grid(row=current_row,column=1)
@@ -294,7 +294,7 @@ class ChangeSpriteProperties(BasePropertiesFrame):
         
         sprite_vals = ['No Sprites found']
         if _root.getFighter():
-            sprite_vals = _root.getFighter().sprite.imageLibrary["right"].keys()
+            sprite_vals = _root.getFighter().sprite.image_library["right"].keys()
             
         sprites = OptionMenu(self,self.sprite_choice,*sprite_vals)
         sprites.config(width=18)

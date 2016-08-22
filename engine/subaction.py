@@ -195,7 +195,7 @@ class ifButton(SubAction):
         if self.beyond_action:
             working_from = self.buffer_from
         else:
-            working_from = min(_actor.last_input_frame, self.buffer_from)
+            working_from = max(min(_actor.last_input_frame, self.buffer_from), 1)
         
         if self.check == 'keysContain':
             cond = _actor.keysContain(self.button, self.threshold)
@@ -1122,8 +1122,8 @@ class modifyHurtBox(SubAction):
         SubAction.execute(self, _action, _actor)
         _actor.hurtbox.rect.size = self.size
         if self.image_center:
-            _actor.hurtbox.rect.centerx = (_actor.sprite.boundingRect.centerx + self.center[0])
-            _actor.hurtbox.rect.centery = (_actor.sprite.boundingRect.centery + self.center[1])
+            _actor.hurtbox.rect.centerx = (_actor.sprite.bounding_rect.centerx + self.center[0])
+            _actor.hurtbox.rect.centery = (_actor.sprite.bounding_rect.centery + self.center[1])
         else:
             _actor.hurtbox.rect.centerx = _actor.sprite.rect.centerx + self.center[0]
             _actor.hurtbox.rect.centery = _actor.sprite.rect.centery + self.center[1]

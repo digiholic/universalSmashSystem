@@ -35,7 +35,7 @@ def main(debug = False):
         sys.__stdin__ = dummyStream()
     menu.mainMenu.Menu()
     
-def importFromURI(filePath, uri, absl=False, suffix=""):
+def importFromURI(filePath, uri, absl=False, _suffix=""):
     if not absl:
         uri = os.path.normpath(os.path.join(os.path.dirname(filePath).replace('main.exe',''), uri))
     path, fname = os.path.split(uri)

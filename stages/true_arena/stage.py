@@ -33,16 +33,16 @@ class wrapArticle(article.Article):
             rect = self.image.get_rect()
             
             self.image.set_clip(pygame.Rect(rect.right - self.speed,0,self.speed,rect.height))
-            smallPortion = self.image.subsurface(self.image.get_clip())
+            small_portion = self.image.subsurface(self.image.get_clip())
             
             self.image.set_clip(pygame.Rect(0,0,self.rect.width - self.speed,rect.height))
-            bigPortion = self.image.subsurface(self.image.get_clip())
+            big_portion = self.image.subsurface(self.image.get_clip())
             
-            newSurface = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA, 32).convert_alpha()
-            newSurface.blit(smallPortion,pygame.Rect(0,0,self.speed,rect.height))
-            newSurface.blit(bigPortion,pygame.Rect(self.speed,0,rect.width - self.speed,rect.height))
+            new_surface = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA, 32).convert_alpha()
+            new_surface.blit(small_portion,pygame.Rect(0,0,self.speed,rect.height))
+            new_surface.blit(big_portion,pygame.Rect(self.speed,0,rect.width - self.speed,rect.height))
             
-            self.image = newSurface
+            self.image = new_surface
             self.frame = 0
         self.frame += 1
 
@@ -67,51 +67,51 @@ class TrueArena(stage.Stage):
                                [self.size.centerx - 337 + (134 * 3),self.size.centery-1],
                                ]
         
-        fgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TrueArenaFront.png"))
-        fgSprite.rect.topleft = [self.size.centerx - 383,self.size.centery]
-        self.foreground_sprites.append(fgSprite)
+        fg_sprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TrueArenaFront.png"))
+        fg_sprite.rect.topleft = [self.size.centerx - 383,self.size.centery]
+        self.foreground_sprites.append(fg_sprite)
         
-        backdropa = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll4.png"))
-        backdropa.rect.left = 0
-        backdropa.rect.centery = self.size.centery - 64
-        self.addToBackground(backdropa,0.1)
-        backdropb = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll4.png"))
-        backdropb.rect.left = backdropa.rect.right
-        backdropb.rect.centery = self.size.centery - 64
-        self.addToBackground(backdropb,0.1)
+        backdrop_a = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll4.png"))
+        backdrop_a.rect.left = 0
+        backdrop_a.rect.centery = self.size.centery - 64
+        self.addToBackground(backdrop_a,0.1)
+        backdrop_b = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll4.png"))
+        backdrop_b.rect.left = backdrop_a.rect.right
+        backdrop_b.rect.centery = self.size.centery - 64
+        self.addToBackground(backdrop_b,0.1)
         
-        backgroundElement0a = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll3.png"),
+        background_element_0_a = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll3.png"),
                                              (0,self.size.centery - 20),
                                              1)
-        self.addToBackground(backgroundElement0a, 0.2)
-        backgroundElement0b = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll3.png"),
-                                             (backgroundElement0a.image.get_rect().right,self.size.centery - 20),
+        self.addToBackground(background_element_0_a, 0.2)
+        background_element_0_b = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll3.png"),
+                                             (background_element_0_a.image.get_rect().right,self.size.centery - 20),
                                              1)
-        self.addToBackground(backgroundElement0b, 0.2)
+        self.addToBackground(background_element_0_b, 0.2)
         
-        backgroundElement1a = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll2.png"),
+        background_element_1_a = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll2.png"),
                                              (0,self.size.centery),
                                              2)
-        self.addToBackground(backgroundElement1a, 0.5)
-        backgroundElement1b = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll2.png"),
-                                             (backgroundElement1a.image.get_rect().right,self.size.centery),
+        self.addToBackground(background_element_1_a, 0.5)
+        background_element_1_b = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll2.png"),
+                                             (background_element_1_a.image.get_rect().right,self.size.centery),
                                              2)
-        self.addToBackground(backgroundElement1b, 0.5)
+        self.addToBackground(background_element_1_b, 0.5)
         
-        backgroundElement2a = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll1.png"),
+        background_element_2_a = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll1.png"),
                                              (0,self.size.centery+32),
                                              4)
-        self.addToBackground(backgroundElement2a, 0.8)
-        backgroundElement2b = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll1.png"),
-                                             (backgroundElement2a.image.get_rect().right,self.size.centery+32),
+        self.addToBackground(background_element_2_a, 0.8)
+        background_element_2_b = wrapArticle(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TAscroll1.png"),
+                                             (background_element_2_a.image.get_rect().right,self.size.centery+32),
                                              4)
-        self.addToBackground(backgroundElement2b, 0.8)
+        self.addToBackground(background_element_2_b, 0.8)
         
-        self.articles.extend([backgroundElement0a,backgroundElement0b,backgroundElement1a,backgroundElement1b,backgroundElement2a,backgroundElement2b])
+        self.articles.extend([background_element_0_a,background_element_0_b,background_element_1_a,background_element_1_b,background_element_2_a,background_element_2_b])
         
-        bg_sprite0 = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TrueArenaBack.png"))
-        bg_sprite0.rect.topleft = [self.size.centerx - 383,self.size.centery-44]
-        self.addToBackground(bg_sprite0)
+        bg_sprite_0 = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","TrueArenaBack.png"))
+        bg_sprite_0.rect.topleft = [self.size.centerx - 383,self.size.centery-44]
+        self.addToBackground(bg_sprite_0)
         
         
         self.background_color = [0,0,0]

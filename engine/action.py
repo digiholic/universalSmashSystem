@@ -61,7 +61,7 @@ class Action():
         if self.last_frame > 0:
             _actor.changeSprite(self.sprite_name)
             if self.sprite_rate < 0:
-                _actor.changeSpriteImage(len(_actor.sprite.imageLibrary[_actor.sprite.flip][_actor.sprite.currentSheet])-1)
+                _actor.changeSpriteImage(len(_actor.sprite.image_library[_actor.sprite.flip][_actor.sprite.current_sheet])-1)
     
     def tearDown(self,_actor,_nextAction):
         for hitbox in self.hitboxes.values():

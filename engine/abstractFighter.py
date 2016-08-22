@@ -113,7 +113,7 @@ class AbstractFighter():
         except:
             self.article_loader_path = ''
             try:
-                self.article_loader = settingsManager.importFromURI(os.path.join(_baseDir,self.article_path+'/articles.py'),'articles.py',suffix=str(self.player_num))
+                self.article_loader = settingsManager.importFromURI(os.path.join(_baseDir,self.article_path+'/articles.py'),'articles.py',_suffix=str(self.player_num))
             except:
                 self.article_loader = None
             
@@ -123,7 +123,7 @@ class AbstractFighter():
         except:
             self.sound_path = None
             self.sound_path_short = ''
-        #self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),'articles.py',suffix=str(player_num))
+        #self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),'articles.py',_suffix=str(player_num))
         try:
             directory = os.path.join(_baseDir,self.xml_data.find('sprite_directory').text)
             prefix = self.xml_data.find('sprite_prefix').text
@@ -166,7 +166,7 @@ class AbstractFighter():
             actions = self.xml_data.find('actions').text
             self.action_file = actions
             if actions.endswith('.py'):
-                self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),actions,suffix=str(self.player_num))
+                self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),actions,_suffix=str(self.player_num))
             else:
                 self.actions = actionLoader.ActionLoader(_baseDir,actions)
         except:
@@ -284,7 +284,7 @@ class AbstractFighter():
             class_ = getattr(self.actions,'NeutralAction')
             self.current_action = class_()
             
-        self.hurtbox = hitbox.Hurtbox(self,self.sprite.boundingRect,[255,255,0])
+        self.hurtbox = hitbox.Hurtbox(self,self.sprite.bounding_rect,[255,255,0])
         
         #state variables and flags
         self.angle = 0
@@ -403,7 +403,7 @@ class AbstractFighter():
 
         # We set the hurbox to be the Bounding Rect of the sprite.
         # It is done here, so that the hurtbox can be changed by the action.
-        self.hurtbox.rect = self.sprite.boundingRect.copy()
+        self.hurtbox.rect = self.sprite.bounding_rect.copy()
         
         #Step three, change state and update
         self.current_action.stateTransitions(self)
@@ -1061,7 +1061,7 @@ class AbstractFighter():
     #A key tap (press, then release)
     def keyTapped(self, _key, _from = None, _state = 0.1, _to = 0):
         if _from is None:
-            _from = min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame)
+            _from = max(min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame), 1)
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames) or not any(up_frames):
@@ -1076,7 +1076,7 @@ class AbstractFighter():
     #A key press which hasn't been released yet
     def keyHeld(self, _key, _from = None, _state = 0.1, _to = 0):
         if _from is None:
-            _from = min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame)
+            _from = max(min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame), 1)
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames):
@@ -1105,7 +1105,7 @@ class AbstractFighter():
     #A key reinput (release, then press)
     def keyReinput(self, _key, _from = None, _state = 0.1, _to = 0):
         if _from is None:
-            _from = min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame)
+            _from = max(min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame), 1)
         up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(down_frames) or not any(down_frames):
@@ -1120,7 +1120,7 @@ class AbstractFighter():
     #A key release which hasn't been pressed yet
     def keyIdle(self, _key, _from = None, _state = 0.1, _to = 0):
         if _from is None:
-            _from = min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame)
+            _from = max(min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame), 1)
         up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
         down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
         if not any(up_frames):
@@ -1140,7 +1140,7 @@ class AbstractFighter():
         #TODO If this is a gamepad, simply return its analog input
         if _distanceBack is None:
             smooth_distance = int(self.key_bindings.timing_window['smoothing_window'])
-            _distanceBack = min(int(self.key_bindings.timing_window['smoothing_window']), self.last_input_frame)
+            _distanceBack = max(min(int(self.key_bindings.timing_window['smoothing_window']), self.last_input_frame), 1)
         else:
             smooth_distance = _distanceBack
         
@@ -1252,8 +1252,8 @@ class AbstractFighter():
         else:
             return 180 - _offSet
 
-    def createMask(self,_color,_duration,_pulse = False,_pulseSize = 16):
-        self.mask = spriteManager.MaskSprite(self.sprite,_color,_duration,_pulse, _pulseSize)
+    def createMask(self,_color,_duration,_pulse = False,_pulse_size = 16):
+        self.mask = spriteManager.MaskSprite(self.sprite,_color,_duration,_pulse, _pulse_size)
         
     def getDirectionMagnitude(self):
         if self.change_x == 0:
@@ -1533,9 +1533,9 @@ class ECB():
     def __init__(self,_actor):
         self.actor = _actor
 
-        self.current_ecb = spriteManager.RectSprite(self.actor.sprite.boundingRect.copy(), pygame.Color('#ECB134'))
+        self.current_ecb = spriteManager.RectSprite(self.actor.sprite.bounding_rect.copy(), pygame.Color('#ECB134'))
         self.original_size = self.current_ecb.rect.size
-        self.current_ecb.rect.center = self.actor.sprite.boundingRect.center
+        self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
 
         self.previous_ecb = spriteManager.RectSprite(self.current_ecb.rect.copy(), pygame.Color('#EA6F1C'))
         
@@ -1569,21 +1569,21 @@ class ECB():
     Set the ECB's height and width to the sprite's, and centers it
     """
     def normalize(self):
-        #center = (self.actor.sprite.boundingRect.centerx + self.actor.current_action.ecb_center[0],self.actor.sprite.boundingRect.centery + self.actor.current_action.ecb_center[1])
+        #center = (self.actor.sprite.bounding_rect.centerx + self.actor.current_action.ecb_center[0],self.actor.sprite.bounding_rect.centery + self.actor.current_action.ecb_center[1])
         sizes = self.actor.current_action.ecb_size
         offsets = self.actor.current_action.ecb_offset
         
         
         if sizes[0] == 0: 
-            self.current_ecb.rect.width = self.actor.sprite.boundingRect.width
+            self.current_ecb.rect.width = self.actor.sprite.bounding_rect.width
         else:
             self.current_ecb.rect.width = sizes[0]
         if sizes[1] == 0: 
-            self.current_ecb.rect.height = self.actor.sprite.boundingRect.height
+            self.current_ecb.rect.height = self.actor.sprite.bounding_rect.height
         else:
             self.current_ecb.rect.height = sizes[1]
         
-        self.current_ecb.rect.center = self.actor.sprite.boundingRect.center
+        self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
         self.current_ecb.rect.x += offsets[0]
         self.current_ecb.rect.y += offsets[1]
         

@@ -58,33 +58,33 @@ class ArenaMovingPlatform(stage.Stage):
         self.addToBackground(bg_sprite)
         
         
-        plat0front = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatFrontL.png"))
-        plat0front.rect.topleft = [self.size.centerx - 314 - 9 + 56,self.size.centery]
-        self.plat1front = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatFrontM.png"))
-        self.plat1front.rect.topleft = [self.size.centerx - 314 - 9 + 56 + 172,self.size.centery-140]
-        plat2front = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatFrontR.png"))
-        plat2front.rect.topleft = [self.size.centerx - 314 - 9 + 56 + 172 + 172,self.size.centery]
+        plat_0_front = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatFrontL.png"))
+        plat_0_front.rect.topleft = [self.size.centerx - 314 - 9 + 56,self.size.centery]
+        self.plat_1_front = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatFrontM.png"))
+        self.plat_1_front.rect.topleft = [self.size.centerx - 314 - 9 + 56 + 172,self.size.centery-140]
+        plat_2_front = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatFrontR.png"))
+        plat_2_front.rect.topleft = [self.size.centerx - 314 - 9 + 56 + 172 + 172,self.size.centery]
         
-        self.foreground_sprites.extend([plat0front, self.plat1front, plat2front])
+        self.foreground_sprites.extend([plat_0_front, self.plat_1_front, plat_2_front])
         
-        fgSprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaFront.png"))
-        fgSprite.rect.topleft = [self.size.centerx - 351,self.size.centery+140-6]
-        self.foreground_sprites.append(fgSprite)
+        fg_sprite = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaFront.png"))
+        fg_sprite.rect.topleft = [self.size.centerx - 351,self.size.centery+140-6]
+        self.foreground_sprites.append(fg_sprite)
         
-        plat0back = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatBackL.png"))
-        plat0back.rect.topleft = [self.size.centerx - 314 - 9 + 56,self.size.centery-3]
-        self.plat1back = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatBackM.png"))
-        self.plat1back.rect.topleft = [self.size.centerx - 314 - 9 + 56 + 172,self.size.centery-3-140]
-        plat2back = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatBackR.png"))
-        plat2back.rect.topleft = [self.size.centerx - 314 - 9 + 56 + 172 + 172,self.size.centery-3]
+        plat_0_back = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatBackL.png"))
+        plat_0_back.rect.topleft = [self.size.centerx - 314 - 9 + 56,self.size.centery-3]
+        self.plat_1_back = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatBackM.png"))
+        self.plat_1_back.rect.topleft = [self.size.centerx - 314 - 9 + 56 + 172,self.size.centery-3-140]
+        plat_2_back = spriteManager.ImageSprite(os.path.join(os.path.dirname(__file__).replace('main.exe',''),"sprites","ArenaPlatBackR.png"))
+        plat_2_back.rect.topleft = [self.size.centerx - 314 - 9 + 56 + 172 + 172,self.size.centery-3]
         
-        self.addToBackground(plat0back)
-        self.addToBackground(self.plat1back)
-        self.addToBackground(plat2back)
+        self.addToBackground(plat_0_back)
+        self.addToBackground(self.plat_1_back)
+        self.addToBackground(plat_2_back)
         
         self.getLedges()
         
     def update(self):
         stage.Stage.update(self)
-        self.plat1back.rect.topleft = [self.movingPlat.rect.left-9,self.movingPlat.rect.top-3]
-        self.plat1front.rect.topleft = [self.movingPlat.rect.left-9,self.movingPlat.rect.top]
+        self.plat_1_back.rect.topleft = [self.movingPlat.rect.left-9,self.movingPlat.rect.top-3]
+        self.plat_1_front.rect.topleft = [self.movingPlat.rect.left-9,self.movingPlat.rect.top]

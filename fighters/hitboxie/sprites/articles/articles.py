@@ -5,7 +5,7 @@ import pygame
 
 class SplatArticle(article.AnimatedArticle):
     def __init__(self, _owner):
-        origin = (_owner.sprite.boundingRect.centerx + (24 * _owner.facing), _owner.sprite.boundingRect.centery)
+        origin = (_owner.sprite.bounding_rect.centerx + (24 * _owner.facing), _owner.sprite.bounding_rect.centery)
         article.AnimatedArticle.__init__(self, _owner.article_path+'/hitboxie_projectile.png', _owner, origin, imageWidth=16,length=120)
         
         self.direction = _owner.facing
@@ -49,7 +49,7 @@ class SplatArticle(article.AnimatedArticle):
     
     def activate(self):
         article.AnimatedArticle.activate(self)
-        self.rect.center = (self.owner.sprite.boundingRect.centerx + (24 * self.owner.facing),self.owner.sprite.boundingRect.centery-8)
+        self.rect.center = (self.owner.sprite.bounding_rect.centerx + (24 * self.owner.facing),self.owner.sprite.bounding_rect.centery-8)
         self.owner.active_hitboxes.add(self.hitbox)
     
     def deactivate(self):
@@ -62,7 +62,7 @@ class ShineArticle(article.AnimatedArticle):
         article.AnimatedArticle.__init__(self, _owner.article_path+'/hitboxie_shine.png', _owner, [0,0], imageWidth=92,length=8)
             
     def update(self):
-        self.rect.center = self.owner.sprite.boundingRect.center
+        self.rect.center = self.owner.sprite.bounding_rect.center
         if self.frame == 0:
             self.getImageAtIndex(0)
         elif self.frame == 2:

@@ -21,23 +21,23 @@ except ImportError as message:
     raise (SystemExit, "Unable to load module. %s" % message)
  
 #hack which fixes the pygame mixer and pygame font
-origIsSystemDLL = py2exe.build_exe.isSystemDLL # save the orginal before we edit it
-def isSystemDLL(pathname):
+orig_is_system_dll = py2exe.build_exe.isSystemDLL # save the orginal before we edit it
+def isSystemDLL(_pathname):
     # checks if the freetype and ogg dll files are being included
-    if os.path.basename(pathname).lower() in ("libfreetype-6.dll", "libogg-0.dll","sdl_ttf.dll"): # "sdl_ttf.dll" added by arit.
+    if os.path.basename(_pathname).lower() in ("libfreetype-6.dll", "libogg-0.dll","sdl_ttf.dll"): # "sdl_ttf.dll" added by arit.
             return 0
-    return origIsSystemDLL(pathname) # return the orginal function
+    return orig_is_system_dll(_pathname) # return the orginal function
 py2exe.build_exe.isSystemDLL = isSystemDLL # override the default function with this one
  
 class pygame2exe(py2exe.build_exe.py2exe): #This hack make sure that pygame default font is copied: no need to modify code for specifying default font
-    def copy_extensions(self, extensions):
+    def copy_extensions(self, _extensions):
         #Get pygame default font
-        pygamedir = os.path.split(pygame.base.__file__)[0]
-        pygame_default_font = os.path.join(pygamedir, pygame.font.get_default_font())
+        pygame_dir = os.path.split(pygame.base.__file__)[0]
+        pygame_default_font = os.path.join(pygame_dir, pygame.font.get_default_font())
  
         #Add font to list of extension to be copied
-        extensions.append(Module("pygame.font", pygame_default_font))
-        py2exe.build_exe.py2exe.copy_extensions(self, extensions)
+        _extensions.append(Module("pygame.font", pygame_default_font))
+        py2exe.build_exe.py2exe.copy_extensions(self, _extensions)
  
 class BuildExe:
     def __init__(self):
@@ -88,36 +88,36 @@ class BuildExe:
  
     ## Code from DistUtils tutorial at http://wiki.python.org/moin/Distutils/Tutorial
     ## Originally borrowed from wxPython's setup and config files
-    def opj(self, *args):
-        path = os.path.join(*args)
+    def opj(self, *_args):
+        path = os.path.join(*_args)
         return os.path.normpath(path)
  
-    def find_data_files(self, srcdir, *wildcards, **kw):
+    def find_data_files(self, _srcdir, *_wildcards, **_kw):
         # get a list of all files under the srcdir matching wildcards,
         # returned in a format to be used for install_data
-        def walk_helper(arg, dirname, files):
-            if '.svn' in dirname:
+        def walk_helper(_arg, _dirname, _files):
+            if '.svn' in _dirname:
                 return
             names = []
-            lst, wildcards = arg
+            lst, wildcards = _arg
             for wc in wildcards:
-                wc_name = self.opj(dirname, wc)
-                for f in files:
-                    filename = self.opj(dirname, f)
+                wc_name = self.opj(_dirname, wc)
+                for f in _files:
+                    filename = self.opj(_dirname, f)
  
                     if fnmatch.fnmatch(filename, wc_name) and not os.path.isdir(filename):
                         names.append(filename)
             if names:
-                lst.append( (dirname, names ) )
+                lst.append( (_dirname, names ) )
  
         file_list = []
-        recursive = kw.get('recursive', True)
+        recursive = _kw.get('recursive', True)
         if recursive:
-            os.path.walk(srcdir, walk_helper, (file_list, wildcards))
+            os.path.walk(_srcdir, walk_helper, (file_list, _wildcards))
         else:
-            walk_helper((file_list, wildcards),
-                        srcdir,
-                        [os.path.basename(f) for f in glob.glob(self.opj(srcdir, '*'))])
+            walk_helper((file_list, _wildcards),
+                        _srcdir,
+                        [os.path.basename(f) for f in glob.glob(self.opj(_srcdir, '*'))])
         return file_list
  
     def run(self):

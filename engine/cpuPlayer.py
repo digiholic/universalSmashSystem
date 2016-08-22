@@ -26,10 +26,10 @@ class CPUplayer(controller.Controller):
         for platform in self.fighter.game_state.platform_list:
             if platform.solid:
                 solid_list += [platform.rect]
-                nodes += [[platform.rect.right+self.fighter.sprite.boundingRect.width/2.0, platform.rect.top-self.fighter.sprite.boundingRect.height/2.0], 
-                          [platform.rect.right+self.fighter.sprite.boundingRect.width/2.0, platform.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], 
-                          [platform.rect.left-self.fighter.sprite.boundingRect.width/2.0, platform.rect.top-self.fighter.sprite.boundingRect.height/2.0], 
-                          [platform.rect.left-self.fighter.sprite.boundingRect.width/2.0, platform.rect.bottom+self.fighter.sprite.boundingRect.height/2.0]]
+                nodes += [[platform.rect.right+self.fighter.sprite.bounding_rect.width/2.0, platform.rect.top-self.fighter.sprite.bounding_rect.height/2.0], 
+                          [platform.rect.right+self.fighter.sprite.bounding_rect.width/2.0, platform.rect.bottom+self.fighter.sprite.bounding_rect.height/2.0], 
+                          [platform.rect.left-self.fighter.sprite.bounding_rect.width/2.0, platform.rect.top-self.fighter.sprite.bounding_rect.height/2.0], 
+                          [platform.rect.left-self.fighter.sprite.bounding_rect.width/2.0, platform.rect.bottom+self.fighter.sprite.bounding_rect.height/2.0]]
 
         closed_set = set()
         open_set = set([0])
@@ -69,13 +69,13 @@ class CPUplayer(controller.Controller):
         return opposing_players[opposing_dists.index(min(opposing_dists))].rect.center
 
     def ledgeTargeting(self):
-        ledge_points = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.bottom+self.fighter.sprite.boundingRect.height/2.0], self.fighter.game_state.platform_ledges)
-        ledge_distances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), ledge_points)
+        ledge_points = map(lambda x: [x.rect.left-self.fighter.sprite.bounding_rect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.bounding_rect.width/2.0, x.rect.bottom+self.fighter.sprite.bounding_rect.height/2.0], self.fighter.game_state.platform_ledges)
+        ledge_distances = map(lambda x: self.getPathDistance(self.fighter.sprite.bounding_rect.center, x), ledge_points)
         return ledge_points[ledge_distances.index(min(ledge_distances))]
 
     def platformTargeting(self):
-        target_points = map(lambda x: [x.rect.left-self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.fighter.game_state.platform_list)+map(lambda x: [x.rect.right+self.fighter.sprite.boundingRect.width/2.0, x.rect.top-self.fighter.sprite.boundingRect.height/2.0], self.fighter.game_state.platform_list)
-        target_distances = map(lambda x: self.getPathDistance(self.fighter.sprite.boundingRect.center, x), target_points)
+        target_points = map(lambda x: [x.rect.left-self.fighter.sprite.bounding_rect.width/2.0, x.rect.top-self.fighter.sprite.bounding_rect.height/2.0], self.fighter.game_state.platform_list)+map(lambda x: [x.rect.right+self.fighter.sprite.bounding_rect.width/2.0, x.rect.top-self.fighter.sprite.bounding_rect.height/2.0], self.fighter.game_state.platform_list)
+        target_distances = map(lambda x: self.getPathDistance(self.fighter.sprite.bounding_rect.center, x), target_points)
         return target_points[target_distances.index(min(target_distances))]
 
     def update(self):
@@ -86,7 +86,7 @@ class CPUplayer(controller.Controller):
             return
         if self.mode == 'duckling': #Follow the player
             distance = self.getPathDistance(self.fighter.rect.center, self.ducklingTargeting())
-            prev_distance = self.getPathDistance(self.fighter.ecb.current_ecb.rect.center, self.fighter.players[0].sprite.boundingRect.center)
+            prev_distance = self.getPathDistance(self.fighter.ecb.current_ecb.rect.center, self.fighter.players[0].sprite.bounding_rect.center)
             #We offset by one so that simply running away doesn't trigger catchup behavior
             (dx, dy) = self.getDistanceTo(self.fighter.players[0])
             if dx < 0:
