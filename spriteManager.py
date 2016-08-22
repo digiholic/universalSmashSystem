@@ -196,7 +196,7 @@ class SheetSprite(ImageSprite):
         Sprite.__init__(self)
         
         self.sheet = sheet
-        if isinstance(sheet,str):
+        if isinstance(sheet,str) or isinstance(sheet, unicode):
             self.sheet = pygame.image.load(sheet)
         
         self.color_map = color_map
@@ -375,7 +375,7 @@ def test():
         screen.fill([100, 100, 100])
         
         
-        sprites.draw(_screen, [0,0], 1.0)
+        sprites.draw(screen, [0,0], 1.0)
         sprites.changeSubImage(index)
         index += 1
         

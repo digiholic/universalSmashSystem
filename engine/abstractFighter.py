@@ -1091,6 +1091,10 @@ class AbstractFighter():
             return True
         return False
 
+    #If the button is still being held
+    def keyUnreleased(self,_key):
+        return _key in self.keys_held
+    
     #A key release
     def keyUp(self, _key, _from = 1, _state = 0.1, _to = 0):
         if any(map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))):

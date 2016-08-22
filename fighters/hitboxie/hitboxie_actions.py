@@ -423,7 +423,7 @@ class Pummel(baseActions.BaseGrabbing):
             _actor.changeSprite("neutral", self.frame)
         elif self.frame < 4:
             _actor.changeSpriteImage(self.frame)
-        elif actor.isGrabbing() and self.frame == 4:
+        elif _actor.isGrabbing() and self.frame == 4:
             _actor.grabbing.dealDamage(3)
         elif self.frame >= 5 and self.frame <= 8:
             _actor.changeSpriteImage(9)
@@ -593,7 +593,7 @@ class Stunned(baseActions.Stunned):
 
     def setUp(self, _actor):
         baseActions.Stunned.setUp(self, _actor)
-        actor.sideSpecialUses = 1
+        _actor.sideSpecialUses = 1
 
     def tearDown(self, _actor, _newAction):
         _actor.mask = None

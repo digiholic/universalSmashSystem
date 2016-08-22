@@ -200,12 +200,14 @@ class ifButton(SubAction):
         if self.check == 'keysContain':
             cond = _actor.keysContain(self.button, self.threshold)
         elif self.check == 'keyBuffered':
-            print(self.button,working_from,self.buffer_to)
             cond = _actor.keyBuffered(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyTapped':
+            print(self.button,working_from)
             cond = _actor.keyTapped(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyHeld':
             cond = _actor.keyHeld(self.button, working_from, self.threshold, self.buffer_to)
+        elif self.check == 'keyUnreleased':
+            cond = _actor.keyUnreleased(self.button)
         elif self.check == 'keyUp':
             cond = _actor.keyUp(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyReinput':
@@ -302,10 +304,15 @@ class ifButton(SubAction):
             buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
             buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
             threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
+            print(buffer_from,buffer_to)
         elif check == 'keyHeld':
             buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
             buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
             threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
+        elif check == 'keyUnreleased':
+            buffer_from = 1
+            buffer_to = 0
+            threshold = 0.1
         elif check == 'keyUp':
             buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
             buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
@@ -685,16 +692,21 @@ class updateLandingLag(SubAction):
 class modifyFighterVar(SubAction):
     subact_group = 'Control'
     
-    def __init__(self,_attr='',_val=None):
+    def __init__(self,_attr='',_val=None,_relative=False):
         SubAction.__init__(self)
         self.attr = _attr
         self.val = _val
+        self.relative = _relative
         
     def execute(self, _action, _actor):
         if not self.attr =='':
             if _actor.var.has_key(self.attr):
-                _actor.var[self.attr] = self.val
-            else: setattr(_actor,self.attr,self.val)
+                if self.relative: _actor.var[self.attr] += self.val
+                else: _actor.var[self.attr] = self.val
+            else:
+                if self.relative:
+                    setattr(_actor, self.attr, getattr(_actor, self.attr)+1)
+                else: setattr(_actor,self.attr,self.val)
     
     def getPropertiesPanel(self, _root):
         return subactionSelector.ModifyFighterVarProperties(_root,self)
@@ -712,6 +724,7 @@ class modifyFighterVar(SubAction):
         value_elem = ElementTree.Element('value')
         value_elem.attrib['type'] = type(self.value).__name__
         value_elem.text = str(self.value)
+        value_elem.attrib['relative'] = str(self.relative)
         elem.append(value_elem)
         
         return elem
@@ -723,13 +736,16 @@ class modifyFighterVar(SubAction):
         if _node.find('value').attrib.has_key('type'):
             vartype = _node.find('value').attrib['type']
         else: vartype = 'string'
+        if _node.find('value').attrib.has_key('relative'):
+            relative = True
+        else: relative = False
         if vartype == 'int':
             value = int(value)
         elif vartype == 'float':
             value = float(value)
         elif vartype == 'bool':
             value = bool(value)
-        return modifyFighterVar(attr,value)
+        return modifyFighterVar(attr,value,relative)
     
 # Modify a variable in the action, such as a conditional flag of some sort.
 class modifyActionVar(SubAction):

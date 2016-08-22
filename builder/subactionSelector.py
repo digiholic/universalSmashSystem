@@ -71,7 +71,7 @@ class SubactionSelector(Label):
                     "After Frames": action.actions_after_frame,
                     "Last Frame": action.actions_at_last_frame}
         groupMap[self.root.group].remove(self.subaction)
-        
+        self.pack_forget()
         self.root.root.actionModified()
             
 class ChangeAttributeFrame(Frame):
@@ -425,8 +425,8 @@ class ShiftPositionProperties(BasePropertiesFrame):
         
         self.x_unchanged=BooleanVar(self)
         self.y_unchanged=BooleanVar(self)
-        self.x_unchanged.set(not bool(self.subaction.speed_x))
-        self.y_unchanged.set(not bool(self.subaction.speed_y))
+        self.x_unchanged.set(not bool(self.subaction.new_x))
+        self.y_unchanged.set(not bool(self.subaction.new_y))
         self.x_unchanged.trace('w', self.xUnchangedChanged)
         self.y_unchanged.trace('w', self.yUnchangedChanged)
         

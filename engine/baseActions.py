@@ -771,6 +771,8 @@ class Shield(action.Action):
         self.new_shield = _newShield
    
     def setUp(self, _actor):
+        if not hasattr(self, 'new_shield'):
+            self.new_shield = True
         action.Action.setUp(self, _actor)
         
     def stateTransitions(self, _actor):
@@ -1716,9 +1718,9 @@ def tapReversible(_actor):
 
 def shieldCancellable(_actor):
     if _actor.keyBuffered('shield') and _actor.grounded:
-        _actor.changeAction('Shield')
+        _actor.doAction('Shield')
     elif _actor.keyBuffered('shield') and not (_actor.keysContain('left', 0.2) or _actor.keysContain('right', 0.2) or _actor.keysContain('up', 0.2) or _actor.keysContain('down', 0.2)) and not _actor.grounded:
-        _actor.changeAction('Fall')
+        _actor.doAction('Fall')
 
 def dodgeCancellable(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()

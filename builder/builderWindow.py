@@ -120,11 +120,6 @@ class MainFrame(Tk):
         
         self.viewer_pane.viewer_panel.reloadFrame()
         
-        if action:
-            self.action_pane.subaction_panel.changeFrame()
-            self.action_pane.subaction_panel.groupChanged()
-        
-        
         for subact in self.action_pane.subaction_panel.subaction_list:
             subact.updateName()
                 
@@ -718,9 +713,7 @@ class Subaction_panel(BuilderPanel):
     def changeActionDropdown(self, *_args):
         global fighter
         
-        if self.selected:
-            self.selected.unselect()
-            self.selected_string.set('')
+        self.unselect()
             
         new_action = self.parent.action_selector_panel.current_action.get()
         if new_action == 'Fighter Properties':
@@ -736,9 +729,7 @@ class Subaction_panel(BuilderPanel):
         self.group = self.parent.action_selector_panel.current_group.get()
         new_action = self.parent.action_selector_panel.current_action.get()
         
-        if self.selected:
-            self.selected.unselect()
-            self.selected_string.set('')
+        self.unselect()
             
         self.clearSubActList()
         if self.group == "Fighter":
@@ -840,10 +831,8 @@ class Subaction_panel(BuilderPanel):
     def changeFrame(self, *_args):
         global frame
         
-        if self.selected:
-            self.selected.unselect()
-            self.selected_string.set('')
-            
+        self.unselect()
+        
         self.current_frame_subacts = []
         for subact in action.actions_at_frame[frame]:
             self.current_frame_subacts.append(subact)
@@ -856,7 +845,12 @@ class Subaction_panel(BuilderPanel):
                 self.subaction_list.append(selector)
             self.showSubactionList()
             
-        
+    
+    def unselect(self):
+        if self.selected:
+            self.selected.unselect()
+            self.selected_string.set('')
+                
 class PropertiesPanel(BuilderPanel):
     def __init__(self,_parent,_root):
         BuilderPanel.__init__(self, _parent, _root)
@@ -864,13 +858,13 @@ class PropertiesPanel(BuilderPanel):
         self.selected = None
         self.parent.subaction_panel.selected_string.trace('w',self.onSelect)
         
-        self.new_sublast_input_frame = ttk.Notebook(self)
+        self.new_subaction_frame = ttk.Notebook(self)
         
-        self.control_window = ttk.Frame(self.new_sublast_input_frame)
-        self.sprite_window = ttk.Frame(self.new_sublast_input_frame)
-        self.behavior_window = ttk.Frame(self.new_sublast_input_frame)
-        self.hitbox_window = ttk.Frame(self.new_sublast_input_frame)
-        self.article_window = ttk.Frame(self.new_sublast_input_frame)
+        self.control_window = ttk.Frame(self.new_subaction_frame)
+        self.sprite_window = ttk.Frame(self.new_subaction_frame)
+        self.behavior_window = ttk.Frame(self.new_subaction_frame)
+        self.hitbox_window = ttk.Frame(self.new_subaction_frame)
+        self.article_window = ttk.Frame(self.new_subaction_frame)
         
         subact_windows = {'Control': self.control_window,
                          'Sprite': self.sprite_window,
@@ -880,7 +874,7 @@ class PropertiesPanel(BuilderPanel):
                          }
         
         for name,window in subact_windows.iteritems():
-            self.new_sublast_input_frame.add(window,text=name)
+            self.new_subaction_frame.add(window,text=name)
             
         subaction_lists = {'Control':[],
                           'Sprite':[],
@@ -904,7 +898,7 @@ class PropertiesPanel(BuilderPanel):
                     y += 1
                     x = 0
         
-        self.sub_frame = self.new_sublast_input_frame
+        self.sub_frame = self.new_subaction_frame
         self.sub_frame.pack(fill=BOTH)
         
     def addSubaction(self,_subaction):
@@ -925,7 +919,7 @@ class PropertiesPanel(BuilderPanel):
                 action.conditional_actions[group[6:]].append(subact)
             else: group_to_action[group].append(subact)
             self.root.actionModified()
-            self.parent.subaction_panel.addSubactionPanel(subact)
+            #self.parent.subaction_panel.addSubactionPanel(subact)
                     
     def onSelect(self,*_args):
         self.selected = self.parent.subaction_panel.selected
@@ -936,7 +930,7 @@ class PropertiesPanel(BuilderPanel):
                 self.sub_frame = self.selected.property_frame
                 self.sub_frame.pack(fill=BOTH)
         else:
-            self.sub_frame = self.new_sublast_input_frame
+            self.sub_frame = self.new_subaction_frame
             self.sub_frame.pack(fill=BOTH)
             
 """
