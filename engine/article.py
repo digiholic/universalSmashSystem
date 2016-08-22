@@ -235,6 +235,20 @@ class LandingArticle(AnimatedArticle):
         return AnimatedArticle.draw(self, _screen, _offset, _scale * self.scale_ratio)
 
 class HitArticle(Article):
+    color_array = {
+        (255, 102, 102),
+        (170, 170, 0), 
+        (0, 255, 0), 
+        (0, 204, 204),
+        (127, 127, 255),
+        (255, 64, 255),
+        (146, 146, 146),
+        (234, 234, 0),
+        (64, 255, 255),
+        (255, 159, 255),
+        (255, 255, 255)
+    }
+
     def __init__(self, _owner, _origin, _scale, _angle, _speed, _resistance):
         self.scaled_size = math.floor(64*_scale)
         Article.__init__(self, settingsManager.createPath('sprites/hit_particle.png'), _owner, _origin, 64, -1)

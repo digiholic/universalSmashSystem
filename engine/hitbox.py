@@ -30,6 +30,7 @@ class Hitbox(spriteManager.RectSprite):
                        'priority': 0,
                        'base_hitstun': 10,
                        'hitlag_multiplier': 1,
+                       'damage_multiplier': 1,
                        'velocity_multiplier': 1,
                        'x_bias': 0,
                        'y_bias': 0,
@@ -144,7 +145,7 @@ class SakuraiAngleHitbox(DamageHitbox):
                 angle = 0
                 if (self.base_knockback > 0):
                     # Calculate the resulting angle
-                    knockback_ratio = total_kb/self.base_knockback
+                    knockback_ratio = total_kb*self.velocity_multiplier/self.base_knockback
                     x_val = math.sqrt(knockback_ratio**2+1)/math.sqrt(2)
                     y_val = math.sqrt(knockback_ratio**2-1)/math.sqrt(2)
                     angle = math.atan2(y_val*math.sin(float(self.trajectory)/180*math.pi),x_val*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
@@ -166,11 +167,11 @@ class AutolinkHitbox(DamageHitbox):
                     self.owner.applyPushback(self.damage/4.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
                     angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
-                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier, 0, angle, 0, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, angle+self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
                 elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
                     velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
                     angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
-                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier, 0, angle, 0, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, angle+self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -191,14 +192,14 @@ class FunnelHitbox(DamageHitbox):
                     (x_vel, y_vel) = getXYFromDM(self.trajectory, self.base_knockback)
                     x_vel += self.x_draw*x_diff
                     y_vel += self.y_draw*y_diff
-                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel), 0, math.atan2(-y_vel,x_vel)*180.0/math.pi, 0, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, math.atan2(-y_vel,x_vel)*180.0/math.pi+self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
                 else:
                     x_diff = self.article.rect.centerx - _other.rect.centerx
                     y_diff = self.article.rect.centery - _other.rect.centery
                     (x_vel, y_vel) = getXYFromDM(self.trajectory, self.base_knockback)
                     x_vel += self.x_draw*x_diff
                     y_vel += self.y_draw*y_diff
-                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel), 0, math.atan2(-y_vel,x_vel)*180.0/math.pi, 0, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, math.atan2(-y_vel,x_vel)*180.0/math.pi+self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -206,7 +207,6 @@ class FunnelHitbox(DamageHitbox):
 class GrabHitbox(Hitbox):
     def __init__(self,_owner,_lock,_variables):
         Hitbox.__init__(self, _owner, _lock, _variables)
-        
         self.hitbox_type = 'grab'
 
     def onCollision(self,_other):
