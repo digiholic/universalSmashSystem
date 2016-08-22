@@ -189,14 +189,14 @@ class FunnelHitbox(DamageHitbox):
                     self.owner.applyPushback(self.damage/4.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     x_diff = self.rect.centerx - _other.rect.centerx
                     y_diff = self.rect.centery - _other.rect.centery
-                    (x_vel, y_vel) = getXYFromDM(self.trajectory, self.base_knockback)
+                    (x_vel, y_vel) = (self.x_bias, self.y_bias)
                     x_vel += self.x_draw*x_diff
                     y_vel += self.y_draw*y_diff
                     _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, math.atan2(-y_vel,x_vel)*180.0/math.pi+self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
                 else:
                     x_diff = self.article.rect.centerx - _other.rect.centerx
                     y_diff = self.article.rect.centery - _other.rect.centery
-                    (x_vel, y_vel) = getXYFromDM(self.trajectory, self.base_knockback)
+                    (x_vel, y_vel) = (self.x_bias, self.y_bias)
                     x_vel += self.x_draw*x_diff
                     y_vel += self.y_draw*y_diff
                     _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, math.atan2(-y_vel,x_vel)*180.0/math.pi+self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)

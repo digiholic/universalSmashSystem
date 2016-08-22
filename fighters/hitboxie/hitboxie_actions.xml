@@ -789,11 +789,10 @@
 				<center>0,26</center>
 				<size>90,40</size>
 				<damage>1</damage>
-				<base_knockback>2</base_knockback>
-				<trajectory>270</trajectory>
+                                <y_bias>-2</y_bias>
 				<hitstun_multiplier>4</hitstun_multiplier>
-				<xDraw>0.05</xDraw>
-				<yDraw>-0.1</yDraw>
+				<x_draw>0.05</x_draw>
+				<y_draw>-0.1</y_draw>
 				<base_hitstun>4</base_hitstun>
 				<charge_damage>.0125</charge_damage>
 			</createHitbox>
