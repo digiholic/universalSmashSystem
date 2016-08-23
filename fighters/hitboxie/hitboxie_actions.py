@@ -491,171 +491,6 @@ class BackThrow(baseActions.BaseGrabbing):
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
 ########################################################
-        
-class HitStun(baseActions.HitStun):
-    def __init__(self,_hitstun=1,_direction=0):
-        baseActions.HitStun.__init__(self, _hitstun, _direction)
-        self.sprite_rate = 0
-
-    def setUp(self, _actor):
-        baseActions.HitStun.setUp(self, _actor)
-        _actor.sideSpecialUses = 1
-    
-    def update(self, _actor):
-        baseActions.HitStun.update(self, _actor)
-        if self.frame == 1:
-            if _actor.grounded:
-                _actor.changeSprite("land",1)
-            else:
-                _actor.changeSprite("jump")
-
-class GetupAttack(action.Action):
-    def __init__(self):
-        action.Action.__init__(self,36)
-        self.sprite_rate = 0
-
-    def setUp(self, _actor):
-        _actor.preferred_xspeed = 0
-        _actor.changeSprite("nair")
-        self.ecb_offset = [0,7]
-        self.ecb_size = [64, 78]
-        self.dash_hitbox = hitbox.DamageHitbox(_actor,hitbox.HitboxLock(),{
-                                                                         'center': [0,0],
-                                                                         'size': [70,70],
-                                                                         'damage': 2,
-                                                                         'base_knockback': 5,
-                                                                         'knockback_growth': 0.1,
-                                                                         'trajectory': 20,
-                                                                         'hitstun_multiplier': 2
-                                                                         })
-        self.chain_hitbox = hitbox.AutolinkHitbox(_actor,hitbox.HitboxLock(),{
-                                                                         'center': [0,0],
-                                                                         'size': [70,70],
-                                                                         'damage': 2,
-                                                                         'hitstun_multiplier': 2,
-                                                                         'x_bias': 0,
-                                                                         'y_bias': -1,
-                                                                         'velocity_multiplier': 1.5
-                                                                         })
-    def onClank(self,_actor):
-        _actor.doAction('NeutralAction')
-
-    def tearDown(self,_actor,_newAction):
-        self.dash_hitbox.kill()
-        self.chain_hitbox.kill()
-        _actor.preferred_xspeed = 0
-
-    def stateTransitions(self, _actor):
-        if not _actor.grounded:
-            _actor.doAction('Fall')
-
-    def update(self,_actor):
-        if self.frame%2 == 0 and self.frame <= 12:
-            _actor.changeSpriteImage(self.frame//2)
-        elif self.frame <= 28:
-            _actor.changeSpriteImage((self.frame-4)%16)
-        elif self.frame%2 == 0:
-            _actor.changeSpriteImage((self.frame//2-8)%16)
-
-        self.dash_hitbox.update()
-        self.chain_hitbox.update()
-
-        if self.frame == 12:
-            _actor.active_hitboxes.add(self.chain_hitbox)
-        if self.frame == 16:
-            self.chain_hitbox.hitbox_lock = hitbox.HitboxLock()
-        if self.frame == 20:
-            self.chain_hitbox.hitbox_lock = hitbox.HitboxLock()
-        if self.frame == 24:
-            self.chain_hitbox.kill()
-            _actor.active_hitboxes.add(self.dash_hitbox)
-        if self.frame == 28:
-            self.dash_hitbox.kill()
-            _actor.preferred_xspeed = 0
-
-        if self.frame == self.last_frame:
-            _actor.doAction('NeutralAction')
-        self.frame += 1
-
-class ShieldStun(baseActions.ShieldStun):
-    def __init__(self, _length=1):
-        baseActions.ShieldStun.__init__(self, _length)
-        self.sprite_rate = 0
-
-    def update(self, _actor):
-        _actor.createMask([191, 63, 191], self.last_frame, False, 8)
-        baseActions.ShieldStun.update(self, _actor)
-
-class Stunned(baseActions.Stunned):
-    def __init__(self, _length=1):
-        baseActions.Stunned.__init__(self, _length)
-        self.sprite_rate = 0
-
-    def setUp(self, _actor):
-        baseActions.Stunned.setUp(self, _actor)
-        _actor.sideSpecialUses = 1
-
-    def tearDown(self, _actor, _newAction):
-        _actor.mask = None
-
-    def update(self, _actor):
-        if self.frame == 0:
-            _actor.createMask([255, 0, 255], 99999, True, 8)
-        baseActions.Stunned.update(self, _actor)
-
-class Trapped(baseActions.Trapped):
-    def __init__(self, _length=1):
-        baseActions.Trapped.__init__(self, _length)
-        self.sprite_rate = 0
-
-    def setUp(self, _actor):
-        baseActions.Trapped.setUp(self, _actor)
-        _actor.sideSpecialUses = 1
-
-    def update(self, _actor):
-        _actor.changeSprite("idle")
-        baseActions.Trapped.update(self, _actor)
-
-class Grabbed(baseActions.Grabbed):
-    def __init__(self,_height=0):
-        baseActions.Grabbed.__init__(self, _height)
-        self.sprite_rate = 0
-
-    def setUp(self, _actor):
-        baseActions.Grabbed.setUp(self, _actor)
-        _actor.sideSpecialUses = 1
-
-    def update(self,_actor):
-        _actor.changeSprite("idle")
-        baseActions.Grabbed.update(self, _actor)
-
-class Release(baseActions.Release):
-    def __init__(self, _height=30):
-        baseActions.Release.__init__(self, _height)
-        self.sprite_rate = 0
-
-    def update(self,_actor):
-        if self.frame == 0:
-            _actor.changeSprite("pivot",4)
-        elif self.frame == 2:
-            _actor.changeSpriteImage(3)
-        elif self.frame == 4:
-            _actor.changeSpriteImage(2)
-        elif self.frame == 10:
-            _actor.changeSpriteImage(3)
-        elif self.frame == 12:
-            _actor.changeSpriteImage(4)
-        baseActions.Release.update(self, _actor)
-
-class Released(baseActions.Released):
-    def __init__(self):
-        baseActions.Released.__init__(self)
-        self.sprite_rate = 0
-
-    def setUp(self, _actor):
-        baseActions.Released.setUp(self, _actor)
-        _actor.changeSprite("jump")
-
 class LedgeGetup(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self,27)
@@ -763,6 +598,12 @@ class LedgeAttack(baseActions.LedgeGetup):
             _actor.preferred_xspeed = 0
         baseActions.LedgeGetup.update(self, _actor)
 
+"""
+I couldn't quite get this one exactly right, so I'm leaving it up, commented out
+until I can figure out a better way
+"""
+
+"""
 class LedgeRoll(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self, 43)
@@ -804,7 +645,7 @@ class LedgeRoll(baseActions.LedgeGetup):
         if self.frame == 33:
             _actor.changeSprite("land", 0)
         baseActions.LedgeGetup.update(self, _actor)
-
+"""
 
 ########################################################
 #             BEGIN HELPER METHODS                     #

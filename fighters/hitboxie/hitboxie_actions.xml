@@ -308,6 +308,155 @@
 			<changeSubimage>3</changeSubimage>
 		</frame>
 	</Prone>
+		
+	<Stunned>
+		<length>1</length>
+		<sprite>jump</sprite>
+		<sprite_rate>0</sprite_rate>
+		
+		
+		<tearDown>
+			<removeMask />
+		</tearDown>
+		
+		<frame number="0">
+			<createMask>
+				<color>#FF00FF</color>
+				<duration>999</duration>
+				<pulse>8</pulse>
+			</createMask>
+		</frame>
+	</Stunned>
+	
+		
+	<ShieldStun>
+		<length>1</length>
+		<sprite>jump</sprite>
+		<sprite_rate>0</sprite_rate>
+		
+		<setUp>
+			<createMask>
+				<color>#bf3fbf</color>
+				<duration>999</duration>
+				<pulse>8</pulse>
+			</createMask>
+		</setUp>
+		
+		<tearDown>
+			<removeMask />
+		</tearDown>
+	</ShieldStun>
+	
+	<Trapped>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<sprite_rate>0</sprite_rate>
+		
+		<setUp>
+			<setFighterVariable var="sideSpecialUses">
+				<value type="int">1</value>
+			</setFighterVariable>
+		</setUp>
+	</Trapped>
+	
+	<Grabbed>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<sprite_rate>0</sprite_rate>
+		
+		<setUp>
+			<setFighterVariable var="sideSpecialUses">
+				<value type="int">1</value>
+			</setFighterVariable>
+		</setUp>
+	</Grabbed>
+	
+	<Release>
+		<length>14</length>
+		<sprite>pivot</sprite>
+		<sprite_rate>-2</sprite_rate>
+		
+		<frame number="0">
+			<changeSubimage>4</changeSubimage>
+		</frame>
+		<frame number="2">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="4">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="10">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="12">
+			<changeSubimage>4</changeSubimage>
+		</frame>
+	</Release>
+	
+	<Released>
+		<length>1</length>
+		<sprite>jump</sprite>
+		<sprite_rate>0</sprite_rate>
+	</Released>
+	
+		<LedgeRoll>
+		<length>43</length>
+		<sprite>getup</sprite>
+		<sprite_rate>1</sprite_rate>
+		
+		<tearDown>
+			<setInvulnerability>0</setInvulnerability>
+			<removeMask />
+		</tearDown>
+		
+		<frame number="0">
+			<changeFighterSpeed>
+				<ySpeed>-19</ySpeed>
+				<xSpeed>0</xSpeed>
+			</changeFighterSpeed>
+		</frame>
+		<frame number="1">
+			<changeFighterSpeed>
+				<ySpeed>-19</ySpeed>
+				<xSpeed>0</xSpeed>
+			</changeFighterSpeed>
+		</frame>
+		<frame number="2">
+			<changeFighterSpeed>
+				<ySpeed>-19</ySpeed>
+				<xSpeed>0</xSpeed>
+			</changeFighterSpeed>
+		</frame>
+		<frame number="8">
+			<changeFighterSpeed>
+				<xSpeed relative="True">11.5</xSpeed>
+				<ySpeed>0</ySpeed>
+			</changeFighterSpeed>
+			<changeSubimage>8</changeSubimage>
+		</frame>
+		<frame number="10">
+			<changeSubimage>9</changeSubimage>
+		</frame>
+		<frame number="12">
+			<changeSubimage>10</changeSubimage>
+		</frame>
+		<frame number="14">
+			<changeSubimage>11</changeSubimage>
+		</frame>
+		<frame number="15">
+			<changeFighterSpeed>
+				<xSpeed relative="True" variable="actor">dodge_speed</xSpeed>
+			</changeFighterSpeed>
+		</frame>
+		<frame number="17">
+			<changeSprite>land</changeSprite>
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="33">
+			<changeSprite>land</changeSprite>
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</LedgeRoll>
 	
 	<NeutralAttack>
 
@@ -1545,6 +1694,72 @@
 		</conditional>
 	</DownSpecial>
 	
+	<GetupAttack>
+		<length>36</length>
+		<sprite>nair</sprite>
+		<sprite_rate>2</sprite_rate>
+		<loop>True</loop>
+		
+		<setUp>
+			<changeFighterPreferredSpeed>
+				<xSpeed>0</xSpeed>
+			</changeFighterPreferredSpeed>
+			<changeECB>
+				<offset>0,7</offset>
+				<size>64,78</size>
+			</changeECB>
+			<createHitbox>
+				<name>dashHitbox</name>
+				<center>0,0</center>
+				<size>70,70</size>
+				<damage>2</damage>
+				<base_knockback>5</base_knockback>
+				<knockback_growth>0.1</knockback_growth>
+				<trajectory>20</trajectory>
+				<hitstun_multiplier>2</hitstun_multiplier>
+			</createHitbox>
+			<createHitbox type="autolink">
+				<name>chainHitbox</name>
+				<center>0,0</center>
+				<size>70,70</size>
+				<damage>2</damage>
+				<hitstun_multiplier>2</hitstun_multiplier>
+				<x_bias>0</x_bias>
+				<y_bias>-1</y_bias>
+				<velocity_multiplier>1.5</velocity_multiplier>
+			</createHitbox>
+		</setUp>
+		
+		<frame number="before">
+			<updateHitbox>dashHitbox</updateHitbox>
+			<updateHitbox>chainHitbox</updateHitbox>
+		</frame>
+		
+		<frame number="12">
+			<activateHitbox>chainHitbox</activateHitbox>
+		</frame>
+		
+		<frame number="16">
+			<unlockHitbox>chainHitbox</unlockHitbox>
+		</frame>
+		
+		<frame number="20">
+			<unlockHitbox>chainHitbox</unlockHitbox>
+		</frame>
+		
+		<frame number="24">
+			<deactivateHitbox>chainHitbox</deactivateHitbox>
+			<activateHitbox>dashHitbox</activateHitbox>
+		</frame>
+		
+		<frame number="28">
+			<deactivateHitbox>dashHitbox</deactivateHitbox>
+			<changeFighterPreferredSpeed>
+				<xSpeed>0</xSpeed>
+			</changeFighterPreferredSpeed>
+		</frame>
+	</GetupAttack>
+	
 	<ForwardThrow>
 		<length>20</length>
 		<sprite>fsmash</sprite>
@@ -1684,55 +1899,6 @@
 		</loadCodeAction>
 	</BackThrow>
 	
-	<GetupAttack>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>GetupAttack</action>
-		</loadCodeAction>
-	</GetupAttack>
-	
-	<ShieldStun>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>ShieldStun</action>
-		</loadCodeAction>
-	</ShieldStun>
-	
-	<Stunned>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>Stunned</action>
-		</loadCodeAction>
-	</Stunned>
-	
-	<Trapped>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>Trapped</action>
-		</loadCodeAction>
-	</Trapped>
-	
-	<Grabbed>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>Grabbed</action>
-		</loadCodeAction>
-	</Grabbed>
-	
-	<Release>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>Release</action>
-		</loadCodeAction>
-	</Release>
-	
-	<Released>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>Released</action>
-		</loadCodeAction>
-	</Released>
-	
 	<LedgeGetup>
 		<loadCodeAction>
 			<file>hitboxie_actions.py</file>
@@ -1746,13 +1912,5 @@
 			<action>LedgeAttack</action>
 		</loadCodeAction>
 	</LedgeAttack>
-	
-	<LedgeRoll>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>LedgeRoll</action>
-		</loadCodeAction>
-	</LedgeRoll>
-	
 	
 </actionList>
