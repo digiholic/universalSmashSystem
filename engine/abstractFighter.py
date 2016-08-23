@@ -349,9 +349,9 @@ class AbstractFighter():
 
             #Smash directional influence AKA hitstun shuffling
             di_vec = self.getSmoothedInput()
-            self.rect.x += di_vec[0]*1.5
-            if not self.grounded:
-                self.rect.y += di_vec[1]*1.5
+            self.rect.x += di_vec[0]*5
+            if not self.grounded or self.keyBuffered('jump', _state=1):
+                self.rect.y += di_vec[1]*5
 
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
@@ -524,7 +524,7 @@ class AbstractFighter():
         self.ecb.current_ecb.rect.y -= 4
         for block in block_hit_list:
             if block.solid or (self.platform_phase <= 0):
-                if self.ecb.current_ecb.rect.bottom <= block.rect.top+4 and self.change_y > block.change_y-1:
+                if self.ecb.current_ecb.rect.bottom <= block.rect.top+4 and (self.tech_window > 0 or self.change_y > block.change_y-1):
                     self.grounded = True
                     ground_block.add(block)
         return ground_block
@@ -863,12 +863,12 @@ class AbstractFighter():
 
         trajectory_vec = [math.cos(_trajectory/180*math.pi), math.sin(_trajectory/180*math.pi)]
 
-        additional_kb = .5*_baseHitstun*math.sqrt(abs(trajectory_vec[0])*self.var['air_resistance']+abs(trajectory_vec[1])*self.var['gravity'])
+        additional_kb = .5*_baseHitstun*math.sqrt(abs(trajectory_vec[0])*self.var['air_resistance']**2+abs(trajectory_vec[1])*self.var['gravity']**2)
 
         di_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
         _trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
 
-        hitstun_frames = math.floor((total_kb+additional_kb)*_hitstunMultiplier+_baseHitstun) #Tweak this constant
+        hitstun_frames = math.floor((total_kb+additional_kb)*_hitstunMultiplier+_baseHitstun)
         print(hitstun_frames)
 
         if self.no_flinch_hits > 0:
@@ -978,13 +978,14 @@ class AbstractFighter():
     def startShield(self):
         self.articles.add(article.ShieldArticle(settingsManager.createPath("sprites/melee_shield.png"),self))
         
-    def shieldDamage(self,_damage):
+    def shieldDamage(self,_damage,_knockback,_hitlagMultiplier):
         if self.shield_integrity > 0:
             self.shield_integrity -= _damage
             if _damage > 1:
                 self.doAction('shieldStun')
-                self.current_action.last_frame = math.floor(_damage+2)
-                self.doShieldStun(math.floor(_damage+2))
+                self.hitstop = math.floor((self.damage / 4.0 + 2.0)*_hitlagMultiplier)
+                self.change_x = _knockback
+                self.current_action.last_frame = math.floor(_damage*3/4.0)
         else:
             self.change_y = -15
             self.invincible = 20

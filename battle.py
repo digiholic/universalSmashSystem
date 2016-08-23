@@ -227,23 +227,23 @@ class Battle():
                     if not isinstance(hbox, hitbox.InertHitbox) and not isinstance(other, hitbox.InertHitbox):
                         if hbox_clank:
                             if isinstance(hbox, hitbox.DamageHitbox):
-                                hbox.owner.applyPushback(hbox.damage/4.0, hbox.trajectory+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
+                                hbox.owner.applyPushback(hbox.base_knockback/5.0, hbox.trajectory+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
                             else:
                                 hbox.owner.hitstop = 8
                             hbox.owner.current_action.onClank(hbox.owner)
                         if other_clank:
                             if isinstance(other, hitbox.DamageHitbox):
-                                other.owner.applyPushback(other.damage/4.0, other.trajectory+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
+                                other.owner.applyPushback(other.base_knockback/5.0, other.trajectory+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
                             else:
                                 other.owner.hitstop = 8
                             other.owner.current_action.onClank(other.owner)
                     elif hbox_clank and other_clank:
                         if isinstance(hbox, hitbox.DamageHitbox):
-                            hbox.owner.applyPushback(hbox.damage/4.0, hbox.trajectory+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
+                            hbox.owner.applyPushback(hbox.base_knockback/5.0, hbox.trajectory+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
                         else:
                             hbox.owner.hitstop = 8
                         if isinstance(other, hitbox.DamageHitbox):
-                            other.owner.applyPushback(other.damage/4.0, other.trajectory+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
+                            other.owner.applyPushback(other.base_knockback/5.0, other.trajectory+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
                         else:
                             other.owner.hitstop = 8
                             

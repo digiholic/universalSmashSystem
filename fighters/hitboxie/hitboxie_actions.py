@@ -73,7 +73,7 @@ class ForwardSpecial(action.Action):
             if 'AbstractFighter' in list(map(lambda x:x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
                 if _other.lockHitbox(self):
                     if self.article is None:
-                        self.owner.applyPushback(self.damage/4.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+                        self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     if _other.grounded:
                         _other.applyKnockback(self.damage, 0, 0, 0, 1, 1)
                         _other.doAction('Prone')

@@ -200,7 +200,7 @@ class ShieldArticle(Article):
             self.kill()     
         self.reflect_hitbox.update()
         self.main_hitbox.update()
-        self.owner.shieldDamage(0.7)
+        self.owner.shieldDamage(0.7, 0, 0)
         self.frame += 1       
    
     def draw(self,_screen,_offset,_zoom):
