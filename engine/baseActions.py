@@ -279,6 +279,7 @@ class Respawn(action.Action):
     
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
+        _actor.respawn_invincibility = 120
         self.respawn_article.kill()
         
     def update(self,_actor):
