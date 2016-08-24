@@ -236,6 +236,7 @@ class AbstractFighter():
         # While this is above zero, hitboxes can't connect with the fighter
         # There are ways of bypassing invulnerability, but please avoid doing so
         self.invulnerable = 0
+        self.respawn_invulnerable = 0
 
         self.elasticity = 0
         self.ground_elasticity = 0
@@ -348,9 +349,9 @@ class AbstractFighter():
                 self.hitstop_vibration = (-x,-y)
 
             #Smash directional influence AKA hitstun shuffling
-            di_vec = self.getSmoothedInput()
+            di_vec = self.getSmoothedInput(int(self.key_bindings.timing_window['smoothing_window']))
             self.rect.x += di_vec[0]*5
-            if not self.grounded or self.keyBuffered('jump', _state=1):
+            if not self.grounded or self.keysContain('jump', _threshold=1):
                 self.rect.y += di_vec[1]*5
 
             self.sprite.updatePosition(self.rect)
@@ -486,6 +487,8 @@ class AbstractFighter():
         self.hitbox_contact.clear()
         if self.invulnerable > -1000:
             self.invulnerable -= 1
+        if self.respawn_invulnerable > -1000:
+            self.respawn_invulnerable -= 1
 
         if self.platform_phase > 0:
             self.platform_phase -= 1
@@ -932,7 +935,7 @@ class AbstractFighter():
             self.ecb.normalize()
             self.ecb.store()
             self.createMask([255,255,255], 120, True, 12)
-            self.invulnerable = 120
+            self.respawn_invulnerable = 120
             self.doAction('Respawn')
         
     def changeSprite(self,_newSprite,_frame=0):
@@ -962,7 +965,7 @@ class AbstractFighter():
     """
     def lockHitbox(self,_hbox):
         #Check for invulnerability first
-        if self.invulnerable > 0:
+        if self.invulnerable > 0 or self.respawn_invulnerable > 0:
             return False
 
         #If the hitbox belongs to something, get tagged by it

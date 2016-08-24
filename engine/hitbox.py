@@ -74,6 +74,9 @@ class Hitbox(spriteManager.RectSprite):
         else:
             self.rect.center = [self.article.rect.center[0] + self.center[0], self.article.rect.center[1] + self.center[1]]
         
+    def getTrajectory(self):
+        return self.trajectory
+
     def compareTo(self, _other):
         if (hasattr(_other, 'transcendence') and hasattr(_other, 'priority')) and not isinstance(_other, InertHitbox):
             if self.transcendence+_other.transcendence <= 0:
@@ -157,13 +160,19 @@ class AutolinkHitbox(DamageHitbox):
     def __init__(self,_owner,_lock,_variables):
         DamageHitbox.__init__(self,_owner,_lock,_variables)
         self.hitbox_type = 'autolink'
+
+    def getTrajectory(self):
+        if self.owner.change_y+self.y_bias == 0 and self.owner.change_x + self.x_bias == 0:
+            return self.trajectory + 90
+        else: 
+            return self.trajectory-math.atan2(self.y_bias, self.x_bias)*180/math.pi
         
     def onCollision(self, _other):
         Hitbox.onCollision(self, _other)
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if _other.lockHitbox(self):
                 if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+                    self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
                     angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
                     _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, angle+self.owner.getForwardWithOffset(self.trajectory), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
@@ -179,13 +188,19 @@ class FunnelHitbox(DamageHitbox):
     def __init__(self,_owner,_lock,_variables):
         DamageHitbox.__init__(self,_owner,_lock,_variables)
         self.hitbox_type = 'funnel'
+
+    def getTrajectory(self):
+        if self.owner.change_y+self.y_bias == 0 and self.owner.change_x + self.x_bias == 0:
+            return self.trajectory + 90
+        else: 
+            return self.trajectory-math.atan2(self.y_bias, self.x_bias)*180/math.pi
         
     def onCollision(self,_other):
         Hitbox.onCollision(self, _other)
         if 'AbstractFighter' in list(map(lambda x:x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if _other.lockHitbox(self):
                 if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, -math.atan2(self.y_bias, self.x_bias)*180/math.pi+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+                    self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     x_diff = self.rect.centerx - _other.rect.centerx
                     y_diff = self.rect.centery - _other.rect.centery
                     (x_vel, y_vel) = (self.x_bias, self.y_bias)

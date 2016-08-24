@@ -265,7 +265,7 @@ class NeutralAction(action.Action):
         self.frame += 1
 
 class Respawn(action.Action):
-    def __init__(self,_length=120):
+    def __init__(self,_length=480):
         action.Action.__init__(self, _length)
         
     def setUp(self, _actor):
@@ -274,7 +274,8 @@ class Respawn(action.Action):
         self.respawn_article = article.RespawnPlatformArticle(_actor)
         
     def stateTransitions(self, _actor):
-        neutralState(_actor)
+        if self.frame > 120:
+            neutralState(_actor)
     
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
