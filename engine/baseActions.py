@@ -421,8 +421,12 @@ class HitStun(action.Action):
                     _actor.doAction('Prone')
             elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
                 _actor.ground_elasticity = 0
-                if _actor.grounded: 
-                    _actor.doAction('Prone')
+                if self.last_frame > 10:
+                    if _actor.grounded: 
+                        _actor.doAction('Prone')
+                else:
+                    _actor.landing_lag = _actor.var['heavy_land_lag']
+                    hitstunLanding(_actor)
             else: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
         
@@ -513,6 +517,12 @@ class Prone(action.Action):
     def setUp(self, _actor):
         if self.sprite_name == "": self.sprite_name = "prone"
         action.Action.setUp(self, _actor)
+
+        ground_blocks = _actor.checkGround()
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        if not block is None:
+            _actor.change_y = block.change_y
+
         _actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
         _actor.unRotate()
         
@@ -681,6 +691,11 @@ class Land(action.Action):
         if self.sprite_name=="": self.sprite_name ="land"
         action.Action.setUp(self, _actor)
         _actor.unRotate()
+
+        ground_blocks = _actor.checkGround()
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        if not block is None:
+            _actor.change_y = block.change_y
         #_actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
 
 
