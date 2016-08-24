@@ -98,18 +98,10 @@ class Pivot(action.Action):
         #_actor.flip()
 
     def stateTransitions(self, _actor):
-        if _actor.keyHeld('jump'):
-            _actor.doAction('Jump')
-        (key, invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keysContain(invkey):
-            print("pivot pivot")
-            _actor.doAction('Pivot')
-
+        stopState(_actor)
         
     def update(self,_actor):
         action.Action.update(self, _actor)
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
         _actor.accel(_actor.var['pivot_grip'])
         if self.frame == 0:
             _actor.flip()
@@ -147,23 +139,11 @@ class Stop(action.Action):
         self.frame += 1
         
     def stateTransitions(self, _actor):
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
-        _actor.accel(_actor.var['static_grip'])
-        (key,invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
-            print("run")
-            _actor.doDash(_actor.getFacingDirection())
-        elif _actor.keyHeld(invkey):
-            print("pivot")
-            _actor.doAction('Pivot')
-        elif self.frame == self.last_frame:
-            if _actor.keyHeld('jump'):
-                _actor.doAction('Jump')
-            else: _actor.doAction('NeutralAction')
+        stopState(_actor)
 
     def tearDown(self, _actor, nextAction):
         action.Action.tearDown(self, _actor, nextAction)
+        _actor.accel(_actor.var['static_grip'])
         if isinstance(nextAction, Pivot):
             nextAction.frame = self.frame
             print(self.frame)
@@ -184,14 +164,8 @@ class RunPivot(action.Action):
         if isinstance(nextAction, Dash):
             nextAction.accel = False
         
-        
     def stateTransitions(self, _actor):
-        if _actor.keyHeld('jump'):
-            _actor.doAction('Jump')
-        (key, invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keysContain(invkey):
-            print("run pivot pivot")
-            _actor.doAction('RunPivot')
+        runStopState(_actor)
         
     def update(self,_actor):
         action.Action.update(self, _actor)
@@ -223,26 +197,11 @@ class RunStop(action.Action):
         action.Action.update(self, _actor)
         _actor.preferred_xspeed = 0
         if self.frame == self.last_frame:
-            if _actor.keyHeld('jump'):
-                _actor.doAction('Jump')
-            else: _actor.doAction('NeutralAction')
+            _actor.doAction('NeutralAction')
         self.frame += 1
         
     def stateTransitions(self, _actor):
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
-        _actor.accel(_actor.var['static_grip'])
-        (key,invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1), 1):
-            print("run")
-            _actor.doDash(_actor.getFacingDirection())
-        elif _actor.keyHeld(invkey):
-            print("run pivot")
-            _actor.doAction('RunPivot')
-        elif self.frame == self.last_frame:
-            if _actor.keyHeld('jump', _state=1):
-                _actor.doAction('Jump')
-            else: _actor.doAction('NeutralAction')
+        runStopState(_actor)
 
                 
 class NeutralAction(action.Action):
@@ -1561,6 +1520,32 @@ def moveState(_actor, direction):
         _actor.doAction('Stop')
     elif _actor.preferred_xspeed > 0 and not _actor.keysContain('right',1) and _actor.keysContain('left',1):
         _actor.doAction('Stop')
+
+def stopState(_actor, direction):
+    if _actor.grounded is False:
+        _actor.doAction('Fall')
+    (key,invkey) = _actor.getForwardBackwardKeys()
+    if _actor.keyHeld('jump'):
+        _actor.doAction('Jump')
+    elif _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
+        print("run")
+        _actor.doDash(_actor.getFacingDirection())
+    elif _actor.keyHeld(invkey):
+        print("pivot")
+        _actor.doAction('Pivot')
+
+def runStopState(_actor, direction):
+    if _actor.grounded is False:
+        _actor.doAction('Fall')
+    (key,invkey) = _actor.getForwardBackwardKeys()
+    if _actor.keyHeld('jump'):
+        _actor.doAction('Jump')
+    elif _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
+        print("run")
+        _actor.doDash(_actor.getFacingDirection())
+    elif _actor.keyHeld(invkey):
+        print("run pivot")
+        _actor.doAction('RunPivot')
 
 def dashState(_actor, direction):
     (key,invkey) = _actor.getForwardBackwardKeys()

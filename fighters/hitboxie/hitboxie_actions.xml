@@ -137,12 +137,12 @@
 	</Move>
 	
 	<Dash>
-		<length>15</length>
+		<length>10</length>
 		<sprite>run</sprite>
 		<sprite_rate>2</sprite_rate>
 
 		<vars>
-			<run_start_frame type="int">4</run_start_frame>
+			<run_start_frame type="int">8</run_start_frame>
 		</vars>
 		
 		<frame number="4">
