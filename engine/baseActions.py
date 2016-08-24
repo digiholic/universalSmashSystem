@@ -1539,7 +1539,7 @@ def stopState(_actor):
         if _actor.keysContain('shield'):
             _actor.doAction('GroundGrab')
         else:
-            _actor.doAction('ForwardAttack')
+            _actor.doGroundAttack()
     elif _actor.keyHeld('special'):
         _actor.doGroundSpecial()
     if _actor.keyHeld('jump'):
