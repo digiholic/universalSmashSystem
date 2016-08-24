@@ -1211,6 +1211,26 @@ class LedgeGetup(action.Action):
             _actor.doAction('NeutralAction')
         self.frame += 1
 
+class LedgeRoll(action.Action):
+    def __init__(self,_length=1):
+        action.Action.__init__(self, _length)
+    
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        _actor.preferred_xspeed = 0
+        _actor.change_x = 0
+        _actor.mask = None
+        
+    def update(self, _actor):
+        action.Action.update(self, _actor)
+        if self.frame == 0:
+            _actor.invulnerable = 37
+            _actor.createMask([255,255,255], 32, True, 24)
+            
+        if self.frame >= self.last_frame:
+            _actor.doAction('NeutralAction')
+        self.frame += 1
+        
 ########################################################
 #                    ATTACK ACTIONS                    #
 ########################################################
@@ -1409,6 +1429,9 @@ class DownThrow(BaseThrow):
     def __init__(self,_length=0):
         BaseGrabbing.__init__(self, _length)
        
+class GetupAttack(BaseAttack):
+    def __init__(self,_length=0):
+        BaseAttack.__init__(self, _length)
 ########################################################
 #               TRANSITION STATES                      #
 ########################################################

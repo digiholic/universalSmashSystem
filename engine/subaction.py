@@ -525,9 +525,14 @@ class changeFighterSpeed(SubAction):
     def buildFromXml(_node):
         x_relative = False
         y_relative = False
-        speed_x = loadValueOrVariable(_node, 'xSpeed', 'float', None)
+        if _node.find('xSpeed') is not None and _node.find('xSpeed').attrib.has_key("variable"):
+            speed_x = (_node.find('xSpeed').attrib['variable'],_node.find('xSpeed').text)
+        else: speed_x = loadValueOrVariable(_node, 'xSpeed', 'float', None)
         if speed_x and _node.find('xSpeed').attrib.has_key("relative"): x_relative = True
-        speed_y = loadValueOrVariable(_node, 'ySpeed', 'float', None)
+        
+        if _node.find('ySpeed') is not None and _node.find('ySpeed').attrib.has_key("variable"):
+            speed_y = (_node.find('ySpeed').attrib['variable'],_node.find('ySpeed').text)
+        else: speed_y = loadValueOrVariable(_node, 'ySpeed', 'float', None)
         if speed_y and _node.find('ySpeed').attrib.has_key("relative"): y_relative = True
         return changeFighterSpeed(speed_x,speed_y,x_relative,y_relative)
 
@@ -603,6 +608,31 @@ class shiftFighterPosition(SubAction):
             y_rel = _node.find('yPos').attrib.has_key('relative')
         return shiftFighterPosition(new_x,new_y,x_rel,y_rel)
 
+class setInvulnerability(SubAction):
+    subact_group = 'Behavior'
+    
+    def __init__(self,_amt):
+        self.invuln_amt = _amt
+    
+    def execute(self, _action, _actor):
+        _actor.invulnerable = self.invuln_amt
+    
+    def getDisplayName(self):
+        return "Set invulnerability time to "+str(self.invuln_amt)
+    
+    def getPropertiesPanel(self,_root):
+        #TODO add this
+        return subactionSelector.BasePropertiesFrame(_root,self)
+    
+    def getXmlElement(self):
+        elem = ElementTree.Element('setInvulnerability')
+        elem.text = str(self.invuln_amt)    
+        return elem
+    
+    @staticmethod
+    def buildFromXml(_node):
+        return setInvulnerability(int(_node.text))
+    
 class shiftSpritePosition(SubAction):
     subact_group = 'Sprite'
     
@@ -1394,6 +1424,7 @@ subaction_dict = {
                  'updateLandingLag': updateLandingLag,
                  'createMask': createMask,
                  'removeMask': removeMask,
+                 'setInvulnerability': setInvulnerability,
                  
                  #Hitbox Manipulation
                  'createHitbox': createHitbox,
