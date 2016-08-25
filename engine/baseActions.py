@@ -21,6 +21,7 @@ class Move(action.Action):
         
     def update(self, _actor):
         action.Action.update(self, _actor)
+        checkGrounded(_actor)
         _actor.preferred_xspeed = _actor.var['max_ground_speed']*self.direction
         _actor.accel(_actor.var['static_grip'])
 
@@ -38,8 +39,6 @@ class Move(action.Action):
         
     def stateTransitions(self,_actor):
         moveState(_actor,self.direction)
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
         (key,invkey) = _actor.getForwardBackwardKeys()
         if self.frame > 0 and _actor.keyBuffered(invkey, _state = 1):
             _actor.doDash(-_actor.getFacingDirection())
@@ -67,8 +66,7 @@ class Dash(action.Action):
         if self.frame == 0:
             _actor.preferred_xspeed = _actor.var['run_speed']*self.direction
         (key,invkey) = _actor.getForwardBackwardKeys()
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
+        checkGrounded(_actor)
         if not self.pivoted:
             if _actor.keysContain(invkey) and _actor.change_x != _actor.var['run_speed']*self.direction:
                 _actor.flip() #Do the moonwalk!
@@ -97,13 +95,24 @@ class Pivot(action.Action):
             _nextAction.accel = False
 
     def stateTransitions(self, _actor):
-        stopState(_actor)
+        if _actor.keyHeld('shield'):
+            _actor.doAction('Shield')
+        elif _actor.keyHeld('attack'):
+            if _actor.keysContain('shield'):
+                _actor.doAction('GroundGrab')
+            else:
+                _actor.doGroundAttack()
+        elif _actor.keyHeld('special'):
+            _actor.doGroundSpecial()
+        else:
+            stopState(_actor)
         
     def update(self,_actor):
         action.Action.update(self, _actor)
         _actor.accel(_actor.var['pivot_grip'])
         if self.frame == 0:
             _actor.flip()
+        checkGrounded(_actor)
         if self.frame != self.last_frame:
             self.frame += 1
             _actor.preferred_xspeed = 0
@@ -135,6 +144,7 @@ class Stop(action.Action):
         action.Action.update(self, _actor)
         #print(self.frame,_actor.sprite.index)
         _actor.preferred_xspeed = 0
+        checkGrounded(_actor)
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
@@ -166,13 +176,24 @@ class RunPivot(action.Action):
             nextAction.accel = False
         
     def stateTransitions(self, _actor):
-        runStopState(_actor)
+        if _actor.keyHeld('shield'):
+            _actor.doAction('ForwardRoll')
+        if _actor.keyHeld('attack'):
+            if _actor.keysContain('shield'):
+                _actor.doAction('DashGrab')
+            else:
+                _actor.doAction('DashAttack')
+        elif _actor.keyHeld('special'):
+            _actor.doGroundSpecial()
+        else:
+            runStopState(_actor)
         
     def update(self,_actor):
         action.Action.update(self, _actor)
         if _actor.grounded is False:
             _actor.doAction('Fall')
         _actor.accel(_actor.var['static_grip'])
+        checkGrounded(_actor)
         if self.frame != self.last_frame:
             self.frame += 1
             _actor.preferred_xspeed = _actor.var['run_speed']*_actor.facing
@@ -197,6 +218,7 @@ class RunStop(action.Action):
     def update(self, _actor):
         action.Action.update(self, _actor)
         _actor.preferred_xspeed = 0
+        checkGrounded(_actor)
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
@@ -214,8 +236,7 @@ class NeutralAction(action.Action):
         action.Action.setUp(self, _actor)
         
     def stateTransitions(self, _actor):
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
+        checkGrounded(_actor)
         neutralState(_actor)
     
     def update(self,_actor):
@@ -263,8 +284,6 @@ class Crouch(action.Action):
 
     def stateTransitions(self, _actor):
         crouchState(_actor)
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
         if self.frame > 0 and _actor.keyBuffered('down', _state = 1):
             blocks = _actor.checkGround()
             if blocks:
@@ -280,10 +299,9 @@ class Crouch(action.Action):
 
     def update(self, _actor):
         action.Action.update(self, _actor)
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
         _actor.accel(_actor.var['pivot_grip'])
         (key, invkey) = _actor.getForwardBackwardKeys()
+        checkGrounded(_actor)
         if _actor.keysContain(key):
             _actor.preferred_xspeed = _actor.var['crawl_speed']*_actor.facing
         elif _actor.keysContain(invkey):
@@ -302,9 +320,7 @@ class CrouchGetup(action.Action):
         action.Action.setUp(self, _actor)
         
     def stateTransitions(self, _actor):
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
-        elif _actor.keyBuffered('down', _state = 1):
+        if _actor.keyBuffered('down', _state = 1):
             blocks = _actor.checkGround()
             if blocks:
                 #Turn it into a list of true/false if the block is solid
@@ -316,6 +332,7 @@ class CrouchGetup(action.Action):
     def update(self, _actor):
         action.Action.update(self, _actor)
         _actor.preferred_xspeed = 0
+        checkGrounded(_actor)
         self.frame += 1
         if self.frame >= self.last_frame:
             _actor.doAction('NeutralAction')
@@ -352,9 +369,11 @@ class Grabbing(BaseGrabbing):
         _actor.grabbing.flinch_damage_threshold = 0
 
     def stateTransitions(self, _actor):
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
         grabbingState(_actor)
+
+    def update(self, _actor):
+        BaseGrabbing.update(self, _actor)
+        checkGrounded(_actor)
         
 class HitStun(action.Action):
     def __init__(self,_hitstun=1,_direction=0):
@@ -511,6 +530,7 @@ class Getup(action.Action):
         
     def update(self, _actor):
         action.Action.update(self, _actor)
+        checkGrounded(_actor)
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
@@ -836,6 +856,8 @@ class Trapped(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="trapped"
         action.Action.setUp(self, _actor)
+        self.last_position = [0,0]
+        self.time = 0
         
     def update(self,_actor):
         action.Action.update(self, _actor)
@@ -881,8 +903,7 @@ class Release(action.Action):
         action.Action.setUp(self, _actor)
         
     def update(self, _actor):
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
+        checkGrounded(_actor)
         if self.frame >= self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
@@ -1530,18 +1551,7 @@ def moveState(_actor, direction):
         _actor.doAction('Stop')
 
 def stopState(_actor):
-    if _actor.grounded is False:
-        _actor.doAction('Fall')
     (key,invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyHeld('shield'):
-        _actor.doAction('Shield')
-    elif _actor.keyHeld('attack'):
-        if _actor.keysContain('shield'):
-            _actor.doAction('GroundGrab')
-        else:
-            _actor.doGroundAttack()
-    elif _actor.keyHeld('special'):
-        _actor.doGroundSpecial()
     if _actor.keyHeld('jump'):
         _actor.doAction('Jump')
     elif _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
@@ -1552,18 +1562,7 @@ def stopState(_actor):
         _actor.doAction('Pivot')
 
 def runStopState(_actor):
-    if _actor.grounded is False:
-        _actor.doAction('Fall')
     (key,invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyHeld('shield'):
-        _actor.doAction('ForwardRoll')
-    if _actor.keyHeld('attack'):
-        if _actor.keysContain('shield'):
-            _actor.doAction('DashGrab')
-        else:
-            _actor.doAction('DashAttack')
-    elif _actor.keyHeld('special'):
-        _actor.doGroundSpecial()
     if _actor.keyHeld('jump'):
         _actor.doAction('Jump')
     elif _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
@@ -1757,6 +1756,10 @@ def grabLedges(_actor):
                 elif ledge.side == 'right' and _actor.keysContain('left'):
                     ledge.fighterGrabs(_actor)
 
+def checkGrounded(_actor):
+    if not _actor.grounded:
+        _actor.doAction('Fall')
+
 def tiltReversible(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
     if _actor.keyBuffered(invkey, _state=0.3):
@@ -1809,6 +1812,8 @@ state_dict = {
             "crouchState": crouchState,
             "airState": airState,
             "moveState": moveState,
+            "stopState": stopState,
+            "runStopState": runStopState,
             "dashState": dashState,
             "jumpState": jumpState,
             "shieldState": shieldState,
@@ -1819,6 +1824,7 @@ state_dict = {
             "helplessControl": helplessControl,
             "hitstunLanding": hitstunLanding,
             "grabLedges": grabLedges,     
+            "checkGrounded": checkGrounded,
             "tiltReversible": tiltReversible,
             "tapReversible": tapReversible,
             "shieldCancellable": shieldCancellable,
