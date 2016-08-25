@@ -851,19 +851,24 @@ class Trapped(action.Action):
     def __init__(self, _length=1):
         action.Action.__init__(self, _length)
         self.time = 0
+        self.held_time = 0
         self.last_position = [0,0]
         
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="trapped"
         action.Action.setUp(self, _actor)
         self.last_position = [0,0]
+        self.held_time = 0
         self.time = 0
         
     def update(self,_actor):
         action.Action.update(self, _actor)
         new_position = _actor.getSmoothedInput()
         cross = new_position[0]*self.last_position[1]-new_position[1]*self.last_position[0]
-        self.frame += (cross**2)*4
+        self.held_time += (cross**2)*4
+        if self.held_time >= 1:
+            self.frame += int(self.held_time)
+            self.held_time -= int(self.held_time)
         self.last_position = new_position
         if self.frame >= self.last_frame:
             _actor.doAction('Released')
