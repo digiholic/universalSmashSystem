@@ -3,6 +3,7 @@ import engine.hitbox as hitbox
 import engine.article as article
 import pygame
 import math
+import random
 import settingsManager
 
 class Move(action.Action):
@@ -431,14 +432,11 @@ class HitStun(action.Action):
                 if mag > 10:
                     _actor.rotateSprite(self.direction)
             
-        if self.frame % 15 == 10 and self.frame < self.last_frame:
-            if abs(_actor.change_x) > 8 or abs(_actor.change_y) > 8:
-                art = article.AnimatedArticle(settingsManager.createPath('sprites/circlepuff.png'),_actor,_actor.rect.center,86,6)
-                art.angle = _actor.sprite.angle
-                if _actor.hit_tagged and hasattr(_actor.hit_tagged, 'player_num'):
-                    for image in art.image_list:
-                        art.recolor(image, [255,255,255], pygame.Color(settingsManager.getSetting('playerColor' + str(_actor.hit_tagged.player_num))))
-                _actor.articles.add(art)
+        if self.frame % max(1,int(100.0/max(math.hypot(_actor.change_x, _actor.change_y), 1))) == 0 and self.frame < self.last_frame:
+            art = article.HitArticle(_actor, _actor.rect.center, 1, math.degrees(math.atan2(_actor.change_y, -_actor.change_x))+random.randrange(-30, 30), .5*math.hypot(_actor.change_x, _actor.change_y), 0.5)
+            #if _actor.hit_tagged and hasattr(_actor.hit_tagged, 'player_num'):
+            #    art.recolor(art.image, [0,0,0], pygame.Color(settingsManager.getSetting('playerColor' + str(_actor.hit_tagged.player_num))))
+            _actor.articles.add(art)
                     
         if self.frame == self.last_frame:
             _actor.doAction('Tumble')

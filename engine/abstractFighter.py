@@ -928,7 +928,9 @@ class AbstractFighter():
         
         if _respawn:
             self.initialize()
-            
+            for i in range(0, 39):
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*9, 60, 1.5)
+                self.articles.add(next_hit_article)
             self.rect.midbottom = self.game_state.spawn_locations[self.player_num]
             self.rect.bottom -= 200
             self.sprite.updatePosition(self.rect)
