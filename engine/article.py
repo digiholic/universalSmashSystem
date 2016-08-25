@@ -250,12 +250,36 @@ class HitArticle(Article):
     }
 
     def __init__(self, _owner, _origin, _scale, _angle, _speed, _resistance):
-        self.scaled_size = math.floor(64*_scale)
+        self.scale = _scale
         Article.__init__(self, settingsManager.createPath('sprites/hit_particle.png'), _owner, _origin, 64, -1)
         self.rect.center = _origin
         self.angle = _angle
         self.speed = _speed
         self.resistance = _resistance
+   
+    def draw(self,_screen,_offset,_scale):
+        # This is all the same as the base Draw method. We're overriding because we need to put some code in the middle of it.
+        h = int(round(self.owner.rect.height * _scale))
+        w = int(round(self.owner.rect.width * _scale))
+        unit_vector = [math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle))]
+        rotated_w = abs(w*unit_vector[0])+abs(h*unit_vector[1])
+        rotated_h = abs(w*unit_vector[1])+abs(h*unit_vector[0])
+        dx = (rotated_w-w)/2.0
+        dy = (rotated_h-h)/2.0
+        new_off = (int(_offset[0] * _scale - dx), int(_offset[1] * _scale - dy))
+        
+        # What this does:
+        screen_rect = pygame.Rect(new_off,(w,h)) # Store the rect that it WOULD have drawn to at full size
+        w = int(w * self.scale) # Shrink based on shield integrity
+        h = int(h * self.scale)
+        blit_rect = pygame.Rect(new_off,(w,h)) # Make a new rect with the shrunk sizes
+        blit_rect.center = screen_rect.center # Center it on the screen rect
+        w = max(w,0) #We can't go negative
+        h = max(h,0)
+        blit_sprite = pygame.transform.smoothscale(self.image, (w,h)) # Scale down the image
+        
+        _screen.blit(blit_sprite,blit_rect)
+        
 
 class RespawnPlatformArticle(Article):
     def __init__(self,_owner):
