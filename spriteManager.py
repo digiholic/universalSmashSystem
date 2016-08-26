@@ -185,11 +185,17 @@ class ImageSprite(Sprite):
         del arr
         self.changed = True
     
-    def recolor(self,_image,_fromColor,_toColor):
+    def recolor(self,_image,_fromColor,_toColor,ignore_alpha=False):
         arr = pygame.PixelArray(_image)
         arr.replace(_fromColor,_toColor)
         del arr
         self.changed = True
+        
+    def scale(self,_scaleFactor):
+        w = int(self.image.get_width() * _scaleFactor)
+        h = int(self.image.get_height() * _scaleFactor)
+        pygame.transform.scale(self.image, (w,h))
+        
         
 class SheetSprite(ImageSprite):
     def __init__(self,_sheet,_offset=0,_colorMap = {}):
