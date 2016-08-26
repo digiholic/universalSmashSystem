@@ -186,10 +186,12 @@ class ShieldArticle(Article):
         self.reflect_hitbox.article = self
         self.main_hitbox = hitbox.ShieldHitbox([0,0], [_owner.shield_integrity*_owner.var['shield_size'], _owner.shield_integrity*_owner.var['shield_size']], _owner, hitbox.HitboxLock())
         self.main_hitbox.article = self
+        self.scale = (self.owner.shield_integrity*self.owner.var['shield_size']/100.0)
         
     def update(self):
         self.rect.center = [self.owner.rect.center[0]+50*self.owner.var['shield_size']*self.owner.getSmoothedInput(int(self.owner.key_bindings.timing_window['smoothing_window']), 0.5)[0], 
                             self.owner.rect.center[1]+50*self.owner.var['shield_size']*self.owner.getSmoothedInput(int(self.owner.key_bindings.timing_window['smoothing_window']), 0.5)[1]]
+        self.scale = (self.owner.shield_integrity*self.owner.var['shield_size']/100.0)
         if self.frame == 0:
             self.owner.active_hitboxes.add(self.reflect_hitbox)
         if self.frame == 2:
@@ -201,80 +203,70 @@ class ShieldArticle(Article):
             self.kill()     
         self.reflect_hitbox.update()
         self.main_hitbox.update()
-        self.owner.shieldDamage(0.7, 0, 0)
+        self.owner.shieldDamage(0.8, 0, 0)
         self.frame += 1       
    
-    def draw(self,_screen,_offset,_zoom):
-        # This is all the same as the base Draw method. We're overriding because we need to put some code in the middle of it.
-        h = int(round(self.owner.rect.height * _zoom))
-        w = int(round(self.owner.rect.width * _zoom))
-        new_off = (int(_offset[0] * _zoom + self.rect.width/2.0*_zoom - self.owner.rect.width/2.0*_zoom), int(_offset[1] * _zoom + self.rect.height/2.0*_zoom - self.owner.rect.height/2.0*_zoom))
-        
-        # What this does:
-        screen_rect = pygame.Rect(new_off,(w,h)) # Store the rect that it WOULD have drawn to at full size
-        w = int(w * float(self.owner.shield_integrity/100)*self.owner.var['shield_size']) # Shrink based on shield integrity
-        h = int(h * float(self.owner.shield_integrity/100)*self.owner.var['shield_size'])
-        blit_rect = pygame.Rect(new_off,(w,h)) # Make a new rect with the shrunk sizes
-        blit_rect.center = screen_rect.center # Center it on the screen rect
-        w = max(w,0) #We can't go negative
-        h = max(h,0)
-        blit_sprite = pygame.transform.smoothscale(self.image, (w,h)) # Scale down the image
-        
-        _screen.blit(blit_sprite,blit_rect)
+    def draw(self,_screen,_offset,_scale):
+        return Article.draw(self, _screen, _offset, _scale)
 
 class LandingArticle(AnimatedArticle):
     def __init__(self,_owner):
         width, height = (86, 22) #to edit these easier if (when) we change the sprite
         scaled_width = _owner.rect.width
         #self.scale_ratio = float(scaled_width) / float(width)
-        self.scale_ratio = 1
+        self.scale = 1
         scaled_height = math.floor(height * self.scale_ratio)
         AnimatedArticle.__init__(self, settingsManager.createPath('sprites/halfcirclepuff.png'), _owner, _owner.rect.midbottom, 86, 6)
         self.rect.y -= scaled_height / 2
         
     def draw(self, _screen, _offset, _scale):
-        return AnimatedArticle.draw(self, _screen, _offset, _scale * self.scale_ratio)
+        return AnimatedArticle.draw(self, _screen, _offset, _scale)
 
 class HitArticle(Article):
     color_change_array = [
-        (2, 0, 0),
+        (3, 0, 0),
         (0, 1, 0),
-        (0, 0, 4),
-        (-2, 0, 0),
+        (0, 0, 9),
+        (-3, 0, 0),
         (0, -1, 0),
-        (0, 0, -4)
+        (0, 0, -9)
     ]
 
     def __init__(self, _owner, _origin, _scale=1, _angle=0, _speed=0, _resistance=0, _colorBase = None):
-        self.scale = _scale
-        Article.__init__(self, settingsManager.createPath('sprites/hit_particle.png'), _owner, _origin, 64, -1)
+        Article.__init__(self, settingsManager.createPath('sprites/hit_particle.png'), _owner, _origin, 256, -1)
+        self.scale = _scale*.25
         self.rect.center = _origin
         self.angle = _angle
         self.speed = _speed
         self.resistance = _resistance
+
         if _colorBase is None:
             base_color = [127, 127, 127]
         else:
             base_color = _colorBase
         for i in range(0, 100):
             random_displacement = random.choice(self.color_change_array)
-            base_color[0] += random_displacement[0]
-            if base_color[0] < 0:
+            if base_color[0] + random_displacement[0] < 0:
                 base_color[0] = 0
-            if base_color[0] > 255:
+            elif base_color[0] + random_displacement[0] > 255:
                 base_color[0] = 255
-            base_color[1] += random_displacement[1]
-            if base_color[1] < 0:
+            else:
+                base_color[0] += random_displacement[0]
+            if base_color[1] + random_displacement[1] < 0:
                 base_color[1] = 0
-            if base_color[1] > 255:
+            elif base_color[1] + random_displacement[1] > 255:
                 base_color[1] = 255
-            base_color[2] += random_displacement[2]
-            if base_color[2] < 0:
+            else:
+                base_color[1] += random_displacement[1]
+            if base_color[2] + random_displacement[2] < 0:
                 base_color[2] = 0
-            if base_color[2] > 255:
+            elif base_color[2] + random_displacement[2] > 255:
                 base_color[2] = 255
+            else:
+                base_color[2] += random_displacement[2]
         
         self.recolor(self.image, (0,0,0), base_color)
+        self.alpha(128)
 
     def update(self):
         self.rect.x += self.speed * math.cos(math.radians(self.angle))
@@ -284,7 +276,7 @@ class HitArticle(Article):
             self.kill()
    
     def draw(self,_screen,_offset,_scale):
-        return Article.draw(self, _screen, _offset, self.scale*_scale)
+        return Article.draw(self, _screen, _offset, _scale)
         
 
 class RespawnPlatformArticle(Article):
