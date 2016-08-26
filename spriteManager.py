@@ -50,7 +50,7 @@ class SpriteHandler(Sprite):
     def __init__(self,_directory,_prefix,_startingImage,_offset,_colorMap = {},_scale=1.0):
         Sprite.__init__(self)
         self.color_map = _colorMap
-        self.scale = _scale
+        self.scale_factor = _scale
         self.image_library = self.buildImageLibrary(ImageLibrary(_directory,_prefix), _offset)
         
         self.starting_image = _startingImage
@@ -150,9 +150,9 @@ class SpriteHandler(Sprite):
             image = _sheet.subsurface(_sheet.get_clip())
             for from_color,to_color in self.color_map.items():
                 self.recolor(image, tuple(list(from_color)), tuple(list(to_color)))
-            if not self.scale == 1.0:
-                w = int(image.get_width() * self.scale)
-                h = int(image.get_height() * self.scale)
+            if not self.scale_factor == 1.0:
+                w = int(image.get_width() * self.scale_factor)
+                h = int(image.get_height() * self.scale_factor)
                 image = pygame.transform.scale(image, (w,h))
             image_list.append(image)
             index += 1
