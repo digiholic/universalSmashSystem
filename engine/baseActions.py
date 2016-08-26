@@ -399,8 +399,12 @@ class HitStun(action.Action):
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']
             elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
                 _actor.ground_elasticity = 0
-                if _actor.grounded:
-                    _actor.doAction('Prone')
+                if self.last_frame > 10:
+                    if _actor.grounded:
+                        _actor.doAction('Prone')
+                    else:
+                        _actor.landing_lag = _actor.var['heavy_land_lag']
+                        hitstunLanding(_actor)
             elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
                 _actor.ground_elasticity = 0
                 if self.last_frame > 10:
@@ -439,7 +443,11 @@ class HitStun(action.Action):
             _actor.articles.add(art)
                     
         if self.frame == self.last_frame:
-            _actor.doAction('Tumble')
+            if self.last_frame > 10:
+                _actor.doAction('Tumble')
+            else:
+                _actor.landing_lag = _actor.var['heavy_land_lag']
+                _actor.doAction('Fall')
 
         self.frame += 1
 
