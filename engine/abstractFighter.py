@@ -418,6 +418,10 @@ class AbstractFighter():
         if self.mask:self.mask = self.mask.update()
         self.shield_integrity += 0.2
         if self.shield_integrity > 100: self.shield_integrity = 100
+        #reset the flash if you're still invulnerable
+        if not self.mask and (self.respawn_invulnerable > 0 or self.invulnerable > 0):
+            print(self.invulnerable,self.respawn_invulnerable)
+            self.createMask([255,255,255], max(self.respawn_invulnerable,self.invulnerable), True, 12)
         
         for art in self.articles:
             art.update()

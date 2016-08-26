@@ -914,10 +914,11 @@ class createHitbox(SubAction):
         elif self.hitbox_type == "invulnerable":
             hitbox = engine.hitbox.InvulnerableHitbox(_actor, hitbox_lock, self.hitbox_vars)
         
-        if _action.events.has_key(self.owner_event):
-            hitbox.owner_on_hit_actions = _action.events[self.owner_event]
-        if _action.events.has_key(self.other_event):
-            hitbox.other_on_hit_actions = _action.events[self.other_event]
+        if hasattr(_action, 'events'): #Articles don't have events, and this can be called from article
+            if _action.events.has_key(self.owner_event):
+                hitbox.owner_on_hit_actions = _action.events[self.owner_event]
+            if _action.events.has_key(self.other_event):
+                hitbox.other_on_hit_actions = _action.events[self.other_event]
         
         _action.hitboxes[self.hitbox_name] = hitbox
     

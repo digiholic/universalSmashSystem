@@ -266,6 +266,8 @@ class MaskSprite(ImageSprite):
         self.visible = True
         
         self.image = self.parent_sprite.image.copy()
+        self.rect = self.parent_sprite.rect
+        
         self.color_surface(self.color)
         
         

@@ -364,7 +364,7 @@ class Battle():
                 fighter = self.players[i]
                 result_sprite = spriteManager.RectSprite(pygame.Rect((width / 4) * i,0,(width / 4),height), pygame.Color(settingsManager.getSetting('playerColor'+str(i))))
                 result_sprite.image.set_alpha(255)
-                name_sprite = spriteManager.TextSprite(fighter.name,size=24)
+                name_sprite = spriteManager.TextSprite(fighter.name,_size=24)
                 name_sprite.rect.midtop = (result_sprite.rect.width / 2,0)
                 result_sprite.image.blit(name_sprite.image,name_sprite.rect.topleft)
                 

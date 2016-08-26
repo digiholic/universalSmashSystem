@@ -256,13 +256,13 @@ class Respawn(action.Action):
         self.respawn_article = article.RespawnPlatformArticle(_actor)
         
     def stateTransitions(self, _actor):
-        if self.frame > 120:
+        if self.frame > 6:
             neutralState(_actor)
     
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
         _actor.createMask([255,255,255], 120, True, 12)
-        _actor.respawn_invincibility = 120
+        _actor.respawn_inviulnerable = 120
         self.respawn_article.kill()
         
     def update(self,_actor):
@@ -1544,7 +1544,7 @@ def tumbleState(_actor):
     elif _actor.keyHeld('special'):
         _actor.doAirSpecial()
     elif _actor.keyHeld('jump') and _actor.jumps > 0:
-        _actor.doAirJump()
+        _actor.doAction('AirJump')
     elif _actor.keysContain('down'):
         _actor.platform_phase = 1
         _actor.calcGrav(_actor.var['fastfall_multiplier'])
