@@ -191,11 +191,11 @@ class ImageSprite(Sprite):
         del arr
         self.changed = True
         
-    def scale(self,_scaleFactor):
+    def resize(self,_scaleFactor):
         old_rect = self.rect.copy()
         w = int(self.image.get_width() * _scaleFactor)
         h = int(self.image.get_height() * _scaleFactor)
-        pygame.transform.scale(self.image, (w,h))
+        self.image = pygame.transform.scale(self.image, (w,h))
         self.rect = self.image.get_rect()
         
         self.rect.center = old_rect.center
