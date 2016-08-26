@@ -402,8 +402,12 @@ class HitStun(action.Action):
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']
             elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
                 _actor.ground_elasticity = 0
-                if _actor.grounded:
-                    _actor.doAction('Prone')
+                if self.last_frame > 10:
+                    if _actor.grounded:
+                        _actor.doAction('Prone')
+                    else:
+                        _actor.landing_lag = _actor.var['heavy_land_lag']
+                        hitstunLanding(_actor)
             elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
                 _actor.ground_elasticity = 0
                 if self.last_frame > 10:
@@ -436,13 +440,22 @@ class HitStun(action.Action):
                     _actor.rotateSprite(self.direction)
             
         if self.frame % max(1,int(100.0/max(math.hypot(_actor.change_x, _actor.change_y), 1))) == 0 and self.frame < self.last_frame:
-            art = article.HitArticle(_actor, _actor.rect.center, 1, math.degrees(math.atan2(_actor.change_y, -_actor.change_x))+random.randrange(-30, 30), .5*math.hypot(_actor.change_x, _actor.change_y), 0.5)
-            #if _actor.hit_tagged and hasattr(_actor.hit_tagged, 'player_num'):
-            #    art.recolor(art.image, [0,0,0], pygame.Color(settingsManager.getSetting('playerColor' + str(_actor.hit_tagged.player_num))))
+            color = pygame.Color(settingsManager.getSetting('playerColor' + str(_actor.player_num)))
+            if _actor.hit_tagged and hasattr(_actor.hit_tagged, 'player_num'):
+                other_color = pygame.Color(settingsManager.getSetting('playerColor' + str(_actor.hit_tagged.player_num)))
+                color[0] = (color[0]+other_color[0])//2
+                color[1] = (color[1]+other_color[1])//2
+                color[2] = (color[2]+other_color[2])//2
+
+            art = article.HitArticle(_actor, _actor.rect.center, 1, math.degrees(math.atan2(_actor.change_y, -_actor.change_x))+random.randrange(-30, 30), .5*math.hypot(_actor.change_x, _actor.change_y), .02*(math.hypot(_actor.change_x, _actor.change_y)+1), color)
             _actor.articles.add(art)
                     
         if self.frame == self.last_frame:
-            _actor.doAction('Tumble')
+            if self.last_frame > 10:
+                _actor.doAction('Tumble')
+            else:
+                _actor.landing_lag = _actor.var['heavy_land_lag']
+                _actor.doAction('Fall')
 
         self.frame += 1
 

@@ -933,8 +933,12 @@ class AbstractFighter():
         
         if _respawn:
             self.initialize()
-            for i in range(0, 39):
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*9, 60, 1.5)
+            for i in range(0, 19):
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18, 30, 1.5, pygame.Color(settingsManager.getSetting('playerColor' + str(self.player_num))))
+                self.articles.add(next_hit_article)
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18+6, 60, 1.5, pygame.Color(settingsManager.getSetting('playerColor' + str(self.player_num))))
+                self.articles.add(next_hit_article)
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18+12, 90, 1.5, pygame.Color(settingsManager.getSetting('playerColor' + str(self.player_num))))
                 self.articles.add(next_hit_article)
             self.rect.midbottom = self.game_state.spawn_locations[self.player_num]
             self.rect.bottom -= 200

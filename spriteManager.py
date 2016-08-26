@@ -8,6 +8,7 @@ class Sprite(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         self.angle = 0
+        self.scale = 1
         self.visible = True
         self.changed = False
         self.lastDrawnPosition = pygame.Rect(0,0,0,0)
@@ -17,14 +18,14 @@ class Sprite(pygame.sprite.Sprite):
         if not self.visible:
             return
         #TODO: Check for bit depth first, inform user about alpha
-        h = int(round(self.rect.height * _scale))
-        w = int(round(self.rect.width * _scale))
+        h = int(self.scale*self.rect.height * _scale)
+        w = int(self.scale*self.rect.width * _scale)
         unit_vector = [math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle))]
         rotated_w = abs(w*unit_vector[0])+abs(h*unit_vector[1])
         rotated_h = abs(w*unit_vector[1])+abs(h*unit_vector[0])
         dx = (rotated_w-w)/2.0
         dy = (rotated_h-h)/2.0
-        new_off = (int((_offset[0]+self.spriteOffset[0]) * _scale - dx), int((_offset[1]+self.spriteOffset[1]) * _scale - dy))
+        new_off = (int((_offset[0]+self.spriteOffset[0]*self.scale) * _scale - dx - (self.scale-1)*_scale*self.rect.width*.5), int((_offset[1]+self.spriteOffset[1]*self.scale) * _scale - dy - (self.scale-1)*_scale*self.rect.height*.5))
         try:
             blit_sprite = pygame.transform.smoothscale(self.image, (int(w), int(h)))
         except Exception as e:
@@ -185,20 +186,11 @@ class ImageSprite(Sprite):
         del arr
         self.changed = True
     
-    def recolor(self,_image,_fromColor,_toColor,ignore_alpha=False):
+    def recolor(self,_image,_fromColor,_toColor,_ignoreAlpha=False):
         arr = pygame.PixelArray(_image)
         arr.replace(_fromColor,_toColor)
         del arr
         self.changed = True
-        
-    def resize(self,_scaleFactor):
-        old_rect = self.rect.copy()
-        w = int(self.image.get_width() * _scaleFactor)
-        h = int(self.image.get_height() * _scaleFactor)
-        self.image = pygame.transform.scale(self.image, (w,h))
-        self.rect = self.image.get_rect()
-        
-        self.rect.center = old_rect.center
         
 class SheetSprite(ImageSprite):
     def __init__(self,_sheet,_offset=0,_colorMap = {}):
