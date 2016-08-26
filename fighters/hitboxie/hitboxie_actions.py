@@ -327,6 +327,7 @@ class GroundGrab(action.Action):
     def __init__(self):
         action.Action.__init__(self, 30)
         self.sprite_rate = 0
+        self.hold_point = (0,30)
 
     def setUp(self, _actor):
         self.grab_hitbox = hitbox.GrabHitbox(_actor,hitbox.HitboxLock(),{'center':[30,0],

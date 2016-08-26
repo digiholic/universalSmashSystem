@@ -265,6 +265,11 @@ class AbstractFighter():
         self.shield = False
         self.shield_integrity = 100
         
+        # Grabbing variables
+        self.grabbing = None
+        self.grabbed_by = None
+        self.grab_point = (0,0)
+        
         # Hitstop freezes the character for a few frames when hitting or being hit.
         self.hitstop = 0
         self.hitstop_vibration = (0,0)

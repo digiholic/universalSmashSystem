@@ -338,16 +338,19 @@ class CrouchGetup(action.Action):
         if self.frame >= self.last_frame:
             _actor.doAction('NeutralAction')
 
+########################################################
+#                  Grab Actions                        #
+########################################################
 class BaseGrabbing(action.Action):
     def __init__(self,_length=0):
         action.Action.__init__(self, _length)
-
+        self.hold_point = (0,0)
+        
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="baseGrabbing"
         action.Action.setUp(self, _actor)
         
     def tearDown(self, _actor, _nextAction):
-        print(self.hitboxes)
         action.Action.tearDown(self, _actor, _nextAction)
         if not isinstance(_nextAction, BaseGrabbing) and _actor.isGrabbing():
             _actor.grabbing.doReleased()
@@ -1310,7 +1313,8 @@ class BaseThrow(BaseGrabbing):
         if self.frame == self.last_frame:
             if _actor.grounded: _actor.doAction('NeutralAction')
             else: _actor.doAction('Fall')
-        BaseGrabbing.update(self, _actor)          
+        BaseGrabbing.update(self, _actor)                  
+
 class NeutralAttack(BaseAttack):
     def __init__(self, _length=0):
         BaseAttack.__init__(self, _length)
@@ -1835,3 +1839,51 @@ state_dict = {
             "autoDodgeCancellable": autoDodgeCancellable,
             "jumpCancellable": jumpCancellable
             }
+
+"""
+Work in progress
+class Grabbing(action.Action):
+    def __init__(self,_length=1):
+        action.Action.__init__(self, _length)
+    
+    def setUp(self, _actor):
+        action.Action.setUp(self, _actor)
+        self.hold_point = (0,0)
+        if self.sprite_name=="": self.sprite_name ="grabbing"
+        
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        #TODO release
+    
+    def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
+        
+class Grabbed(action.Action):
+    def __init__(self,_length=1):
+        action.Action.__init__(self, _length)
+    
+    def setUp(self, _actor):
+        action.Action.setUp(self, _actor)
+        if self.sprite_name=="": self.sprite_name ="grabbed"
+        
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        #TODO release
+        
+    def update(self, _actor):
+        action.Action.update(self, _actor)
+        grabber = _actor.grabbed_by
+        
+        #release if you're not being held
+        if grabber is None or not (grabber.grabbing == _actor):
+            _actor.doAction('grabRelease')
+        
+        #snap to hold point
+        (hold_x,hold_y) = grabber.current_action.hold_point
+        _actor.rect.centerx = grabber.rect.x + (hold_x * grabber.facing) + (_actor.grab_point[0] * _actor.facing)
+        _actor.rect.centery = grabber.rect.y + (hold_y * grabber.facing) + (_actor.grab_point[1] * _actor.facing)
+        
+        #Set the last frame based on damage
+        if self.frame == 0:
+            self.last_frame = 40 + _actor.damage//2
+"""
