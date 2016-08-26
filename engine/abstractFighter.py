@@ -950,7 +950,7 @@ class AbstractFighter():
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
             self.ecb.store()
-            self.createMask([255,255,255], 120, True, 12)
+            self.createMask([255,255,255], 480, True, 12)
             self.respawn_invulnerable = 480
             self.doAction('Respawn')
         

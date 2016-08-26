@@ -261,6 +261,7 @@ class Respawn(action.Action):
     
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
+        _actor.createMask([255,255,255], 120, True, 12)
         _actor.respawn_invincibility = 120
         self.respawn_article.kill()
         
