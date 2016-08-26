@@ -274,7 +274,7 @@ class HitArticle(Article):
             if base_color[2] > 255:
                 base_color[2] = 255
         
-        self.recolor(self.image, (0,0,0), base_color, _ignore_alpha=True)
+        self.recolor(self.image, (0,0,0), base_color)
 
     def update(self):
         self.rect.x += self.speed * math.cos(math.radians(self.angle))
