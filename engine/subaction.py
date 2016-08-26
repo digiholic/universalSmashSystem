@@ -874,13 +874,15 @@ class transitionState(SubAction):
 class createHitbox(SubAction):
     subact_group = 'Hitbox'
     
-    def __init__(self, _name='', _hitboxType='damage', _hitboxLock='', _variables={}):
+    def __init__(self, _name='', _hitboxType='damage', _hitboxLock='', _variables={}, _owner_event = '', _other_event = ''):
         SubAction.__init__(self)
         
         self.hitbox_name = _name
         self.hitbox_type = _hitboxType if _hitboxType is not None else "damage"
         self.hitbox_lock = _hitboxLock
         self.hitbox_vars = _variables
+        self.owner_event = _owner_event
+        self.other_event = _other_event
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
@@ -911,6 +913,12 @@ class createHitbox(SubAction):
             hitbox = engine.hitbox.AbsorberHitbox(_actor,hitbox_lock,self.hitbox_vars)
         elif self.hitbox_type == "invulnerable":
             hitbox = engine.hitbox.InvulnerableHitbox(_actor, hitbox_lock, self.hitbox_vars)
+        
+        if _action.events.has_key(self.owner_event):
+            hitbox.owner_on_hit_actions = _action.events[self.owner_event]
+        if _action.events.has_key(self.other_event):
+            hitbox.other_on_hit_actions = _action.events[self.other_event]
+        
         _action.hitboxes[self.hitbox_name] = hitbox
     
     def getDisplayName(self):
@@ -954,11 +962,17 @@ class createHitbox(SubAction):
             tag = child.tag
             val = child.text
             
+            owner_event = ''
+            other_event = ''
             #special cases
             if tag == 'name':
                 name = val
             elif tag == 'hitboxLock':
                 hitbox_lock = val
+            elif tag == 'onHitOwner':
+                owner_event = val
+            elif tag == 'onHitOther':
+                other_event = val
             elif tag in tuple_type:
                 variables[tag] = make_tuple(val)
             elif tag in float_type:
@@ -967,7 +981,7 @@ class createHitbox(SubAction):
                 variables[tag] = int(val)
             
         
-        return createHitbox(name, hitbox_type, hitbox_lock, variables)
+        return createHitbox(name, hitbox_type, hitbox_lock, variables, owner_event, other_event)
         
 # Change the properties of an existing hitbox, such as position, or power
 class modifyHitbox(SubAction):

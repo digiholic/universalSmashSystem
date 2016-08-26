@@ -39,7 +39,7 @@ class Action():
         self.state_transition_actions = []
         self.set_up_actions = []
         self.tear_down_actions = []
-        
+        self.events = dict()
     # The update skeleton function. You must implement it for every action or you will get
     # an error.
     def update(self,_actor):

@@ -58,12 +58,19 @@ class Hitbox(spriteManager.RectSprite):
         self.rect.center = [_owner.rect.center[0] + self.center[0], _owner.rect.center[1] + self.center[1]]
         self.article = None
         
+        self.owner_on_hit_actions = []
+        self.other_on_hit_actions = []
         
     def onCollision(self,_other):
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             _other.hitbox_contact.add(self)
-    
+            if self.hitbox_lock not in _other.hitbox_lock:
+                for subact in self.owner_on_hit_actions:
+                    subact.execute(self,self.owner)
+                for subact in self.other_on_hit_actions:
+                    subact.execute(self,_other)
+                
     def update(self):
         self.rect.width = self.size[0]
         self.rect.height = self.size[1]

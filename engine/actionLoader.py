@@ -131,6 +131,14 @@ class ActionLoader():
                     cond_elem.append(subact.getXmlElement())
                 elem.append(cond_elem)
         
+        for event_name,event in _newAction.events.iteritems():
+            if len(event) > 0:
+                event_elem = ElementTree.Element('Event')
+                event_elem.attrib['name'] = str(event_name)
+                for subact in event:
+                    event_elem.append(subact.getXmlElement())
+                elem.append(event_elem)
+                
         rough_string = ElementTree.tostring(elem, 'utf-8')
         reparsed = minidom.parseString(rough_string)
         data = reparsed.toprettyxml(indent="\t")
@@ -253,6 +261,15 @@ class ActionLoader():
                     conditional_list.append(subaction.subaction_dict[subact.tag].buildFromXml(subact))
             conditional_actions[cond.attrib['name']] = conditional_list
          
+        event_actions = dict()
+        events = action_xml.findall('event')
+        for event in events:
+            event_list = []
+            for subact in event:
+                if subaction.subaction_dict.has_key(subact.tag):
+                    event_list.append(subaction.subaction_dict[subact.tag].buildFromXml(subact))
+            event_actions[event.attrib['name']] = event_list
+            
         #Create and populate the Dynamic Action
         dyn_action = action.DynamicAction(length, base, action_vars, starting_frame)
         dyn_action.name = _actionName
@@ -265,6 +282,7 @@ class ActionLoader():
         dyn_action.tear_down_actions = tear_down_actions
         dyn_action.actions_on_clank = actions_on_clank
         dyn_action.conditional_actions = conditional_actions
+        dyn_action.events = event_actions
         if sprite_name: dyn_action.sprite_name = sprite_name
         if sprite_rate: dyn_action.base_sprite_rate = sprite_rate
         dyn_action.loop = loop
