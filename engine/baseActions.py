@@ -256,13 +256,13 @@ class Respawn(action.Action):
         self.respawn_article = article.RespawnPlatformArticle(_actor)
         
     def stateTransitions(self, _actor):
-        if self.frame > 6:
+        if self.frame > 120:
             neutralState(_actor)
     
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
         _actor.createMask([255,255,255], 120, True, 12)
-        _actor.respawn_inviulnerable = 120
+        _actor.respawn_invulnerable = 120
         self.respawn_article.kill()
         
     def update(self,_actor):
@@ -270,7 +270,10 @@ class Respawn(action.Action):
         _actor.ground = True
         _actor.change_y = 0
         if self.frame == 0:
+            _actor.createMask([255,128,255], 120, True, 12)
             _actor.articles.add(self.respawn_article)
+        if self.frame == 120:
+            _actor.createMask([255,255,255], 360, True, 12)
         if self.frame == self.last_frame:
             _actor.doAction('Fall')
         self.frame += 1
