@@ -344,13 +344,16 @@ class ifButton(SubAction):
 class changeFighterSprite(SubAction):
     subact_group = 'Sprite'
     
-    def __init__(self,_sprite='idle'):
+    def __init__(self,_sprite='idle',_preserve_index=False):
         SubAction.__init__(self)
         self.sprite = _sprite
+        self.preserve_index = _preserve_index
         
     def execute(self, _action, _actor):
+        if self.preserve_index: index = _actor.sprite.index
+        else: index = 0
         _action.sprite_name = self.sprite
-        _actor.changeSprite(self.sprite)
+        _actor.changeSprite(self.sprite,index)
     
     def getDisplayName(self):
         return 'Change Sprite: '+self.sprite
@@ -365,7 +368,7 @@ class changeFighterSprite(SubAction):
     
     @staticmethod
     def buildFromXml(_node):
-        return changeFighterSprite(_node.text)
+        return changeFighterSprite(_node.text,_node.attrib.has_key('preserve'))
         
 # ChangeFighterSubimage will change the subimage of a sheetSprite without changing the sprite.
 class changeFighterSubimage(SubAction):

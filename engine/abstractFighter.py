@@ -268,7 +268,7 @@ class AbstractFighter():
         # Grabbing variables
         self.grabbing = None
         self.grabbed_by = None
-        self.grab_point = (0,0)
+        self.grab_point = (32,0)
         
         # Hitstop freezes the character for a few frames when hitting or being hit.
         self.hitstop = 0
@@ -420,7 +420,6 @@ class AbstractFighter():
         if self.shield_integrity > 100: self.shield_integrity = 100
         #reset the flash if you're still invulnerable
         if not self.mask and (self.respawn_invulnerable > 0 or self.invulnerable > 0):
-            print(self.invulnerable,self.respawn_invulnerable)
             self.createMask([255,255,255], max(self.respawn_invulnerable,self.invulnerable), True, 12)
         
         for art in self.articles:
@@ -610,7 +609,11 @@ class AbstractFighter():
         _other.grabbed_by = self
 
     def isGrabbing(self):
-        return isinstance(self.grabbing.current_action, baseActions.Grabbed) and self.grabbing.grabbed_by == self
+        if self.grabbing is None:
+            return False
+        if self.grabbing and self.grabbing.grabbed_by == self:
+            return True
+        return False
         
 ########################################################
 #                  ACTION SETTERS                      #
@@ -625,6 +628,7 @@ class AbstractFighter():
     """
 
     def changeAction(self,_newAction):
+        #print(self.player_num,self.current_action.name,_newAction.name)
         self.current_action.tearDown(self,_newAction)
         _newAction.setUp(self)
         self.current_action = _newAction
@@ -881,22 +885,20 @@ class AbstractFighter():
         _trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
 
         hitstun_frames = math.floor((total_kb+additional_kb)*_hitstunMultiplier+_baseHitstun)
-        print(hitstun_frames)
-
+        
         if self.no_flinch_hits > 0:
             if hitstun_frames > 0.5:
                 self.no_flinch_hits -= 1
             self.dealDamage(_damage*self.armor_damage_multiplier)
             return 0
-
+        
         if hitstun_frames > 0.5:
-            print((total_kb, additional_kb))
+            #If the current action is not hitstun or you're in hitstun, but there's not much of it left
             if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.last_frame-self.current_action.frame <= hitstun_frames+15:
                 self.setSpeed((total_kb+additional_kb)*di_multiplier, _trajectory)
                 self.doHitStun(hitstun_frames, _trajectory)
         
         self.dealDamage(_damage)
-
         return math.floor((total_kb+additional_kb)*di_multiplier)
 
     def applyPushback(self, _kb, _trajectory, _hitlag):

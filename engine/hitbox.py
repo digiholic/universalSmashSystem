@@ -131,7 +131,6 @@ class DamageHitbox(Hitbox):
         self.damage += self.charge_damage
         self.base_knockback += self.charge_base_knockback
         self.knockback_growth += self.charge_knockback_growth
-        print(self.damage)
         
 class SakuraiAngleHitbox(DamageHitbox):
     def __init__(self,_owner,_lock,_variables):
@@ -237,14 +236,14 @@ class GrabHitbox(Hitbox):
                 self.owner.grabbing = _other
                 _other.grabbed_by = self.owner
                 self.owner.doAction('Grabbing')
-                self.owner.doAction('Grabbed')
+                _other.doAction('Grabbed')
                 
     def compareTo(self, _other):
         if not isinstance(_other, DamageHitbox) and not isinstance(_other, GrabHitbox) and _other.owner is not None:
             self.owner.grabbing = _other
             _other.grabbed_by = self.owner
             self.owner.doAction('Grabbing')
-            self.owner.doAction('Grabbed')
+            _other.doAction('Grabbed')
             return True
         return Hitbox.compareTo(self, _other)
 
