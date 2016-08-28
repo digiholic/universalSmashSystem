@@ -482,9 +482,6 @@ class BackThrow(baseActions.BaseGrab):
         _actor.changeSprite("bthrow")
         self.escapable = False
         
-    def tearDown(self, _actor, _nextAction):
-        baseActions.BaseGrab.tearDown(self, _actor, _nextAction)
-
     def update(self, _actor):
         if self.frame == 1 and _actor.grabbing:
             _actor.grabbing.applyKnockback(7, 15, 0.05, _actor.getForwardWithOffset(170), 0.5)

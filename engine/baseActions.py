@@ -39,6 +39,7 @@ class Move(action.Action):
         if self.frame > self.last_frame: self.frame = 0
         
     def stateTransitions(self,_actor):
+        action.Action.stateTransitions(self, _actor)
         moveState(_actor)
         (key,invkey) = _actor.getForwardBackwardKeys()
         if self.frame > 0 and _actor.keyBuffered(invkey, _state = 1):
@@ -80,6 +81,7 @@ class Dash(action.Action):
             self.frame = self.run_start_frame
             
     def stateTransitions(self,_actor):
+        action.Action.stateTransitions(self, _actor)
         dashState(_actor)
         
 class Pivot(action.Action):
@@ -96,6 +98,7 @@ class Pivot(action.Action):
             _nextAction.accel = False
 
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         stopState(_actor)
         
     def update(self,_actor):
@@ -141,6 +144,7 @@ class Stop(action.Action):
         self.frame += 1
         
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         stopState(_actor)
 
     def tearDown(self, _actor, nextAction):
@@ -167,6 +171,7 @@ class RunPivot(action.Action):
             nextAction.accel = False
         
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         runStopState(_actor)
         
     def update(self,_actor):
@@ -205,6 +210,7 @@ class RunStop(action.Action):
         self.frame += 1
         
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         runStopState(_actor)
 
                 
@@ -217,6 +223,7 @@ class NeutralAction(action.Action):
         action.Action.setUp(self, _actor)
         
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         checkGrounded(_actor)
         neutralState(_actor)
     
@@ -236,6 +243,7 @@ class Respawn(action.Action):
         self.respawn_article = article.RespawnPlatformArticle(_actor)
         
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         if self.frame > 120:
             neutralState(_actor)
     
@@ -268,6 +276,7 @@ class Crouch(action.Action):
         self.direction = _actor.getForwardWithOffset(0)
 
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         crouchState(_actor)
         if self.frame > 0 and _actor.keyBuffered('down', _state = 1):
             blocks = _actor.checkGround()
@@ -305,6 +314,7 @@ class CrouchGetup(action.Action):
         action.Action.setUp(self, _actor)
         
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         if _actor.keyBuffered('down', _state = 1):
             blocks = _actor.checkGround()
             if blocks:
@@ -355,6 +365,7 @@ class HitStun(action.Action):
         _actor.elasticity = _actor.var['hitstun_elasticity']
         
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         (direct,_) = _actor.getDirectionMagnitude()
         if _actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not _actor.grounded:
             print('Try tech')
@@ -527,6 +538,7 @@ class Jump(action.Action):
         action.Action.setUp(self, _actor)
         
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         if _actor.keyHeld('attack') and _actor.checkSmash('up') and self.frame < self.jump_frame:
             print("Jump cancelled into up smash")
             _actor.doAction('UpSmash')
@@ -566,6 +578,7 @@ class AirJump(action.Action):
         action.Action.setUp(self, _actor)
 
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         if _actor.keyHeld('attack') and _actor.checkSmash('up') and self.frame < self.jump_frame:
             print("Jump cancelled into up aerial")
             _actor.doAction('UpAir')
@@ -613,6 +626,7 @@ class Fall(action.Action):
         _actor.preferred_yspeed = _actor.var['max_fall_speed']
     
     def stateTransitions(self,_actor):
+        action.Action.stateTransitions(self, _actor)
         airState(_actor)
         grabLedges(_actor)
         
@@ -634,10 +648,12 @@ class Helpless(action.Action):
         _actor.mask = None
         
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         helplessControl(_actor)
         grabLedges(_actor)
 
     def update(self, _actor):
+        action.Action.update(self, _actor)
         _actor.grounded = False
         if self.frame == 0:
             _actor.createMask([191, 63, 191], 99999, True, 16)
@@ -718,6 +734,7 @@ class PlatformDrop(action.Action):
         action.Action.setUp(self, _actor)
         
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         if _actor.keyHeld('attack') and _actor.checkSmash('down') and self.frame < self.phase_frame:
             print("Platform drop cancelled into down smash")
             _actor.doAction('DownSmash')
@@ -751,6 +768,7 @@ class Shield(action.Action):
         action.Action.setUp(self, _actor)
         
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         shieldState(_actor)
    
     def tearDown(self, _actor, _nextAction):
@@ -759,6 +777,7 @@ class Shield(action.Action):
             _actor.shield = False
        
     def update(self, _actor):
+        action.Action.update(self, _actor)
         if _actor.grounded is False:
             _actor.shield = False
             _actor.doAction('Fall')
@@ -794,6 +813,7 @@ class ShieldStun(action.Action):
             _actor.shield = False
 
     def update(self, _actor):
+        action.Action.update(self, _actor)
         if _actor.grounded is False:
             _actor.shield = False
             _actor.doAction('Fall')
@@ -999,6 +1019,7 @@ class AirDodge(action.Action):
             _actor.invulnerable = 0
     
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         if self.frame == 0:
             if settingsManager.getSetting('enableWavedash'):
                 _actor.updateLandingLag(self.wavedash_lag)
@@ -1061,6 +1082,7 @@ class LedgeGrab(action.Action):
         if self.ledge: self.ledge.fighterLeaves(_actor)
         
     def stateTransitions(self,_actor):
+        action.Action.stateTransitions(self, _actor)
         ledgeState(_actor)
         
     def update(self,_actor):
@@ -1132,11 +1154,13 @@ class BaseAttack(action.Action):
     def __init__(self, _length=1):
         action.Action.__init__(self, _length)
         
-    def tearDown(self, _actor, nextAction):
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
         for _,hitbox in self.hitboxes.iteritems():
             hitbox.kill()
     
     def onClank(self, _actor):
+        action.Action.onClank(self, _actor)
         for _,hitbox in self.hitboxes.iteritems():
             hitbox.kill()
                     
@@ -1166,6 +1190,7 @@ class AirAttack(BaseAttack):
             hitbox.kill()
                     
     def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
         if self.fastfall_frame is not None and self.frame >= self.fastfall_frame:
             if _actor.keysContain('down'):
                 _actor.platform_phase = 1
@@ -1758,7 +1783,8 @@ class BaseGrab(action.Action):
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
         if not isinstance(_nextAction, BaseGrab):
-            _actor.doAction('Release')
+            if isinstance(_actor.grabbing.current_action,Grabbed):
+                _actor.grabbing.doAction('Released')
     
     def update(self, _actor):
         action.Action.update(self, _actor)        
@@ -1894,6 +1920,7 @@ class Release(action.Action):
         _actor.grabbing = None
         
     def update(self, _actor):
+        action.Action.update(self, _actor)
         checkGrounded(_actor)
         if self.frame >= self.last_frame:
             _actor.doAction('NeutralAction')
@@ -1912,6 +1939,7 @@ class Released(action.Action):
         _actor.grabbed_by = None
     
     def stateTransitions(self,_actor):
+        action.Action.stateTransitions(self, _actor)
         tapReversible(_actor)
 
         (key, invkey) = _actor.getForwardBackwardKeys()
@@ -1954,8 +1982,8 @@ class BaseThrow(BaseGrab):
     
 class ForwardThrow(BaseThrow):
     def __init__(self,_length=0):
-        BaseGrabbing.__init__(self, _length)
+        BaseGrab.__init__(self, _length)
 
 class DownThrow(BaseThrow):
     def __init__(self,_length=0):
-        BaseGrabbing.__init__(self, _length)
+        BaseGrab.__init__(self, _length)

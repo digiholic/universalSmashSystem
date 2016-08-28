@@ -114,7 +114,6 @@ Creates or returns the SFX Library.
 def getSfx():
     global sfx_lib
     if sfx_lib == None:
-        print('CREATING NEW SFX LIBRARY')
         sfx_lib = sfx_library()
     return sfx_lib
     
@@ -448,7 +447,6 @@ class sfx_library():
                 self.sounds["base_" + fname] = pygame.mixer.Sound(os.path.join(directory,f)) 
                 
     def playSound(self,_name,_category = "base"):
-        print(_category,_name,getSetting().setting['sfxVolume'])
         self.sounds[_category + "_" + _name].set_volume(getSetting().setting['sfxVolume'])
         self.sounds[_category + "_" + _name].play()
     
@@ -469,7 +467,6 @@ class sfx_library():
             fname, ext = os.path.splitext(f)
             if self.supported_file_types.count(ext):
                 self.sounds[_category + "_" + fname] = pygame.mixer.Sound(os.path.join(_path,f))
-                print(_category + "_" + fname,self.sounds[_category + "_" + fname])
                 
     
 ########################################################

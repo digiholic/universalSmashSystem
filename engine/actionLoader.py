@@ -271,7 +271,9 @@ class ActionLoader():
             event_actions[event.attrib['name']] = event_list
             
         #Create and populate the Dynamic Action
-        dyn_action = action.DynamicAction(length, base, action_vars, starting_frame)
+        dyn_action = base()
+        dyn_action.frame = starting_frame
+        dyn_action.last_frame = length
         dyn_action.name = _actionName
         dyn_action.actions_before_frame = subactions_before_frame
         dyn_action.actions_at_frame = subactions_at_frame
@@ -286,6 +288,11 @@ class ActionLoader():
         if sprite_name: dyn_action.sprite_name = sprite_name
         if sprite_rate: dyn_action.base_sprite_rate = sprite_rate
         dyn_action.loop = loop
+        
+        dyn_action.default_vars = action_vars
+        for key,val in action_vars.iteritems():
+            setattr(dyn_action,key,val)
+        
         return dyn_action
     
     @staticmethod
