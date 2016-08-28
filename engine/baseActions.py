@@ -1285,7 +1285,8 @@ class AirAttack(BaseAttack):
         if self.fastfall_frame is not None and self.frame >= self.fastfall_frame:
             if _actor.keysContain('down'):
                 _actor.platform_phase = 1
-                _actor.calcGrav(_actor.var['fastfall_multiplier'])
+                if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
+                    _actor.calcGrav(_actor.var['fastfall_multiplier'])
         if _actor.grounded and _actor.ground_elasticity == 0:
             _actor.preferred_xspeed = 0
             _actor.preferred_yspeed = _actor.var['max_fall_speed']
@@ -1519,7 +1520,9 @@ def airState(_actor):
         _actor.doAction('AirJump')
     elif _actor.keysContain('down'):
         _actor.platform_phase = 1
-        _actor.calcGrav(_actor.var['fastfall_multiplier'])
+        if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
+            print("Trying to fastfall")
+            _actor.calcGrav(_actor.var['fastfall_multiplier'])
 
 def tumbleState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
@@ -1550,7 +1553,8 @@ def tumbleState(_actor):
         _actor.doAction('AirJump')
     elif _actor.keysContain('down'):
         _actor.platform_phase = 1
-        _actor.calcGrav(_actor.var['fastfall_multiplier'])
+        if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
+            _actor.calcGrav(_actor.var['fastfall_multiplier'])
             
 def moveState(_actor, direction):
     (key,invkey) = _actor.getForwardBackwardKeys()
@@ -1632,7 +1636,8 @@ def jumpState(_actor):
         _actor.doAirSpecial()
     elif _actor.keysContain('down'):
         _actor.platform_phase = 1
-        _actor.calcGrav(_actor.var['fastfall_multiplier'])
+        if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
+            _actor.calcGrav(_actor.var['fastfall_multiplier'])
             
 def shieldState(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
