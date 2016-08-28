@@ -39,7 +39,7 @@ class Move(action.Action):
         if self.frame > self.last_frame: self.frame = 0
         
     def stateTransitions(self,_actor):
-        moveState(_actor,self.direction)
+        moveState(_actor)
         (key,invkey) = _actor.getForwardBackwardKeys()
         if self.frame > 0 and _actor.keyBuffered(invkey, _state = 1):
             _actor.doDash(-_actor.getFacingDirection())
@@ -80,7 +80,7 @@ class Dash(action.Action):
             self.frame = self.run_start_frame
             
     def stateTransitions(self,_actor):
-        dashState(_actor,self.direction)
+        dashState(_actor)
         
 class Pivot(action.Action):
     def __init__(self,_length=0):
@@ -1536,7 +1536,7 @@ def tumbleState(_actor):
         if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
             _actor.calcGrav(_actor.var['fastfall_multiplier'])
             
-def moveState(_actor, direction):
+def moveState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
     if _actor.keyHeld('shield'):
         _actor.doAction('Shield')
@@ -1598,7 +1598,7 @@ def runStopState(_actor):
         print("run pivot")
         _actor.doAction('RunPivot')
 
-def dashState(_actor, direction):
+def dashState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
     if _actor.keyHeld('shield'):
         _actor.doAction('ForwardRoll')
