@@ -39,7 +39,7 @@ class Move(action.Action):
         if self.frame > self.last_frame: self.frame = 0
         
     def stateTransitions(self,_actor):
-        moveState(_actor,self.direction)
+        moveState(_actor)
         (key,invkey) = _actor.getForwardBackwardKeys()
         if self.frame > 0 and _actor.keyBuffered(invkey, _state = 1):
             _actor.doDash(-_actor.getFacingDirection())
@@ -80,7 +80,7 @@ class Dash(action.Action):
             self.frame = self.run_start_frame
             
     def stateTransitions(self,_actor):
-        dashState(_actor,self.direction)
+        dashState(_actor)
         
 class Pivot(action.Action):
     def __init__(self,_length=0):
@@ -96,17 +96,7 @@ class Pivot(action.Action):
             _nextAction.accel = False
 
     def stateTransitions(self, _actor):
-        if _actor.keyHeld('shield'):
-            _actor.doAction('Shield')
-        elif _actor.keyHeld('attack'):
-            if _actor.keysContain('shield'):
-                _actor.doAction('GroundGrab')
-            else:
-                _actor.doGroundAttack()
-        elif _actor.keyHeld('special'):
-            _actor.doGroundSpecial()
-        else:
-            stopState(_actor)
+        stopState(_actor)
         
     def update(self,_actor):
         action.Action.update(self, _actor)
@@ -177,17 +167,7 @@ class RunPivot(action.Action):
             nextAction.accel = False
         
     def stateTransitions(self, _actor):
-        if _actor.keyHeld('shield'):
-            _actor.doAction('ForwardRoll')
-        if _actor.keyHeld('attack'):
-            if _actor.keysContain('shield'):
-                _actor.doAction('DashGrab')
-            else:
-                _actor.doAction('DashAttack')
-        elif _actor.keyHeld('special'):
-            _actor.doGroundSpecial()
-        else:
-            runStopState(_actor)
+        runStopState(_actor)
         
     def update(self,_actor):
         action.Action.update(self, _actor)
@@ -1189,7 +1169,8 @@ class AirAttack(BaseAttack):
         if self.fastfall_frame is not None and self.frame >= self.fastfall_frame:
             if _actor.keysContain('down'):
                 _actor.platform_phase = 1
-                _actor.calcGrav(_actor.var['fastfall_multiplier'])
+                if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
+                    _actor.calcGrav(_actor.var['fastfall_multiplier'])
         if _actor.grounded and _actor.ground_elasticity == 0:
             _actor.preferred_xspeed = 0
             _actor.preferred_yspeed = _actor.var['max_fall_speed']
@@ -1405,7 +1386,9 @@ def airState(_actor):
         _actor.doAction('AirJump')
     elif _actor.keysContain('down'):
         _actor.platform_phase = 1
-        _actor.calcGrav(_actor.var['fastfall_multiplier'])
+        if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
+            print("Trying to fastfall")
+            _actor.calcGrav(_actor.var['fastfall_multiplier'])
 
 def tumbleState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
@@ -1436,9 +1419,10 @@ def tumbleState(_actor):
         _actor.doAction('AirJump')
     elif _actor.keysContain('down'):
         _actor.platform_phase = 1
-        _actor.calcGrav(_actor.var['fastfall_multiplier'])
+        if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
+            _actor.calcGrav(_actor.var['fastfall_multiplier'])
             
-def moveState(_actor, direction):
+def moveState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
     if _actor.keyHeld('shield'):
         _actor.doAction('Shield')
@@ -1462,7 +1446,16 @@ def moveState(_actor, direction):
 
 def stopState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyHeld('jump'):
+    if _actor.keyHeld('shield'):
+        _actor.doAction('Shield')
+    elif _actor.keyHeld('attack'):
+        if _actor.keysContain('shield'):
+            _actor.doAction('GroundGrab')
+        else:
+            _actor.doGroundAttack()
+    elif _actor.keyHeld('special'):
+        _actor.doGroundSpecial()
+    elif _actor.keyHeld('jump'):
         _actor.doAction('Jump')
     elif _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
         print("run")
@@ -1473,7 +1466,16 @@ def stopState(_actor):
 
 def runStopState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyHeld('jump'):
+    if _actor.keyHeld('shield'):
+        _actor.doAction('ForwardRoll')
+    if _actor.keyHeld('attack'):
+        if _actor.keysContain('shield'):
+            _actor.doAction('DashGrab')
+        else:
+            _actor.doAction('DashAttack')
+    elif _actor.keyHeld('special'):
+        _actor.doGroundSpecial()
+    elif _actor.keyHeld('jump'):
         _actor.doAction('Jump')
     elif _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
         print("run")
@@ -1482,7 +1484,7 @@ def runStopState(_actor):
         print("run pivot")
         _actor.doAction('RunPivot')
 
-def dashState(_actor, direction):
+def dashState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
     if _actor.keyHeld('shield'):
         _actor.doAction('ForwardRoll')
@@ -1518,7 +1520,8 @@ def jumpState(_actor):
         _actor.doAirSpecial()
     elif _actor.keysContain('down'):
         _actor.platform_phase = 1
-        _actor.calcGrav(_actor.var['fastfall_multiplier'])
+        if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
+            _actor.calcGrav(_actor.var['fastfall_multiplier'])
             
 def shieldState(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
