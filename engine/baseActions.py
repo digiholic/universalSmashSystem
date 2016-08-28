@@ -96,17 +96,7 @@ class Pivot(action.Action):
             _nextAction.accel = False
 
     def stateTransitions(self, _actor):
-        if _actor.keyHeld('shield'):
-            _actor.doAction('Shield')
-        elif _actor.keyHeld('attack'):
-            if _actor.keysContain('shield'):
-                _actor.doAction('GroundGrab')
-            else:
-                _actor.doGroundAttack()
-        elif _actor.keyHeld('special'):
-            _actor.doGroundSpecial()
-        else:
-            stopState(_actor)
+        stopState(_actor)
         
     def update(self,_actor):
         action.Action.update(self, _actor)
@@ -177,17 +167,7 @@ class RunPivot(action.Action):
             nextAction.accel = False
         
     def stateTransitions(self, _actor):
-        if _actor.keyHeld('shield'):
-            _actor.doAction('ForwardRoll')
-        if _actor.keyHeld('attack'):
-            if _actor.keysContain('shield'):
-                _actor.doAction('DashGrab')
-            else:
-                _actor.doAction('DashAttack')
-        elif _actor.keyHeld('special'):
-            _actor.doGroundSpecial()
-        else:
-            runStopState(_actor)
+        runStopState(_actor)
         
     def update(self,_actor):
         action.Action.update(self, _actor)
@@ -1580,7 +1560,16 @@ def moveState(_actor, direction):
 
 def stopState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyHeld('jump'):
+    if _actor.keyHeld('shield'):
+        _actor.doAction('Shield')
+    elif _actor.keyHeld('attack'):
+        if _actor.keysContain('shield'):
+            _actor.doAction('GroundGrab')
+        else:
+            _actor.doGroundAttack()
+    elif _actor.keyHeld('special'):
+        _actor.doGroundSpecial()
+    elif _actor.keyHeld('jump'):
         _actor.doAction('Jump')
     elif _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
         print("run")
@@ -1591,7 +1580,16 @@ def stopState(_actor):
 
 def runStopState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyHeld('jump'):
+    if _actor.keyHeld('shield'):
+        _actor.doAction('ForwardRoll')
+    if _actor.keyHeld('attack'):
+        if _actor.keysContain('shield'):
+            _actor.doAction('DashGrab')
+        else:
+            _actor.doAction('DashAttack')
+    elif _actor.keyHeld('special'):
+        _actor.doGroundSpecial()
+    elif _actor.keyHeld('jump'):
         _actor.doAction('Jump')
     elif _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
         print("run")
