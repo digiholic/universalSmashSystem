@@ -97,6 +97,8 @@ def getControls(_playerNum):
     if not control_type == 'Keyboard':
         try:
             controls = settings.setting[control_type]
+            #Move the timing windows from the default controls to the new one
+            controls.timing_window = settings.setting['controls_' + str(_playerNum)].timing_window
         except:
             pass #Can't find controller, gonna load normal
     
@@ -245,6 +247,7 @@ class Settings():
             for opt in self.parser.options(group_name):
                 if self.key_name_map.has_key(opt):
                     bindings[self.key_name_map[opt]] = self.parser.get(group_name, opt)
+            
             self.setting[group_name] = engine.controller.Controller(bindings,timing_window)
             #self.setting[group_name] = engine.cpuPlayer.CPUplayer(bindings) #Here be CPU players
             

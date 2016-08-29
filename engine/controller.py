@@ -9,7 +9,6 @@ class Controller():
         self.key_bindings = _bindings
         self.type = 'Keyboard'
         self.timing_window = _timing_window
-        print(_timing_window)
     
     def loadFighter(self,_fighter):
         self.fighter = _fighter
