@@ -397,6 +397,29 @@ class changeFighterSubimage(SubAction):
     @staticmethod
     def buildFromXml(_node):
         return changeFighterSubimage(int(_node.text))
+
+class flip(SubAction):
+    subact_group = 'Sprite'
+    
+    def __init__(self):
+        SubAction.__init__(self)
+        
+    def execute(self, _action, _actor):
+        _actor.flip()
+        
+    def getDisplayName(self):
+        return 'Flip Sprite'
+    
+    def getPropertiesPanel(self, _root):
+        return None
+    
+    def getXmlElement(self):
+        elem = ElementTree.Element('flip')
+        return elem
+        
+    @staticmethod
+    def buildFromXml(_node):
+        return flip()
     
 ########################################################
 #               FIGHTER MOVEMENT                       #
@@ -539,6 +562,33 @@ class changeFighterSpeed(SubAction):
         if speed_y and _node.find('ySpeed').attrib.has_key("relative"): y_relative = True
         return changeFighterSpeed(speed_x,speed_y,x_relative,y_relative)
 
+class changeGravity(SubAction):
+    subact_group = 'Behavior'
+    
+    def __init__(self,_newGrav):
+        SubAction.__init__(self)
+        self.new_gravity = _newGrav
+        
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+        _actor.calcGrav(self.new_gravity)
+        
+    def getPropertiesPanel(self, _root):
+        #TODO Properties
+        return SubAction.getPropertiesPanel(self, _root)
+    
+    def getDisplayName(self):
+        return 'Change Gravity Multiplier to '+self.new_gravity
+    
+    def getXmlElement(self):
+        elem = ElementTree.Element('changeGravity')
+        elem.text = str(self.new_gravity)
+        return elem
+    
+    @staticmethod
+    def buildFromXml(_node):
+        return changeGravity(float(_node.text))
+    
 # ApplyForceVector is usually called when launched, but can be used as an alternative to setting speed. This one
 # takes a direction in degrees (0 being forward, 90 being straight up, 180 being backward, 270 being downward)
 # and a magnitude.
@@ -916,7 +966,9 @@ class createHitbox(SubAction):
             hitbox = engine.hitbox.AbsorberHitbox(_actor,hitbox_lock,self.hitbox_vars)
         elif self.hitbox_type == "invulnerable":
             hitbox = engine.hitbox.InvulnerableHitbox(_actor, hitbox_lock, self.hitbox_vars)
-        
+        elif self.hitbox_type == "throw":
+            hitbox = engine.hitbox.ThrowHitbox(_actor, hitbox_lock, self.hitbox_vars)
+            
         if hasattr(_action, 'events'): #Articles don't have events, and this can be called from article
             if _action.events.has_key(self.owner_event):
                 hitbox.owner_on_hit_actions = _action.events[self.owner_event]
@@ -1055,7 +1107,7 @@ class activateHitbox(SubAction):
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
         if _action.hitboxes.has_key(self.hitbox_name):
-            _actor.active_hitboxes.add(_action.hitboxes[self.hitbox_name])
+            _actor.activateHitbox(_action.hitboxes[self.hitbox_name])
     
     def getPropertiesPanel(self, _root):
         return subactionSelector.UpdateHitboxProperties(_root,self)
@@ -1432,6 +1484,7 @@ subaction_dict = {
                  'changeSprite': changeFighterSprite,
                  'changeSubimage': changeFighterSubimage,
                  'shiftSprite': shiftSpritePosition,
+                 'flip': flip,
                  
                  #Behavior
                  'shiftPosition': shiftFighterPosition,
@@ -1443,6 +1496,7 @@ subaction_dict = {
                  'createMask': createMask,
                  'removeMask': removeMask,
                  'setInvulnerability': setInvulnerability,
+                 'changeGravity': changeGravity,
                  
                  #Hitbox Manipulation
                  'createHitbox': createHitbox,

@@ -980,6 +980,14 @@ class AbstractFighter():
             sfxlib.playSound(_sound,'base')
     
     """
+    Activates a hitbbox, adding it to your active_hitboxes list.
+    @_hitbox - the hitbox to activate
+    """
+    def activateHitbox(self,_hitbox):
+        self.active_hitboxes.add(_hitbox)
+        _hitbox.activate()
+        
+    """
     This will "lock" the hitbox so that another hitbox with the same ID from the same fighter won't hit again.
     Returns true if it was successful, false if it already exists in the lock.
     

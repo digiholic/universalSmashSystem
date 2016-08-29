@@ -90,6 +90,9 @@ class Hitbox(spriteManager.RectSprite):
                 return (self.priority - _other.priority) >= 8
         return True
     
+    def activate(self):
+        pass
+    
         
 class Hurtbox(spriteManager.RectSprite):
     def __init__(self,_owner,_rect,_color):
@@ -247,6 +250,17 @@ class GrabHitbox(Hitbox):
             return True
         return Hitbox.compareTo(self, _other)
 
+class ThrowHitbox(Hitbox):
+    def __init__(self,_owner,_lock,_variables):
+        Hitbox.__init__(self,_owner,_lock,_variables)
+        self.hitbox_type = 'throw'
+    
+    def activate(self):
+        Hitbox.activate(self)
+        self.owner.grabbing.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+        self.kill()
+            
+                
 class ReflectorHitbox(InertHitbox):
     def __init__(self,_owner,_hitboxLock,_hitboxVars):
         InertHitbox.__init__(self,_owner,_hitboxLock,_hitboxVars)

@@ -6,6 +6,7 @@ import engine.action as action
 import settingsManager
 import xml.dom.minidom as minidom
 import os
+from ast import literal_eval as make_tuple
 
 class ActionLoader():
     def __init__(self, _baseDir, _actions):
@@ -184,8 +185,12 @@ class ActionLoader():
                     action_vars[var.tag] = int(var.text)
                 elif t and t == 'float':
                     action_vars[var.tag] = float(var.text)
+                elif t and t == 'bool':
+                    action_vars[var.tag] = (var.text == 'True')
+                elif t and t == 'tuple':
+                    action_vars[var.tag] = make_tuple(var.text)
                 else: action_vars[var.tag] = var.text
-        
+                
         #Load the SetUp subactions
         set_up_actions = []
         if action_xml.find('setUp') is not None:

@@ -1848,6 +1848,87 @@
 		</frame>
 	</DownThrow>
 	
+	<UpThrow>
+		<length>12</length>
+		<sprite>land</sprite>
+		<sprite_rate>-2</sprite_rate>
+		
+		<vars>
+			<escapable type="bool">False</escapable>
+			<hold_point type="tuple">(24,0)</hold_point>
+		</vars>
+		
+		<setUp>
+			<setFighterVar var="flinch_knockback_threshold">
+				<value type="int">10000</value>
+			</setFighterVar>
+			<setFighterVar var="flinch_damage_threshold">
+				<value type="int">10000</value>
+			</setFighterVar>
+			
+			<createHitbox type="throw">
+				<name>ThrowBox</name>
+				<damage>11</damage>
+				<base_knockback>12</base_knockback>
+				<knockback_growth>0.15</knockback_growth>
+				<trajectory>70</trajectory>
+			</createHitbox>
+		</setUp>
+		<frame number="8">
+			<changeFighterSpeed>
+				<ySpeed>-45</ySpeed>
+			</changeFighterSpeed>
+			<updateLandingLag reset="True">12</updateLandingLag>
+		</frame>
+		
+		<frame number="10">
+			<changeGravity>4</changeGravity>
+			<changeSubimage>0</changeSubimage>
+			<if>
+				<variable source="fighter">grounded</variable>
+				<value type="bool">True</value>
+				<pass>blast</pass>
+				<fail>hold</fail>
+			</if>
+		</frame>
+		
+		<conditional name="blast">
+			<activateHitbox>ThrowBox</activateHitbox>
+		</conditional>
+		
+		<conditional name="hold">
+			<setFrame>9</setFrame>
+		</conditional>
+	</UpThrow>
+	
+	<BackThrow>
+		<length>22</length>
+		<sprite>bthrow</sprite>
+		<sprite_rate>2</sprite_rate>
+		
+		<vars>
+			<escapable>False</escapable>
+		</vars>
+		
+		<setUp>
+			<createHitbox type="throw">
+				<name>ThrowBox</name>
+				<damage>7</damage>
+				<base_knockback>15</base_knockback>
+				<knockback_growth>0.05</knockback_growth>
+				<trajectory>170</trajectory>
+				<weight_influence>0.5</weight_influence>
+			</createHitbox>
+		</setUp>
+		
+		<frame number="1">
+			<activateHitbox>ThrowBox</activateHitbox>
+		</frame>
+		<frame number="last">
+			<flip />
+		</frame>
+	</BackThrow>
+	
 	<!-- Code Actions, TODO: pls fix -->
 	
 	<UpSpecial>
@@ -1884,20 +1965,6 @@
 			<action>Pummel</action>
 		</loadCodeAction>
 	</Pummel>
-	
-	<UpThrow>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>UpThrow</action>
-		</loadCodeAction>
-	</UpThrow>
-	
-	<BackThrow>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>BackThrow</action>
-		</loadCodeAction>
-	</BackThrow>
 	
 	<LedgeGetup>
 		<loadCodeAction>

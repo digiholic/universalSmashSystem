@@ -437,60 +437,8 @@ class Pummel(baseActions.BaseGrabbing):
         _actor.hurtbox.rect.height -= 16
         _actor.hurtbox.rect.midbottom = _actor.sprite.bounding_rect.midbottom
         if self.frame == self.last_frame:
-            _actor.doAction('Grabbing')
-
-class UpThrow(baseActions.BaseGrab):
-    def __init__(self):
-        baseActions.BaseGrab.__init__(self, 100)
+            _actor.doAction('Grabbing')       
         
-    def setUp(self, _actor):
-        baseActions.BaseGrab.setUp(self, _actor)
-        self.sprite_rate = 0
-        self.sprite_name = 'land'
-        self.escapable = False
-        _actor.changeSprite("land",3)
-        _actor.flinch_knockback_threshold = 10000
-        _actor.flinch_damage_threshold = 10000
-
-    def tearDown(self, _actor, _nextAction):
-        baseActions.BaseGrab.tearDown(self, _actor, _nextAction)
-        _actor.flinch_knockback_threshold = 0
-        _actor.flinch_damage_threshold = 0
-
-    def update(self, _actor):
-        if self.frame < 8:
-            _actor.changeSpriteImage(3-self.frame//2)
-        elif self.frame == 8:
-            _actor.change_y -= 45
-            _actor.landing_lag = 12
-        elif self.frame > 10:
-            _actor.calcGrav(4)
-            if _actor.grounded and _actor.change_y >= 0:
-                if _actor.grabbing:
-                    _actor.grabbing.applyKnockback(11, 12, 0.15, _actor.getForwardWithOffset(70))
-                _actor.doAction('Fall')
-        baseActions.BaseGrab.update(self, _actor)
-        
-        
-class BackThrow(baseActions.BaseGrab):
-    def __init__(self):
-        baseActions.BaseGrab.__init__(self, 22)
-        
-    def setUp(self, _actor):
-        baseActions.BaseGrab.setUp(self, _actor)
-        self.sprite_rate = 0
-        _actor.changeSprite("bthrow")
-        self.escapable = False
-        
-    def update(self, _actor):
-        if self.frame == 1 and _actor.grabbing:
-            _actor.grabbing.applyKnockback(7, 15, 0.05, _actor.getForwardWithOffset(170), 0.5)
-        if self.frame <= 16:
-            _actor.changeSpriteImage(self.frame//2)
-        elif self.frame == self.last_frame: 
-            _actor.flip()
-            _actor.doAction('NeutralAction')
-        baseActions.BaseGrab.update(self, _actor)
 
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #

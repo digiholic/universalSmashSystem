@@ -1774,10 +1774,10 @@ state_dict = {
 class BaseGrab(action.Action):
     def __init__(self,_length=1):
         action.Action.__init__(self, _length)
-        
-    def setUp(self, _actor):
         self.escapable = True
         self.hold_point = (0,0)
+        
+    def setUp(self, _actor):
         action.Action.setUp(self, _actor)
         
     def tearDown(self, _actor, _nextAction):
@@ -1985,5 +1985,13 @@ class ForwardThrow(BaseThrow):
         BaseGrab.__init__(self, _length)
 
 class DownThrow(BaseThrow):
+    def __init__(self,_length=0):
+        BaseGrab.__init__(self, _length)
+        
+class UpThrow(BaseThrow):
+    def __init__(self,_length=0):
+        BaseGrab.__init__(self, _length)
+
+class BackThrow(BaseThrow):
     def __init__(self,_length=0):
         BaseGrab.__init__(self, _length)
