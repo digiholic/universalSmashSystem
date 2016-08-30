@@ -18,7 +18,6 @@ def checkGround(_object, _objectList, _checkVelocity=True):
                 ground_block.add(block)
     return ground_block
 
-#Prepare for article usage
 def checkLeftWall(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
     if _object.facing == 1:
@@ -39,7 +38,6 @@ def checkLeftWall(_object, _objectList, _checkVelocity=True):
                 wall_block.add(block)
     return wall_block
 
-#Prepare for article usage
 def checkRightWall(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
     if _object.facing == 1:
@@ -60,21 +58,18 @@ def checkRightWall(_object, _objectList, _checkVelocity=True):
                 wall_block.add(block)
     return wall_block
 
-#Prepare for article usage
 def checkBackWall(_object, _objectList, _checkVelocity=True):
     if _object.facing == 1:
         _object.checkLeftWall(_object, _objectList, _checkVelocity)
     else:
         _object.checkRightWall(_object, _objectList, _checkVelocity)
 
-#Prepare for article usage
 def checkFrontWall(_object, _objectList, _checkVelocity=True):
     if _object.facing == 1:
         _object.checkRightWall(_object, _objectList, _checkVelocity)
     else:
         _object.checkLeftWall(_object, _objectList, _checkVelocity)
 
-#Prepare for article usage
 def checkCeiling(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
     _object.ceilinged = False

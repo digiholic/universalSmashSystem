@@ -477,6 +477,7 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         
+        self.sprite.updatePosition(self.rect)
         ground_blocks = self.checkGround()
         self.checkLeftWall()
         self.checkRightWall()
@@ -526,30 +527,24 @@ class AbstractFighter():
             self.change_y += min(diff, _multiplier*self.var['gravity'])
         if self.grounded: self.jumps = self.var['jumps']
 
-    #Prepare for article usage
     def checkGround(self):
         self.sprite.updatePosition(self.rect)
         return collisionBox.checkGround(self, self.game_state.platform_list, self.tech_window <= 0)
 
-    #Prepare for article usage
     def checkLeftWall(self):
         self.sprite.updatePosition(self.rect)
         return collisionBox.checkLeftWall(self, self.game_state.platform_list, True)
 
-    #Prepare for article usage
     def checkRightWall(self):
         self.sprite.updatePosition(self.rect)
         return collisionBox.checkRightWall(self, self.game_state.platform_list, True)
 
-    #Prepare for article usage
     def checkBackWall(self):
         return collisionBox.checkBackWall(self, self.game_state.platform_list, True)
 
-    #Prepare for article usage
     def checkFrontWall(self):
         return collisionBox.checkFrontWall(self, self.game_state.platform_list, True)
 
-    #Prepare for article usage
     def checkCeiling(self):
         self.sprite.updatePosition(self.rect)
         return collisionBox.checkCeiling(self, self.game_state.platform_list, True)
