@@ -187,7 +187,7 @@ class If(SubAction):
             function = '=='
         
         #get the variable and source
-        variable = parseData(_node.find('variable'), 'string', '')
+        variable = _node.find('variable').text
         if _node.find('variable').attrib.has_key('source'):
             source = _node.find('variable').attrib['source']
         else:
