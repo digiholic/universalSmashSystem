@@ -96,7 +96,7 @@ def getMovementCollisionsWith(_object,_spriteGroup):
 def getSizeCollisionsWith(_object,_spriteGroup):
     return sorted(filter(lambda r: intersectPoint(_object.ecb.current_ecb.rect, r.rect) != None, pygame.sprite.spritecollide(_object.ecb.current_ecb, _spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(_object.ecb.current_ecb.rect, q.rect)[0]))
 
-def catchMovement(_object, _other):
+def catchMovement(_object, _other, _platformPhase=False):
     _object.sprite.updatePosition(_object.rect)
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
@@ -116,13 +116,13 @@ def catchMovement(_object, _other):
             return False
         v_vel = [_object.change_x-_other.change_x, _object.change_y-_other.change_y]
         return numpy.dot(contact[1], v_vel) < 0
-    elif _object.platform_phase <= 0:
+    elif not _platformPhase:
         return checkPlatform(my_rect, _object.ecb.current_ecb.rect, check_rect, _object.change_y)
     else:
         return False
         
 #Prepare for article usage
-def eject(_object, _other):
+def eject(_object, _other, _platformPhase=False):
     _object.sprite.updatePosition(_object.rect)
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
@@ -136,7 +136,7 @@ def eject(_object, _other):
     else:
         new_prev = _object.ecb.current_ecb.rect.copy()
         new_prev.center = _object.ecb.previous_ecb.rect.center
-        if _object.platform_phase <= 0 and checkPlatform(_object.ecb.current_ecb.rect, _object.ecb.previous_ecb.rect, check_rect, _object.change_y):
+        if not _platformPhase and checkPlatform(_object.ecb.current_ecb.rect, _object.ecb.previous_ecb.rect, check_rect, _object.change_y):
             if contact is not None:
                 _object.rect.x += contact[0][0]
                 _object.rect.y += contact[0][1]
@@ -145,6 +145,10 @@ def eject(_object, _other):
 
 #Prepare for article usage
 def reflect(_object, _other):
+    if not hasattr(_object, 'elasticity'):
+        _object.elasticity = 0
+    if not hasattr(_object, 'ground_elasticity'):
+        _object.ground_elasticity = 0
     _object.sprite.updatePosition(_object.rect)
     _object.ecb.normalize()
     check_rect = _other.rect.copy()

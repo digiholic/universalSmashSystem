@@ -337,7 +337,7 @@ class AbstractFighter():
                 for block in block_hit_list:
                     if block.solid or (self.platform_phase <= 0):
                         self.platform_phase = 0
-                        if collisionBox.eject(self, block):
+                        if collisionBox.eject(self, block, self.platform_phase > 0):
                             bumped = True
                             break
                 if not bumped:
@@ -444,7 +444,7 @@ class AbstractFighter():
             for block in block_hit_list:
                 if block.solid or (self.platform_phase <= 0):
                     self.platform_phase = 0
-                    if collisionBox.eject(self, block):
+                    if collisionBox.eject(self, block, self.platform_phase > 0):
                         bumped = True
                         break
             if not bumped:
@@ -467,7 +467,7 @@ class AbstractFighter():
         self.ecb.normalize()
         block_hit_list = collisionBox.getMovementCollisionsWith(self, self.game_state.platform_list)
         for block in block_hit_list:
-            if collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) > 0 and collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) < t and collisionBox.catchMovement(self, block): 
+            if collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) > 0 and collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) < t and collisionBox.catchMovement(self, block, self.platform_phase > 0): 
                 t = collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect)
                 to_bounce_block = block
                 
