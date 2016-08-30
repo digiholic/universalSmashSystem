@@ -529,92 +529,30 @@ class AbstractFighter():
     #Prepare for article usage
     def checkGround(self):
         self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
-        self.grounded = False
-        self.ecb.current_ecb.rect.y += 4
-        ground_block = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.game_state.platform_list, False)
-        self.ecb.current_ecb.rect.y -= 4
-        for block in block_hit_list:
-            if block.solid or (self.platform_phase <= 0):
-                if self.ecb.current_ecb.rect.bottom <= block.rect.top+4 and (self.tech_window > 0 or self.change_y > block.change_y-1):
-                    self.grounded = True
-                    ground_block.add(block)
-        return ground_block
+        return collisionBox.checkGround(self, self.game_state.platform_list, self.tech_window <= 0)
 
     #Prepare for article usage
     def checkLeftWall(self):
         self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
-        if self.facing == 1:
-            self.back_walled = False
-        else:
-            self.front_walled = False
-        self.ecb.current_ecb.rect.x -= 4
-        wall_block = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.game_state.platform_list, False)
-        self.ecb.current_ecb.rect.x += 4
-        for block in block_hit_list:
-            if block.solid:
-                if self.ecb.current_ecb.rect.left >= block.rect.right-4 and self.change_x < block.change_x+1:
-                    if self.facing == 1:
-                        self.back_walled = True
-                    else:
-                        self.front_walled = True
-                    wall_block.add(block)
-        return wall_block
+        return collisionBox.checkLeftWall(self, self.game_state.platform_list, True)
 
     #Prepare for article usage
     def checkRightWall(self):
         self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
-        if self.facing == 1:
-            self.front_walled = False
-        else:
-            self.back_walled = False
-        self.ecb.current_ecb.rect.x += 4
-        wall_block = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.game_state.platform_list, False)
-        self.ecb.current_ecb.rect.x -= 4
-        for block in block_hit_list:
-            if block.solid:
-                if self.ecb.current_ecb.rect.right <= block.rect.left+4 and self.change_x > block.change_x-1:
-                    if self.facing == 1:
-                        self.front_walled = 1
-                    else:
-                        self.back_walled = 1
-                    wall_block.add(block)
-        return wall_block
+        return collisionBox.checkRightWall(self, self.game_state.platform_list, True)
 
     #Prepare for article usage
     def checkBackWall(self):
-        if self.facing == 1:
-            self.checkLeftWall()
-        else:
-            self.checkRightWall()
+        return collisionBox.checkBackWall(self, self.game_state.platform_list, True)
 
     #Prepare for article usage
     def checkFrontWall(self):
-        if self.facing == 1:
-            self.checkRightWall()
-        else:
-            self.checkLeftWall()
+        return collisionBox.checkFrontWall(self, self.game_state.platform_list, True)
 
     #Prepare for article usage
     def checkCeiling(self):
         self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
-        self.ceilinged = False
-        self.ecb.current_ecb.rect.y -= 4
-        ceiling_block = pygame.sprite.Group()
-        block_hit_list = pygame.sprite.spritecollide(self.ecb.current_ecb, self.game_state.platform_list, False)
-        self.ecb.current_ecb.rect.y += 4
-        for block in block_hit_list:
-            if block.solid:
-                if self.ecb.current_ecb.rect.top >= block.rect.bottom-4 and self.change_y < block.change_y+1:
-                    self.ceilinged = True
-                    ceiling_block.add(block)
-        return ceiling_block
+        return collisionBox.checkCeiling(self, self.game_state.platform_list, True)
     
     """
     A simple function that converts the facing variable into a direction in degrees.
