@@ -14,6 +14,40 @@ def loadNodeWithDefault(_node,_sub_node,_default):
     else:
         return _default
 
+def parseData(_data,_type="string",_default=None):
+    if _data is None: #If there is no data, return default
+        return _default
+    if _data.find('var') is not None: #If the data has a Var tag
+        varTag = _data.find('var')
+        
+        if varTag.attrib.has_key('source'): source = varTag.attrib['source']
+        else: source = 'actor'
+        
+        return VarData(source,varTag.text)
+    
+    if type=="string": return _data.text
+    if type=="int": return int(_data.text)
+    if type=="float": return float(_data.text)
+    if type=="bool": return (_data.text == True)
+    if type=="tuple": make_tuple(_data.text)
+
+class VarData():
+    def __init__(self,_source,_var):
+        self.source = _source
+        self.var = _var
+    
+    def unpack(self,_action,_actor):
+        if self.source == 'actor':
+            if _actor.var.has_key(self.var):
+                return _actor.var[self.var]
+            elif hasattr(_actor, self.var):
+                return getattr(_actor, self.var)
+            else: return None
+        if self.source == 'action':
+            if hasattr(_action, self.var):
+                return getattr(_action, self.var)
+        return None
+    
 # This will load either a variable if the tag contains a "var" tag, or a literal
 # value based on the type given. If the _node doesn't exist, returns default instead.
 def loadValueOrVariable(_node, _sub_node, _type="string", _default=""):
@@ -153,7 +187,7 @@ class If(SubAction):
             function = '=='
         
         #get the variable and source
-        variable = _node.find('variable').text
+        variable = parseData(_node.find('variable'), 'string', '')
         if _node.find('variable').attrib.has_key('source'):
             source = _node.find('variable').attrib['source']
         else:
