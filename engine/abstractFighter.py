@@ -1,5 +1,6 @@
 import pygame
 import engine.baseActions as baseActions
+import engine.collisionBox as collisionBox
 import math
 import settingsManager
 import spriteManager
@@ -255,7 +256,7 @@ class AbstractFighter():
         self.keys_held = dict()
         
         self.mask = None
-        self.ecb = ECB(self)
+        self.ecb = collisionBox.ECB(self)
         
         self.active_hitboxes = pygame.sprite.Group()
         self.articles = pygame.sprite.Group()
@@ -525,6 +526,7 @@ class AbstractFighter():
             self.change_y += min(diff, _multiplier*self.var['gravity'])
         if self.grounded: self.jumps = self.var['jumps']
 
+    #Prepare for article usage
     def checkGround(self):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
@@ -540,6 +542,7 @@ class AbstractFighter():
                     ground_block.add(block)
         return ground_block
 
+    #Prepare for article usage
     def checkLeftWall(self):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
@@ -561,6 +564,7 @@ class AbstractFighter():
                     wall_block.add(block)
         return wall_block
 
+    #Prepare for article usage
     def checkRightWall(self):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
@@ -582,6 +586,21 @@ class AbstractFighter():
                     wall_block.add(block)
         return wall_block
 
+    #Prepare for article usage
+    def checkBackWall(self):
+        if self.facing == 1:
+            self.checkLeftWall()
+        else:
+            self.checkRightWall()
+
+    #Prepare for article usage
+    def checkFrontWall(self):
+        if self.facing == 1:
+            self.checkRightWall()
+        else:
+            self.checkLeftWall()
+
+    #Prepare for article usage
     def checkCeiling(self):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
@@ -1310,6 +1329,7 @@ class AbstractFighter():
     This will return a list of all sprites in the given group
     that collide with the fighter, not counting transparency.
     """
+    #Prepare for article usage
     def getMovementCollisionsWith(self,_spriteGroup):
         future_rect = self.ecb.current_ecb.rect.copy()
         future_rect.x += self.change_x
@@ -1317,9 +1337,11 @@ class AbstractFighter():
         collide_sprite = spriteManager.RectSprite(self.ecb.current_ecb.rect.union(future_rect))
         return filter(lambda r: pathRectIntersects(self.ecb.current_ecb.rect, future_rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collide_sprite, _spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.current_ecb.rect, future_rect, q.rect)))
 
+    #Prepare for article usage
     def getSizeCollisionsWith(self,_spriteGroup):
         return sorted(filter(lambda r: intersectPoint(self.ecb.current_ecb.rect, r.rect) != None, pygame.sprite.spritecollide(self.ecb.current_ecb, _spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(self.ecb.current_ecb.rect, q.rect)[0]))
 
+    #Prepare for article usage
     def catchMovement(self, _other):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
@@ -1346,6 +1368,7 @@ class AbstractFighter():
             return False
         
 
+    #Prepare for article usage
     def eject(self, _other):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
@@ -1369,6 +1392,7 @@ class AbstractFighter():
                     return self.reflect(_other)
         return False
 
+    #Prepare for article usage
     def reflect(self, _other):
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
@@ -1416,6 +1440,7 @@ def getDirectionBetweenPoints(_p1, _p2):
     dy = y1 - y2
     return (180 * math.atan2(dy, dx)) / math.pi 
 
+#Prepare for article usage
 def intersectPoint(_firstRect, _secondRect): 
     first_points = [_firstRect.midtop, _firstRect.midbottom, _firstRect.midleft, _firstRect.midright]
     second_points = [_secondRect.topleft, _secondRect.topright, _secondRect.bottomleft, _secondRect.bottomright]
@@ -1439,12 +1464,14 @@ def intersectPoint(_firstRect, _secondRect):
     else:
         return min_direction
 
+#Prepare for article usage
 def checkPlatform(_current, _previous, _platform, _yvel):
     intersect = intersectPoint(_current, _platform)
     if _platform.top >= _previous.bottom-4-_yvel and intersect is not None and intersect[1][1] < 0 and _current.bottom >= _platform.top:
         return True
     return False
     
+#Prepare for article usage
 def directionalDisplacement(_firstPoints, _secondPoints, _direction):
     #Given a direction to displace in, determine the displacement needed to get it out
     first_dots = map(lambda x: numpy.dot(x, _direction), _firstPoints)
@@ -1455,6 +1482,7 @@ def directionalDisplacement(_firstPoints, _secondPoints, _direction):
 
 # Returns a 2-entry array representing a range of time when the points and the rect intersect
 # If the range's min is greater than its max, it represents an empty interval
+#Prepare for article usage
 def projectionIntersects(_startPoints, _endPoints, _rectPoints, _vector):
     start_dots = map(lambda x: numpy.dot(x, _vector), _startPoints)
     end_dots = map(lambda x: numpy.dot(x, _vector), _endPoints)
@@ -1492,6 +1520,7 @@ def projectionIntersects(_startPoints, _endPoints, _rectPoints, _vector):
 
     return [max(t_mins[0], t_maxs[0], t_open[0]), min(t_mins[1], t_maxs[1], t_open[1])]
 
+#Prepare for article usage
 def pathRectIntersects(_startRect, _endRect, _rect):
     if _startRect.colliderect(_rect):
         return 0
@@ -1553,74 +1582,3 @@ class InputBuffer():
     def append(self,_key):
         self.working_buff.append(_key)
 
-
-########################################################
-#                       ECB                            #
-########################################################        
-"""
-The ECB (environment collision box) is really more like an ECC, it'll be a cross of two rects.
-It'll have a height and width, a centerpoint where they intersect, and x and y offsets. It will
-be used for platform collision, and it'll know its previous location to know which direction
-it's coming from.
-"""
-class ECB():
-    def __init__(self,_actor):
-        self.actor = _actor
-
-        self.current_ecb = spriteManager.RectSprite(self.actor.sprite.bounding_rect.copy(), pygame.Color('#ECB134'))
-        self.original_size = self.current_ecb.rect.size
-        self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
-
-        self.previous_ecb = spriteManager.RectSprite(self.current_ecb.rect.copy(), pygame.Color('#EA6F1C'))
-        
-    """
-    Resize the ECB. Give it a height, width, and center point.
-    xoff is the offset from the center of the x-bar, where 0 is dead center, negative is left and positive is right
-    yoff is the offset from the center of the y-bar, where 0 is dead center, negative is up and positive is down
-    """
-    def resize(self,_height,_width,_center,_xoff,_yoff):
-        pass
-    
-    """
-    Returns the dimensions of the ECB of the previous frame
-    """
-    def getPreviousECB(self):
-        pass
-    
-    """
-    This one moves the ECB without resizing it.
-    """
-    def move(self,_newCenter):
-        self.current_ecb.rect.center = _newCenter
-    
-    """
-    This stores the previous location of the ECB
-    """
-    def store(self):
-        self.previous_ecb = spriteManager.RectSprite(self.current_ecb.rect,pygame.Color('#EA6F1C'))
-    
-    """
-    Set the ECB's height and width to the sprite's, and centers it
-    """
-    def normalize(self):
-        #center = (self.actor.sprite.bounding_rect.centerx + self.actor.current_action.ecb_center[0],self.actor.sprite.bounding_rect.centery + self.actor.current_action.ecb_center[1])
-        sizes = self.actor.current_action.ecb_size
-        offsets = self.actor.current_action.ecb_offset
-        
-        
-        if sizes[0] == 0: 
-            self.current_ecb.rect.width = self.actor.sprite.bounding_rect.width
-        else:
-            self.current_ecb.rect.width = sizes[0]
-        if sizes[1] == 0: 
-            self.current_ecb.rect.height = self.actor.sprite.bounding_rect.height
-        else:
-            self.current_ecb.rect.height = sizes[1]
-        
-        self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
-        self.current_ecb.rect.x += offsets[0]
-        self.current_ecb.rect.y += offsets[1]
-        
-    def draw(self,_screen,_offset,_scale):
-        self.current_ecb.draw(_screen,self.actor.game_state.stageToScreen(self.current_ecb.rect),_scale)
-        self.previous_ecb.draw(_screen,self.actor.game_state.stageToScreen(self.previous_ecb.rect),_scale)

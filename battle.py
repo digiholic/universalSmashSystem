@@ -294,6 +294,7 @@ class Battle():
             self.dirty_rects = []
             pygame.display.update()
             if debug_mode:
+                print("Paused, press right ctrl key to continue")
                 while not debug_pass:
                     for event in pygame.event.get():
                         if event.type == pygame.QUIT:
