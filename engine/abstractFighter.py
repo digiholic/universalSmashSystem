@@ -331,13 +331,13 @@ class AbstractFighter():
                 self.sprite.updatePosition(self.rect)
                 self.ecb.normalize()
                 bumped = False
-                block_hit_list = self.getSizeCollisionsWith(self.game_state.platform_list)
+                block_hit_list = collisionBox.getSizeCollisionsWith(self, self.game_state.platform_list)
                 if not block_hit_list:
                     break
                 for block in block_hit_list:
                     if block.solid or (self.platform_phase <= 0):
                         self.platform_phase = 0
-                        if self.eject(block):
+                        if collisionBox.eject(self, block):
                             bumped = True
                             break
                 if not bumped:
@@ -438,13 +438,13 @@ class AbstractFighter():
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
             bumped = False
-            block_hit_list = self.getSizeCollisionsWith(self.game_state.platform_list)
+            block_hit_list = collisionBox.getSizeCollisionsWith(self, self.game_state.platform_list)
             if not block_hit_list:
                 break
             for block in block_hit_list:
                 if block.solid or (self.platform_phase <= 0):
                     self.platform_phase = 0
-                    if self.eject(block):
+                    if collisionBox.eject(self, block):
                         bumped = True
                         break
             if not bumped:
@@ -465,10 +465,10 @@ class AbstractFighter():
 
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
-        block_hit_list = self.getMovementCollisionsWith(self.game_state.platform_list)
+        block_hit_list = collisionBox.getMovementCollisionsWith(self, self.game_state.platform_list)
         for block in block_hit_list:
-            if pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) > 0 and pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) < t and self.catchMovement(block): 
-                t = pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect)
+            if collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) > 0 and collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) < t and collisionBox.catchMovement(self, block): 
+                t = collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect)
                 to_bounce_block = block
                 
         self.rect.y += self.change_y*t
@@ -477,7 +477,6 @@ class AbstractFighter():
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
         
-        self.sprite.updatePosition(self.rect)
         ground_blocks = self.checkGround()
         self.checkLeftWall()
         self.checkRightWall()
@@ -490,7 +489,7 @@ class AbstractFighter():
             self.change_y -= self.var['gravity']
 
         if to_bounce_block is not None:
-            self.reflect(to_bounce_block)
+            collisionBox.reflect(self, to_bounce_block)
 
         self.sprite.updatePosition(self.rect)
 
@@ -1257,96 +1256,6 @@ class AbstractFighter():
         
         return (direction,magnitude)
         
-    """
-    Pixel Perfect Collision (almost!).
-    This will return a list of all sprites in the given group
-    that collide with the fighter, not counting transparency.
-    """
-    #Prepare for article usage
-    def getMovementCollisionsWith(self,_spriteGroup):
-        future_rect = self.ecb.current_ecb.rect.copy()
-        future_rect.x += self.change_x
-        future_rect.y += self.change_y
-        collide_sprite = spriteManager.RectSprite(self.ecb.current_ecb.rect.union(future_rect))
-        return filter(lambda r: pathRectIntersects(self.ecb.current_ecb.rect, future_rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collide_sprite, _spriteGroup, False), key = lambda q: pathRectIntersects(self.ecb.current_ecb.rect, future_rect, q.rect)))
-
-    #Prepare for article usage
-    def getSizeCollisionsWith(self,_spriteGroup):
-        return sorted(filter(lambda r: intersectPoint(self.ecb.current_ecb.rect, r.rect) != None, pygame.sprite.spritecollide(self.ecb.current_ecb, _spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(self.ecb.current_ecb.rect, q.rect)[0]))
-
-    #Prepare for article usage
-    def catchMovement(self, _other):
-        self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
-        check_rect = _other.rect.copy()
-
-        future_rect = self.ecb.current_ecb.rect.copy()
-        future_rect.x += self.change_x
-        future_rect.y += self.change_y
-        t = pathRectIntersects(self.ecb.current_ecb.rect, future_rect, check_rect)
-
-        my_rect = self.ecb.current_ecb.rect.copy()
-        my_rect.x += t*(future_rect.x-self.ecb.current_ecb.rect.x)
-        my_rect.y += t*(future_rect.y-self.ecb.current_ecb.rect.y)
-
-        if _other.solid:
-            contact = intersectPoint(my_rect, check_rect)
-            if contact is None:
-                return False
-            v_vel = [self.change_x-_other.change_x, self.change_y-_other.change_y]
-            return numpy.dot(contact[1], v_vel) < 0
-        elif self.platform_phase <= 0:
-            return checkPlatform(my_rect, self.ecb.current_ecb.rect, check_rect, self.change_y)
-        else:
-            return False
-        
-
-    #Prepare for article usage
-    def eject(self, _other):
-        self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
-        check_rect = _other.rect.copy()
-        #check_rect.centerx -= other.change_x
-        #check_rect.centery -= other.change_y
-        contact = intersectPoint(self.ecb.current_ecb.rect, check_rect)
-        
-        if _other.solid:
-            if contact is not None:
-                self.rect.x += contact[0][0]
-                self.rect.y += contact[0][1]
-                return self.reflect(_other)
-        else:
-            new_prev = self.ecb.current_ecb.rect.copy()
-            new_prev.center = self.ecb.previous_ecb.rect.center
-            if self.platform_phase <= 0 and checkPlatform(self.ecb.current_ecb.rect, self.ecb.previous_ecb.rect, check_rect, self.change_y):
-                if contact is not None:
-                    self.rect.x += contact[0][0]
-                    self.rect.y += contact[0][1]
-                    return self.reflect(_other)
-        return False
-
-    #Prepare for article usage
-    def reflect(self, _other):
-        self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
-        check_rect = _other.rect.copy()
-        contact = intersectPoint(self.ecb.current_ecb.rect, check_rect)
-
-        if contact is not None:
-            #The contact vector is perpendicular to the axis over which the reflection should happen
-            v_vel = [self.change_x-_other.change_x, self.change_y-_other.change_y]
-            if numpy.dot(v_vel, contact[1]) < 0:
-                v_norm = [contact[1][1], -contact[1][0]]
-                dot = numpy.dot(v_norm, v_vel)
-                norm = numpy.linalg.norm(v_norm)
-                ratio = 1 if norm == 0 else dot/(norm*norm)
-                projection = [v_norm[0]*ratio, v_norm[1]*ratio] #Projection of v_vel onto v_norm
-                elasticity = self.ground_elasticity if contact[1][1] < 0 else self.elasticity
-                self.change_x = projection[0]+elasticity*(projection[0]-v_vel[0])+_other.change_x
-                self.change_y = projection[1]+elasticity*(projection[1]-v_vel[1])+_other.change_y
-                return True
-        return False
-        
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
 ########################################################
@@ -1372,105 +1281,6 @@ def getDirectionBetweenPoints(_p1, _p2):
     dx = x2 - x1
     dy = y1 - y2
     return (180 * math.atan2(dy, dx)) / math.pi 
-
-#Prepare for article usage
-def intersectPoint(_firstRect, _secondRect): 
-    first_points = [_firstRect.midtop, _firstRect.midbottom, _firstRect.midleft, _firstRect.midright]
-    second_points = [_secondRect.topleft, _secondRect.topright, _secondRect.bottomleft, _secondRect.bottomright]
-
-    norm = numpy.linalg.norm([_firstRect.height, _firstRect.width])
-    if norm == 0:
-        norm = 1
-
-    left_dist = [directionalDisplacement(first_points, second_points, [float(-1), float(0)]), [float(-1), float(0)]]
-    right_dist = [directionalDisplacement(first_points, second_points, [float(1), float(0)]), [float(1), float(0)]]
-    up_dist = [directionalDisplacement(first_points, second_points, [float(0), float(-1)]), [float(0), float(-1)]]
-    down_dist = [directionalDisplacement(first_points, second_points, [float(0), float(1)]), [float(0), float(1)]]
-    up_left_dist = [directionalDisplacement(first_points, second_points, [float(-_firstRect.height), float(-_firstRect.width)]), [float(-_firstRect.height)/norm, float(-_firstRect.width)/norm]]
-    up_right_dist = [directionalDisplacement(first_points, second_points, [float(_firstRect.height), float(-_firstRect.width)]), [float(_firstRect.height)/norm, float(-_firstRect.width)/norm]]
-    down_left_dist = [directionalDisplacement(first_points, second_points, [float(-_firstRect.height), float(_firstRect.width)]), [float(-_firstRect.height)/norm, float(_firstRect.width)/norm]]
-    down_right_dist = [directionalDisplacement(first_points, second_points, [float(_firstRect.height), float(_firstRect.width)]), [float(_firstRect.height)/norm, float(_firstRect.width)/norm]]
-
-    min_direction = min(left_dist, right_dist, up_dist, down_dist, up_left_dist, up_right_dist, down_left_dist, down_right_dist, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
-    if directionalDisplacement(first_points, second_points, min_direction[1]) < 0:
-        return None
-    else:
-        return min_direction
-
-#Prepare for article usage
-def checkPlatform(_current, _previous, _platform, _yvel):
-    intersect = intersectPoint(_current, _platform)
-    if _platform.top >= _previous.bottom-4-_yvel and intersect is not None and intersect[1][1] < 0 and _current.bottom >= _platform.top:
-        return True
-    return False
-    
-#Prepare for article usage
-def directionalDisplacement(_firstPoints, _secondPoints, _direction):
-    #Given a direction to displace in, determine the displacement needed to get it out
-    first_dots = map(lambda x: numpy.dot(x, _direction), _firstPoints)
-    second_dots = map(lambda x: numpy.dot(x, _direction), _secondPoints)
-    projected_displacement = max(second_dots)-min(first_dots)
-    norm_sqr = 1.0 if _direction == [0, 0] else _direction[0]*_direction[0]+_direction[1]*_direction[1]
-    return [projected_displacement/norm_sqr*_direction[0], projected_displacement/norm_sqr*_direction[1]]
-
-# Returns a 2-entry array representing a range of time when the points and the rect intersect
-# If the range's min is greater than its max, it represents an empty interval
-#Prepare for article usage
-def projectionIntersects(_startPoints, _endPoints, _rectPoints, _vector):
-    start_dots = map(lambda x: numpy.dot(x, _vector), _startPoints)
-    end_dots = map(lambda x: numpy.dot(x, _vector), _endPoints)
-    rect_dots = map(lambda x: numpy.dot(x, _vector), _rectPoints)
-
-    if min(start_dots) == min(end_dots):
-        if min(start_dots) <= max(rect_dots): #.O.|...
-            t_mins = [float("-inf"), float("inf")]
-        else:                               #...|.O.
-            t_mins = [float("inf"), float("-inf")]
-    elif min(start_dots) > min(end_dots):
-        t_mins = [float(max(rect_dots)-min(start_dots))/(min(end_dots)-min(start_dots)), float("inf")]
-    else:
-        t_mins = [float("-inf"), float(max(rect_dots)-min(start_dots))/(min(end_dots)-min(start_dots))]
-
-    if max(start_dots) == max(end_dots):
-        if max(start_dots) >= min(rect_dots): #...|.O.
-            t_maxs = [float("-inf"), float("inf")]
-        else:                               #.O.|...
-            t_maxs = [float("inf"), float("-inf")]
-    elif max(start_dots) < max(end_dots):
-        t_maxs = [float(min(rect_dots)-max(start_dots))/(max(end_dots)-max(start_dots)), float("inf")]
-    else:
-        t_maxs = [float("-inf"), float(min(rect_dots)-max(start_dots))/(max(end_dots)-max(start_dots))]
-
-    if max(end_dots)-max(start_dots) == min(end_dots)-min(start_dots):
-        if max(start_dots) > min(start_dots):
-            t_open = [float("-inf"), float("inf")]
-        else:
-            t_open = [float("inf"), float("-inf")]
-    elif max(end_dots)-max(start_dots) > min(end_dots)-min(start_dots):
-        t_open = [float("-inf"), float(max(end_dots)-max(start_dots)-min(end_dots)+min(start_dots))/(max(start_dots)-min(start_dots))]
-    else:
-        t_open = [float(max(end_dots)-max(start_dots)-min(end_dots)+min(start_dots))/(max(start_dots)-min(start_dots)), float("inf")]
-
-    return [max(t_mins[0], t_maxs[0], t_open[0]), min(t_mins[1], t_maxs[1], t_open[1])]
-
-#Prepare for article usage
-def pathRectIntersects(_startRect, _endRect, _rect):
-    if _startRect.colliderect(_rect):
-        return 0
-    start_corners = [_startRect.midtop, _startRect.midbottom, _startRect.midleft, _startRect.midright]
-    end_corners = [_endRect.midtop, _endRect.midbottom, _endRect.midleft, _endRect.midright]
-    rect_corners = [_rect.topleft, _rect.topright, _rect.bottomleft, _rect.bottomright]
-
-    horizontal_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [1, 0])
-    vertical_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [0, 1])
-    downward_diagonal_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [_startRect.height, _startRect.width])
-    upward_diagonal_intersects = projectionIntersects(start_corners, end_corners, rect_corners, [-_startRect.height, _startRect.width])
-
-    total_intersects = [max(horizontal_intersects[0], vertical_intersects[0], downward_diagonal_intersects[0], upward_diagonal_intersects[0], 0), min(horizontal_intersects[1], vertical_intersects[1], downward_diagonal_intersects[1], upward_diagonal_intersects[1], 1)]
-    if total_intersects[0] > total_intersects[1]:
-        return 999
-    else:
-        return total_intersects[0]
         
 ########################################################
 #                  INPUT BUFFER                        #
