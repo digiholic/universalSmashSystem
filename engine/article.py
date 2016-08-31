@@ -14,6 +14,7 @@ origin - where the article starts. This sets the center of the article, not the 
 length - if this article has logic or animation, you can set this to be used in the update() method,
          just like a fighter's action.
 """
+#Add method to get its own bounding rect
 class DynamicArticle(spriteManager.SheetSprite):
     def __init__(self,_owner,_sheet,_imgWidth=0,_originPoint=(0,0),_length=1,_spriteRate=0,_startingDirection=0,_draw_depth=1):
         self.owner = _owner
