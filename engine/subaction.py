@@ -14,6 +14,9 @@ def loadNodeWithDefault(_node,_sub_node,_default):
     else:
         return _default
 
+"""
+Gets data or builds a variable. Any time anything needs data, this should be used.
+"""
 def parseData(_data,_type="string",_default=None):
     if _data is None: #If there is no data, return default
         return _default
@@ -25,12 +28,20 @@ def parseData(_data,_type="string",_default=None):
         
         return VarData(source,varTag.text)
     
-    if type=="string": return _data.text
-    if type=="int": return int(_data.text)
-    if type=="float": return float(_data.text)
-    if type=="bool": return (_data.text == True)
-    if type=="tuple": make_tuple(_data.text)
+    if _type=="dynamic":
+        if _data.attrib.has_key('type'):
+            _type = _data.attrib['type']
+    
+    if _type=="string": return _data.text
+    if _type=="int": return int(_data.text)
+    if _type=="float": return float(_data.text)
+    if _type=="bool": return (_data.text == 'True')
+    if type=="tuple": return make_tuple(_data.text)
 
+"""
+An object that will load a variable from either an action or a fighter.
+Pulls data at runtime
+"""
 class VarData():
     def __init__(self,_source,_var):
         self.source = _source
@@ -47,7 +58,123 @@ class VarData():
             if hasattr(_action, self.var):
                 return getattr(_action, self.var)
         return None
+ 
+"""
+Used for building subActions dynamically. Each one has a path to get to its XML data,
+and a variable to set in the SubAction. It is used to read from XML and store as XML.
+
+Paths are in the form of root|attrib>node|attrib>subnode
+For example, this XML string:
+
+    <root testAttrib="0">
+        <subNode0 />
+        <subNode1>
+            <subSubNode0 attrib="1" />
+        </subNode1>
+    </root>
+
+Can have the following paths
+    "root"
+    "root|testAttrib"
+    "root>subNode0"
+    "root>subNode1"
+    "root>subNode1>subSubNode0"
+    "root>subNode1>subSubNode0|attrib"
+"""
+class NodeMap():
+    def __init__(self,_variableName,_variableType,_path,_defaultValue):
+        self.variableName = _variableName
+        self.variableType = _variableType
+        self.path = _path
+        self.defaultValue = _defaultValue
+        
+    def getTypeFromData(self,_data):
+        if self.variableType=="dynamic":
+            if _data.attrib.has_key('type'):
+                self.variableType = _data.attrib['type']
+        if self.variableType=="string": return _data
+        if self.variableType=="int": return int(_data)
+        if self.variableType=="float": return float(_data)
+        if self.variableType=="bool": return (_data == 'True')
+        if self.variableType=="tuple": make_tuple(_data)
+            
+            
+    def populateFromXML(self,_subAction,_rootNode):
+        nodeList = []
+        currentPosition = _rootNode
+        for node in self.path.split('>'):
+            nodeList.append(node.split('|'))
+            
+        #if it's set up right, the first node in the list should be the same as our root node
+        if nodeList[0][0] == _rootNode.tag:
+            if len(nodeList) == 1: #We only have the root or a root attribute
+                nodePath = nodeList[0]
+                if len(nodePath) > 1: #If we've hit an attribute
+                    if _rootNode.attrib.has_key(nodePath[1]):
+                        setattr(_subAction, self.variableName, self.getTypeFromData(_rootNode.attrib[nodePath[1]]))
+                    else: setattr(_subAction, self.variableName, self.defaultValue)
+                    
+                    return
+                else:
+                    setattr(_subAction, self.variableName, parseData(_rootNode, self.variableType, self.defaultValue))
+                    return
+                
+            for nodePath in nodeList[1:]: #iterate through everything else
+                currentPosition = currentPosition.find(nodePath[0])
+                if len(nodePath) > 1: #If we've hit an attribute
+                    if currentPosition.attrib.has_key(nodePath[1]):
+                        setattr(_subAction, self.variableName, self.getTypeFromData(currentPosition.attrib[nodePath[1]]))
+                    else: setattr(_subAction, self.variableName, self.defaultValue)
+                    
+                    
+                    return
+                if currentPosition is None: #If we hit a dead end
+                    setattr(_subAction,self.variableName,self.defaultValue)
+                    return
+            #If we leave the loop and haven't exited, we didn't hit an attrib either.
+            setattr(_subAction, self.variableName, parseData(currentPosition, self.variableType, self.defaultValue))
+            return
+        
+        setattr(_subAction,self.variableName,self.defaultValue)
+        return
+        #Iterate through list, scanning nodes as you go
     
+    def storeAsXML(self,_subAction,_rootNode):
+        nodeList = []
+        currentPosition = _rootNode
+        for node in self.path.split('>'):
+            nodeList.append(node.split('|'))
+            
+        if nodeList[0][0] == _rootNode.tag:
+            if len(nodeList) == 1: #We only have the root or a root attribute
+                nodePath = nodeList[0]
+                if len(nodePath) > 1: #If we've hit an attribute
+                    _rootNode.attrib[nodePath[1]] = str(getattr(_subAction, self.variableName))
+                    return
+                else:
+                    _rootNode.text = str(getattr(_subAction, self.variableName))
+                    return
+                
+            for nodePath in nodeList[1:]: #iterate through everything else
+                if currentPosition.find(nodePath[0]) is None:
+                    elem = ElementTree.Element(nodePath[0])
+                    currentPosition.append(elem)
+                
+                currentPosition = currentPosition.find(nodePath[0])
+                
+                if len(nodePath) > 1: #If we've hit an attribute
+                    currentPosition.attrib[nodePath[1]] = str(getattr(_subAction, self.variableName))
+                    return
+            #If we leave the loop and haven't exited, we didn't hit an attrib either.
+            currentPosition.text = str(getattr(_subAction, self.variableName))
+            return
+        
+        setattr(_subAction,self.variableName,self.defaultValue)
+        return
+    
+    def getBuilderEntry(self):
+        pass
+        
 # This will load either a variable if the tag contains a "var" tag, or a literal
 # value based on the type given. If the _node doesn't exist, returns default instead.
 def loadValueOrVariable(_node, _sub_node, _type="string", _default=""):
@@ -75,6 +202,7 @@ def loadValueOrVariable(_node, _sub_node, _type="string", _default=""):
 # SubActions are a single part of an Action, such as moving a fighter, or tweaking a sprite.
 class SubAction():
     subact_group = 'None'
+    fields = []
     
     def __init__(self):
         pass
@@ -89,17 +217,31 @@ class SubAction():
         return subactionSelector.BasePropertiesFrame(_root,self)
     
     def getXmlElement(self):
-        return ElementTree.Element(self.__class__.__name__)
+        elem = ElementTree.Element(name_dict[self.__class__])
+        for node in self.fields:
+            node.storeAsXML(self, elem)
+            
+        return elem
     
     @staticmethod
-    def buildFromXml(_node):
-        pass
+    def buildFromXml(_subactName,_node):
+        subAction = subaction_dict[_subactName]()
+        for node in subaction_dict[_subactName].fields:
+            node.populateFromXML(subAction, _node)
+        return subAction
     
 ########################################################
 #                 CONDITIONALS                         #
 ########################################################
 class If(SubAction):
     subact_group = 'Control'
+    fields = [NodeMap('variable','string','If>variable',''),
+              NodeMap('source','string','If>variable|source','action'),
+              NodeMap('function','string','If|function','=='),
+              NodeMap('value','dynamic','If>value',True),
+              NodeMap('if_actions','string','If>pass',''),
+              NodeMap('else_actions','string','If>fail','')
+              ]
     
     def __init__(self,_variable='',_source='action',_function='==',_value='True',_ifActions='',_elseActions=''):
         self.variable = _variable
@@ -177,38 +319,6 @@ class If(SubAction):
             elem.append(fail_elem)
         
         return elem
-    
-    @staticmethod
-    def buildFromXml(_node):
-        #load the function
-        if _node.attrib.has_key('function'):
-            function = _node.attrib['function']
-        else:
-            function = '=='
-        
-        #get the variable and source
-        variable = _node.find('variable').text
-        if _node.find('variable').attrib.has_key('source'):
-            source = _node.find('variable').attrib['source']
-        else:
-            source = 'action'
-        
-        #get the value
-        value = _node.find('value').text
-        if _node.find('value').attrib.has_key('type'):
-            vartype = _node.find('value').attrib['type']
-        else: vartype="string"
-        
-        if vartype == 'int':
-            value = int(value)
-        elif vartype == 'float':
-            value = float(value)
-        elif vartype == 'bool':
-            value = value == 'True'
-            
-        if_actions = loadNodeWithDefault(_node, 'pass', None)
-        else_actions = loadNodeWithDefault(_node, 'fail', None)
-        return If(variable,source,function,value,if_actions,else_actions)
 
 class ifButton(SubAction):
     subact_group = 'Control'
@@ -377,11 +487,15 @@ class ifButton(SubAction):
 # Optionally pass it a subImage index to start at that frame instead of 0
 class changeFighterSprite(SubAction):
     subact_group = 'Sprite'
+    fields = [NodeMap('sprite','string','changeSprite','idle'),
+              NodeMap('preserve_index','bool','changeSprite|preserve',False)
+              ]
     
-    def __init__(self,_sprite='idle',_preserve_index=False):
+    def __init__(self):
         SubAction.__init__(self)
-        self.sprite = _sprite
-        self.preserve_index = _preserve_index
+        self.sprite = 'idle' #default data
+        self.preserve_index = False #default data
+        print(ElementTree.tostring(self.getXmlElement()))
         
     def execute(self, _action, _actor):
         if self.preserve_index: index = _actor.sprite.index
@@ -395,18 +509,11 @@ class changeFighterSprite(SubAction):
     def getPropertiesPanel(self,_root):
         return subactionSelector.ChangeSpriteProperties(_root,self)
     
-    def getXmlElement(self):
-        elem = ElementTree.Element('changeSprite')
-        elem.text = str(self.sprite)
-        return elem
-    
-    @staticmethod
-    def buildFromXml(_node):
-        return changeFighterSprite(_node.text,_node.attrib.has_key('preserve'))
-        
 # ChangeFighterSubimage will change the subimage of a sheetSprite without changing the sprite.
 class changeFighterSubimage(SubAction):
     subact_group = 'Sprite'
+    fields = [NodeMap('index','int','changeSubimage',0)
+              ]
     
     def __init__(self,_index=0):
         SubAction.__init__(self)
@@ -434,7 +541,7 @@ class changeFighterSubimage(SubAction):
 
 class flip(SubAction):
     subact_group = 'Sprite'
-    
+    fields = []
     def __init__(self):
         SubAction.__init__(self)
         
@@ -463,7 +570,10 @@ class flip(SubAction):
 # want the fighter to gradually speed up to a point (for accelerating), or slow down to a point (for deccelerating)
 class changeFighterPreferredSpeed(SubAction):
     subact_group = 'Behavior'
-    
+    fields = [NodeMap('speed_x','int','changeFighterPreferredSpeed>xSpeed',None),
+              NodeMap('x_relative','bool','changeFighterPreferredSpeed>xSpeed|relative',False),
+              NodeMap('speed_y','int','changeFighterPreferredSpeed>ySpeed',None)
+              ]
     def __init__(self,_speedX = None, _speedY = None, _xRelative = False):
         SubAction.__init__(self)
         self.speed_x = _speedX
@@ -525,6 +635,11 @@ class changeFighterPreferredSpeed(SubAction):
 # ChangeFighterSpeed changes the speed directly, with no acceleration/deceleration.
 class changeFighterSpeed(SubAction):
     subact_group = 'Behavior'
+    fields = [NodeMap('speed_x','int','changeFighterSpeed>xSpeed',None),
+              NodeMap('x_relative','bool','changeFighterSpeed>xSpeed|relative',False),
+              NodeMap('speed_y','int','changeFighterSpeed>ySpeed',None),
+              NodeMap('y_relative','bool','changeFighterSpeed>ySpeed|relative',False),
+              ]
     
     def __init__(self,_speedX = None, _speedY = None, _xRelative = False, _yRelative = False):
         SubAction.__init__(self)
@@ -598,6 +713,7 @@ class changeFighterSpeed(SubAction):
 
 class changeGravity(SubAction):
     subact_group = 'Behavior'
+    fields = [NodeMap('new_gravity','float','changeGravity',False)]
     
     def __init__(self,_newGrav):
         SubAction.__init__(self)
@@ -642,6 +758,11 @@ class applyForceVector(SubAction):
 # A good use for this is to jitter a hit opponent during hitlag, just make sure to put them back where they should be before actually launching.
 class shiftFighterPosition(SubAction):
     subact_group = 'Behavior'
+    fields = [NodeMap('new_x','int','shiftPosition>xPos',None),
+              NodeMap('x_relative','bool','shiftPosition>xPos|relative',False),
+              NodeMap('new_y','int','shiftPosition>yPos',None),
+              NodeMap('y_relative','bool','shiftPosition>yPos|relative',False)
+              ]
     
     def __init__(self,_newX = None, _newY = None, _xRelative = False, _yRelative = False):
         SubAction.__init__(self)
@@ -697,6 +818,8 @@ class shiftFighterPosition(SubAction):
 
 class setInvulnerability(SubAction):
     subact_group = 'Behavior'
+    fields = [NodeMap('invuln_amt','int','setInvulnerability',0),
+              ]
     
     def __init__(self,_amt):
         self.invuln_amt = _amt
@@ -722,6 +845,10 @@ class setInvulnerability(SubAction):
     
 class shiftSpritePosition(SubAction):
     subact_group = 'Sprite'
+    fields = [NodeMap('new_x','int','shiftSprite>xPos',None),
+              NodeMap('x_relative','bool','shiftSprite>xPos|relative',None),
+              NodeMap('new_y','int','shiftSprite>yPos',None)
+              ]
     
     def __init__(self,_newX = None, _newY = None, _xRelative = False):
         SubAction.__init__(self)
@@ -776,6 +903,9 @@ class shiftSpritePosition(SubAction):
     
 class updateLandingLag(SubAction):
     subact_group = 'Behavior'
+    fields = [NodeMap('new_lag','int','updateLandingLag',0),
+              NodeMap('reset','bool','updateLandingLag|reset',False)
+              ]
     
     def __init__(self,_newLag=0,_reset = False):
         self.new_lag = _newLag
@@ -808,7 +938,11 @@ class updateLandingLag(SubAction):
 # Change a fighter attribute, for example, weight or remaining jumps
 class modifyFighterVar(SubAction):
     subact_group = 'Control'
-    
+    fields = [NodeMap('attr','string','setFighterVar|var',''),
+              NodeMap('val','dynamic','setFighterVar>value',None),
+              NodeMap('relative','bool','setFighterVar>value|relative',False)
+              ]
+              
     def __init__(self,_attr='',_val=None,_relative=False):
         SubAction.__init__(self)
         self.attr = _attr
@@ -881,6 +1015,10 @@ class modifyActionVar(SubAction):
 class changeActionFrame(SubAction):
     subact_group = 'Control'
     
+    fields = [NodeMap('new_frame','int','setFrame',0),
+              NodeMap('relative','bool','setFrame|relative',None)
+              ]
+    
     def __init__(self,_newFrame=0,_relative=False):
         SubAction.__init__(self)
         self.new_frame = _newFrame
@@ -912,6 +1050,7 @@ class changeActionFrame(SubAction):
 # Go to the next frame in the action
 class nextFrame(SubAction):
     subact_group = 'Control'
+    fields = []
     
     def execute(self, _action, _actor):
         _action.frame += 1
@@ -928,6 +1067,8 @@ class nextFrame(SubAction):
     
 class transitionState(SubAction):
     subact_group = 'Control'
+    fields = [NodeMap('transition','string','transitionState','')
+              ]
     
     def __init__(self,_transition=''):
         SubAction.__init__(self)
@@ -1133,6 +1274,8 @@ class modifyHitbox(SubAction):
         
 class activateHitbox(SubAction):
     subact_group = 'Hitbox'
+    fields = [NodeMap('hitbox_name','string','activateHitbox','')
+              ]
     
     def __init__(self,_hitboxName=''):
         SubAction.__init__(self)
@@ -1160,6 +1303,8 @@ class activateHitbox(SubAction):
     
 class deactivateHitbox(SubAction):
     subact_group = 'Hitbox'
+    fields = [NodeMap('hitbox_name','string','deactivateHitbox','')
+              ]
     
     def __init__(self,_hitboxName=''):
         SubAction.__init__(self)
@@ -1187,6 +1332,8 @@ class deactivateHitbox(SubAction):
 
 class updateHitbox(SubAction):
     subact_group = 'Hitbox'
+    fields = [NodeMap('hitbox_name','string','updateHitbox','')
+              ]
     
     def __init__(self,_hitboxName=''):
         SubAction.__init__(self)
@@ -1212,9 +1359,10 @@ class updateHitbox(SubAction):
     def buildFromXml(_node):
         return updateHitbox(_node.text)
 
-
 class unlockHitbox(SubAction):
     subact_group = 'Hitbox'
+    fields = [NodeMap('hitbox_name','string','unlockHitbox','')
+              ]
     
     def __init__(self,_hitboxName=''):
         SubAction.__init__(self)
@@ -1245,6 +1393,10 @@ class unlockHitbox(SubAction):
 # If a hurtbox overlaps a hitbox, the hitbox will be resolved first, so the fighter won't take damage in the case of clashes.
 class modifyHurtBox(SubAction):
     subact_group = 'Behavior'
+    fields = [NodeMap('center','tuple','modifyHurtbox>center',(0,0)),
+              NodeMap('size','tuple','modifyHurtbox>size',(0,0)),
+              NodeMap('image_center','bool','modifyHurtbox>center|centerOn',False)
+              ]
     
     def __init__(self,_center=[0,0],_size=[0,0],_imageCenter = False):
         SubAction.__init__(self)
@@ -1276,6 +1428,10 @@ class modifyHurtBox(SubAction):
 
 class changeECB(SubAction):
     subact_group = 'Behavior'
+    fields = [NodeMap('center','tuple','changeECB>center',(0,0)),
+              NodeMap('size','tuple','changeECB>size',(0,0)),
+              NodeMap('offset','tuple','changeECB>offset',(0,0))
+              ]
     
     def __init__(self,_center=[0,0],_size=[0,0],_ecbOffset=[0,0]):
         SubAction.__init__(self)
@@ -1307,6 +1463,9 @@ class changeECB(SubAction):
 
 class loadArticle(SubAction):
     subact_group = 'Article'
+    fields = [NodeMap('article','string','loadArticle',None),
+              NodeMap('name','string','loadArticle|name','')
+              ]
     
     def __init__(self,_article=None,_name=''):
         SubAction.__init__(self)
@@ -1327,6 +1486,8 @@ class loadArticle(SubAction):
         
 class activateArticle(SubAction):
     subact_group = 'Article'
+    fields = [NodeMap('name','string','activateArticle','')
+              ]
     
     def __init__(self,_name=''):
         SubAction.__init__(self)
@@ -1345,6 +1506,8 @@ class activateArticle(SubAction):
     
 class deactivateArticle(SubAction):
     subact_group = 'Article'
+    fields = [NodeMap('name','string','deactivateArticle','')
+              ]
     
     def __init__(self,_name=''):
         SubAction.__init__(self)
@@ -1363,6 +1526,8 @@ class deactivateArticle(SubAction):
 
 class doAction(SubAction):
     subact_group = 'Control'
+    fields = [NodeMap('action','string','doAction','NeutralAction')
+              ]
     
     def __init__(self,_action='NeutralAction'):
         SubAction.__init__(self)
@@ -1384,7 +1549,11 @@ class doAction(SubAction):
 
 class createMask(SubAction):
     subact_group = 'Behavior'
-         
+    fields = [NodeMap('color','string','createMask>color','#FFFFFF'),
+              NodeMap('duration','int','createMask>duration',0),
+              NodeMap('pulse_length','int','createMask>pulse',0)
+              ]
+    
     def __init__(self,_color=pygame.color.Color('white'),_duration=0,_pulseLength=0):
         SubAction.__init__(self)
         self.color = _color
@@ -1393,7 +1562,8 @@ class createMask(SubAction):
         
     def execute(self, _action, _actor):
         pulse = True if self.pulse_length > 0 else False
-        color = [self.color.r,self.color.g,self.color.b]
+        colorobj = pygame.color.Color(self.color)
+        color = [colorobj.r,colorobj.g,colorobj.b]
         _actor.createMask(color,self.duration,pulse,self.pulse_length)
     
     def getDisplayName(self):
@@ -1408,6 +1578,7 @@ class createMask(SubAction):
 
 class removeMask(SubAction):
     subact_group = 'Behavior'
+    fields = []
     
     def __init__(self):
         SubAction.__init__(self)
@@ -1424,8 +1595,10 @@ class removeMask(SubAction):
 
 class playSound(SubAction):
     subact_group = 'Control'
+    fields = [NodeMap('sound','string','playSound','')
+              ]
     
-    def __init__(self,_sound):
+    def __init__(self,_sound=''):
         SubAction.__init__(self)
         self.sound = _sound
         
@@ -1440,7 +1613,10 @@ class playSound(SubAction):
         return playSound(_node.text)
     
 class debugAction(SubAction):
-    def __init__(self,_statement):
+    fields = [NodeMap('statement','string','print','')
+              ]
+    
+    def __init__(self,_statement=''):
         SubAction.__init__(self)
         self.statement = _statement
         
@@ -1477,6 +1653,8 @@ class debugAction(SubAction):
 ######################################################################
 class deactivateSelf(SubAction):
     subact_group = 'Article'
+    fields = []
+    
     def __init__(self):
         SubAction.__init__(self)
         
@@ -1491,6 +1669,8 @@ class deactivateSelf(SubAction):
         return deactivateSelf()
     
 class recenterOnOrigin(SubAction):
+    fields = []
+    
     def __init__(self):
         SubAction.__init__(self)
     
@@ -1551,3 +1731,5 @@ subaction_dict = {
                  
                  'print': debugAction
                  }
+
+name_dict = {v: k for k, v in subaction_dict.items()} #reverse the above so a class object gets you the string

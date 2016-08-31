@@ -128,6 +128,10 @@ class DynamicArticle(spriteManager.SheetSprite):
         
     def changeSpriteImage(self,index):
         self.getImageAtIndex(index)
+    
+    def activateHitbox(self,_hitbox):
+        self.active_hitboxes.add(_hitbox)
+        _hitbox.activate()
         
 class Article(spriteManager.ImageSprite):
     def __init__(self, _spritePath, _owner, _origin, _length=1, _draw_depth = 1):
