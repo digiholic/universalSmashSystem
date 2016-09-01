@@ -31,11 +31,11 @@ def parseData(_data,_type="string",_default=None):
     if _type=="dynamic":
         if _data.attrib.has_key('type'):
             _type = _data.attrib['type']
-    
+        else: _type = 'string'
     if _type=="string": return _data.text
     if _type=="int": return int(_data.text)
     if _type=="float": return float(_data.text)
-    if _type=="bool": return (_data.text == 'True')
+    if _type=="bool": return (_data.text.lower() == 'true')
     if type=="tuple": return make_tuple(_data.text)
 
 """
@@ -92,10 +92,11 @@ class NodeMap():
         if self.variableType=="dynamic":
             if _data.attrib.has_key('type'):
                 self.variableType = _data.attrib['type']
+            else: self.variableType = 'string'
         if self.variableType=="string": return _data
         if self.variableType=="int": return int(_data)
         if self.variableType=="float": return float(_data)
-        if self.variableType=="bool": return (_data == 'True')
+        if self.variableType=="bool": return (_data.lower() == 'true')
         if self.variableType=="tuple": make_tuple(_data)
             
             
@@ -121,16 +122,15 @@ class NodeMap():
                 
             for nodePath in nodeList[1:]: #iterate through everything else
                 currentPosition = currentPosition.find(nodePath[0])
+                if currentPosition is None: #If we hit a dead end
+                    setattr(_subAction,self.variableName,self.defaultValue)
+                    return
                 if len(nodePath) > 1: #If we've hit an attribute
                     if currentPosition.attrib.has_key(nodePath[1]):
                         setattr(_subAction, self.variableName, self.getTypeFromData(currentPosition.attrib[nodePath[1]]))
                     else: setattr(_subAction, self.variableName, self.defaultValue)
-                    
-                    
                     return
-                if currentPosition is None: #If we hit a dead end
-                    setattr(_subAction,self.variableName,self.defaultValue)
-                    return
+                
             #If we leave the loop and haven't exited, we didn't hit an attrib either.
             setattr(_subAction, self.variableName, parseData(currentPosition, self.variableType, self.defaultValue))
             return
@@ -225,6 +225,9 @@ class SubAction():
     
     @staticmethod
     def buildFromXml(_subactName,_node):
+        if hasattr(subaction_dict[_subactName], 'customBuildFromXml'):
+            return subaction_dict[_subactName].customBuildFromXml(_node)
+        
         subAction = subaction_dict[_subactName]()
         for node in subaction_dict[_subactName].fields:
             node.populateFromXML(subAction, _node)
@@ -235,12 +238,12 @@ class SubAction():
 ########################################################
 class If(SubAction):
     subact_group = 'Control'
-    fields = [NodeMap('variable','string','If>variable',''),
-              NodeMap('source','string','If>variable|source','action'),
-              NodeMap('function','string','If|function','=='),
-              NodeMap('value','dynamic','If>value',True),
-              NodeMap('if_actions','string','If>pass',''),
-              NodeMap('else_actions','string','If>fail','')
+    fields = [NodeMap('variable','string','if>variable',''),
+              NodeMap('source','string','if>variable|source','action'),
+              NodeMap('function','string','if|function','=='),
+              NodeMap('value','dynamic','if>value',True),
+              NodeMap('if_actions','string','if>pass',''),
+              NodeMap('else_actions','string','if>fail','')
               ]
     
     def __init__(self,_variable='',_source='action',_function='==',_value='True',_ifActions='',_elseActions=''):
@@ -433,7 +436,7 @@ class ifButton(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         button = _node.find('button').text
         check = loadNodeWithDefault(_node, 'check', 'keyBuffered')
         if check == 'keysContain':
@@ -529,15 +532,6 @@ class changeFighterSubimage(SubAction):
     
     def getPropertiesPanel(self, _root):
         return subactionSelector.ChangeSubimageProperties(_root,self)
-    
-    def getXmlElement(self):
-        elem = ElementTree.Element('changeSubimage')
-        elem.text = str(self.index)
-        return elem
-        
-    @staticmethod
-    def buildFromXml(_node):
-        return changeFighterSubimage(int(_node.text))
 
 class flip(SubAction):
     subact_group = 'Sprite'
@@ -553,14 +547,6 @@ class flip(SubAction):
     
     def getPropertiesPanel(self, _root):
         return None
-    
-    def getXmlElement(self):
-        elem = ElementTree.Element('flip')
-        return elem
-        
-    @staticmethod
-    def buildFromXml(_node):
-        return flip()
     
 ########################################################
 #               FIGHTER MOVEMENT                       #
@@ -623,15 +609,7 @@ class changeFighterPreferredSpeed(SubAction):
             y_elem.text = str(self.speed_y)
             elem.append(y_elem)
         return elem
-        
-    @staticmethod
-    def buildFromXml(_node):
-        x_relative = False
-        speed_x = loadValueOrVariable(_node, 'xSpeed', 'int', None)
-        if speed_x and _node.find('xSpeed').attrib.has_key("relative"): x_relative = True
-        speed_y = loadValueOrVariable(_node, 'ySpeed', 'int', None)
-        return changeFighterPreferredSpeed(speed_x,speed_y,x_relative)
-        
+
 # ChangeFighterSpeed changes the speed directly, with no acceleration/deceleration.
 class changeFighterSpeed(SubAction):
     subact_group = 'Behavior'
@@ -696,21 +674,6 @@ class changeFighterSpeed(SubAction):
             
         return elem
     
-    @staticmethod
-    def buildFromXml(_node):
-        x_relative = False
-        y_relative = False
-        if _node.find('xSpeed') is not None and _node.find('xSpeed').attrib.has_key("variable"):
-            speed_x = (_node.find('xSpeed').attrib['variable'],_node.find('xSpeed').text)
-        else: speed_x = loadValueOrVariable(_node, 'xSpeed', 'float', None)
-        if speed_x and _node.find('xSpeed').attrib.has_key("relative"): x_relative = True
-        
-        if _node.find('ySpeed') is not None and _node.find('ySpeed').attrib.has_key("variable"):
-            speed_y = (_node.find('ySpeed').attrib['variable'],_node.find('ySpeed').text)
-        else: speed_y = loadValueOrVariable(_node, 'ySpeed', 'float', None)
-        if speed_y and _node.find('ySpeed').attrib.has_key("relative"): y_relative = True
-        return changeFighterSpeed(speed_x,speed_y,x_relative,y_relative)
-
 class changeGravity(SubAction):
     subact_group = 'Behavior'
     fields = [NodeMap('new_gravity','float','changeGravity',False)]
@@ -1014,7 +977,6 @@ class modifyActionVar(SubAction):
 # Change the frame of the action to a value.
 class changeActionFrame(SubAction):
     subact_group = 'Control'
-    
     fields = [NodeMap('new_frame','int','setFrame',0),
               NodeMap('relative','bool','setFrame|relative',None)
               ]
@@ -1174,8 +1136,7 @@ class createHitbox(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
-        SubAction.buildFromXml(_node)
+    def customBuildFromXml(_node):
         #mandatory fields
         hitbox_type = _node.attrib['type'] if _node.attrib.has_key('type') else "damage"
         
@@ -1248,7 +1209,7 @@ class modifyHitbox(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         SubAction.buildFromXml(_node)
         hitbox_name = _node.attrib['name']
         hitbox_vars = {}
