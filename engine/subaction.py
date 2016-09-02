@@ -699,7 +699,7 @@ class changeGravity(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return changeGravity(float(_node.text))
     
 # ApplyForceVector is usually called when launched, but can be used as an alternative to setting speed. This one
@@ -766,7 +766,7 @@ class shiftFighterPosition(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         new_x = loadNodeWithDefault(_node, 'xPos', None)
         new_y = loadNodeWithDefault(_node, 'yPos', None)
         x_rel = False
@@ -803,7 +803,7 @@ class setInvulnerability(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return setInvulnerability(int(_node.text))
     
 class shiftSpritePosition(SubAction):
@@ -853,7 +853,7 @@ class shiftSpritePosition(SubAction):
         return elem
         
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         new_x = loadNodeWithDefault(_node, 'xPos', None)
         new_y = loadNodeWithDefault(_node, 'yPos', None)
         x_rel = False
@@ -892,7 +892,7 @@ class updateLandingLag(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return updateLandingLag(int(_node.text),_node.attrib.has_key('reset'))
 ########################################################
 #           ATTRIBUTES AND VARIABLES                   #
@@ -944,7 +944,7 @@ class modifyFighterVar(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         attr = _node.attrib['var']
         value = _node.find('value').text
         if _node.find('value').attrib.has_key('type'):
@@ -1006,7 +1006,7 @@ class changeActionFrame(SubAction):
         return elem
             
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return changeActionFrame(int(_node.text),_node.attrib.has_key('relative'))
         
 # Go to the next frame in the action
@@ -1024,7 +1024,7 @@ class nextFrame(SubAction):
         return ElementTree.Element('nextFrame')
         
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return nextFrame()
     
 class transitionState(SubAction):
@@ -1053,7 +1053,7 @@ class transitionState(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return transitionState(_node.text)
         
 ########################################################
@@ -1259,7 +1259,7 @@ class activateHitbox(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return activateHitbox(_node.text)
     
 class deactivateHitbox(SubAction):
@@ -1288,7 +1288,7 @@ class deactivateHitbox(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return deactivateHitbox(_node.text)
 
 class updateHitbox(SubAction):
@@ -1317,7 +1317,7 @@ class updateHitbox(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return updateHitbox(_node.text)
 
 class unlockHitbox(SubAction):
@@ -1346,7 +1346,7 @@ class unlockHitbox(SubAction):
         return elem
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return unlockHitbox(_node.text)
     
 # Change the fighter's Hurtbox (where they have to be hit to take damage)
@@ -1379,7 +1379,7 @@ class modifyHurtBox(SubAction):
         return 'Modify Fighter Hurtbox'
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         center = [0, 0]
         size = [0, 0]
         image_center = False
@@ -1414,7 +1414,7 @@ class changeECB(SubAction):
         return 'Modify Fighter Collision Box'
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         center=[0,0]
         size = [0,0]
         ecb_offset = [0,0]
@@ -1446,7 +1446,7 @@ class loadArticle(SubAction):
         return 'Load Article: ' + self.name
         
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return loadArticle(_node.text,_node.attrib['name'])
         
 class activateArticle(SubAction):
@@ -1466,7 +1466,7 @@ class activateArticle(SubAction):
         return 'Activate Article: ' + self.name
         
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return activateArticle(_node.text)
     
 class deactivateArticle(SubAction):
@@ -1486,7 +1486,7 @@ class deactivateArticle(SubAction):
         return 'Deactivate Article: ' + self.name
         
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return deactivateArticle(_node.text)
 
 class doAction(SubAction):
@@ -1509,7 +1509,7 @@ class doAction(SubAction):
         elem.text = self.action
         return elem
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return doAction(_node.text)
 
 class createMask(SubAction):
@@ -1535,7 +1535,7 @@ class createMask(SubAction):
         return 'Create Color Mask: ' + str(self.color)
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         color = pygame.color.Color(_node.find('color').text)
         duration = int(_node.find('duration').text)
         pulse_length = int(loadNodeWithDefault(_node, 'pulse', 0))
@@ -1555,7 +1555,7 @@ class removeMask(SubAction):
         return 'Remove Color Mask'
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return removeMask()
 
 class playSound(SubAction):
@@ -1574,7 +1574,7 @@ class playSound(SubAction):
         return 'Play Sound: '+str(self.sound)
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return playSound(_node.text)
     
 class debugAction(SubAction):
@@ -1603,7 +1603,7 @@ class debugAction(SubAction):
         return 'Print Debug'
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         if _node.find('var') is not None:
             if _node.find('var').attrib.has_key('source'):
                 source = _node.find('var').attrib['source']
@@ -1630,7 +1630,7 @@ class deactivateSelf(SubAction):
         return 'Deactivate Self'
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return deactivateSelf()
     
 class recenterOnOrigin(SubAction):
@@ -1646,7 +1646,7 @@ class recenterOnOrigin(SubAction):
         return 'Recenter On Origin'
     
     @staticmethod
-    def buildFromXml(_node):
+    def customBuildFromXml(_node):
         return recenterOnOrigin()
     
 subaction_dict = {
