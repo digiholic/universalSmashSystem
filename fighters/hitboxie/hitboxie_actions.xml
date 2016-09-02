@@ -460,24 +460,27 @@
 	
 	<NeutralAttack>
 
-		<loadCodeAction>
+		<!--loadCodeAction>
 			<file>hitboxie_actions.py</file>
 			<action>NeutralAttack</action>
-		</loadCodeAction>
+		</loadCodeAction-->
 
-		<!--length>22</length>
+		<length>17</length>
 		<sprite>neutral</sprite>
 		<sprite_rate>1</sprite_rate>
 		
 		<setUp>
 			<createHitbox>
-				<name>jab</name>
+				<name>funnel</name>
 				<center>0,0</center>
 				<size>80,80</size>
 				<damage>3</damage>
 				<base_knockback>8</base_knockback>
 				<knockback_growth>0.02</knockback_growth>
-				<trajectory>20</trajectory>
+				<velocity_multiplier>0</velocity_multiplier>
+				<y_bias>-8</y_bias>
+				<x_draw>-.1</x_draw>
+				<y_draw>-.1</y_draw>
 			</createHitbox>
 		</setUp>
 
@@ -488,9 +491,37 @@
 		<frame number="4">
 			<activateHitbox>jab</activateHitbox>
 		</frame>
+		<frame number="5">
+			<changeSubimage>9</changeSubimage>
+		</frame>
 		<frame number="9">
 			<deactivateHitbox>jab</deactivateHitbox>
-		</frame-->
+			<changeSubimage>10</changeSubimage>
+		</frame>
+		<frame number="11">
+			<changeSubimage>11</changeSubimage>
+		</frame>
+		<frame number="12">
+			<changeSubimage>12</changeSubimage>
+		</frame>
+		<frame number="13">
+			<changeSubimage>13</changeSubimage>
+		</frame>
+		<frame number="14">
+			<changeSubimage>14</changeSubimage>
+		</frame>
+		<frame number="after">
+		</frame>
+		<frame number="last">
+			<ifButton>
+				<button check="keysContain">attack</button>
+				<pass>repeatAttack</pass>
+			</ifButton>
+		</frame>
+
+		<conditional name="repeatAttack">
+			<doAction>NeutralAttack</doAction>
+		</conditional>
 	</NeutralAttack>
 	
 	<ForwardAttack>

@@ -1367,7 +1367,7 @@ class modifyHurtBox(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        _actor.hurtbox.rect.size = self.size
+	_actor.hurtbox.rect.size = self.size
         if self.image_center:
             _actor.hurtbox.rect.centerx = (_actor.sprite.bounding_rect.centerx + self.center[0])
             _actor.hurtbox.rect.centery = (_actor.sprite.bounding_rect.centery + self.center[1])
@@ -1380,11 +1380,15 @@ class modifyHurtBox(SubAction):
     
     @staticmethod
     def buildFromXml(_node):
+        center = [0, 0]
+        size = [0, 0]
         image_center = False
-        center = map(int, _node.find('center').text.split(','))
+        if _node.find('center') is not None:
+            center = map(int, _node.find('center').text.split(','))
         if _node.find('center').attrib.has_key('centerOn') and _node.find('center').attrib['centerOn'] == 'image':
             image_center = True
-        size = map(int, _node.find('size').text.split(','))
+        if _node.find('size') is not None:
+            size = map(int, _node.find('size').text.split(','))
         return modifyHurtBox(center,size,image_center)
 
 class changeECB(SubAction):
