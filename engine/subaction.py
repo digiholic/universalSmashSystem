@@ -57,6 +57,9 @@ class VarData():
         if self.source == 'action':
             if hasattr(_action, self.var):
                 return getattr(_action, self.var)
+        if self.source == 'timing':
+            if hasattr(_actor, key_bindings) and hasattr(_actor.key_bindings, timing_window):
+                return _actor.key_bindings.timing_window[self.var]
         return None
  
 """
