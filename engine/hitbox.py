@@ -184,11 +184,11 @@ class AutolinkHitbox(DamageHitbox):
                     self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
                     angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
-                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, angle+self.owner.getForwardWithOffset(self.trajectory), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
                 elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
                     velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
                     angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
-                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, angle+self.owner.getForwardWithOffset(self.trajectory), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -212,17 +212,15 @@ class FunnelHitbox(DamageHitbox):
                     self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     x_diff = self.rect.centerx - _other.rect.centerx
                     y_diff = self.rect.centery - _other.rect.centery
-                    (x_vel, y_vel) = (self.x_bias, self.y_bias)
-                    x_vel += self.x_draw*x_diff
-                    y_vel += self.y_draw*y_diff
-                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, math.atan2(-y_vel,x_vel)*180.0/math.pi+self.owner.getForwardWithOffset(self.trajectory), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    x_vel = self.x_bias+self.x_draw*x_diff
+                    y_vel = self.y_bias+self.y_draw*y_diff
+                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
                 else:
                     x_diff = self.article.rect.centerx - _other.rect.centerx
                     y_diff = self.article.rect.centery - _other.rect.centery
-                    (x_vel, y_vel) = (self.x_bias, self.y_bias)
-                    x_vel += self.x_draw*x_diff
-                    y_vel += self.y_draw*y_diff
-                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, math.atan2(-y_vel,x_vel)*180.0/math.pi+self.owner.getForwardWithOffset(self.trajectory), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    x_vel = self.x_bias+self.x_draw*x_diff
+                    y_vel = self.y_bias+self.y_draw*y_diff
+                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)

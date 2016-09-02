@@ -470,8 +470,8 @@
 		<sprite_rate>1</sprite_rate>
 		
 		<setUp>
-			<createHitbox>
-				<name>funnel</name>
+			<createHitbox type="funnel">
+				<name>jab</name>
 				<center>0,0</center>
 				<size>80,80</size>
 				<damage>3</damage>
