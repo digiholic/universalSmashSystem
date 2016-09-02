@@ -478,7 +478,7 @@
 				<base_knockback>8</base_knockback>
 				<knockback_growth>0.02</knockback_growth>
 				<velocity_multiplier>0</velocity_multiplier>
-				<y_bias>-8</y_bias>
+				<y_bias>-4</y_bias>
 				<x_draw>-.1</x_draw>
 				<y_draw>-.1</y_draw>
 			</createHitbox>
