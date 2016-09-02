@@ -1146,7 +1146,7 @@ class createHitbox(SubAction):
         tuple_type = ['center','size']
         float_type = ['damage','base_knockback','knockback_growth','hitsun','damage_multiplier','velocity_multiplier',
                      'weightInfluence','shieldMultiplier','priorityDiff','charge_damage','charge_base_knockback','charge_knockback_growth',
-                     'xBias','yBias','xDraw','yDraw','hitlag_multiplier']
+                     'x_bias','y_bias','x_draw','y_draw','hitlag_multiplier']
         int_type = ['trajectory','hp','transcendence','base_hitstun',]
         hitbox_lock = None
             
@@ -1210,7 +1210,6 @@ class modifyHitbox(SubAction):
     
     @staticmethod
     def customBuildFromXml(_node):
-        SubAction.buildFromXml(_node)
         hitbox_name = _node.attrib['name']
         hitbox_vars = {}
         

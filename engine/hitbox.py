@@ -197,7 +197,7 @@ class FunnelHitbox(DamageHitbox):
     def __init__(self,_owner,_lock,_variables):
         DamageHitbox.__init__(self,_owner,_lock,_variables)
         self.hitbox_type = 'funnel'
-
+        print('bias', self.x_bias, self.y_bias)
     def getTrajectory(self):
         if self.owner.change_y+self.y_bias == 0 and self.owner.change_x + self.x_bias == 0:
             return self.trajectory + 90
