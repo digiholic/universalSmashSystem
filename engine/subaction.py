@@ -556,9 +556,9 @@ class flip(SubAction):
 # want the fighter to gradually speed up to a point (for accelerating), or slow down to a point (for deccelerating)
 class changeFighterPreferredSpeed(SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('speed_x','int','changeFighterPreferredSpeed>xSpeed',None),
+    fields = [NodeMap('speed_x','float','changeFighterPreferredSpeed>xSpeed',None),
               NodeMap('x_relative','bool','changeFighterPreferredSpeed>xSpeed|relative',False),
-              NodeMap('speed_y','int','changeFighterPreferredSpeed>ySpeed',None)
+              NodeMap('speed_y','float','changeFighterPreferredSpeed>ySpeed',None)
               ]
     def __init__(self,_speedX = None, _speedY = None, _xRelative = False):
         SubAction.__init__(self)
@@ -567,6 +567,10 @@ class changeFighterPreferredSpeed(SubAction):
         self.x_relative = _xRelative
         
     def execute(self, _action, _actor):
+        if isinstance(self.speed_x, VarData):
+            self.speed_x = self.speed_x.unpack(_action,_actor)
+        if isinstance(self.speed_y, VarData):
+            self.speed_y = self.speed_y.unpack(_action,_actor)
         if self.speed_x is not None:
             if type(self.speed_x) is tuple:
                 owner,value = self.speed_x
@@ -613,9 +617,9 @@ class changeFighterPreferredSpeed(SubAction):
 # ChangeFighterSpeed changes the speed directly, with no acceleration/deceleration.
 class changeFighterSpeed(SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('speed_x','int','changeFighterSpeed>xSpeed',None),
+    fields = [NodeMap('speed_x','float','changeFighterSpeed>xSpeed',None),
               NodeMap('x_relative','bool','changeFighterSpeed>xSpeed|relative',False),
-              NodeMap('speed_y','int','changeFighterSpeed>ySpeed',None),
+              NodeMap('speed_y','float','changeFighterSpeed>ySpeed',None),
               NodeMap('y_relative','bool','changeFighterSpeed>ySpeed|relative',False),
               ]
     
@@ -698,10 +702,6 @@ class changeGravity(SubAction):
         elem.text = str(self.new_gravity)
         return elem
     
-    @staticmethod
-    def customBuildFromXml(_node):
-        return changeGravity(float(_node.text))
-    
 # ApplyForceVector is usually called when launched, but can be used as an alternative to setting speed. This one
 # takes a direction in degrees (0 being forward, 90 being straight up, 180 being backward, 270 being downward)
 # and a magnitude.
@@ -765,20 +765,7 @@ class shiftFighterPosition(SubAction):
             
         return elem
     
-    @staticmethod
-    def customBuildFromXml(_node):
-        new_x = loadNodeWithDefault(_node, 'xPos', None)
-        new_y = loadNodeWithDefault(_node, 'yPos', None)
-        x_rel = False
-        y_rel = False
-        if _node.find('xPos') is not None:
-            new_x = int(new_x)
-            x_rel = _node.find('xPos').attrib.has_key('relative')
-        if _node.find('yPos') is not None:
-            new_y = int(new_y)
-            y_rel = _node.find('yPos').attrib.has_key('relative')
-        return shiftFighterPosition(new_x,new_y,x_rel,y_rel)
-
+    
 class setInvulnerability(SubAction):
     subact_group = 'Behavior'
     fields = [NodeMap('invuln_amt','int','setInvulnerability',0),
@@ -801,10 +788,6 @@ class setInvulnerability(SubAction):
         elem = ElementTree.Element('setInvulnerability')
         elem.text = str(self.invuln_amt)    
         return elem
-    
-    @staticmethod
-    def customBuildFromXml(_node):
-        return setInvulnerability(int(_node.text))
     
 class shiftSpritePosition(SubAction):
     subact_group = 'Sprite'
@@ -852,18 +835,6 @@ class shiftSpritePosition(SubAction):
             
         return elem
         
-    @staticmethod
-    def customBuildFromXml(_node):
-        new_x = loadNodeWithDefault(_node, 'xPos', None)
-        new_y = loadNodeWithDefault(_node, 'yPos', None)
-        x_rel = False
-        if _node.find('xPos') is not None:
-            new_x = int(new_x)
-            x_rel = _node.find('xPos').attrib.has_key('relative')
-        if _node.find('yPos') is not None:
-            new_y = int(new_y)
-        return shiftSpritePosition(new_x,new_y,x_rel)
-    
 class updateLandingLag(SubAction):
     subact_group = 'Behavior'
     fields = [NodeMap('new_lag','int','updateLandingLag',0),
@@ -891,9 +862,6 @@ class updateLandingLag(SubAction):
         elem.text = str(self.new_lag)
         return elem
     
-    @staticmethod
-    def customBuildFromXml(_node):
-        return updateLandingLag(int(_node.text),_node.attrib.has_key('reset'))
 ########################################################
 #           ATTRIBUTES AND VARIABLES                   #
 ########################################################
@@ -943,24 +911,6 @@ class modifyFighterVar(SubAction):
         
         return elem
     
-    @staticmethod
-    def customBuildFromXml(_node):
-        attr = _node.attrib['var']
-        value = _node.find('value').text
-        if _node.find('value').attrib.has_key('type'):
-            vartype = _node.find('value').attrib['type']
-        else: vartype = 'string'
-        if _node.find('value').attrib.has_key('relative'):
-            relative = True
-        else: relative = False
-        if vartype == 'int':
-            value = int(value)
-        elif vartype == 'float':
-            value = float(value)
-        elif vartype == 'bool':
-            value = bool(value)
-        return modifyFighterVar(attr,value,relative)
-    
 # Modify a variable in the action, such as a conditional flag of some sort.
 class modifyActionVar(SubAction):
     def __init__(self,_var,_val):
@@ -1004,10 +954,6 @@ class changeActionFrame(SubAction):
         if self.relative: elem.attrib['relative'] = 'True'
         elem.text = str(self.new_frame)
         return elem
-            
-    @staticmethod
-    def customBuildFromXml(_node):
-        return changeActionFrame(int(_node.text),_node.attrib.has_key('relative'))
         
 # Go to the next frame in the action
 class nextFrame(SubAction):
@@ -1023,9 +969,6 @@ class nextFrame(SubAction):
     def getXmlElement(self):
         return ElementTree.Element('nextFrame')
         
-    @staticmethod
-    def customBuildFromXml(_node):
-        return nextFrame()
     
 class transitionState(SubAction):
     subact_group = 'Control'
@@ -1052,10 +995,6 @@ class transitionState(SubAction):
         elem.text = str(self.transition)
         return elem
     
-    @staticmethod
-    def customBuildFromXml(_node):
-        return transitionState(_node.text)
-        
 ########################################################
 #                 HIT/HURTBOXES                        #
 ########################################################
@@ -1256,11 +1195,7 @@ class activateHitbox(SubAction):
         elem = ElementTree.Element('activateHitbox')
         elem.text = self.hitbox_name
         return elem
-    
-    @staticmethod
-    def customBuildFromXml(_node):
-        return activateHitbox(_node.text)
-    
+
 class deactivateHitbox(SubAction):
     subact_group = 'Hitbox'
     fields = [NodeMap('hitbox_name','string','deactivateHitbox','')
@@ -1285,10 +1220,6 @@ class deactivateHitbox(SubAction):
         elem = ElementTree.Element('deactivateHitbox')
         elem.text = self.hitbox_name
         return elem
-    
-    @staticmethod
-    def customBuildFromXml(_node):
-        return deactivateHitbox(_node.text)
 
 class updateHitbox(SubAction):
     subact_group = 'Hitbox'
@@ -1314,10 +1245,6 @@ class updateHitbox(SubAction):
         elem = ElementTree.Element('updateHitbox')
         elem.text = self.hitbox_name
         return elem
-    
-    @staticmethod
-    def customBuildFromXml(_node):
-        return updateHitbox(_node.text)
 
 class unlockHitbox(SubAction):
     subact_group = 'Hitbox'
@@ -1344,10 +1271,6 @@ class unlockHitbox(SubAction):
         elem.text = self.hitbox_name
         return elem
     
-    @staticmethod
-    def customBuildFromXml(_node):
-        return unlockHitbox(_node.text)
-    
 # Change the fighter's Hurtbox (where they have to be hit to take damage)
 # This is not done automatically when sprites change, so if your sprite takes the fighter out of his usual bounding box, make sure to change it.
 # If a hurtbox overlaps a hitbox, the hitbox will be resolved first, so the fighter won't take damage in the case of clashes.
@@ -1366,7 +1289,7 @@ class modifyHurtBox(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-	_actor.hurtbox.rect.size = self.size
+        _actor.hurtbox.rect.size = self.size
         if self.image_center:
             _actor.hurtbox.rect.centerx = (_actor.sprite.bounding_rect.centerx + self.center[0])
             _actor.hurtbox.rect.centery = (_actor.sprite.bounding_rect.centery + self.center[1])
@@ -1443,11 +1366,7 @@ class loadArticle(SubAction):
     
     def getDisplayName(self):
         return 'Load Article: ' + self.name
-        
-    @staticmethod
-    def customBuildFromXml(_node):
-        return loadArticle(_node.text,_node.attrib['name'])
-        
+    
 class activateArticle(SubAction):
     subact_group = 'Article'
     fields = [NodeMap('name','string','activateArticle','')
@@ -1463,10 +1382,6 @@ class activateArticle(SubAction):
         
     def getDisplayName(self):
         return 'Activate Article: ' + self.name
-        
-    @staticmethod
-    def customBuildFromXml(_node):
-        return activateArticle(_node.text)
     
 class deactivateArticle(SubAction):
     subact_group = 'Article'
@@ -1483,11 +1398,7 @@ class deactivateArticle(SubAction):
     
     def getDisplayName(self):
         return 'Deactivate Article: ' + self.name
-        
-    @staticmethod
-    def customBuildFromXml(_node):
-        return deactivateArticle(_node.text)
-
+    
 class doAction(SubAction):
     subact_group = 'Control'
     fields = [NodeMap('action','string','doAction','NeutralAction')
@@ -1507,10 +1418,7 @@ class doAction(SubAction):
         elem = ElementTree.Element('doAction')
         elem.text = self.action
         return elem
-    @staticmethod
-    def customBuildFromXml(_node):
-        return doAction(_node.text)
-
+    
 class createMask(SubAction):
     subact_group = 'Behavior'
     fields = [NodeMap('color','string','createMask>color','#FFFFFF'),
@@ -1518,13 +1426,14 @@ class createMask(SubAction):
               NodeMap('pulse_length','int','createMask>pulse',0)
               ]
     
-    def __init__(self,_color=pygame.color.Color('white'),_duration=0,_pulseLength=0):
+    def __init__(self,_color='#FFFFFF',_duration=0,_pulseLength=0):
         SubAction.__init__(self)
         self.color = _color
         self.duration = _duration
         self.pulse_length = _pulseLength
         
     def execute(self, _action, _actor):
+        print(self.color)
         pulse = True if self.pulse_length > 0 else False
         colorobj = pygame.color.Color(self.color)
         color = [colorobj.r,colorobj.g,colorobj.b]
@@ -1532,13 +1441,6 @@ class createMask(SubAction):
     
     def getDisplayName(self):
         return 'Create Color Mask: ' + str(self.color)
-    
-    @staticmethod
-    def customBuildFromXml(_node):
-        color = pygame.color.Color(_node.find('color').text)
-        duration = int(_node.find('duration').text)
-        pulse_length = int(loadNodeWithDefault(_node, 'pulse', 0))
-        return createMask(color,duration,pulse_length)
 
 class removeMask(SubAction):
     subact_group = 'Behavior'
@@ -1553,10 +1455,6 @@ class removeMask(SubAction):
     def getDisplayName(self):
         return 'Remove Color Mask'
     
-    @staticmethod
-    def customBuildFromXml(_node):
-        return removeMask()
-
 class playSound(SubAction):
     subact_group = 'Control'
     fields = [NodeMap('sound','string','playSound','')
@@ -1571,10 +1469,6 @@ class playSound(SubAction):
         
     def getDisplayName(self):
         return 'Play Sound: '+str(self.sound)
-    
-    @staticmethod
-    def customBuildFromXml(_node):
-        return playSound(_node.text)
     
 class debugAction(SubAction):
     fields = [NodeMap('statement','string','print','')
@@ -1601,17 +1495,6 @@ class debugAction(SubAction):
     def getDisplayName(self):
         return 'Print Debug'
     
-    @staticmethod
-    def customBuildFromXml(_node):
-        if _node.find('var') is not None:
-            if _node.find('var').attrib.has_key('source'):
-                source = _node.find('var').attrib['source']
-            else: source = 'action'
-            name = _node.find('var').text
-            return debugAction((source,name))
-        return debugAction(_node.text)
-    
-    
 ######################################################################
 #                         Article Subactions                         #
 ######################################################################
@@ -1628,10 +1511,6 @@ class deactivateSelf(SubAction):
     def getDisplayName(self):
         return 'Deactivate Self'
     
-    @staticmethod
-    def customBuildFromXml(_node):
-        return deactivateSelf()
-    
 class recenterOnOrigin(SubAction):
     fields = []
     
@@ -1644,9 +1523,6 @@ class recenterOnOrigin(SubAction):
     def getDisplayName(self):
         return 'Recenter On Origin'
     
-    @staticmethod
-    def customBuildFromXml(_node):
-        return recenterOnOrigin()
     
 subaction_dict = {
                  #Control Flow
