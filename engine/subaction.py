@@ -443,8 +443,8 @@ class ifButton(SubAction):
         button = _node.find('button').text
         check = loadNodeWithDefault(_node, 'check', 'keyBuffered')
         if check == 'keysContain':
-            buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
-            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
+            buffer_from = 1
+            buffer_to = 0
             threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
         elif check == 'keyBuffered':
             buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
