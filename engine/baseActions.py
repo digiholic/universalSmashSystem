@@ -335,23 +335,6 @@ class CrouchGetup(action.Action):
 ########################################################
 #                  Grab Actions                        #
 ########################################################
-class BaseGrabbing(action.Action):
-    def __init__(self,_length=0):
-        action.Action.__init__(self, _length)
-        self.hold_point = (0,0)
-        
-    def setUp(self, _actor):
-        if self.sprite_name=="": self.sprite_name ="baseGrabbing"
-        action.Action.setUp(self, _actor)
-        
-    def tearDown(self, _actor, _nextAction):
-        action.Action.tearDown(self, _actor, _nextAction)
-        if not isinstance(_nextAction, BaseGrabbing) and _actor.isGrabbing():
-            _actor.grabbing.doReleased()
-
-    def update(self, _actor):
-        action.Action.update(self, _actor)
-        self.frame += 1
         
 class HitStun(action.Action):
     def __init__(self,_hitstun=1,_direction=0):
@@ -1819,22 +1802,23 @@ class Grabbing(BaseGrab):
         
         BaseGrab.update(self, _actor)
         
-class Grabbed(action.Action):
+class Grabbed(Trapped):
     def __init__(self,_length=1):
-        action.Action.__init__(self, _length)
+        Trapped.__init__(self, _length)
         
     def setUp(self, _actor):
-        action.Action.setUp(self, _actor)
+        Trapped.setUp(self, _actor)
         if self.sprite_name=="": self.sprite_name ="grabbed"
+        #Set the last frame based on damage
+        self.last_frame = 40 + _actor.damage//2
         
     def tearDown(self, _actor, _nextAction):
-        action.Action.tearDown(self, _actor, _nextAction)
+        Trapped.tearDown(self, _actor, _nextAction)
         _actor.grabbed_by = None
         
     def update(self, _actor):
-        action.Action.update(self, _actor)
+        Trapped.update(self, _actor)
         grabber = _actor.grabbed_by
-        #
         
         #release if you're not being held
         if grabber is None or (not (grabber.grabbing == _actor)):
@@ -1852,9 +1836,6 @@ class Grabbed(action.Action):
         _actor.rect.centerx = grabber.rect.centerx + (hold_x * grabber.facing) + (_actor.grab_point[0] * -_actor.facing)
         _actor.rect.centery = grabber.rect.centery + (hold_y * grabber.facing) + (_actor.grab_point[1] * -_actor.facing)
         
-        #Set the last frame based on damage
-        if self.frame == 0:
-            self.last_frame = 40 + _actor.damage//2
         if self.frame >= self.last_frame:
             #If the grabber's action doesn't have "escapable" set or if it is set to True, break out on last frame
             if (not hasattr(grabber.current_action, 'escapable')) or grabber.current_action.escapable:
@@ -1862,52 +1843,6 @@ class Grabbed(action.Action):
                 grabber.doAction('Release')
             else:
                 print('Cant break free')
-        
-        self.frame += 1
-        
-"""
-class Grabbing(BaseGrabbing):
-    def __init__(self,_length=0):
-        BaseGrabbing.__init__(self, _length)
-
-    def setUp(self, _actor):
-        if self.sprite_name=="": self.sprite_name ="grabbing"
-        action.Action.setUp(self, _actor)
-        _actor.grabbing.flinch_damage_threshold = 9999
-
-    def tearDown(self, _actor, _nextAction):
-        action.Action.tearDown(self, _actor, _nextAction)
-        _actor.grabbing.flinch_damage_threshold = 0
-
-    def stateTransitions(self, _actor):
-        grabbingState(_actor)
-
-    def update(self, _actor):
-        BaseGrabbing.update(self, _actor)
-        checkGrounded(_actor)
-"""
-
-"""
-class Grabbed(Trapped):
-    def __init__(self,_height=1):
-        Trapped.__init__(self, 40)
-        self.height = _height
-        
-    def setUp(self, _actor):
-        if self.sprite_name=="": self.sprite_name ="grabbed"
-        Trapped.setUp(self, _actor)
-        
-    def update(self,_actor):
-        action.Action.update(self, _actor)
-        if self.frame == 0:
-            self.last_frame = 40 + _actor.damage//2
-        if (self.height > _actor.rect.height):
-            _actor.rect.top = _actor.grabbed_by.rect.bottom-self.height
-        else:
-            _actor.rect.bottom = _actor.grabbed_by.rect.bottom
-        _actor.rect.centerx = _actor.grabbed_by.rect.centerx+_actor.grabbed_by.facing*_actor.grabbed_by.rect.width/2.0
-        Trapped.update(self, _actor)
-"""
 
 class Release(action.Action):
     def __init__(self, _height=30):
@@ -1978,6 +1913,15 @@ class BaseThrow(BaseGrab):
         if self.frame == self.last_frame:
             if _actor.grounded: _actor.doAction('NeutralAction')
             else: _actor.doAction('Fall')
+        BaseGrab.update(self, _actor)
+
+class Pummel(BaseGrab):
+    def __init__(self,_length=1):
+        BaseGrab.__init__(self, _length)
+
+    def update(self, _actor):
+        if self.frame == self.last_frame:
+            _actor.doAction('BaseGrab')
         BaseGrab.update(self, _actor)
     
 class ForwardThrow(BaseThrow):

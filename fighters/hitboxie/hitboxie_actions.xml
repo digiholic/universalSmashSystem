@@ -1990,6 +1990,7 @@
 				<name>jab</name>
 				<damage>3</damage>
 				<base_hitstun>0</base_hitstun>
+				<hitlag_multiplier>0</hitlag_multiplier>
 			</createHitbox>
 		</setUp>
 

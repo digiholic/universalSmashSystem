@@ -347,33 +347,6 @@ class DashGrab(action.Action):
             _actor.doAction('NeutralAction')
         self.frame += 1
 
-class Pummel(baseActions.BaseGrabbing):
-    def __init__(self):
-        baseActions.BaseGrabbing.__init__(self,17)
-        self.sprite_rate = 0
-
-    def update(self, _actor):
-        baseActions.BaseGrabbing.update(self, _actor)
-        if self.frame == 0:
-            _actor.changeSprite("neutral", self.frame)
-        elif self.frame < 4:
-            _actor.changeSpriteImage(self.frame)
-        elif _actor.isGrabbing() and self.frame == 4:
-            _actor.grabbing.dealDamage(3)
-        elif self.frame >= 5 and self.frame <= 8:
-            _actor.changeSpriteImage(9)
-        elif self.frame >= 9 and self.frame <= 10:
-            _actor.changeSpriteImage(10)
-        elif self.frame > 10:
-            if not (self.frame) > 14:
-                _actor.changeSpriteImage(self.frame)
-        _actor.hurtbox.rect.width -= 16
-        _actor.hurtbox.rect.height -= 16
-        _actor.hurtbox.rect.midbottom = _actor.sprite.bounding_rect.midbottom
-        if self.frame == self.last_frame:
-            _actor.doAction('Grabbing')       
-        
-
 ########################################################
 #            BEGIN OVERRIDE CLASSES                    #
 ########################################################
