@@ -459,13 +459,7 @@
 	</LedgeRoll>
 	
 	<NeutralAttack>
-
-		<!--loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>NeutralAttack</action>
-		</loadCodeAction-->
-
-		<length>17</length>
+		<length>22</length>
 		<sprite>neutral</sprite>
 		<sprite_rate>1</sprite_rate>
 		
@@ -509,10 +503,6 @@
 		</frame>
 		<frame number="14">
 			<changeSubimage>14</changeSubimage>
-		</frame>
-		<frame number="after">
-		</frame>
-		<frame number="last">
 			<ifButton>
 				<button check="keysContain">attack</button>
 				<pass>repeatAttack</pass>
@@ -1991,10 +1981,44 @@
 	</DashGrab>
 	
 	<Pummel>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>Pummel</action>
-		</loadCodeAction>
+		<length>22</length>
+		<sprite>neutral</sprite>
+		<sprite_rate>1</sprite_rate>
+		
+		<setUp>
+			<createHitbox type="throw">
+				<name>jab</name>
+				<damage>3</damage>
+				<base_hitstun>0</base_hitstun>
+			</createHitbox>
+		</setUp>
+
+		<frame number="before">
+			<updateHitbox>jab</updateHitbox>
+		</frame>
+		
+		<frame number="4">
+			<activateHitbox>jab</activateHitbox>
+		</frame>
+		<frame number="5">
+			<changeSubimage>9</changeSubimage>
+		</frame>
+		<frame number="9">
+			<deactivateHitbox>jab</deactivateHitbox>
+			<changeSubimage>10</changeSubimage>
+		</frame>
+		<frame number="11">
+			<changeSubimage>11</changeSubimage>
+		</frame>
+		<frame number="12">
+			<changeSubimage>12</changeSubimage>
+		</frame>
+		<frame number="13">
+			<changeSubimage>13</changeSubimage>
+		</frame>
+		<frame number="14">
+			<changeSubimage>14</changeSubimage>
+		</frame>
 	</Pummel>
 	
 	<LedgeGetup>
