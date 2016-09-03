@@ -28,6 +28,31 @@ def parseData(_data,_type="string",_default=None):
         
         return VarData(source,varTag.text)
     
+    if _data.find('function') is not None:
+        funcTag = _data.find('function')
+        
+        if funcTag.attrib.has_key('source'): source = funcTag.attrib['source']
+        else: source = 'actor'
+        
+        funcName = loadNodeWithDefault(funcTag, 'functionName', '')
+        
+        args = dict()
+        for arg in funcTag.find('args'):
+            if arg.attrib.has_key('type'):
+                vartype = arg.attrib['type']
+            else: vartype = 'string'
+            
+            val = None
+            if   vartype=="string": val = arg.text
+            elif vartype=="int":    val = int(arg.text)
+            elif vartype=="float":  val = float(arg.text)
+            elif vartype=="bool":   val = (arg.text.lower() == 'true')
+            elif vartype=="tuple":  val = make_tuple(arg.text)
+            
+            args[arg.tag] = val
+            
+        return FuncData(source,funcName,args)
+    
     if _type=="dynamic":
         if _data.attrib.has_key('type'):
             _type = _data.attrib['type']
@@ -36,7 +61,7 @@ def parseData(_data,_type="string",_default=None):
     if _type=="int": return int(_data.text)
     if _type=="float": return float(_data.text)
     if _type=="bool": return (_data.text.lower() == 'true')
-    if type=="tuple": return make_tuple(_data.text)
+    if _type=="tuple": return make_tuple(_data.text)
 
 """
 An object that will load a variable from either an action or a fighter.
@@ -61,7 +86,40 @@ class VarData():
             if hasattr(_actor, 'key_bindings') and hasattr(_actor.key_bindings, 'timing_window'):
                 return _actor.key_bindings.timing_window[self.var]
         return None
- 
+
+"""
+An object to pull a value from a function. Pulls at runtime.
+@_source: The source of the function. A filepath, or "actor" or "action"
+@_functionName: The function to call
+@_args: A dict of arguments to pass the function
+"""
+class FuncData():
+    def __init__(self,_source,_functionName,_args):
+        self.source = _source
+        self.functionName = _functionName
+        self.args = _args
+        print(self.source,self.functionName,self.args)
+        
+    def unpack(self,_action,_actor):
+        if self.source == 'actor':
+            if hasattr(_actor, self.functionName):
+                method = getattr(_actor, self.functionName)
+                return method(**self.args)
+            else:
+                print('No such function exists in actor: '+str(self.functionName))
+                return None
+        elif self.source == 'action':
+            if hasattr(_action, self.functionName):
+                method = getattr(_action, self.functionName)
+                return method(**self.args)
+            else:
+                print('No such function exists in action: '+str(self.functionName))
+                return None
+        else:
+            pass
+            #TODO we'll fix this later. Add in the ability to call a function by filepath.
+        return None
+    
 """
 Used for building subActions dynamically. Each one has a path to get to its XML data,
 and a variable to set in the SubAction. It is used to read from XML and store as XML.
