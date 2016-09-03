@@ -58,7 +58,7 @@ class VarData():
             if hasattr(_action, self.var):
                 return getattr(_action, self.var)
         if self.source == 'timing':
-            if hasattr(_actor, key_bindings) and hasattr(_actor.key_bindings, timing_window):
+            if hasattr(_actor, 'key_bindings') and hasattr(_actor.key_bindings, 'timing_window'):
                 return _actor.key_bindings.timing_window[self.var]
         return None
  
@@ -505,7 +505,6 @@ class changeFighterSprite(SubAction):
         SubAction.__init__(self)
         self.sprite = 'idle' #default data
         self.preserve_index = False #default data
-        print(ElementTree.tostring(self.getXmlElement()))
         
     def execute(self, _action, _actor):
         if self.preserve_index: index = _actor.sprite.index
@@ -704,11 +703,6 @@ class changeGravity(SubAction):
     def getDisplayName(self):
         return 'Change Gravity Multiplier to '+self.new_gravity
     
-    def getXmlElement(self):
-        elem = ElementTree.Element('changeGravity')
-        elem.text = str(self.new_gravity)
-        return elem
-    
 # ApplyForceVector is usually called when launched, but can be used as an alternative to setting speed. This one
 # takes a direction in degrees (0 being forward, 90 being straight up, 180 being backward, 270 being downward)
 # and a magnitude.
@@ -791,11 +785,6 @@ class setInvulnerability(SubAction):
         #TODO add this
         return subactionSelector.BasePropertiesFrame(_root,self)
     
-    def getXmlElement(self):
-        elem = ElementTree.Element('setInvulnerability')
-        elem.text = str(self.invuln_amt)    
-        return elem
-    
 class shiftSpritePosition(SubAction):
     subact_group = 'Sprite'
     fields = [NodeMap('new_x','int','shiftSprite>xPos',None),
@@ -862,12 +851,7 @@ class updateLandingLag(SubAction):
         if self.reset: start_str = 'Reset '
         else: start_str = 'Update '
         return start_str+'Landing Lag: ' + str(self.new_lag)
-    
-    def getXmlElement(self):
-        elem = ElementTree.Element('updateLandingLag')
-        if self.reset: elem.attrib['reset'] = 'True'
-        elem.text = str(self.new_lag)
-        return elem
+
     
 ########################################################
 #           ATTRIBUTES AND VARIABLES                   #
@@ -903,20 +887,6 @@ class modifyFighterVar(SubAction):
     def getDisplayName(self):
         return 'Set fighter '+self.attr+' to '+str(self.val)
     
-    def getXmlElement(self):
-        elem = ElementTree.Element('setFighterVar')
-        
-        var_elem = ElementTree.Element('var')
-        var_elem.text = str(self.attr)
-        elem.append(var_elem)
-        
-        value_elem = ElementTree.Element('value')
-        value_elem.attrib['type'] = type(self.value).__name__
-        value_elem.text = str(self.value)
-        value_elem.attrib['relative'] = str(self.relative)
-        elem.append(value_elem)
-        
-        return elem
     
 # Modify a variable in the action, such as a conditional flag of some sort.
 class modifyActionVar(SubAction):
@@ -956,11 +926,6 @@ class changeActionFrame(SubAction):
         else:
             return 'Set Frame: ' + str(self.new_frame)
     
-    def getXmlElement(self):
-        elem = ElementTree.Element('setFrame')
-        if self.relative: elem.attrib['relative'] = 'True'
-        elem.text = str(self.new_frame)
-        return elem
         
 # Go to the next frame in the action
 class nextFrame(SubAction):
@@ -972,10 +937,7 @@ class nextFrame(SubAction):
     
     def getDisplayName(self):
         return 'Next Frame'
-    
-    def getXmlElement(self):
-        return ElementTree.Element('nextFrame')
-        
+
     
 class transitionState(SubAction):
     subact_group = 'Control'
@@ -996,11 +958,6 @@ class transitionState(SubAction):
     
     def getDisplayName(self):
         return 'Apply Transition State: ' + str(self.transition)
-    
-    def getXmlElement(self):
-        elem = ElementTree.Element('transitionState')
-        elem.text = str(self.transition)
-        return elem
     
 ########################################################
 #                 HIT/HURTBOXES                        #
@@ -1198,10 +1155,6 @@ class activateHitbox(SubAction):
     def getDisplayName(self):
         return 'Activate Hitbox: ' + self.hitbox_name
     
-    def getXmlElement(self):
-        elem = ElementTree.Element('activateHitbox')
-        elem.text = self.hitbox_name
-        return elem
 
 class deactivateHitbox(SubAction):
     subact_group = 'Hitbox'
@@ -1222,11 +1175,7 @@ class deactivateHitbox(SubAction):
     
     def getDisplayName(self):
         return 'Deactivate Hitbox: ' + self.hitbox_name
-    
-    def getXmlElement(self):
-        elem = ElementTree.Element('deactivateHitbox')
-        elem.text = self.hitbox_name
-        return elem
+
 
 class updateHitbox(SubAction):
     subact_group = 'Hitbox'
@@ -1247,11 +1196,7 @@ class updateHitbox(SubAction):
     
     def getDisplayName(self):
         return 'Update Hitbox Position: ' + self.hitbox_name
-    
-    def getXmlElement(self):
-        elem = ElementTree.Element('updateHitbox')
-        elem.text = self.hitbox_name
-        return elem
+
 
 class unlockHitbox(SubAction):
     subact_group = 'Hitbox'
@@ -1272,11 +1217,7 @@ class unlockHitbox(SubAction):
     
     def getDisplayName(self):
         return 'Unlock Hitbox: ' + self.hitbox_name
-    
-    def getXmlElement(self):
-        elem = ElementTree.Element('unlockHitbox')
-        elem.text = self.hitbox_name
-        return elem
+
     
 # Change the fighter's Hurtbox (where they have to be hit to take damage)
 # This is not done automatically when sprites change, so if your sprite takes the fighter out of his usual bounding box, make sure to change it.
@@ -1421,10 +1362,6 @@ class doAction(SubAction):
     def getDisplayName(self):
         return 'Change Action: ' + self.action
     
-    def getXmlElement(self):
-        elem = ElementTree.Element('doAction')
-        elem.text = self.action
-        return elem
     
 class createMask(SubAction):
     subact_group = 'Behavior'
