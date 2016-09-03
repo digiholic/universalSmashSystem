@@ -847,16 +847,10 @@
 	</UpSmash>
 	
 	<DownAttack>
-		<length>36</length>
+		<length>32</length>
 		<sprite>dtilt</sprite>
 		<sprite_rate>2</sprite_rate>
 		<loop>True</loop>
-		
-		<vars>
-			<start_charge_frame type="int">4</start_charge_frame>
-			<end_charge_frame type="int">6</end_charge_frame>
-			<max_charge type="int">15</max_charge>
-		</vars>
 		
 		<setUp>
 			<createHitbox type="funnel">
@@ -875,7 +869,7 @@
 				<name>rightHbox</name>
 				<center>23,26</center>
 				<size>46,40</size>
-				<damage>8</damage>
+				<damage>6</damage>
 				<base_knockback>8</base_knockback>
 				<knockback_growth>0.12</knockback_growth>
 				<trajectory>45</trajectory>
@@ -886,7 +880,7 @@
 				<name>leftHbox</name>
 				<center>-23,26</center>
 				<size>46,40</size>
-				<damage>8</damage>
+				<damage>6</damage>
 				<base_knockback>8</base_knockback>
 				<knockback_growth>0.12</knockback_growth>
 				<trajectory>135</trajectory>
@@ -902,28 +896,23 @@
 			<updateHitbox>spikeBox</updateHitbox>
 			<updateHitbox>rightHbox</updateHitbox>
 			<updateHitbox>leftHbox</updateHitbox>
-			<modifyHurtbox>
-				<center centerOn="image">0,0</center>
-				<size>46,36</size>
-			</modifyHurtbox>
 		</frame>
 		<frame number="8">
 			<playSound>dsmash</playSound>
-		</frame>
-		<frame number="14">
 			<activateHitbox>spikeBox</activateHitbox>
 		</frame>
-		<frame number="20">
+		<frame number="14">
 			<unlockHitbox>spikeBox</unlockHitbox>
 		</frame>
-		<frame number="26">
+		<frame number="20">
 			<deactivateHitbox>spikeBox</deactivateHitbox>
 			<activateHitbox>rightHbox</activateHitbox>
 			<activateHitbox>leftHbox</activateHitbox>
 		</frame>
-		<frame number="32">
+		<frame number="26">
 			<deactivateHitbox>rightHbox</deactivateHitbox>
 			<deactivateHitbox>leftHbox</deactivateHitbox>
+			<changeSubimage>0</changeSubimage>
 		</frame>
 	</DownAttack>
 
