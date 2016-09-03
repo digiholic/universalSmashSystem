@@ -335,6 +335,157 @@ class CrouchGetup(action.Action):
 ########################################################
 #                  Grab Actions                        #
 ########################################################
+
+class BaseGrab(action.Action):
+    def __init__(self,_length=1):
+        action.Action.__init__(self, _length)
+        self.escapable = True
+        self.hold_point = (0,0)
+        
+    def setUp(self, _actor):
+        action.Action.setUp(self, _actor)
+        
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        if not isinstance(_nextAction, BaseGrab):
+            if isinstance(_actor.grabbing.current_action,Grabbed):
+                _actor.grabbing.doAction('Released')
+    
+    def update(self, _actor):
+        action.Action.update(self, _actor)        
+        self.frame += 1
+        
+class Grabbing(BaseGrab):
+    def __init__(self,_length=1):
+        BaseGrab.__init__(self, _length)
+    
+    def setUp(self, _actor):
+        BaseGrab.setUp(self, _actor)
+        self.hold_point = (16,-16)
+        if self.sprite_name=="": self.sprite_name ="grabbing"
+        
+    def tearDown(self, _actor, _nextAction):
+        BaseGrab.tearDown(self, _actor, _nextAction)
+        #TODO release
+    
+    def stateTransitions(self, _actor):
+        BaseGrab.stateTransitions(self, _actor)
+        grabbingState(_actor)
+        #If you aren't holding anything, let go
+        if _actor.grabbing is None:
+            _actor.doAction('Release')
+            
+    def update(self, _actor):
+        #If they're both facing the same way, flip the foe so they are facing you
+        if self.frame == 0:
+            if _actor.grabbing.facing == _actor.facing:
+                _actor.grabbing.flip()
+                print(_actor.facing,_actor.grabbing.facing)
+        
+        BaseGrab.update(self, _actor)
+        
+class Grabbed(Trapped):
+    def __init__(self,_length=1):
+        Trapped.__init__(self, _length)
+        
+    def setUp(self, _actor):
+        Trapped.setUp(self, _actor)
+        if self.sprite_name=="": self.sprite_name ="grabbed"
+        #Set the last frame based on damage
+        self.last_frame = 40 + _actor.damage//2
+        
+    def tearDown(self, _actor, _nextAction):
+        Trapped.tearDown(self, _actor, _nextAction)
+        _actor.grabbed_by = None
+        
+    def update(self, _actor):
+        Trapped.update(self, _actor)
+        grabber = _actor.grabbed_by
+        
+        #release if you're not being held
+        if grabber is None or (not (grabber.grabbing == _actor)):
+            print('No one is holding me, gonna break out.')
+            _actor.doAction('Released')
+            return
+        
+        _actor.change_y = 0
+        
+        #snap to hold point
+        if hasattr(grabber.current_action, 'hold_point'):
+            (hold_x,hold_y) = grabber.current_action.hold_point
+        else:
+            (hold_x,hold_y) = (0,0)
+        _actor.rect.centerx = grabber.rect.centerx + (hold_x * grabber.facing) + (_actor.grab_point[0] * -_actor.facing)
+        _actor.rect.centery = grabber.rect.centery + (hold_y * grabber.facing) + (_actor.grab_point[1] * -_actor.facing)
+        
+        if self.frame >= self.last_frame:
+            #If the grabber's action doesn't have "escapable" set or if it is set to True, break out on last frame
+            if (not hasattr(grabber.current_action, 'escapable')) or grabber.current_action.escapable:
+                _actor.doAction('Released')
+                grabber.doAction('Release')
+            else:
+                print('Cant break free')
+
+class Release(action.Action):
+    def __init__(self, _height=30):
+        action.Action.__init__(self, 15)
+        self.height = _height
+    
+    def setUp(self, _actor):
+        if self.sprite_name=="": self.sprite_name ="release"
+        action.Action.setUp(self, _actor)
+        _actor.grabbing = None
+        
+    def update(self, _actor):
+        action.Action.update(self, _actor)
+        checkGrounded(_actor)
+        if self.frame >= self.last_frame:
+            _actor.doAction('NeutralAction')
+        self.frame += 1
+
+class Released(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 15)
+
+    def setUp(self, _actor):
+        if self.sprite_name=="": self.sprite_name ="released"
+        action.Action.setUp(self, _actor)
+        _actor.preferred_xspeed = 0
+        _actor.change_x = -5 * _actor.facing
+        #_actor.preferred_yspeed = _actor.var['max_fall_speed']
+        _actor.grabbed_by = None
+    
+    def stateTransitions(self,_actor):
+        action.Action.stateTransitions(self, _actor)
+        tapReversible(_actor)
+
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if _actor.keysContain(key):
+            _actor.preferred_xspeed = _actor.facing * _actor.var['max_air_speed']
+        elif _actor.keysContain(invkey):
+            _actor.preferred_xspeed = -_actor.facing * _actor.var['max_air_speed']
+    
+        if (_actor.change_x < 0) and not _actor.keysContain('left'):
+            _actor.preferred_xspeed = 0
+        elif (_actor.change_x > 0) and not _actor.keysContain('right'):
+            _actor.preferred_xspeed = 0
+
+        if _actor.change_y >= _actor.var['max_fall_speed'] and _actor.landing_lag < _actor.var['heavy_land_lag']:
+            _actor.landing_lag = _actor.var['heavy_land_lag']
+
+        if _actor.grounded and _actor.ground_elasticity == 0:
+            _actor.preferred_xspeed = 0
+            _actor.preferred_yspeed = _actor.var['max_fall_speed']
+            _actor.doAction('Prone')
+            _actor.current_action.last_frame = self.last_frame - self.frame
+
+        grabLedges(_actor)
+        
+    def update(self,_actor):
+        action.Action.update(self, _actor)
+        if self.frame >= self.last_frame:
+            _actor.doAction('Fall')
+        self.frame += 1
         
 class HitStun(action.Action):
     def __init__(self,_hitstun=1,_direction=0):
@@ -1267,6 +1418,42 @@ class DashAttack(BaseAttack):
     def __init__(self,_length=0):
         BaseAttack.__init__(self, _length)
 
+        
+class BaseThrow(BaseGrab):
+    def __init__(self,_length=1):
+        BaseGrab.__init__(self, _length)
+        
+    def update(self, _actor):
+        if self.frame == self.last_frame:
+            if _actor.grounded: _actor.doAction('NeutralAction')
+            else: _actor.doAction('Fall')
+        BaseGrab.update(self, _actor)
+
+class Pummel(BaseGrab):
+    def __init__(self,_length=1):
+        BaseGrab.__init__(self, _length)
+
+    def update(self, _actor):
+        if self.frame == self.last_frame:
+            _actor.doAction('BaseGrab')
+        BaseGrab.update(self, _actor)
+    
+class ForwardThrow(BaseThrow):
+    def __init__(self,_length=0):
+        BaseGrab.__init__(self, _length)
+
+class DownThrow(BaseThrow):
+    def __init__(self,_length=0):
+        BaseGrab.__init__(self, _length)
+        
+class UpThrow(BaseThrow):
+    def __init__(self,_length=0):
+        BaseGrab.__init__(self, _length)
+
+class BackThrow(BaseThrow):
+    def __init__(self,_length=0):
+        BaseGrab.__init__(self, _length)
+
 class NeutralSpecial(BaseAttack):
     def __init__(self,_length=0):
         BaseAttack.__init__(self, _length)
@@ -1753,189 +1940,3 @@ state_dict = {
             "autoDodgeCancellable": autoDodgeCancellable,
             "jumpCancellable": jumpCancellable
             }
-
-class BaseGrab(action.Action):
-    def __init__(self,_length=1):
-        action.Action.__init__(self, _length)
-        self.escapable = True
-        self.hold_point = (0,0)
-        
-    def setUp(self, _actor):
-        action.Action.setUp(self, _actor)
-        
-    def tearDown(self, _actor, _nextAction):
-        action.Action.tearDown(self, _actor, _nextAction)
-        if not isinstance(_nextAction, BaseGrab):
-            if isinstance(_actor.grabbing.current_action,Grabbed):
-                _actor.grabbing.doAction('Released')
-    
-    def update(self, _actor):
-        action.Action.update(self, _actor)        
-        self.frame += 1
-        
-class Grabbing(BaseGrab):
-    def __init__(self,_length=1):
-        BaseGrab.__init__(self, _length)
-    
-    def setUp(self, _actor):
-        BaseGrab.setUp(self, _actor)
-        self.hold_point = (16,-16)
-        if self.sprite_name=="": self.sprite_name ="grabbing"
-        
-    def tearDown(self, _actor, _nextAction):
-        BaseGrab.tearDown(self, _actor, _nextAction)
-        #TODO release
-    
-    def stateTransitions(self, _actor):
-        BaseGrab.stateTransitions(self, _actor)
-        grabbingState(_actor)
-        #If you aren't holding anything, let go
-        if _actor.grabbing is None:
-            _actor.doAction('Release')
-            
-    def update(self, _actor):
-        #If they're both facing the same way, flip the foe so they are facing you
-        if self.frame == 0:
-            if _actor.grabbing.facing == _actor.facing:
-                _actor.grabbing.flip()
-                print(_actor.facing,_actor.grabbing.facing)
-        
-        BaseGrab.update(self, _actor)
-        
-class Grabbed(Trapped):
-    def __init__(self,_length=1):
-        Trapped.__init__(self, _length)
-        
-    def setUp(self, _actor):
-        Trapped.setUp(self, _actor)
-        if self.sprite_name=="": self.sprite_name ="grabbed"
-        #Set the last frame based on damage
-        self.last_frame = 40 + _actor.damage//2
-        
-    def tearDown(self, _actor, _nextAction):
-        Trapped.tearDown(self, _actor, _nextAction)
-        _actor.grabbed_by = None
-        
-    def update(self, _actor):
-        Trapped.update(self, _actor)
-        grabber = _actor.grabbed_by
-        
-        #release if you're not being held
-        if grabber is None or (not (grabber.grabbing == _actor)):
-            print('No one is holding me, gonna break out.')
-            _actor.doAction('Released')
-            return
-        
-        _actor.change_y = 0
-        
-        #snap to hold point
-        if hasattr(grabber.current_action, 'hold_point'):
-            (hold_x,hold_y) = grabber.current_action.hold_point
-        else:
-            (hold_x,hold_y) = (0,0)
-        _actor.rect.centerx = grabber.rect.centerx + (hold_x * grabber.facing) + (_actor.grab_point[0] * -_actor.facing)
-        _actor.rect.centery = grabber.rect.centery + (hold_y * grabber.facing) + (_actor.grab_point[1] * -_actor.facing)
-        
-        if self.frame >= self.last_frame:
-            #If the grabber's action doesn't have "escapable" set or if it is set to True, break out on last frame
-            if (not hasattr(grabber.current_action, 'escapable')) or grabber.current_action.escapable:
-                _actor.doAction('Released')
-                grabber.doAction('Release')
-            else:
-                print('Cant break free')
-
-class Release(action.Action):
-    def __init__(self, _height=30):
-        action.Action.__init__(self, 15)
-        self.height = _height
-    
-    def setUp(self, _actor):
-        if self.sprite_name=="": self.sprite_name ="release"
-        action.Action.setUp(self, _actor)
-        _actor.grabbing = None
-        
-    def update(self, _actor):
-        action.Action.update(self, _actor)
-        checkGrounded(_actor)
-        if self.frame >= self.last_frame:
-            _actor.doAction('NeutralAction')
-        self.frame += 1
-
-class Released(action.Action):
-    def __init__(self):
-        action.Action.__init__(self, 15)
-
-    def setUp(self, _actor):
-        if self.sprite_name=="": self.sprite_name ="released"
-        action.Action.setUp(self, _actor)
-        _actor.preferred_xspeed = 0
-        _actor.change_x = -5 * _actor.facing
-        #_actor.preferred_yspeed = _actor.var['max_fall_speed']
-        _actor.grabbed_by = None
-    
-    def stateTransitions(self,_actor):
-        action.Action.stateTransitions(self, _actor)
-        tapReversible(_actor)
-
-        (key, invkey) = _actor.getForwardBackwardKeys()
-        if _actor.keysContain(key):
-            _actor.preferred_xspeed = _actor.facing * _actor.var['max_air_speed']
-        elif _actor.keysContain(invkey):
-            _actor.preferred_xspeed = -_actor.facing * _actor.var['max_air_speed']
-    
-        if (_actor.change_x < 0) and not _actor.keysContain('left'):
-            _actor.preferred_xspeed = 0
-        elif (_actor.change_x > 0) and not _actor.keysContain('right'):
-            _actor.preferred_xspeed = 0
-
-        if _actor.change_y >= _actor.var['max_fall_speed'] and _actor.landing_lag < _actor.var['heavy_land_lag']:
-            _actor.landing_lag = _actor.var['heavy_land_lag']
-
-        if _actor.grounded and _actor.ground_elasticity == 0:
-            _actor.preferred_xspeed = 0
-            _actor.preferred_yspeed = _actor.var['max_fall_speed']
-            _actor.doAction('Prone')
-            _actor.current_action.last_frame = self.last_frame - self.frame
-
-        grabLedges(_actor)
-        
-    def update(self,_actor):
-        action.Action.update(self, _actor)
-        if self.frame >= self.last_frame:
-            _actor.doAction('Fall')
-        self.frame += 1
-        
-class BaseThrow(BaseGrab):
-    def __init__(self,_length=1):
-        BaseGrab.__init__(self, _length)
-        
-    def update(self, _actor):
-        if self.frame == self.last_frame:
-            if _actor.grounded: _actor.doAction('NeutralAction')
-            else: _actor.doAction('Fall')
-        BaseGrab.update(self, _actor)
-
-class Pummel(BaseGrab):
-    def __init__(self,_length=1):
-        BaseGrab.__init__(self, _length)
-
-    def update(self, _actor):
-        if self.frame == self.last_frame:
-            _actor.doAction('BaseGrab')
-        BaseGrab.update(self, _actor)
-    
-class ForwardThrow(BaseThrow):
-    def __init__(self,_length=0):
-        BaseGrab.__init__(self, _length)
-
-class DownThrow(BaseThrow):
-    def __init__(self,_length=0):
-        BaseGrab.__init__(self, _length)
-        
-class UpThrow(BaseThrow):
-    def __init__(self,_length=0):
-        BaseGrab.__init__(self, _length)
-
-class BackThrow(BaseThrow):
-    def __init__(self,_length=0):
-        BaseGrab.__init__(self, _length)
