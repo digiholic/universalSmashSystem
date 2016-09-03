@@ -336,6 +336,37 @@ class CrouchGetup(action.Action):
 #                  Grab Actions                        #
 ########################################################
 
+class Trapped(action.Action):
+    def __init__(self, _length=1):
+        action.Action.__init__(self, _length)
+        self.time = 0
+        self.held_time = 0
+        self.last_position = [0,0]
+        
+    def setUp(self, _actor):
+        if self.sprite_name=="": self.sprite_name ="trapped"
+        action.Action.setUp(self, _actor)
+        self.last_position = [0,0]
+        self.held_time = 0
+        self.time = 0
+        
+    def update(self,_actor):
+        action.Action.update(self, _actor)
+        new_position = _actor.getSmoothedInput()
+        cross = new_position[0]*self.last_position[1]-new_position[1]*self.last_position[0]
+        self.held_time += (cross**2)*4
+        if self.held_time >= 1:
+            self.frame += int(self.held_time)
+            self.held_time -= int(self.held_time)
+        self.last_position = new_position
+        if self.frame >= self.last_frame:
+            _actor.doAction('Released')
+        # Throws and other grabber-controlled releases are the grabber's responsibility
+        # Also, the grabber should always check to see if the grabbee is still under grab
+        self.frame += 1
+        self.time += 1
+        print(self.frame, self.time)
+
 class BaseGrab(action.Action):
     def __init__(self,_length=1):
         action.Action.__init__(self, _length)
@@ -978,37 +1009,6 @@ class Stunned(action.Action):
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
-
-class Trapped(action.Action):
-    def __init__(self, _length=1):
-        action.Action.__init__(self, _length)
-        self.time = 0
-        self.held_time = 0
-        self.last_position = [0,0]
-        
-    def setUp(self, _actor):
-        if self.sprite_name=="": self.sprite_name ="trapped"
-        action.Action.setUp(self, _actor)
-        self.last_position = [0,0]
-        self.held_time = 0
-        self.time = 0
-        
-    def update(self,_actor):
-        action.Action.update(self, _actor)
-        new_position = _actor.getSmoothedInput()
-        cross = new_position[0]*self.last_position[1]-new_position[1]*self.last_position[0]
-        self.held_time += (cross**2)*4
-        if self.held_time >= 1:
-            self.frame += int(self.held_time)
-            self.held_time -= int(self.held_time)
-        self.last_position = new_position
-        if self.frame >= self.last_frame:
-            _actor.doAction('Released')
-        # Throws and other grabber-controlled releases are the grabber's responsibility
-        # Also, the grabber should always check to see if the grabbee is still under grab
-        self.frame += 1
-        self.time += 1
-        print(self.frame, self.time)
         
 class ForwardRoll(action.Action):
     def __init__(self):
