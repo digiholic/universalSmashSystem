@@ -440,8 +440,12 @@ class ifButton(SubAction):
     
     @staticmethod
     def customBuildFromXml(_node):
-        button = _node.find('button').text
-        check = loadNodeWithDefault(_node, 'check', 'keyBuffered')
+        button = _node.find('button')
+        if button.attrib.has_key('check'):
+            check = button.attrib['check']
+        else: check = 'keyBuffered'
+        button = button.text
+        
         if check == 'keysContain':
             buffer_from = 1
             buffer_to = 0
