@@ -897,8 +897,10 @@
 			<updateHitbox>rightHbox</updateHitbox>
 			<updateHitbox>leftHbox</updateHitbox>
 		</frame>
-		<frame number="8">
+		<frame number="0">
 			<playSound>dtilt</playSound>
+		</frame>
+		<frame number="8">
 			<activateHitbox>spikeBox</activateHitbox>
 		</frame>
 		<frame number="14">
