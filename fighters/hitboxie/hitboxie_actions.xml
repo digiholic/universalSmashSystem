@@ -898,7 +898,7 @@
 			<updateHitbox>leftHbox</updateHitbox>
 		</frame>
 		<frame number="8">
-			<playSound>dsmash</playSound>
+			<playSound>dtilt</playSound>
 			<activateHitbox>spikeBox</activateHitbox>
 		</frame>
 		<frame number="14">
@@ -1017,7 +1017,7 @@
 		<frame number="10">
 			<activateHitbox>rightHbox1</activateHitbox>
 			<activateHitbox>leftHbox1</activateHitbox>
-			<playSound>dtilt</playSound>
+			<playSound>dsmash</playSound>
 			<changeSubimage>5</changeSubimage>
 		</frame>
 		<frame number="11">
