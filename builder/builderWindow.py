@@ -115,14 +115,16 @@ class MainFrame(Tk):
         changed_actions[self.action_string.get()] = action
         
         #update the views
+        """
         self.action_pane.action_selector_panel.refreshDropdowns()
         self.viewer_pane.navigator_panel.changeFrameNumber(0)
+        """
         
         self.viewer_pane.viewer_panel.reloadFrame()
         
         for subact in self.action_pane.subaction_panel.subaction_list:
             subact.updateName()
-                
+                 
     def getFighterAction(self,_actionName,_getRawXml=False):
         global fighter
         if _getRawXml:return fighter.actions.actions_xml.find(_actionName)
@@ -130,7 +132,7 @@ class MainFrame(Tk):
     
     def addAction(self,_actionName):
         global fighter
-        changed_actions[_actionName] = engine.action.DynamicAction(1)
+        changed_actions[_actionName] = engine.action.Action(1)
         fighter.actions.modifyAction(_actionName, changed_actions[_actionName])
         self.action_pane.action_selector_panel.refreshDropdowns()
     
@@ -601,7 +603,7 @@ class SelectorPanel(BuilderPanel):
             self.current_group.set('Fighter')
         else:
             self.group_list = self.default_group_list[:]
-            if action and isinstance(action, engine.action.DynamicAction):
+            if action and isinstance(action, engine.action.Action):
                 for group in action.conditional_actions.keys():
                     self.group_list.append('Cond: '+ group)
                             
@@ -776,7 +778,7 @@ class Subaction_panel(BuilderPanel):
                 self.subaction_list.append(panel)
             
             self.showSubactionList()
-        elif isinstance(action,engine.action.DynamicAction):
+        elif isinstance(action,engine.action.Action):
             subact_group = []
             if self.group == 'Set Up':
                 subact_group = action.set_up_actions
