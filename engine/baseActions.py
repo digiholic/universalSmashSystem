@@ -1207,6 +1207,7 @@ class LedgeGrab(action.Action):
         action.Action.setUp(self, _actor)
         _actor.createMask([255,255,255], settingsManager.getSetting('ledgeInvincibilityTime'), True, 12)
         _actor.invulnerable = settingsManager.getSetting('ledgeInvincibilityTime')
+        _actor.last_input_frame = 0
         if not hasattr(self, 'ledge'): self.ledge = None
         if not hasattr(self, 'sweetspot_x'): self.sweetspot_x = 0
         if not hasattr(self, 'sweetspot_y'): self.sweetspot_y = 0
