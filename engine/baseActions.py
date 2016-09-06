@@ -1238,7 +1238,35 @@ class LedgeGrab(action.Action):
             _actor.rect.center = _actor.hurtbox.rect.center
         _actor.setSpeed(0, _actor.getFacingDirection())
         self.frame += 1
-        
+
+class BaseLedgeGetup(action.Action):
+    def __init__(self, _length=1, _upFrame=1):
+        action.Action.__init__(self, _length)
+        self.up_frame = _upFrame
+
+    def setUp(self, _actor):
+        action.Action.setUp(self, _actor)
+        self.up_level = _actor.hurtbox.rect.top
+
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        _actor.preferred_xspeed = 0
+        _actor.preferred_yspeed = 0
+        if _actor.grounded:
+            _actor.change_x = 0
+            _actor.change_y = 0
+
+    def update(self, _actor):
+        action.Action.update(self, _actor)
+        if self.frame == 0:
+            if _actor.invulnerable > 0:
+                _actor.createMask([255,255,255], _actor.invlunerable, True, 24)
+        if self.frame == self.up_frame:
+            _actor.hurtbox.rect.bottom = self.up_level
+        if self.frame >= self.last_frame:
+            _actor.doAction('NeutralAction')
+        self.frame += 1
+            
 
 class LedgeGetup(action.Action):
     def __init__(self, _length=1):
@@ -1252,7 +1280,7 @@ class LedgeGetup(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="ledgeGetup"
         action.Action.setUp(self, _actor)
-        _actor.invincibility = 12
+        _actor.invulnerable = 12
     
     def update(self,_actor):
         action.Action.update(self, _actor)
