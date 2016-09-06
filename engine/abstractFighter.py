@@ -231,7 +231,7 @@ class AbstractFighter():
         self.no_flinch_hits = 0
         self.flinch_damage_threshold = 0
         self.flinch_knockback_threshold = 0
-        self.armor_damage_multipler = 1
+        self.armor_damage_multiplier = 1
         
         # Invulnerable flag
         # While this is above zero, hitboxes can't connect with the fighter
@@ -879,6 +879,10 @@ class AbstractFighter():
         self.sprite.rotate()
         
     def die(self,_respawn = True):
+        sfxlib = settingsManager.getSfx()
+        if sfxlib.hasSound('death', self.name):
+            self.playSound('death')
+        
         self.damage = 0
         self.change_x = 0
         self.change_y = 0

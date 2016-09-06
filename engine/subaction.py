@@ -1525,6 +1525,17 @@ class recenterOnOrigin(SubAction):
     def getDisplayName(self):
         return 'Recenter On Origin'
     
+class executeCode(SubAction):
+    subact_group = 'Control'
+    fields = [NodeMap('codeString', 'string', 'exec', '')]
+    
+    def __init__(self):
+        SubAction.__init__(self)
+        self.codeString = ''
+        
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+        exec(self.codeString)
     
 subaction_dict = {
                  #Control Flow
@@ -1535,6 +1546,7 @@ subaction_dict = {
                  'transitionState': transitionState,
                  'doAction': doAction,
                  'setFighterVar': modifyFighterVar,
+                 'exec': executeCode,
                  
                  #Sprite Modifiers
                  'changeSprite': changeFighterSprite,

@@ -16,7 +16,7 @@ length - if this article has logic or animation, you can set this to be used in 
 """
 #Add method to get its own bounding rect
 class DynamicArticle(spriteManager.SheetSprite):
-    def __init__(self,_owner,_sheet,_imgWidth=0,_originPoint=(0,0),_length=1,_spriteRate=0,_startingDirection=0,_draw_depth=1):
+    def __init__(self,_owner,_sheet,_imgWidth=0,_originPoint=(0,0),_length=1,_spriteRate=0,_startingDirection=0,_draw_depth=1,_tags = []):
         self.owner = _owner
         spriteManager.SheetSprite.__init__(self, _sheet, _imgWidth)
         
@@ -29,6 +29,7 @@ class DynamicArticle(spriteManager.SheetSprite):
         self.facing = 1
         self.origin_point = _originPoint
         self.starting_direction = _startingDirection
+        self.tags = _tags
         
         self.hitboxes = {}
         self.hitbox_locks = {}
@@ -133,7 +134,10 @@ class DynamicArticle(spriteManager.SheetSprite):
     def activateHitbox(self,_hitbox):
         self.active_hitboxes.add(_hitbox)
         _hitbox.activate()
-        
+    
+    def playSound(self,_sound):
+        self.owner.playSound(_sound)
+          
 class Article(spriteManager.ImageSprite):
     def __init__(self, _spritePath, _owner, _origin, _length=1, _draw_depth = 1):
         spriteManager.ImageSprite.__init__(self,_spritePath)

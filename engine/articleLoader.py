@@ -68,6 +68,11 @@ class ArticleLoader():
         origin_point = make_tuple(self.loadNodeWithDefault(article_xml, 'origin_point', '(0,0)'))
         facing_direction = int(self.loadNodeWithDefault(article_xml, 'facing_direction', 0))
         
+        tags = []
+        if article_xml.find('tags') is not None:
+            for tagNode in article_xml.find('tags'):
+                tags.append(tagNode.tag)
+        
         #Load the SetUp subactions
         set_up_actions = []
         if article_xml.find('setUp') is not None:
@@ -148,7 +153,7 @@ class ArticleLoader():
         #Create and populate the Dynamic Action
         dyn_article = article.DynamicArticle(self.owner, os.path.join(self.article_path,sprite_name),
                                              img_width, origin_point, length, sprite_rate, facing_direction,
-                                             draw_depth)
+                                             draw_depth,tags)
         
         dyn_article.actions_before_frame = subactions_before_frame
         dyn_article.actions_at_frame = subactions_at_frame
