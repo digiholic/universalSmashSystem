@@ -37,7 +37,8 @@ class Hitbox(spriteManager.RectSprite):
                        'y_bias': 0,
                        'x_draw': 0.1,
                        'y_draw': 0.1,
-                       'hp': 0
+                       'hp': 0,
+                       'ignore_shields': False
                        }
         self.newVaraibles = _variables
         self.variable_dict.update(self.newVaraibles)
@@ -87,8 +88,9 @@ class Hitbox(spriteManager.RectSprite):
 
     def compareTo(self, _other):
         if (hasattr(_other, 'transcendence') and hasattr(_other, 'priority')) and not isinstance(_other, InertHitbox):
-            if self.transcendence+_other.transcendence <= 0:
-                return (self.priority - _other.priority) >= 8
+            if not self.ignore_shields or isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox):
+                if self.transcendence+_other.transcendence <= 0:
+                    return (self.priority - _other.priority) >= 8
         return True
     
     def activate(self):
@@ -149,7 +151,7 @@ class SakuraiAngleHitbox(DamageHitbox):
                     self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                 p = float(_other.damage)
                 d = float(self.damage)
-                w = float(_other.var['weight']) * float(settingsManager.getSetting('weightMultiplier'))/100.0
+                w = float(_other.var['weight']) * settingsManager.getSetting('weight')
                 s = float(self.knockback_growth)
                 b = float(self.base_knockback)
                 total_kb = (((((p/10) + (p*d)/20) * (200/(w*self.weight_influence+100))*1.4) + 5) * s) + b
@@ -328,7 +330,7 @@ class ShieldHitbox(Hitbox):
         Hitbox.update(self)
    
     def compareTo(self, _other):
-        if isinstance(_other, DamageHitbox) and self.owner.lockHitbox(_other):
+        if (isinstance(_other, DamageHitbox) and not _other.ignore_shields) and self.owner.lockHitbox(_other):
             self.owner.shieldDamage(math.floor(_other.damage*_other.shield_multiplier), _other.base_knockback/5.0*math.cos(math.radians(_other.trajectory)), _other.hitlag_multiplier)
             prevailed = Hitbox.compareTo(self, _other)
             if not prevailed:
@@ -352,7 +354,7 @@ class PerfectShieldHitbox(Hitbox):
         Hitbox.update(self)
 
     def compareTo(self, _other):
-        if isinstance(_other, DamageHitbox) and self.owner.lockHitbox(_other) and _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags:
+        if (isinstance(_other, DamageHitbox) and not _other.ignore_shields) and self.owner.lockHitbox(_other) and _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags:
             if hasattr(_other.article, 'changeOwner'):
                 _other.article.changeOwner(self.owner)
             if hasattr(_other.article, 'change_x') and hasattr(_other.article, 'change_y'):

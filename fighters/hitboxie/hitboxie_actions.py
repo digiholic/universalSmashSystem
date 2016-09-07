@@ -34,7 +34,7 @@ class ForwardSpecial(action.Action):
                      'shield_multiplier': 1,
                      'velocity_multiplier': 1,
                      'transcendence': -1,
-                     'priority': -7
+                     'priority': -7,
                      }
         self.ambient_hitbox = hitbox.Hitbox(_actor, hitbox.HitboxLock(), ambience)
         self.chain_hitbox = hitbox.AutolinkHitbox(_actor, hitbox.HitboxLock(), variables)

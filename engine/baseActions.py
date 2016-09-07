@@ -1179,7 +1179,7 @@ class AirDodge(action.Action):
                 _actor.preferred_yspeed = _actor.var['max_fall_speed']
 
         if self.frame == 6:
-            _actor.updateLandingLag(int(settingsManager.getSetting('airDodgeLag')))
+            _actor.updateLandingLag(settingsManager.getSetting('airDodgeLag'))
         if self.frame == self.start_invuln_frame:
             (key, invkey) = _actor.getForwardBackwardKeys()
             if _actor.keysContain(invkey, 1):
@@ -1187,7 +1187,7 @@ class AirDodge(action.Action):
             _actor.createMask([255,255,255],self.end_invuln_frame-self.start_invuln_frame,True,24)
             _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
         elif self.frame == self.end_invuln_frame:
-            _actor.landing_lag = int(settingsManager.getSetting('airDodgeLag'))
+            _actor.landing_lag = settingsManager.getSetting('airDodgeLag')
         elif self.frame == self.last_frame:
             if settingsManager.getSetting('freeDodgeSpecialFall'):
                 _actor.doAction('Helpless')

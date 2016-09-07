@@ -197,13 +197,13 @@ class Settings():
         preset = 'preset_' + _presetSuf
         self.setting['current_preset'] = _presetSuf
         
-        self.setting['gravity'] = float(getNumber(preset_parser, preset, 'gravityMultiplier')) / 100
-        self.setting['weight'] = float(getNumber(preset_parser, preset, 'weightMultiplier')) / 100
-        self.setting['friction'] = float(getNumber(preset_parser, preset, 'frictionMultiplier')) / 100
-        self.setting['airControl'] = float(getNumber(preset_parser, preset, 'airControlMultiplier')) / 100
-        self.setting['hitstun'] = float(getNumber(preset_parser, preset, 'hitstunMultiplier')) / 100
-        self.setting['hitlag'] = float(getNumber(preset_parser, preset, 'hitlagMultiplier')) / 100
-        self.setting['shieldStun'] = float(getNumber(preset_parser, preset, 'shieldStunMultiplier')) / 100
+        self.setting['gravity'] = float(getNumber(preset_parser, preset, 'gravityMultiplier')) / 100.0
+        self.setting['weight'] = float(getNumber(preset_parser, preset, 'weightMultiplier')) / 100.0
+        self.setting['friction'] = float(getNumber(preset_parser, preset, 'frictionMultiplier')) / 100.0
+        self.setting['airControl'] = float(getNumber(preset_parser, preset, 'airControlMultiplier')) / 100.0
+        self.setting['hitstun'] = float(getNumber(preset_parser, preset, 'hitstunMultiplier')) / 100.0
+        self.setting['hitlag'] = float(getNumber(preset_parser, preset, 'hitlagMultiplier')) / 100.0
+        self.setting['shieldStun'] = float(getNumber(preset_parser, preset, 'shieldStunMultiplier')) / 100.0
         
         self.setting['ledgeConflict'] = getString(preset_parser, preset, 'ledgeConflict')
         sweetSpotDict = {'large': [128,128], 'medium': [64,64], 'small': [32,32]}
@@ -216,7 +216,8 @@ class Settings():
         
         self.setting['airDodgeType'] = getString(preset_parser, preset, 'airDodgeType')
         self.setting['freeDodgeSpecialFall'] = getBoolean(preset_parser, preset, 'freeDodgeSpecialFall')
-        self.setting['enableWavedash'] = getBoolean(preset_parser, preset, 'enableWavedash')        
+        self.setting['enableWavedash'] = getBoolean(preset_parser, preset, 'enableWavedash')     
+        self.setting['airDodgeLag'] = int(getNumber(preset_parser, preset, 'airDodgeLag'))
     
         print(self.setting)
     
