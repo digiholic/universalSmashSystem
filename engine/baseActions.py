@@ -1239,11 +1239,14 @@ class LedgeGrab(action.Action):
         _actor.setSpeed(0, _actor.getFacingDirection())
         self.frame += 1
 
-class BaseLedgeGetup(action.Action):
-    def __init__(self, _length=1, _upFrame=1):
-        action.Action.__init__(self, _length)
-        self.up_frame = _upFrame
+class BaseLedge(action.Action):
+    def __init__(self, _length=1):
         self.ledgeHoldPoint = (0,0)
+    
+class BaseLedgeGetup(BaseLedge):
+    def __init__(self, _length=1, _upFrame=1):
+        BaseLedge.__init__(self, _length)
+        self.up_frame = _upFrame
         
     def setUp(self, _actor):
         action.Action.setUp(self, _actor)
