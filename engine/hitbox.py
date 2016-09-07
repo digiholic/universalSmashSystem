@@ -1,6 +1,7 @@
 import math
 import pygame
 import spriteManager
+import settingsManager
 
 class HitboxLock(object):
     def __init__(self,_lockName=''):
@@ -148,7 +149,7 @@ class SakuraiAngleHitbox(DamageHitbox):
                     self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                 p = float(_other.damage)
                 d = float(self.damage)
-                w = float(_other.var['weight'])
+                w = float(_other.var['weight']) * float(settingsManager.getSetting('weightMultiplier'))/100.0
                 s = float(self.knockback_growth)
                 b = float(self.base_knockback)
                 total_kb = (((((p/10) + (p*d)/20) * (200/(w*self.weight_influence+100))*1.4) + 5) * s) + b
