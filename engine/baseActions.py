@@ -1243,7 +1243,8 @@ class BaseLedgeGetup(action.Action):
     def __init__(self, _length=1, _upFrame=1):
         action.Action.__init__(self, _length)
         self.up_frame = _upFrame
-
+        self.ledgeHoldPoint = (0,0)
+        
     def setUp(self, _actor):
         action.Action.setUp(self, _actor)
         self.up_level = _actor.hurtbox.rect.top

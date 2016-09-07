@@ -6,7 +6,7 @@ import sys
 import musicManager
 import fighters.sandbag.fighter
 import engine.hitbox as hitbox
-
+import engine.optimize_dirty_rects
 import colorsys
 from cgi import log
 
@@ -290,9 +290,10 @@ class Battle():
                 
             
             clock.tick(clock_speed) #change back
-            #pygame.display.update(self.dirty_rects)
+            optimized_rects = engine.optimize_dirty_rects.optimize_dirty_rects(self.dirty_rects)
+            pygame.display.update(optimized_rects)
             self.dirty_rects = []
-            pygame.display.update()
+            #pygame.display.update()
             if debug_mode:
                 print("Paused, press right ctrl key to continue")
                 while not debug_pass:

@@ -830,7 +830,7 @@ class setInvulnerability(SubAction):
     fields = [NodeMap('invuln_amt','int','setInvulnerability',0),
               ]
     
-    def __init__(self,_amt):
+    def __init__(self,_amt=0):
         self.invuln_amt = _amt
     
     def execute(self, _action, _actor):
