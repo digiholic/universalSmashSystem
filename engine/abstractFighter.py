@@ -486,7 +486,7 @@ class AbstractFighter():
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             self.rect.x += block.change_x
-            self.change_y -= self.var['gravity']
+            self.change_y -= self.var['gravity'] * settingsManager.getSetting('gravity')
 
         if to_bounce_block is not None:
             collisionBox.reflect(self, to_bounce_block)
@@ -511,19 +511,19 @@ class AbstractFighter():
     def accel(self,_xFactor):
         if self.change_x > self.preferred_xspeed: #if we're going too fast
             diff = self.change_x - self.preferred_xspeed
-            self.change_x -= min(diff,_xFactor)
+            self.change_x -= min(diff,_xFactor*(settingsManager.getSetting('friction') if self.grounded else settingsManager.getSetting('airControl')))
         elif self.change_x < self.preferred_xspeed: #if we're going too slow
             diff = self.preferred_xspeed - self.change_x
-            self.change_x += min(diff,_xFactor)
+            self.change_x += min(diff,_xFactor*(settingsManager.getSetting('friction') if self.grounded else settingsManager.getSetting('airControl')))
     
     # Change ySpeed according to gravity.        
     def calcGrav(self, _multiplier=1):
         if self.change_y > self.preferred_yspeed:
             diff = self.change_y - self.preferred_yspeed
-            self.change_y -= min(diff, _multiplier*self.var['gravity'])
+            self.change_y -= min(diff, _multiplier*self.var['gravity'] * settingsManager.getSetting('gravity')) 
         elif self.change_y < self.preferred_yspeed:
             diff = self.preferred_yspeed - self.change_y
-            self.change_y += min(diff, _multiplier*self.var['gravity'])
+            self.change_y += min(diff, _multiplier*self.var['gravity'] * settingsManager.getSetting('gravity'))
         if self.grounded: self.jumps = self.var['jumps']
 
     def checkGround(self):
@@ -815,7 +815,7 @@ class AbstractFighter():
         
         p = float(self.damage)
         d = float(_damage)
-        w = float(self.var['weight'])
+        w = float(self.var['weight']) * settingsManager.getSetting('weight')
         s = float(_kbg)
         b = float(_kb)
 
@@ -830,7 +830,7 @@ class AbstractFighter():
 
         trajectory_vec = [math.cos(_trajectory/180*math.pi), math.sin(_trajectory/180*math.pi)]
 
-        additional_kb = .5*_baseHitstun*math.sqrt(abs(trajectory_vec[0])*self.var['air_resistance']**2+abs(trajectory_vec[1])*self.var['gravity']**2)
+        additional_kb = .5*_baseHitstun*math.sqrt(abs(trajectory_vec[0])*(self.var['air_resistance']*settingsManager.getSetting('airControl'))**2+abs(trajectory_vec[1])*(self.var['gravity']*settingsManager.getSetting('gravity'))**2)
 
         di_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
         _trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
@@ -845,15 +845,15 @@ class AbstractFighter():
         
         if hitstun_frames > 0.5:
             #If the current action is not hitstun or you're in hitstun, but there's not much of it left
-            if not isinstance(self.current_action, baseActions.HitStun) or self.current_action.last_frame-self.current_action.frame <= hitstun_frames+15:
+            if not isinstance(self.current_action, baseActions.HitStun) or (self.current_action.last_frame-self.current_action.frame)/float(settingsManager.getSetting('hitstun'))*100 <= hitstun_frames+15:
                 self.setSpeed((total_kb+additional_kb)*di_multiplier, _trajectory)
-                self.doHitStun(hitstun_frames, _trajectory)
+                self.doHitStun(hitstun_frames*settingsManager.getSetting('hitstun'), _trajectory)
         
         self.dealDamage(_damage)
         return math.floor((total_kb+additional_kb)*di_multiplier)
 
     def applyPushback(self, _kb, _trajectory, _hitlag):
-        self.hitstop = math.floor(_hitlag)
+        self.hitstop = math.floor(_hitlag*settingsManager.getSetting('hitlag'))
         (x, y) = getXYFromDM(_trajectory, _kb)
         self.change_x += x
         if not self.grounded:
@@ -957,6 +957,9 @@ class AbstractFighter():
         if not _hbox.owner is None:
             self.hit_tagged = _hbox.owner
 
+        if _hbox.hitbox_lock is None:
+            return False
+
         if _hbox.hitbox_lock in self.hitbox_lock:
             return False
 
@@ -971,9 +974,9 @@ class AbstractFighter():
             self.shield_integrity -= _damage
             if _damage > 1:
                 self.doAction('shieldStun')
-                self.hitstop = math.floor((self.damage / 4.0 + 2.0)*_hitlagMultiplier)
+                self.hitstop = math.floor((self.damage / 4.0 + 2.0)*_hitlagMultiplier*settingsManager.getSetting('hitlag'))
                 self.change_x = _knockback
-                self.current_action.last_frame = math.floor(_damage*3/4.0)
+                self.current_action.last_frame = math.floor(_damage*3/4.0*settingsManager.getSetting('shieldStun'))
         else:
             self.change_y = -15
             self.invincible = 20
