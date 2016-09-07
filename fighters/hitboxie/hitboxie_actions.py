@@ -15,6 +15,16 @@ class ForwardSpecial(action.Action):
 
     def setUp(self, _actor):
         #TODO Attribute checking
+        ambience =  {'center': [0,0],
+                     'size': [80,80],
+                     'damage': 0,
+                     'base_hitstun': 0,
+                     'x_bias': 0,
+                     'y_bias': 0,
+                     'hitlag_multiplier': 0,
+                     'transcendence': -1,
+                     'priority': -7
+                     }
         variables = {'center': [0,0],
                      'size': [80,80],
                      'damage': 1,
@@ -26,6 +36,7 @@ class ForwardSpecial(action.Action):
                      'transcendence': -1,
                      'priority': -7
                      }
+        self.ambient_hitbox = hitbox.Hitbox(_actor, hitbox.HitboxLock(), ambience)
         self.chain_hitbox = hitbox.AutolinkHitbox(_actor, hitbox.HitboxLock(), variables)
         self.fling_hitbox = self.sideSpecialHitbox(_actor)
         self.num_frames = 0
@@ -42,17 +53,7 @@ class ForwardSpecial(action.Action):
         _actor.changeSprite("nair",0)
     
     def onClank(self,_actor):
-        self.chain_hitbox.damage = 0
-        self.chain_hitbox.base_knockback = 0
-        self.chain_hitbox.knockback_growth = 0
-        self.fling_hitbox.priority = -9999
-        self.chain_hitbox.base_hitstun = 0
-        self.fling_hitbox.damage = 0
-        self.fling_hitbox.base_knockback = 0
-        self.fling_hitbox.knockback_growth = 0
-        self.fling_hitbox.priority = -9999
-        self.fling_hitbox.base_hitstun = 0
-
+        _actor.doAction('Helpless')
         _actor.landing_lag = 60
     
     class sideSpecialHitbox(hitbox.DamageHitbox):
@@ -121,21 +122,21 @@ class ForwardSpecial(action.Action):
                 _actor.active_hitboxes.add(self.chain_hitbox)
                 (key, invkey) = _actor.getForwardBackwardKeys()
                 if self.frame == 17:
-                    _actor.setSpeed(_actor.var['run_speed'], _actor.getForwardWithOffset(0))
+                    _actor.setSpeed(_actor.var['aerial_transition_speed'], _actor.getForwardWithOffset(0))
                     _actor.change_y = -12
                 if self.sprite_image%6 == 0:
                     self.chain_hitbox.hitbox_lock = hitbox.HitboxLock()
                 if _actor.keysContain(invkey):
-                    _actor.preferred_xspeed = _actor.var['run_speed']//2*_actor.facing
+                    _actor.preferred_xspeed = _actor.var['aerial_transition_speed']//2*_actor.facing
                     self.frame += 2
                     if (self.frame > self.last_frame-2):
                         self.frame = self.last_frame-2
                 elif _actor.keysContain(key):
-                    _actor.preferred_xspeed = _actor.var['run_speed']*_actor.facing
+                    _actor.preferred_xspeed = _actor.var['aerial_transition_speed']*_actor.facing
                     if (self.frame > self.last_frame-2):
                         self.frame = self.last_frame-2
                 else:
-                    _actor.preferred_xspeed = _actor.var['run_speed']*3//4*_actor.facing
+                    _actor.preferred_xspeed = _actor.var['aerial_transition_speed']*3//4*_actor.facing
                     self.frame += 1
                     if (self.frame > self.last_frame-2):
                         self.frame = self.last_frame-2

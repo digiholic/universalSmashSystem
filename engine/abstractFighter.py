@@ -957,6 +957,9 @@ class AbstractFighter():
         if not _hbox.owner is None:
             self.hit_tagged = _hbox.owner
 
+        if _hbox.hitbox_lock is None:
+            return False
+
         if _hbox.hitbox_lock in self.hitbox_lock:
             return False
 
