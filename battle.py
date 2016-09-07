@@ -291,9 +291,9 @@ class Battle():
             
             clock.tick(clock_speed) #change back
             optimized_rects = engine.optimize_dirty_rects.optimize_dirty_rects(self.dirty_rects)
-            pygame.display.update(optimized_rects)
+            #pygame.display.update(optimized_rects)
             self.dirty_rects = []
-            #pygame.display.update()
+            pygame.display.update()
             if debug_mode:
                 print("Paused, press right ctrl key to continue")
                 while not debug_pass:

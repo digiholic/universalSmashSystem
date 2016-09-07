@@ -269,7 +269,12 @@ class SubAction():
         pass
     
     def execute(self, _action, _actor):
-        pass
+        for field in self.fields:
+            if hasattr(self, field.variableName):
+                variable = getattr(self, field.variableName)
+                if isinstance(variable, VarData) or isinstance(variable, FuncData):
+                    setattr(self,field.variableName,variable.unpack(_action,_actor))
+                
     
     def getDisplayName(self):
         pass
@@ -316,6 +321,7 @@ class If(SubAction):
         self.else_actions = _elseActions
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         if self.variable == '': return
         if self.source == 'fighter':
             #If this is for an article, we want to use the owner as the actor
@@ -398,6 +404,7 @@ class ifButton(SubAction):
         self.beyond_action = _beyondAction
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         if self.button == '': return
 
         if self.beyond_action:
@@ -565,6 +572,7 @@ class changeFighterSprite(SubAction):
         self.preserve_index = False #default data
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         if self.preserve_index: index = _actor.sprite.index
         else: index = 0
         _action.sprite_name = self.sprite
@@ -587,6 +595,7 @@ class changeFighterSubimage(SubAction):
         self.index = _index
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         _action.sprite_rate = 0 #sprite_rate has been broken, so we have to ignore it from now on
         #TODO changeSpriteRate subaction
         _actor.changeSpriteImage(self.index)
@@ -604,6 +613,7 @@ class flip(SubAction):
         SubAction.__init__(self)
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         _actor.flip()
         
     def getDisplayName(self):
@@ -631,10 +641,7 @@ class changeFighterPreferredSpeed(SubAction):
         self.x_relative = _xRelative
         
     def execute(self, _action, _actor):
-        if isinstance(self.speed_x, VarData):
-            self.speed_x = self.speed_x.unpack(_action,_actor)
-        if isinstance(self.speed_y, VarData):
-            self.speed_y = self.speed_y.unpack(_action,_actor)
+        SubAction.execute(self, _action, _actor)
         if self.speed_x is not None:
             if type(self.speed_x) is tuple:
                 owner,value = self.speed_x
@@ -695,6 +702,7 @@ class changeFighterSpeed(SubAction):
         self.y_relative = _yRelative
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         if self.speed_x is not None:
             if type(self.speed_x) is tuple:
                 owner,value = self.speed_x
@@ -773,6 +781,7 @@ class applyForceVector(SubAction):
         self.preferred = _preferred
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         _actor.setSpeed(self.magnitude,self.direction,self.preferred)
 
 # ShiftFighterPositon directly changes the fighter's x and y coordinates without regard for wall checks, speed limites, or gravity.
@@ -794,6 +803,7 @@ class shiftFighterPosition(SubAction):
         self.y_relative = _yRelative
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         if self.new_x:
             if self.x_relative: _actor.rect.x += self.new_x * _actor.facing
             else: _actor.rect.x = self.new_x
@@ -834,6 +844,7 @@ class setInvulnerability(SubAction):
         self.invuln_amt = _amt
     
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         _actor.invulnerable = self.invuln_amt
     
     def getDisplayName(self):
@@ -857,6 +868,7 @@ class shiftSpritePosition(SubAction):
         self.x_relative = _xRelative
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         (old_x,old_y) = _actor.sprite.spriteOffset
         if self.new_x is not None:
             old_x = self.new_x
@@ -900,6 +912,7 @@ class updateLandingLag(SubAction):
         self.reset = _reset
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         _actor.updateLandingLag(self.new_lag,self.reset)
     
     def getPropertiesPanel(self, _root):
@@ -930,6 +943,7 @@ class modifyFighterVar(SubAction):
         self.relative = _relative
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         if not self.attr =='':
             if _actor.var.has_key(self.attr):
                 if self.relative: _actor.var[self.attr] += self.val
@@ -946,18 +960,41 @@ class modifyFighterVar(SubAction):
         return 'Set fighter '+self.attr+' to '+str(self.val)
     
     
-# Modify a variable in the action, such as a conditional flag of some sort.
-class modifyActionVar(SubAction):
-    def __init__(self,_var,_val):
+# Modify a variable in the action or fighter, such as a conditional flag of some sort.
+class setVar(SubAction):
+    subact_group = 'Control'
+    fields = [NodeMap('source','string','setVar|source'),
+              NodeMap('attr','string','setVar>variable',''),
+              NodeMap('val','dynamic','setVar>value',None),
+              NodeMap('relative','bool','setVar>value|relative',False)
+              ]
+              
+    def __init__(self,_source='action',_attr='',_val=None,_relative=False):
         SubAction.__init__(self)
-        self.var = _var
+        self.attr = _attr
+        self.source = _source
         self.val = _val
-    
+        self.relative = _relative
+        
     def execute(self, _action, _actor):
-        if _action.var.has_key(self.var):
-            _action.var[self.var] = self.val
-        else:
-            _action.var.update({self.var:self.val})
+        SubAction.execute(self, _action, _actor)
+        if self.source == 'action': source = _action
+        elif self.source == 'fighter': source = _actor
+        
+        if not self.attr =='': #If there's a variable to set
+            if hasattr(source, 'var') and source.var.has_key(self.attr): #if it has a var dict, let's check it first
+                if self.relative: source.var[self.attr] += self.val
+                else: source.var[self.attr] = self.val
+            else:
+                if self.relative:
+                    setattr(source, self.attr, getattr(source, self.attr)+1)
+                else: setattr(source,self.attr,self.val)
+    
+    def getPropertiesPanel(self, _root):
+        return subactionSelector.ModifyFighterVarProperties(_root,self)
+    
+    def getDisplayName(self):
+        return 'Set '+self.source+' '+self.attr+' to '+str(self.val)
                    
 # Change the frame of the action to a value.
 class changeActionFrame(SubAction):
@@ -972,6 +1009,7 @@ class changeActionFrame(SubAction):
         self.relative = _relative
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         if self.relative: _action.frame += self.new_frame
         else: _action.frame = self.new_frame
     
@@ -991,6 +1029,7 @@ class nextFrame(SubAction):
     fields = []
     
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         _action.frame += 1
     
     def getDisplayName(self):
@@ -1383,6 +1422,7 @@ class activateArticle(SubAction):
         self.name = _name
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         if _action.articles.has_key(self.name):
             _action.articles[self.name].activate()
         
@@ -1399,6 +1439,7 @@ class deactivateArticle(SubAction):
         self.name = _name
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         if _action.articles.has_key(self.name):
             _action.articles[self.name].deactivate()
     
@@ -1415,6 +1456,7 @@ class doAction(SubAction):
         self.action = _action
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         _actor.doAction(self.action)
         
     def getDisplayName(self):
@@ -1435,7 +1477,7 @@ class createMask(SubAction):
         self.pulse_length = _pulseLength
         
     def execute(self, _action, _actor):
-        print(self.color)
+        SubAction.execute(self, _action, _actor)
         pulse = True if self.pulse_length > 0 else False
         colorobj = pygame.color.Color(self.color)
         color = [colorobj.r,colorobj.g,colorobj.b]
@@ -1452,6 +1494,7 @@ class removeMask(SubAction):
         SubAction.__init__(self)
     
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         _actor.mask = None
         
     def getDisplayName(self):
@@ -1467,6 +1510,7 @@ class playSound(SubAction):
         self.sound = _sound
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         _actor.playSound(self.sound)
         
     def getDisplayName(self):
@@ -1508,6 +1552,7 @@ class deactivateSelf(SubAction):
         SubAction.__init__(self)
         
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         _actor.deactivate()
         
     def getDisplayName(self):
@@ -1520,6 +1565,7 @@ class recenterOnOrigin(SubAction):
         SubAction.__init__(self)
     
     def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
         _actor.recenter()
         
     def getDisplayName(self):
@@ -1546,6 +1592,7 @@ subaction_dict = {
                  'transitionState': transitionState,
                  'doAction': doAction,
                  'setFighterVar': modifyFighterVar,
+                 'setVar': setVar,
                  'exec': executeCode,
                  
                  #Sprite Modifiers

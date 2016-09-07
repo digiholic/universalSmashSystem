@@ -221,8 +221,7 @@ class AbstractFighter():
         elem.text = str(_val)
         return elem
     
-    def initialize(self):     
-
+    def initialize(self):
         self.last_input_frame = 0
 
         # Super armor variables
