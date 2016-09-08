@@ -963,7 +963,7 @@ class modifyFighterVar(SubAction):
 # Modify a variable in the action or fighter, such as a conditional flag of some sort.
 class setVar(SubAction):
     subact_group = 'Control'
-    fields = [NodeMap('source','string','setVar|source'),
+    fields = [NodeMap('source','string','setVar|source',''),
               NodeMap('attr','string','setVar>variable',''),
               NodeMap('val','dynamic','setVar>value',None),
               NodeMap('relative','bool','setVar>value|relative',False)
