@@ -656,7 +656,12 @@ class AbstractFighter():
     
     def doGroundSpecial(self):
         (forward, backward) = self.getForwardBackwardKeys()
-        if self.keysContain(forward):
+        if (self.keysContain('up')):
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
+            else:
+                self.doAction('UpGroundSpecial')
+        elif self.keysContain(forward):
             if self.hasAction('ForwardSpecial'): #If there's a ground/air version, do it
                 self.doAction('ForwardSpecial')
             else: #If there is not a universal one, do a ground one
@@ -672,11 +677,6 @@ class AbstractFighter():
                 self.doAction('DownSpecial')
             else:
                 self.doAction('DownGroundSpecial')
-        elif (self.keysContain('up')):
-            if self.hasAction('UpSpecial'):
-                self.doAction('UpSpecial')
-            else:
-                self.doAction('UpGroundSpecial')
         else: 
             if self.hasAction('NeutralSpecial'):
                 self.doAction('NeutralSpecial')
@@ -685,7 +685,12 @@ class AbstractFighter():
                 
     def doAirSpecial(self):
         (forward, backward) = self.getForwardBackwardKeys()
-        if self.keysContain(forward):
+        if (self.keysContain('up')):
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
+            else:
+                self.doAction('UpAirSpecial')
+        elif self.keysContain(forward):
             if self.hasAction('ForwardSpecial'): #If there's a ground/air version, do it
                 self.doAction('ForwardSpecial')
             else: #If there is not a universal one, do an air one
@@ -701,11 +706,6 @@ class AbstractFighter():
                 self.doAction('DownSpecial')
             else:
                 self.doAction('DownAirSpecial')
-        elif (self.keysContain('up')):
-            if self.hasAction('UpSpecial'):
-                self.doAction('UpSpecial')
-            else:
-                self.doAction('UpAirSpecial')
         else: 
             if self.hasAction('NeutralSpecial'):
                 self.doAction('NeutralSpecial')

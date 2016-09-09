@@ -188,7 +188,7 @@ class UpSpecial(action.Action):
                                                  'trajectory': 90,
                                                  'hitstun_multiplier':2                                                
                                                  })
-        _actor.changeSprite('dtilt')
+        _actor.changeSprite('dsmash')
         _actor.changeSpriteImage(4)
         
         
@@ -224,6 +224,7 @@ class UpSpecial(action.Action):
             else:
                 self.angle = math.atan2(-_actor.getSmoothedInput()[1], _actor.getSmoothedInput()[0])*180.0/math.pi
             direction = abstractFighter.getXYFromDM(self.angle, 1.0)
+            print('direction: ',direction)
             _actor.rotateSprite(self.angle)
         if self.frame == 2:
             _actor.changeSpriteImage(5)
