@@ -1131,7 +1131,7 @@ class AbstractFighter():
         #TODO If this is a gamepad, simply return its analog input
         if _distanceBack is None:
             smooth_distance = int(self.key_bindings.timing_window['smoothing_window'])
-            _distanceBack = max(min(int(self.key_bindings.timing_window['smoothing_window']), self.last_input_frame), 1)
+            _distanceBack = smooth_distance
         else:
             smooth_distance = _distanceBack
         
