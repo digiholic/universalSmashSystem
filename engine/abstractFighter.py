@@ -1179,7 +1179,6 @@ class AbstractFighter():
             smoothed_y += working_y
 
         final_magnitude = numpy.linalg.norm([smoothed_x, smoothed_y])
-        if final_magnitude > 0: self.last_input_frame = 0
         if final_magnitude > _maxMagnitude:
             smoothed_x /= final_magnitude/_maxMagnitude
             smoothed_y /= final_magnitude/_maxMagnitude
