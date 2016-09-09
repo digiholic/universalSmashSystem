@@ -101,9 +101,13 @@ class Battle():
             gui_offset += _screen.get_rect().width / (len(self.players) + 1)
             
             gui_objects.append(percent_sprite)
-            
+        
+        center_stage_rect = pygame.rect.Rect((0,0),(16,16))
+        center_stage_rect.center = current_stage.size.center
+        current_stage.follows.append(center_stage_rect)
         current_stage.initializeCamera()
-            
+        
+        
         clock = pygame.time.Clock()
         clock_speed = 60
         debug_mode = False

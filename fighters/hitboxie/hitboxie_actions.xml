@@ -127,6 +127,18 @@
 				<value type="bool">False</value>
 				<pass>noAccel</pass>
 			</if>
+			
+			<setVar source="action">
+				<variable>testData</variable>
+				<value type="string">
+					<function source="actor">
+						<functionName>getSmoothedInput</functionName>
+					</function>
+				</value>
+			</setVar>
+			<print>
+				<var source="action">testData</var>
+			</print>
 		</frame>
 		<frame number="last">
 			<setFrame>12</setFrame>

@@ -37,20 +37,15 @@ def parseData(_data,_type="string",_default=None):
         funcName = loadNodeWithDefault(funcTag, 'functionName', '')
         
         args = dict()
-        for arg in funcTag.find('args'):
-            if arg.attrib.has_key('type'):
-                vartype = arg.attrib['type']
-            else: vartype = 'string'
-            
-            val = None
-            if   vartype=="string": val = arg.text
-            elif vartype=="int":    val = int(arg.text)
-            elif vartype=="float":  val = float(arg.text)
-            elif vartype=="bool":   val = (arg.text.lower() == 'true')
-            elif vartype=="tuple":  val = make_tuple(arg.text)
-            
-            args[arg.tag] = val
-            
+        if funcTag.find('args') is not None:
+            for arg in funcTag.find('args'):
+                if arg.attrib.has_key('type'):
+                    vartype = arg.attrib['type']
+                else: vartype = 'string'
+                
+                val = parseData(arg, vartype, _default)
+                args[arg.tag] = val
+                
         return FuncData(source,funcName,args)
     
     if _type=="dynamic":
@@ -101,6 +96,10 @@ class FuncData():
         print(self.source,self.functionName,self.args)
         
     def unpack(self,_action,_actor):
+        for argname,arg in self.args.iteritems():
+            if isinstance(arg, FuncData) or isinstance(arg, VarData):
+                self.args[argname] = arg.unpack(_action,_actor)
+                
         if self.source == 'actor':
             if hasattr(_actor, self.functionName):
                 method = getattr(_actor, self.functionName)
@@ -981,6 +980,7 @@ class setVar(SubAction):
         if self.source == 'action': source = _action
         elif self.source == 'fighter': source = _actor
         
+        print(self.attr,self.source,self.val,self.relative)
         if not self.attr =='': #If there's a variable to set
             if hasattr(source, 'var') and source.var.has_key(self.attr): #if it has a var dict, let's check it first
                 if self.relative: source.var[self.attr] += self.val
