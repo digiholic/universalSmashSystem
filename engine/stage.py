@@ -360,6 +360,7 @@ class Ledge(pygame.sprite.Sprite):
         if _side == 'left': self.rect.midtop = _plat.left_point
         else: self.rect.midtop = [_plat.right_point[0], _plat.left_point[1]]
         self.fighters_grabbed = [] # this is a list in case "Ledge Conflict" is set to "share"
+        self.platform = _plat
         
     """
     When a fighter wants to grab the ledge, this function is called.

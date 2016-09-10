@@ -128,14 +128,6 @@
 				<pass>noAccel</pass>
 			</if>
 			
-			<setVar source="action">
-				<variable>testData</variable>
-				<value type="string">
-					<function source="actor">
-						<functionName>getSmoothedInput</functionName>
-					</function>
-				</value>
-			</setVar>
 			<!-- Demonstration to show function, don't uncomment unless you like lag -->
 			<!--print>
 				<function source="settingsManager.py">

@@ -1199,6 +1199,7 @@ class AirDodge(action.Action):
         
 class BaseLedge(action.Action):
     def __init__(self, _ledge=None,_length=1):
+        action.Action.__init__(self, _length)
         self.sweetspot_x = 0
         self.sweetspot_y = 0
         self.ledge = _ledge
@@ -1207,13 +1208,16 @@ class BaseLedge(action.Action):
         action.Action.tearDown(self, _actor, _nextAction)
         if isinstance(_nextAction, BaseLedge):
             _nextAction.ledge = self.ledge
-    
+        else:
+            if self.ledge: self.ledge.fighterLeaves(_actor)
+        print(_nextAction)
+            
     def setUp(self, _actor):
         action.Action.setUp(self, _actor)
         if not hasattr(self, 'ledge'): self.ledge = None
         if not hasattr(self, 'sweetspot_x'): self.sweetspot_x = 0
         if not hasattr(self, 'sweetspot_y'): self.sweetspot_y = 0
-    
+        
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
         if self.ledge is None:
@@ -1222,64 +1226,62 @@ class BaseLedge(action.Action):
     def update(self, _actor):
         action.Action.update(self, _actor)
         
-        _actor.rect.centerx = self.ledge.rect.centerx - (self.sweetspot_x * _actor.facing)
-        _actor.rect.centery = self.ledge.rect.centery - (self.sweetspot_y)
-        
-class LedgeGrab(action.Action):
-    def __init__(self,_ledge=None):
-        action.Action.__init__(self, 1)
-        self.ledge = _ledge
-        self.sweetspot_x = 0
-        self.sweetspot_y = 0
-        
+class LedgeGrab(BaseLedge):
+    def __init__(self,_ledge=None,_length=1):
+        BaseLedge.__init__(self,_ledge,_length)
+    
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="ledgeGrab"
-        action.Action.setUp(self, _actor)
+        BaseLedge.setUp(self, _actor)
         _actor.createMask([255,255,255], settingsManager.getSetting('ledgeInvincibilityTime'), True, 12)
         _actor.invulnerable = settingsManager.getSetting('ledgeInvincibilityTime')
         _actor.last_input_frame = 0
-        if not hasattr(self, 'ledge'): self.ledge = None
-        if not hasattr(self, 'sweetspot_x'): self.sweetspot_x = 0
-        if not hasattr(self, 'sweetspot_y'): self.sweetspot_y = 0
         
-    def tearDown(self,_actor,_nextAction):
-        action.Action.tearDown(self, _actor, _nextAction)
-        if self.ledge: self.ledge.fighterLeaves(_actor)
-        
-    def stateTransitions(self,_actor):
-        action.Action.stateTransitions(self, _actor)
+    def tearDown(self, _actor, _nextAction):
+        BaseLedge.tearDown(self, _actor, _nextAction)
+    
+    def stateTransitions(self, _actor):
+        BaseLedge.stateTransitions(self, _actor)
         ledgeState(_actor)
         
-    def update(self,_actor):
-        action.Action.update(self, _actor)
-    
+    def update(self, _actor):
+        BaseLedge.update(self, _actor)
         _actor.jumps = _actor.var['jumps']
         if self.ledge.side == 'left':
             if _actor.facing == -1:
                 _actor.flip()
-            _actor.hurtbox.rect.right = self.ledge.rect.centerx + self.sweetspot_x
-            _actor.hurtbox.rect.top = self.ledge.rect.top + self.sweetspot_y
-            _actor.rect.center = _actor.hurtbox.rect.center
         else:
             if _actor.facing == 1:
                 _actor.flip()
-            _actor.hurtbox.rect.left = self.ledge.rect.centerx - self.sweetspot_x
-            _actor.hurtbox.rect.top = self.ledge.rect.top + self.sweetspot_y
-            _actor.rect.center = _actor.hurtbox.rect.center
         _actor.setSpeed(0, _actor.getFacingDirection())
+        
+        _actor.rect.centerx = self.ledge.rect.centerx + (self.sweetspot_x * -_actor.facing)
+        _actor.rect.centery = self.ledge.rect.centery + (self.sweetspot_y)
+        
         self.frame += 1
         
 class BaseLedgeGetup(BaseLedge):
-    def __init__(self, _length=1, _upFrame=1):
-        BaseLedge.__init__(self, _length)
+    def __init__(self, _ledge=None, _length=1, _upFrame=1, _switchFrame=2, _forwardFrame=3):
+        BaseLedge.__init__(self, _ledge, _length)
         self.up_frame = _upFrame
+        self.switch_frame = _switchFrame
+        self.forward_frame = _forwardFrame
         
     def setUp(self, _actor):
-        action.Action.setUp(self, _actor)
+        BaseLedge.setUp(self, _actor)
         self.up_level = _actor.hurtbox.rect.top
+        if not hasattr(self, 'up_frame'): self.up_frame = 1
+        if not hasattr(self, 'switch_frame'): self.switch_frame = 2
+        if not hasattr(self, 'forward_frame'): self.forward_frame = 3
+        if self.ledge:
+            self.target_height = self.ledge.platform.rect.top
+            if self.ledge.side == 'left': self.target_x = self.ledge.platform.rect.left
+            else: self.target_x = self.ledge.platform.rect.right
+            diff = self.target_height - _actor.rect.bottom
+            print(diff)
 
     def tearDown(self, _actor, _nextAction):
-        action.Action.tearDown(self, _actor, _nextAction)
+        BaseLedge.tearDown(self, _actor, _nextAction)
         _actor.preferred_xspeed = 0
         _actor.preferred_yspeed = 0
         if _actor.grounded:
@@ -1287,33 +1289,40 @@ class BaseLedgeGetup(BaseLedge):
             _actor.change_y = 0
 
     def update(self, _actor):
-        action.Action.update(self, _actor)
-        if self.frame == 0:
-            if _actor.invulnerable > 0:
-                _actor.createMask([255,255,255], _actor.invlunerable, True, 24)
+        BaseLedge.update(self, _actor)
+        
+        #If we're in the first phase of our climb
+        if self.frame >= self.up_frame and self.frame < self.switch_frame:
+            pass
+        
         if self.frame == self.up_frame:
-            _actor.hurtbox.rect.bottom = self.up_level
+            _actor.rect.bottom = self.target_height
+            if self.ledge.side == 'left':
+                xdiff = _actor.hurtbox.rect.left - _actor.rect.left
+                _actor.rect.left = self.target_x - xdiff
+            else:
+                xdiff = _actor.hurtbox.rect.right - _actor.rect.right
+                _actor.rect.right = self.target_x - xdiff
+                
         if self.frame >= self.last_frame:
-            _actor.doAction('NeutralAction')
-        self.frame += 1
-            
+            _actor.doAction('NeutralAction')    
 
-class LedgeGetup(action.Action):
+class LedgeGetup(BaseLedgeGetup):
     def __init__(self, _length=1):
-        action.Action.__init__(self, _length)
-    
+        BaseLedgeGetup.__init__(self, None, _length)
+        
     def tearDown(self, _actor, _nextAction):
-        action.Action.tearDown(self, _actor, _nextAction)
+        BaseLedgeGetup.tearDown(self, _actor, _nextAction)
         _actor.preferred_xspeed = 0
         _actor.change_x = 0
         
     def setUp(self, _actor):
+        BaseLedgeGetup.setUp(self, _actor)
         if self.sprite_name=="": self.sprite_name ="ledgeGetup"
-        action.Action.setUp(self, _actor)
         _actor.invulnerable = 12
     
     def update(self,_actor):
-        action.Action.update(self, _actor)
+        BaseLedgeGetup.update(self, _actor)
         if self.frame == 0:
             _actor.createMask([255,255,255], 12, True, 24)
         if self.frame >= self.last_frame:

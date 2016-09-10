@@ -356,6 +356,7 @@ class LedgeGetup(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self,27)
         self.sprite_rate = 0
+        self.up_frame = -1
 
     def setUp(self, _actor):
         baseActions.LedgeGetup.setUp(self, _actor)
