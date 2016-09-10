@@ -1195,6 +1195,34 @@ class AirDodge(action.Action):
                 _actor.doAction('Fall')
         self.frame += 1
         
+class BaseLedge(action.Action):
+    def __init__(self, _ledge=None,_length=1):
+        self.sweetspot_x = 0
+        self.sweetspot_y = 0
+        self.ledge = _ledge
+    
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        if isinstance(_nextAction, BaseLedge):
+            _nextAction.ledge = self.ledge
+    
+    def setUp(self, _actor):
+        action.Action.setUp(self, _actor)
+        if not hasattr(self, 'ledge'): self.ledge = None
+        if not hasattr(self, 'sweetspot_x'): self.sweetspot_x = 0
+        if not hasattr(self, 'sweetspot_y'): self.sweetspot_y = 0
+    
+    def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
+        if self.ledge is None:
+            _actor.doAction('Fall')
+            
+    def update(self, _actor):
+        action.Action.update(self, _actor)
+        
+        _actor.rect.centerx = self.ledge.rect.centerx - (self.sweetspot_x * _actor.facing)
+        _actor.rect.centery = self.ledge.rect.centery - (self.sweetspot_y)
+        
 class LedgeGrab(action.Action):
     def __init__(self,_ledge=None):
         action.Action.__init__(self, 1)
@@ -1238,11 +1266,7 @@ class LedgeGrab(action.Action):
             _actor.rect.center = _actor.hurtbox.rect.center
         _actor.setSpeed(0, _actor.getFacingDirection())
         self.frame += 1
-
-class BaseLedge(action.Action):
-    def __init__(self, _length=1):
-        self.ledgeHoldPoint = (0,0)
-    
+        
 class BaseLedgeGetup(BaseLedge):
     def __init__(self, _length=1, _upFrame=1):
         BaseLedge.__init__(self, _length)
