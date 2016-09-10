@@ -136,11 +136,12 @@
 					</function>
 				</value>
 			</setVar>
-			<print>
+			<!-- Demonstration to show function, don't uncomment unless you like lag -->
+			<!--print>
 				<function source="settingsManager.py">
 					<functionName>getSetting</functionName>
 				</function>
-			</print>
+			</print-->
 		</frame>
 		<frame number="last">
 			<setFrame>12</setFrame>
@@ -491,6 +492,10 @@
 				<y_draw>-.1</y_draw>
 			</createHitbox>
 		</setUp>
+		
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
 
 		<frame number="before">
 			<updateHitbox>jab</updateHitbox>
@@ -545,6 +550,18 @@
 			</createHitbox>
 		</setUp>
 
+		<transitions>
+			<if function="&lt;">
+				<variable source="action">frame</variable>
+				<value type="int">14</value>
+				<pass>transition</pass>
+			</if>
+		</transitions>
+		
+		<conditional name="transition">
+			<transitionState>checkGrounded</transitionState>
+		</conditional>
+
 		<onClank>
 			<doAction>NeutralAction</doAction>
 		</onClank>
@@ -586,6 +603,18 @@
 				<hitstun_multiplier type="float">1.6</hitstun_multiplier>
 			</createHitbox>
 		</setUp>
+
+		<transitions>
+			<if function="&lt;">
+				<variable source="action">frame</variable>
+				<value type="int">16</value>
+				<pass>transition</pass>
+			</if>
+		</transitions>
+		
+		<conditional name="transition">
+			<transitionState>checkGrounded</transitionState>
+		</conditional>
 
 		<onClank>
 			<doAction>NeutralAction</doAction>
@@ -668,6 +697,10 @@
 		<onClank>
 			<doAction>NeutralAction</doAction>
 		</onClank>
+		
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
 		
 		<frame number="before">
 			<updateHitbox>sweet</updateHitbox>
@@ -815,6 +848,10 @@
 				<charge_base_knockback>0.02</charge_base_knockback>
 			</createHitbox>
 		</setUp>
+		
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
 
 		<onClank>
 			<doAction>NeutralAction</doAction>
@@ -901,6 +938,10 @@
 				<hitboxLock>main</hitboxLock>
 			</createHitbox>
 		</setUp>
+		
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
 
 		<onClank>
 			<doAction>NeutralAction</doAction>
@@ -1020,6 +1061,10 @@
 				<hitboxLock>main</hitboxLock>
 			</createHitbox>
 		</setUp>
+		
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
 
 		<onClank>
 			<doAction>NeutralAction</doAction>
@@ -1607,6 +1652,10 @@
 			</changeFighterPreferredSpeed>
 		</setUp>
 		
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
+		
 		<frame number="6">
 			<playSound>laser</playSound>
 		</frame>
@@ -1808,6 +1857,10 @@
 			</createHitbox>
 		</setUp>
 		
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
+		
 		<frame number="before">
 			<updateHitbox>dashHitbox</updateHitbox>
 			<updateHitbox>chainHitbox</updateHitbox>
@@ -1887,6 +1940,10 @@
 				<size>64,78</size>
 			</changeECB>
 		</setUp>
+		
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
 		
 		<frame number="before">
 			<modifyHurtbox>
@@ -1988,6 +2045,10 @@
 			<escapable>False</escapable>
 		</vars>
 		
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
+		
 		<setUp>
 			<createHitbox type="throw">
 				<name>ThrowBox</name>
@@ -2017,10 +2078,45 @@
 	</UpSpecial>
 	
 	<GroundGrab>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>GroundGrab</action>
-		</loadCodeAction>
+		<length>30</length>
+		<sprite>pivot</sprite>
+		<sprite_rate>2</sprite_rate>
+		
+		<setUp>
+			<createHitbox type="grab">
+				<name>grabHitbox</name>
+				<center>30,0</center>
+				<size>30,30</size>
+			</createHitbox>
+		</setUp>
+		
+		<vars>
+			<hold_point type="tuple">(0,30)</hold_point>
+		</vars>
+
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
+
+		<frame number="4">
+			<activateHitbox>grabHitbox</activateHitbox>
+		</frame>
+		<frame number="8">
+			<changeSubimage>4</changeSubimage>
+		</frame>
+		<frame number="11">
+			<deactivateHitbox>grabHitbox</deactivateHitbox>
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="15">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="20">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="26">
+			<changeSubimage>0</changeSubimage>
+		</frame>
 	</GroundGrab>
 	
 	<ForwardSpecial>
@@ -2031,16 +2127,55 @@
 	</ForwardSpecial>
 	
 	<DashGrab>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>DashGrab</action>
-		</loadCodeAction>
+		<length>35</length>
+		<sprite>pivot</sprite>
+		<sprite_rate>3</sprite_rate>
+		
+		<setUp>
+			<createHitbox type="grab">
+				<name>grabHitbox</name>
+				<center>40,0</center>
+				<size>50,30</size>
+			</createHitbox>
+		</setUp>
+		
+		<vars>
+			<hold_point type="tuple">(0,30)</hold_point>
+		</vars>
+
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
+
+		<frame number="6">
+			<activateHitbox>grabHitbox</activateHitbox>
+		</frame>
+		<frame number="13">
+			<changeSubimage>4</changeSubimage>
+		</frame>
+		<frame number="18">
+			<deactivateHitbox>grabHitbox</deactivateHitbox>
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="22">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="26">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="30">
+			<changeSubimage>0</changeSubimage>
+		</frame>
 	</DashGrab>
 	
 	<Pummel>
 		<length>22</length>
 		<sprite>neutral</sprite>
 		<sprite_rate>1</sprite_rate>
+		
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
 		
 		<setUp>
 			<createHitbox type="throw">

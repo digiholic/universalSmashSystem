@@ -1103,9 +1103,8 @@ class createHitbox(SubAction):
         elif self.hitbox_type == "funnel":
             hitbox = engine.hitbox.FunnelHitbox(_actor,hitbox_lock,self.hitbox_vars)
         elif self.hitbox_type == "grab":
-            pass
+            hitbox = engine.hitbox.GrabHitbox(_actor,hitbox_lock,self.hitbox_vars)
         elif self.hitbox_type == "reflector":
-            print(self.hitbox_vars)
             hitbox = engine.hitbox.ReflectorHitbox(_actor,hitbox_lock,self.hitbox_vars)
         elif self.hitbox_type == "absorber":
             hitbox = engine.hitbox.AbsorberHitbox(_actor,hitbox_lock,self.hitbox_vars)

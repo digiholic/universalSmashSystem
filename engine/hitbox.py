@@ -88,7 +88,7 @@ class Hitbox(spriteManager.RectSprite):
 
     def compareTo(self, _other):
         if (hasattr(_other, 'transcendence') and hasattr(_other, 'priority')) and not isinstance(_other, InertHitbox):
-            if not self.ignore_shields or isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox):
+            if not self.ignore_shields or isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox) or isinstance(_other, InvulnerableHitbox):
                 if self.transcendence+_other.transcendence <= 0:
                     return (self.priority - _other.priority) >= 8
         return True
@@ -200,7 +200,7 @@ class FunnelHitbox(DamageHitbox):
     def __init__(self,_owner,_lock,_variables):
         DamageHitbox.__init__(self,_owner,_lock,_variables)
         self.hitbox_type = 'funnel'
-        print('bias', self.x_bias, self.y_bias)
+
     def getTrajectory(self):
         if self.owner.change_y+self.y_bias == 0 and self.owner.change_x + self.x_bias == 0:
             return self.trajectory + 90
@@ -243,7 +243,7 @@ class GrabHitbox(Hitbox):
                 _other.doAction('Grabbed')
                 
     def compareTo(self, _other):
-        if not isinstance(_other, DamageHitbox) and not isinstance(_other, GrabHitbox) and _other.owner is not None:
+        if not isinstance(_other, DamageHitbox) and not isinstance(_other, GrabHitbox) and not isinstance(_other, InvulnerableHitbox) and _other.owner is not None:
             self.owner.grabbing = _other
             _other.grabbed_by = self.owner
             self.owner.doAction('Grabbing')

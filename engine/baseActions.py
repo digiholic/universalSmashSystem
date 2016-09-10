@@ -383,7 +383,9 @@ class BaseGrab(action.Action):
                 _actor.grabbing.doAction('Released')
     
     def update(self, _actor):
-        action.Action.update(self, _actor)        
+        action.Action.update(self, _actor)       
+        if self.frame == self.last_frame:
+            _actor.doAction('NeutralAction')
         self.frame += 1
         
 class Grabbing(BaseGrab):
@@ -1475,6 +1477,13 @@ class DashAttack(BaseAttack):
     def __init__(self,_length=0):
         BaseAttack.__init__(self, _length)
 
+class GroundGrab(BaseAttack):
+    def __init__(self,_length=0):
+        BaseAttack.__init__(self, _length)
+
+class DashGrab(BaseAttack):
+    def __init__(self,_length=0):
+        BaseAttack.__init__(self, _length)
         
 class BaseThrow(BaseGrab):
     def __init__(self,_length=1):
