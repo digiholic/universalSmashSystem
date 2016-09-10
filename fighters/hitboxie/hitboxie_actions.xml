@@ -137,7 +137,9 @@
 				</value>
 			</setVar>
 			<print>
-				<var source="action">testData</var>
+				<function source="settingsManager.py">
+					<functionName>getSetting</functionName>
+				</function>
 			</print>
 		</frame>
 		<frame number="last">

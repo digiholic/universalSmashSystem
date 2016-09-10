@@ -4,6 +4,7 @@ import pygame.color
 import builder.subactionSelector as subactionSelector
 import xml.etree.ElementTree as ElementTree
 from ast import literal_eval as make_tuple
+import settingsManager
 
 ########################################################
 #               ABSTRACT ACTIONS                       #
@@ -115,7 +116,14 @@ class FuncData():
                 print('No such function exists in action: '+str(self.functionName))
                 return None
         else:
-            pass
+            module = settingsManager.importFromURI(self.source, self.source.split('/')[-1])
+            print(module)
+            if hasattr(module, self.functionName):
+                method = getattr(module, self.functionName)
+                return method(**self.args)
+            else:
+                print('No such function exists in '+ module +': '+str(self.functionName))
+                return None
             #TODO we'll fix this later. Add in the ability to call a function by filepath.
         return None
     
