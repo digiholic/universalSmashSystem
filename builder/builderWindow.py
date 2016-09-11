@@ -376,9 +376,12 @@ class CreateFighterWindow(Toplevel):
             #check for and create actions files
             if self.generate_action_xml_var.get():
                 action_xml = open(os.path.join(path,self.folder_name_var.get()+'_actions.xml'),'w+')
+                action_xml.write('<actionList />')
+                new_fighter.action_file = self.folder_name_var.get()+'_actions.xml'
                 action_xml.close()
             if self.generate_action_py_var.get():
                 action_py = open(os.path.join(path,self.folder_name_var.get()+'_actions.py'),'w+')
+                new_fighter.action_file = self.folder_name_var.get()+'_actions.py'
                 action_py.close()
                 
             #copy over icons?

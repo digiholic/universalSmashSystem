@@ -708,8 +708,8 @@ class PlayerControlsMenu(SubMenu):
                     settings = settingsManager.getSetting().setting
                     
                     if settingsManager.getSetting().loadGamepad(name):
-                        settings['control_type_'+str(self.player_num)] = name
-                    
+                        settings['controlType_'+str(self.player_num)] = name
+    
                     settingsManager.saveSettings(settings)
                     self.status_text.changeText('')
                     return 0
