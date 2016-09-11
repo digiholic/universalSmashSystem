@@ -160,7 +160,7 @@ class ChangeAttributeFrame(Frame):
                                filetypes=extensions)
         elif filetype == 'dir':
             loaded_file = askdirectory(mode="r",
-                               initialdir=settingsManager.createPath())
+                               initialdir=settingsManager.createPath(''))
         res = os.path.relpath(loaded_file.name,os.path.dirname(self.root.root.fighter_file.name))
         _resultVar.set(res)
         

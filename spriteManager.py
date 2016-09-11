@@ -45,7 +45,13 @@ class Sprite(pygame.sprite.Sprite):
             return ret_rect
         _screen.blit(blit_sprite,new_rect) #Until this starts working
         return None
-  
+    
+    def getColorIndexes(self,_color):
+        import numpy as np
+        arr = np.array(self.image)
+        arr[arr < 10] = 0
+        
+        
 class SpriteHandler(Sprite):
     def __init__(self,_directory,_prefix,_startingImage,_offset,_colorMap = {},_scale=1.0):
         Sprite.__init__(self)

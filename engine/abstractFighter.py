@@ -8,6 +8,7 @@ import engine.article as article
 import engine.hitbox as hitbox
 import weakref
 import xml.etree.ElementTree as ElementTree
+import xml.dom.minidom
 import os
 import actionLoader
 import numpy
@@ -160,7 +161,8 @@ class AbstractFighter():
         
         color = self.color_palettes[self.player_num] #TODO: Pick colors
         
-        self.sprite = spriteManager.SpriteHandler(directory,prefix,default_sprite,img_width,color,scale)
+        print(directory,prefix,default_sprite,img_width,color,scale)
+        self.sprite = spriteManager.SpriteHandler(str(directory),prefix,default_sprite,img_width,color,scale)
         
         #try:
         try:
@@ -214,11 +216,15 @@ class AbstractFighter():
             stats_elem.append(self.createElement(tag, val))
         tree.append(stats_elem)
         
-        ElementTree.ElementTree(tree).write(_path)
+        xmlfile = xml.dom.minidom.parseString(ElementTree.tostring(tree))
+        outputFile = open(_path,'w')
+        outputFile.write(xmlfile.toprettyxml())
     
     def createElement(self,_tag,_val):
         elem = ElementTree.Element(_tag)
-        elem.text = str(_val)
+        if _val is not None:
+            elem.text = str(_val)
+        else: elem.text = ''
         return elem
     
     def initialize(self):

@@ -7,7 +7,7 @@ import random
 import settingsManager
 
 class Move(action.Action):
-    def __init__(self,_length=0):
+    def __init__(self,_length=1):
         action.Action.__init__(self,_length) 
         
     def setUp(self,_actor):
@@ -85,7 +85,7 @@ class Dash(action.Action):
         dashState(_actor)
         
 class Pivot(action.Action):
-    def __init__(self,_length=0):
+    def __init__(self,_length=1):
         action.Action.__init__(self, _length)
         
     def setUp(self, _actor):
@@ -127,7 +127,7 @@ class Pivot(action.Action):
                 _actor.doAction('NeutralAction')
           
 class Stop(action.Action):
-    def __init__(self,_length=0):
+    def __init__(self,_length=1):
         action.Action.__init__(self, _length)
         
     def setUp(self, _actor):
@@ -139,6 +139,7 @@ class Stop(action.Action):
         #print(self.frame,_actor.sprite.index)
         _actor.preferred_xspeed = 0
         checkGrounded(_actor)
+        print(self.frame,self.last_frame)
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
@@ -155,7 +156,7 @@ class Stop(action.Action):
             print(self.frame)
         
 class RunPivot(action.Action):
-    def __init__(self,length=0):
+    def __init__(self,length=1):
         action.Action.__init__(self, length)
         
     def setUp(self, _actor):
@@ -194,7 +195,7 @@ class RunPivot(action.Action):
                 _actor.doAction('NeutralAction')
 
 class RunStop(action.Action):
-    def __init__(self,_length=0):
+    def __init__(self,_length=1):
         action.Action.__init__(self, _length)
         
     def setUp(self, _actor):
@@ -306,7 +307,7 @@ class Crouch(action.Action):
         self.frame += 1
 
 class CrouchGetup(action.Action):
-    def __init__(self,_length=0):
+    def __init__(self,_length=1):
         action.Action.__init__(self, _length)
         
     def setUp(self, _actor):
@@ -696,7 +697,7 @@ class Getup(action.Action):
 @ai-move-stop
 """
 class Jump(action.Action):
-    def __init__(self,_length=0,_jumpFrame=0):
+    def __init__(self,_length=1,_jumpFrame=0):
         action.Action.__init__(self, _length)
         self.jump_frame = _jumpFrame
     
@@ -735,7 +736,7 @@ class Jump(action.Action):
             _actor.doAction('Fall')
 
 class AirJump(action.Action):
-    def __init__(self,_length=0,_jumpFrame=0):
+    def __init__(self,_length=1,_jumpFrame=0):
         action.Action.__init__(self, _length)
         self.jump_frame = _jumpFrame
         #TODO: Change to add the number of buffer frames
@@ -1305,7 +1306,7 @@ class BaseLedgeGetup(BaseLedge):
                 _actor.rect.right = self.target_x - xdiff
                 
         if self.frame >= self.last_frame:
-            _actor.doAction('NeutralAction')    
+            _actor.doAction('NeutralAction')
 
 class LedgeGetup(BaseLedgeGetup):
     def __init__(self, _length=1):

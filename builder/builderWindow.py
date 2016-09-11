@@ -209,8 +209,10 @@ class MenuBar(Menu):
         global changed_actions
         
         for actName, new_action in changed_actions.iteritems():
-            fighter.actions.modifyAction(actName, new_action) 
-        fighter.actions.saveActions()
+            if hasattr(fighter.actions, 'modifyAction'):
+                fighter.actions.modifyAction(actName, new_action) 
+        if hasattr(fighter.actions,'saveActions'):
+            fighter.actions.saveActions()
         
         fighter.saveFighter()
         
@@ -252,11 +254,14 @@ class CreateActionWindow(Toplevel):
         sep_text = Label(self,text="Or choose a Basic Action to implement:")
         
         basic_list = []
+        print(self.root.action_pane.action_selector_panel.act_list)
+                    
         for name, obj in inspect.getmembers(sys.modules[engine.baseActions.__name__]):
             if inspect.isclass(obj):
                 if not name in self.root.action_pane.action_selector_panel.act_list:
+                    #print(basic_list)
                     basic_list.append(name)
-        
+                    
         self.basic_choice = StringVar(self)
         basic_box = OptionMenu(self,self.basic_choice,*basic_list)
         basic_button = Button(self,text="Confirm",command=self.submitBasic)
