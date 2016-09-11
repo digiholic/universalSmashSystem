@@ -112,7 +112,8 @@ class MainFrame(Tk):
         if not changed_actions: #if the actions are empty
             self.wm_title(self.wm_title()+'*')
         
-        changed_actions[self.action_string.get()] = action
+        if action:
+            changed_actions[self.action_string.get()] = action
         
         #update the views
         """
@@ -368,6 +369,7 @@ class CreateFighterWindow(Toplevel):
             os.makedirs(sprite_path)
             copyfile(settingsManager.createPath('sprites/sandbag_idle.png'), os.path.join(sprite_path,'sandbag_idle.png'))
             copyfile(settingsManager.createPath('sprites/default_franchise_icon.png'), os.path.join(sprite_path,'franchise_icon.png'))
+            copyfile(settingsManager.createPath('sprites/icon_unknown.png'), os.path.join(sprite_path,'icon_unknown.png'))
             
             #create __init__.py
             init_py = open(os.path.join(path,'__init__.py'),'w+')
@@ -761,6 +763,8 @@ class Subaction_panel(BuilderPanel):
                                                                           fighter,
                                                                           'sprite_directory')],
                                                                        'Sprite Directory')
+            sprite_prefix_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Sprite Prefix','string',fighter,'sprite_prefix')],'Sprite Prefix')
+            
             sprite_width_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Sprite Width','int',fighter,'sprite_width')],'Sprite Width')
             default_sprite_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Default Sprite','string',fighter,'default_sprite')],'Default Sprite')
             article_path_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Article Path',('dir',[]),fighter,'article_path_short')],'Article Path')
@@ -774,6 +778,7 @@ class Subaction_panel(BuilderPanel):
             self.subaction_list.append(css_icon_panel)
             self.subaction_list.append(scale_panel)
             self.subaction_list.append(sprite_directory_panel)
+            self.subaction_list.append(sprite_prefix_panel)
             self.subaction_list.append(sprite_width_panel)
             self.subaction_list.append(default_sprite_panel)
             self.subaction_list.append(article_path_panel)
