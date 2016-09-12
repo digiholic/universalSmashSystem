@@ -984,7 +984,7 @@ class AbstractFighter():
                 self.current_action.last_frame = math.floor(_damage*3/4.0*settingsManager.getSetting('shieldStun'))
         else:
             self.change_y = -15
-            self.invincible = 20
+            self.invulnerable = 20
             self.shield_integrity = 100
             self.doStunned(400)
     

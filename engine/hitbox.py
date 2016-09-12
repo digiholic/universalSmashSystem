@@ -291,7 +291,7 @@ class ReflectorHitbox(InertHitbox):
             prevailed = Hitbox.compareTo(self, _other)
             if not prevailed:
                 self.owner.change_y = -15
-                self.owner.invincible = 20
+                self.owner.invulnerable = 20
                 self.owner.doStunned(400)
         return True
 
@@ -339,7 +339,7 @@ class ShieldHitbox(Hitbox):
             prevailed = Hitbox.compareTo(self, _other)
             if not prevailed:
                 self.owner.change_y = -15
-                self.owner.invincible = 20
+                self.owner.invulnerable = 20
                 self.owner.doStunned(400)
         return True
 

@@ -371,7 +371,7 @@ class Trapped(action.Action):
 class BaseGrab(action.Action):
     def __init__(self,_length=1):
         action.Action.__init__(self, _length)
-        self.escapable = True
+        self.escapable = False
         self.hold_point = (0,0)
         
     def setUp(self, _actor):
@@ -1271,6 +1271,8 @@ class BaseLedgeGetup(BaseLedge):
     def setUp(self, _actor):
         BaseLedge.setUp(self, _actor)
         self.up_level = _actor.hurtbox.rect.top
+        _actor.preferred_xspeed = 0
+        _actor.preferred_yspeed = 0
         if not hasattr(self, 'up_frame'): self.up_frame = 1
         if not hasattr(self, 'switch_frame'): self.switch_frame = 2
         if not hasattr(self, 'forward_frame'): self.forward_frame = 3
@@ -1278,23 +1280,27 @@ class BaseLedgeGetup(BaseLedge):
             self.target_height = self.ledge.platform.rect.top
             if self.ledge.side == 'left': self.target_x = self.ledge.platform.rect.left
             else: self.target_x = self.ledge.platform.rect.right
-            diff = self.target_height - _actor.rect.bottom
-            print(diff)
+            self.diff = self.target_height - _actor.rect.bottom
+            print(self.diff)
 
     def tearDown(self, _actor, _nextAction):
         BaseLedge.tearDown(self, _actor, _nextAction)
         _actor.preferred_xspeed = 0
-        _actor.preferred_yspeed = 0
+        _actor.preferred_yspeed = _actor.var['max_fall_speed']
         if _actor.grounded:
             _actor.change_x = 0
             _actor.change_y = 0
 
     def update(self, _actor):
         BaseLedge.update(self, _actor)
+
+        if self.frame == 0:
+            _actor.createMask([255,255,255], _actor.invulnerable, True, 24)
+            _actor.preferred_yspeed = float(self.diff)/self.up_frame
         
         #If we're in the first phase of our climb
         if self.frame >= self.up_frame and self.frame < self.switch_frame:
-            pass
+            _actor.preferred_yspeed = 0
         
         if self.frame == self.up_frame:
             _actor.rect.bottom = self.target_height
@@ -1305,47 +1311,6 @@ class BaseLedgeGetup(BaseLedge):
                 xdiff = _actor.hurtbox.rect.right - _actor.rect.right
                 _actor.rect.right = self.target_x - xdiff
                 
-        if self.frame >= self.last_frame:
-            _actor.doAction('NeutralAction')
-
-class LedgeGetup(BaseLedgeGetup):
-    def __init__(self, _length=1):
-        BaseLedgeGetup.__init__(self, None, _length)
-        
-    def tearDown(self, _actor, _nextAction):
-        BaseLedgeGetup.tearDown(self, _actor, _nextAction)
-        _actor.preferred_xspeed = 0
-        _actor.change_x = 0
-        
-    def setUp(self, _actor):
-        BaseLedgeGetup.setUp(self, _actor)
-        if self.sprite_name=="": self.sprite_name ="ledgeGetup"
-        _actor.invulnerable = 12
-    
-    def update(self,_actor):
-        BaseLedgeGetup.update(self, _actor)
-        if self.frame == 0:
-            _actor.createMask([255,255,255], 12, True, 24)
-        if self.frame >= self.last_frame:
-            _actor.doAction('NeutralAction')
-        self.frame += 1
-
-class LedgeRoll(action.Action):
-    def __init__(self,_length=1):
-        action.Action.__init__(self, _length)
-    
-    def tearDown(self, _actor, _nextAction):
-        action.Action.tearDown(self, _actor, _nextAction)
-        _actor.preferred_xspeed = 0
-        _actor.change_x = 0
-        _actor.mask = None
-        
-    def update(self, _actor):
-        action.Action.update(self, _actor)
-        if self.frame == 0:
-            _actor.invulnerable = 37
-            _actor.createMask([255,255,255], 32, True, 24)
-            
         if self.frame >= self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
@@ -1581,6 +1546,19 @@ class DownAirSpecial(AirAttack):
 class GetupAttack(BaseAttack):
     def __init__(self,_length=0):
         BaseAttack.__init__(self, _length)
+
+class LedgeGetup(BaseLedgeGetup):
+    def __init__(self, _length=1):
+        BaseLedgeGetup.__init__(self, None, _length)
+
+class LedgeAttack(BaseLedgeGetup):
+    def __init__(self, _length=1):
+        BaseLedgeGetup.__init__(self, None, _length)
+
+class LedgeRoll(BaseLedgeGetup):
+    def __init__(self, _length=1):
+        BaseLedgeGetup.__init__(self, None, _length)
+
 ########################################################
 #               TRANSITION STATES                      #
 ########################################################

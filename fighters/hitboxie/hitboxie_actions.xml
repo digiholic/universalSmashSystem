@@ -406,34 +406,15 @@
 		<sprite_rate>0</sprite_rate>
 	</Released>
 	
-		<LedgeRoll>
+	<LedgeRoll>
 		<length>43</length>
 		<sprite>getup</sprite>
 		<sprite_rate>1</sprite_rate>
 		
 		<tearDown>
-			<setInvulnerability>0</setInvulnerability>
+			<setInvulnerability>43</setInvulnerability>
 			<removeMask />
 		</tearDown>
-		
-		<frame number="0">
-			<changeFighterSpeed>
-				<ySpeed>-19</ySpeed>
-				<xSpeed>0</xSpeed>
-			</changeFighterSpeed>
-		</frame>
-		<frame number="1">
-			<changeFighterSpeed>
-				<ySpeed>-19</ySpeed>
-				<xSpeed>0</xSpeed>
-			</changeFighterSpeed>
-		</frame>
-		<frame number="2">
-			<changeFighterSpeed>
-				<ySpeed>-19</ySpeed>
-				<xSpeed>0</xSpeed>
-			</changeFighterSpeed>
-		</frame>
 		<frame number="8">
 			<changeFighterSpeed>
 				<xSpeed relative="True">11.5</xSpeed>
@@ -451,9 +432,9 @@
 			<changeSubimage>11</changeSubimage>
 		</frame>
 		<frame number="15">
-			<changeFighterSpeed>
+			<!--changeFighterSpeed>
 				<xSpeed relative="True" variable="actor">dodge_speed</xSpeed>
-			</changeFighterSpeed>
+			</changeFighterSpeed-->
 		</frame>
 		<frame number="17">
 			<changeSprite>land</changeSprite>
@@ -1239,7 +1220,7 @@
 			<updateHitbox>bairBox</updateHitbox>
 		</frame>
 		<frame number="2">
-			<updateLandingLag>14</updateLandingLag>
+			<updateLandingLag>10</updateLandingLag>
 			<changeFighterSpeed>
 				<xSpeed>0</xSpeed>
 			</changeFighterSpeed>
@@ -1424,10 +1405,10 @@
 		<frame number="21">
 			<changeSubimage>4</changeSubimage>
 			<deactivateHitbox>sour</deactivateHitbox>
-                        <updateLandingLag reset="True">8</updateLandingLag>
+                        <updateLandingLag reset="True">6</updateLandingLag>
 		</frame>
 		<frame number="last">
-			<updateLandingLag reset="True">8</updateLandingLag>
+			<updateLandingLag reset="True">6</updateLandingLag>
 		</frame>
 	</UpAir>
 	
@@ -1507,7 +1488,7 @@
 		</setUp>
 		
 		<tearDown>
-			<!-- actor.rect.bottom += self.bottom -->
+			<!--exec>self._actor.rect.y += self._actor.bounding_rect.height-64</exec-->
 		</tearDown>
 		
 		<frame number="before">
@@ -1981,7 +1962,6 @@
 		<sprite_rate>-2</sprite_rate>
 		
 		<vars>
-			<escapable type="bool">False</escapable>
 			<hold_point type="tuple">(24,0)</hold_point>
 		</vars>
 		
@@ -2032,10 +2012,6 @@
 		<length>22</length>
 		<sprite>bthrow</sprite>
 		<sprite_rate>2</sprite_rate>
-		
-		<vars>
-			<escapable>False</escapable>
-		</vars>
 		
 		<transitions>
 			<transitionState>checkGrounded</transitionState>
