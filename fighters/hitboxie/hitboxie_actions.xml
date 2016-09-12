@@ -433,7 +433,9 @@
 		</frame>
 		<frame number="15">
 			<changeFighterSpeed>
-				<xSpeed relative="True" variable="actor">dodge_speed</xSpeed>
+				<xSpeed relative="True">
+					<var source="actor">dodge_speed</var>
+				</xSpeed>
 			</changeFighterSpeed>
 		</frame>
 		<frame number="17">
