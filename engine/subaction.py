@@ -284,7 +284,7 @@ class SubAction():
                 
     
     def getDisplayName(self):
-        pass
+        return ''
     
     def getPropertiesPanel(self,_root):
         return subactionSelector.BasePropertiesFrame(_root,self)

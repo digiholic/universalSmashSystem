@@ -125,7 +125,8 @@ class MainFrame(Tk):
         
         for subact in self.action_pane.subaction_panel.subaction_list:
             subact.updateName()
-                 
+            print(subact.display_name.get())
+            
     def getFighterAction(self,_actionName,_getRawXml=False):
         global fighter
         if _getRawXml:return fighter.actions.actions_xml.find(_actionName)
@@ -734,6 +735,10 @@ class Subaction_panel(BuilderPanel):
             self.text_field.delete("1.0", END)
             self.text_field.insert(INSERT, str(action))
     
+    def refreshSubactionNames(self):
+        for subact in self.subaction_list:
+            subact.updateName()
+            
     def groupChanged(self,*_args):
         global fighter
         global action
@@ -745,34 +750,17 @@ class Subaction_panel(BuilderPanel):
             
         self.clearSubActList()
         if self.group == "Fighter":
-            name_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Name','string',fighter,'name')],'Name: ' + fighter.name)
+            name_panel = subactionSelector.PropertySelector(self.scroll_frame, fighter, 'name', 'Name', 'string')
+            icon_panel = subactionSelector.PropertySelector(self.scroll_frame, fighter, 'franchise_icon_path', 'Icon', 'image')
+            css_icon_panel = subactionSelector.PropertySelector(self.scroll_frame, fighter, 'css_icon_path', 'CSS Icon', 'image')
+            scale_panel = subactionSelector.PropertySelector(self.scroll_frame, fighter.sprite, 'scale', 'Scale', 'float')
+            sprite_directory_panel = subactionSelector.PropertySelector(self.scroll_frame, fighter, 'sprite_directory', 'Sprite Directory', 'dir')
+            sprite_prefix_panel = subactionSelector.PropertySelector(self.scroll_frame, fighter, 'sprite_prefix', 'Sprite Prefix', 'string')
+            sprite_width_panel = subactionSelector.PropertySelector(self.scroll_frame, fighter, 'sprite_width', 'Sprite Width', 'int')
+            default_sprite_panel = subactionSelector.PropertySelector(self.scroll_frame, fighter, 'default_sprite', 'Default Sprite', 'string')
+            article_path_panel = subactionSelector.PropertySelector(self.scroll_frame, fighter, 'article_path', 'Article Path', 'dir')
+            actions_panel = subactionSelector.PropertySelector(self.scroll_frame, fighter, 'action_file', 'Actions File', 'module')
             
-            icon_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Icon',
-                                                                   ('file',[('Image Files','*.png')]),
-                                                                   fighter,
-                                                                   'franchise_icon_path')],
-                                                            'Franchise Icon')
-            css_icon_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('CSS Icon',
-                                                                     ('file',[('Image Files','*.png')]),
-                                                                     fighter,
-                                                                     'css_icon_path')],
-                                                               'CSS Icon')
-            scale_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('scale','float',fighter.sprite,'scale')],'Sprite Scale')
-            sprite_directory_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Sprite Directory',
-                                                                          ('dir',[]),
-                                                                          fighter,
-                                                                          'sprite_directory')],
-                                                                       'Sprite Directory')
-            sprite_prefix_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Sprite Prefix','string',fighter,'sprite_prefix')],'Sprite Prefix')
-            
-            sprite_width_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Sprite Width','int',fighter,'sprite_width')],'Sprite Width')
-            default_sprite_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Default Sprite','string',fighter,'default_sprite')],'Default Sprite')
-            article_path_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Article Path',('dir',[]),fighter,'article_path_short')],'Article Path')
-            actions_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Actions File',
-                                                                      ('file',[('TUSSLE ActionScript files','*.xml'),
-                                                                               ('Python Files','*.py')]),
-                                                                      fighter,
-                                                                      'action_file')],'Actions')
             self.subaction_list.append(name_panel)
             self.subaction_list.append(icon_panel)
             self.subaction_list.append(css_icon_panel)

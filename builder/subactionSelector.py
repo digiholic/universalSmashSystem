@@ -4,32 +4,17 @@ from tkFileDialog import askopenfile, askdirectory
 import ttk
 import settingsManager
 
-class SubactionSelector(Label):
-    def __init__(self,_root,_data,_name=''):
+class Selector(Label):
+    def __init__(self,_root):
         self.display_name = StringVar()
-        self.display_name.set(_name)
-        Label.__init__(self, _root.interior, textvariable=self.display_name, bg="white", anchor=W)
-        self.root = _root.parent
-        
-        self.subaction = None
-        self.property = None
+        self.display_name.set('')
         
         self.property_frame = None
-        
-        self.data = _data
-        
-        self.delete_image = PhotoImage(file=settingsManager.createPath('sprites/icons/red-x.gif'))
-        self.confirm_button = PhotoImage(file=settingsManager.createPath('sprites/icons/green-check.gif'))
-        self.delete_button = Button(self,image=self.delete_image,command=self.deleteSubaction)
-        
-        import engine
-        if isinstance(_data, engine.subaction.SubAction):
-            self.property_frame = _data.getPropertiesPanel(self.root.parent.subaction_property_panel)
-            self.delete_button.pack(side=RIGHT)
-        else:
-            self.property_frame = ChangeAttributeFrame(self.root.parent.subaction_property_panel,_data)
-            
+        self.data = None
         self.selected = False
+        
+        Label.__init__(self, _root.interior, textvariable=self.display_name, bg="white", anchor=W)
+        self.root = _root.parent
         self.bind("<Button-1>", self.onClick)
         
     def onClick(self,*_args):
@@ -48,21 +33,31 @@ class SubactionSelector(Label):
         self.root.selected = self
         if self.data:
             self.root.selected_string.set(str(self.data))
-            
+    
     def unselect(self):
         self.selected = False
         self.config(bg="white")
         self.root.selected = None
-        
-    def updateName(self,_string=None):
-        import engine
-        if _string: self.display_name.set(_string)
-        elif isinstance(self.data,engine.subaction.SubAction): self.display_name.set(self.data.getDisplayName())
 
+    def updateName(self,_string):
+        pass
+    
+class SubactionSelector(Selector):
+    def __init__(self,_root,_data):
+        Selector.__init__(self, _root)
+        
+        self.data = _data
+        self.display_name.set(self.data.getDisplayName())
+        
+        self.delete_image = PhotoImage(file=settingsManager.createPath('sprites/icons/red-x.gif'))
+        self.confirm_button = PhotoImage(file=settingsManager.createPath('sprites/icons/green-check.gif'))
+        self.delete_button = Button(self,image=self.delete_image,command=self.deleteSubaction)
+        
+        self.property_frame = _data.getPropertiesPanel(self.root.parent.subaction_property_panel)
+        self.delete_button.pack(side=RIGHT)
+            
     def deleteSubaction(self,*_args):
         action = self.root.getAction()
-        print(action.actions_at_frame[self.root.getFrame()])
-        print(self.subaction)
         groupMap = {"Current Frame": action.actions_at_frame[self.root.getFrame()],
                     "Set Up": action.set_up_actions,
                     "Tear Down": action.tear_down_actions,
@@ -70,10 +65,26 @@ class SubactionSelector(Label):
                     "Before Frames": action.actions_before_frame,
                     "After Frames": action.actions_after_frame,
                     "Last Frame": action.actions_at_last_frame}
-        groupMap[self.root.group].remove(self.subaction)
+        groupMap[self.root.group].remove(self.data)
         self.pack_forget()
         self.root.root.actionModified()
-            
+
+    def updateName(self,_string=None):
+        import engine
+        if _string: self.display_name.set(_string)
+        else: self.display_name.set(self.data.getDisplayName())
+
+class PropertySelector(Selector):
+    def __init__(self, _root, _owner, _varname, _fieldname, _vartype):
+        Selector.__init__(self, _root)
+
+        self.data = (_fieldname, _vartype, _owner, _varname)
+        fielddata = ''
+        if hasattr(_owner, _varname): fielddata = getattr(_owner, _varname)
+        self.display_name.set(_fieldname+': '+ str(fielddata))
+        
+        self.property_frame = ChangeAttributeFrame(self.root.parent.subaction_property_panel,[self.data])
+    
 class ChangeAttributeFrame(Frame):
     def __init__(self,_root,_attribSet):
         Frame.__init__(self,_root,height=_root.winfo_height())
@@ -85,17 +96,6 @@ class ChangeAttributeFrame(Frame):
         for attrib in _attribSet:
             name, vartype, obj, prop = attrib
             attrib_label = Label(self,text=name+':')
-            if isinstance(vartype, tuple): #It's a file, and we have to unpack more stuff
-                file_type,extensions = vartype
-                attrib_var = StringVar(self)
-                attrib_var.set(str(self.getFromAttrib(obj, prop)))
-                attrib_entry = Frame(self)
-                
-                file_name = Entry(attrib_entry,textvariable=attrib_var,state=DISABLED)
-                load_file_button = Button(attrib_entry,text='...',command=lambda resultVar=attrib_var,fileTuple=vartype: self.pickFile(resultVar,fileTuple))
-                file_name.pack(side=LEFT,fill=X)
-                load_file_button.pack(side=RIGHT)
-                
             if vartype == 'string':
                 attrib_var = StringVar(self)
                 attrib_var.set(str(self.getFromAttrib(obj, prop)))
@@ -116,7 +116,29 @@ class ChangeAttributeFrame(Frame):
                 attrib_var = StringVar(self)
                 attrib_var.set(self.getFromAttrib(obj, prop))
                 attrib_entry = OptionMenu(self,attrib_var,*self.root.getFighter().sprite.image_library["right"].keys())
+            else:
+                attrib_var = StringVar(self)
+                attrib_var.set(str(self.getFromAttrib(obj, prop)))
+                attrib_entry = Frame(self)
                 
+                file_name = Entry(attrib_entry,textvariable=attrib_var,state=DISABLED)
+                
+                if vartype == 'image':
+                    fileType = 'file'
+                    fileTuple = [('Image Files','*.png')]
+                elif vartype == 'module':
+                    fileType = 'file'
+                    fileTuple = [('TUSSLE ActionScript files','*.xml'),('Python Files','*.py')]
+                elif vartype == 'dir':
+                    fileType = 'dir'
+                    fileTuple = []
+                
+                loadCommand = lambda _resultVar=attrib_var,_fileType=fileType,_fileTuple=fileTuple: self.pickFile(_resultVar,_fileType,_fileTuple)
+                load_file_button = Button(attrib_entry,text='...',command=loadCommand)
+                
+                file_name.pack(side=LEFT,fill=X)
+                load_file_button.pack(side=RIGHT)
+
             attrib_label.grid(row=current_row,column=0)
             attrib_entry.grid(row=current_row,column=1)
             self.data.append((attrib,attrib_var))
@@ -151,17 +173,15 @@ class ChangeAttributeFrame(Frame):
         else:
             setattr(_obj, _prop, _val)
     
-    def pickFile(self,_resultVar,_fileTuple):
-        filetype,extensions = _fileTuple
-        import settingsManager
-        if filetype == 'file':
+    def pickFile(self,_resultVar, _filetype='file', _extensions=[]):
+        if _filetype == 'file':
             loaded_file = askopenfile(mode="r",
                                initialdir=settingsManager.createPath('fighters'),
-                               filetypes=extensions)
-        elif filetype == 'dir':
-            loaded_file = askdirectory(mode="r",
-                               initialdir=settingsManager.createPath(''))
-        res = os.path.relpath(loaded_file.name,os.path.dirname(self.root.root.fighter_file.name))
+                               filetypes=_extensions)
+            loaded_name = loaded_file.name
+        elif _filetype == 'dir':
+            loaded_name = askdirectory(initialdir=settingsManager.createPath(''))
+        res = os.path.relpath(loaded_name,os.path.dirname(self.root.root.fighter_file.name))
         _resultVar.set(res)
         
 class BasePropertiesFrame(Frame):
