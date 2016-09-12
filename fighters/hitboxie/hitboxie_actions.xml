@@ -432,9 +432,9 @@
 			<changeSubimage>11</changeSubimage>
 		</frame>
 		<frame number="15">
-			<!--changeFighterSpeed>
+			<changeFighterSpeed>
 				<xSpeed relative="True" variable="actor">dodge_speed</xSpeed>
-			</changeFighterSpeed-->
+			</changeFighterSpeed>
 		</frame>
 		<frame number="17">
 			<changeSprite>land</changeSprite>
