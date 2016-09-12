@@ -2079,6 +2079,7 @@
 				<name>grabHitbox</name>
 				<center>30,0</center>
 				<size>30,30</size>
+				<transcendence>-1</transcendence>
 			</createHitbox>
 		</setUp>
 		
@@ -2128,6 +2129,7 @@
 				<name>grabHitbox</name>
 				<center>40,0</center>
 				<size>50,30</size>
+				<transcendence>-1</transcendence>
 			</createHitbox>
 		</setUp>
 		

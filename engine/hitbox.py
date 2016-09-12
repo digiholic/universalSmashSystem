@@ -120,6 +120,7 @@ class DamageHitbox(Hitbox):
     def __init__(self,_owner,_lock,_variables):
         Hitbox.__init__(self,_owner,_lock,_variables)
         self.hitbox_type = 'damage'
+        self.priority += self.damage
         
     def onCollision(self,_other):
         Hitbox.onCollision(self, _other)
@@ -135,6 +136,7 @@ class DamageHitbox(Hitbox):
     
     def charge(self):
         self.damage += self.charge_damage
+        self.priority += self.charge_damage
         self.base_knockback += self.charge_base_knockback
         self.knockback_growth += self.charge_knockback_growth
         
@@ -266,6 +268,7 @@ class ReflectorHitbox(InertHitbox):
     def __init__(self,_owner,_hitboxLock,_hitboxVars):
         InertHitbox.__init__(self,_owner,_hitboxLock,_hitboxVars)
         self.hitbox_type = 'reflector'
+        self.priority += self.hp
         
     def compareTo(self, _other):
         if _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags and self.owner.lockHitbox(_other):
@@ -332,6 +335,7 @@ class ShieldHitbox(Hitbox):
     def compareTo(self, _other):
         if (isinstance(_other, DamageHitbox) and not _other.ignore_shields) and self.owner.lockHitbox(_other):
             self.owner.shieldDamage(math.floor(_other.damage*_other.shield_multiplier), _other.base_knockback/5.0*math.cos(math.radians(_other.trajectory)), _other.hitlag_multiplier)
+            self.priority = self._owner.shield_integrity-8
             prevailed = Hitbox.compareTo(self, _other)
             if not prevailed:
                 self.owner.change_y = -15
