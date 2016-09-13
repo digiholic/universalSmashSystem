@@ -1621,7 +1621,7 @@
 		</setUp>
 		
 		<tearDown>
-			<!--exec>self._actor.rect.y += self._actor.bounding_rect.height-64</exec-->
+			<exec>_actor.rect.y += _actor.sprite.bounding_rect.height-64</exec>
 		</tearDown>
 		
 		<frame number="before">
