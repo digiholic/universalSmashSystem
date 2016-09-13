@@ -390,7 +390,8 @@ class LedgeAttack(baseActions.LedgeGetup):
     def __init__(self):
         baseActions.LedgeGetup.__init__(self,38)
         self.sprite_rate = 0
-
+        self.up_frame = -1
+        
     def setUp(self,_actor):
         baseActions.LedgeGetup.setUp(self, _actor)
         _actor.invulnerable = 24
@@ -431,6 +432,7 @@ class LedgeAttack(baseActions.LedgeGetup):
         if (self.frame >= 8) and (self.frame <= 14):
             self.ecb_size = [0, 0]
             _actor.change_y = 0
+            _actor.preferred_yspeed = 0
             _actor.change_x = 11.5*_actor.facing
             if (self.frame % 2 == 0):
                 _actor.changeSpriteImage(self.frame//2+4)

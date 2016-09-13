@@ -1293,14 +1293,14 @@ class BaseLedgeGetup(BaseLedge):
 
     def update(self, _actor):
         BaseLedge.update(self, _actor)
-
+        
         if self.frame == 0:
             _actor.createMask([255,255,255], _actor.invulnerable, True, 24)
-            _actor.preferred_yspeed = float(self.diff)/self.up_frame
+            #_actor.preferred_yspeed = float(self.diff)/self.up_frame
         
         #If we're in the first phase of our climb
-        if self.frame >= self.up_frame and self.frame < self.switch_frame:
-            _actor.preferred_yspeed = 0
+        #if self.frame >= self.up_frame and self.frame < self.switch_frame:
+        #    _actor.preferred_yspeed = 0
         
         if self.frame == self.up_frame:
             _actor.rect.bottom = self.target_height
