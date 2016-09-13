@@ -1262,7 +1262,7 @@ class LedgeGrab(BaseLedge):
         self.frame += 1
         
 class BaseLedgeGetup(BaseLedge):
-    def __init__(self, _ledge=None, _length=1, _upFrame=1, _sideFrame=2):
+    def __init__(self, _ledge=None, _length=3, _upFrame=1, _sideFrame=2):
         BaseLedge.__init__(self, _ledge, _length)
         self.up_frame = _upFrame
         self.side_frame = _sideFrame
@@ -1294,7 +1294,6 @@ class BaseLedgeGetup(BaseLedge):
 
     def update(self, _actor):
         BaseLedge.update(self, _actor)
-        
         if self.frame == 0:
             _actor.createMask([255,255,255], _actor.invulnerable, True, 24)
             _actor.preferred_yspeed = float(self.diff)/self.up_frame
@@ -1314,6 +1313,7 @@ class BaseLedgeGetup(BaseLedge):
         if self.frame == self.side_frame:
             _actor.rect.centerx = self.target_x
             _actor.preferred_xspeed = 0
+            _actor.change_x = 0
                 
         if self.frame >= self.last_frame:
             _actor.doAction('NeutralAction')
@@ -1552,15 +1552,15 @@ class GetupAttack(BaseAttack):
         BaseAttack.__init__(self, _length)
 
 class LedgeGetup(BaseLedgeGetup):
-    def __init__(self, _length=1):
+    def __init__(self, _length=3):
         BaseLedgeGetup.__init__(self, None, _length)
 
 class LedgeAttack(BaseLedgeGetup):
-    def __init__(self, _length=1):
+    def __init__(self, _length=3):
         BaseLedgeGetup.__init__(self, None, _length)
 
 class LedgeRoll(BaseLedgeGetup):
-    def __init__(self, _length=1):
+    def __init__(self, _length=3):
         BaseLedgeGetup.__init__(self, None, _length)
 
 ########################################################
