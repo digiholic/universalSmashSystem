@@ -540,27 +540,21 @@ class HitStun(action.Action):
             _actor.tech_window = 7
             self.tech_cooldown = 40
         _actor.elasticity = _actor.var['hitstun_elasticity']
-        if self.frame > 2:
+        if self.frame > 10:
             if self.frame < self.last_frame and _actor.change_y >= _actor.var['max_fall_speed']: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']
             elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
                 _actor.ground_elasticity = 0
-                if self.last_frame > 10:
-                    if _actor.grounded:
-                        _actor.doAction('Prone')
-                    else:
-                        _actor.landing_lag = _actor.var['heavy_land_lag']
-                        hitstunLanding(_actor)
+                if _actor.grounded:
+                    _actor.doAction('Prone')
             elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
                 _actor.ground_elasticity = 0
-                if self.last_frame > 10:
-                    if _actor.grounded: 
-                        _actor.doAction('Prone')
-                else:
-                    _actor.landing_lag = _actor.var['heavy_land_lag']
-                    hitstunLanding(_actor)
+                if _actor.grounded: 
+                    _actor.doAction('Prone')
             else: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
+        else:
+            _actor.ground_elasticity = _actor.var['hitstun_elasticity']
         
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
@@ -1930,12 +1924,6 @@ def helplessControl(_actor):
         _actor.preferred_yspeed = _actor.var['max_fall_speed']
         _actor.doAction('HelplessLand')
 
-def hitstunLanding(_actor):
-    if _actor.grounded and _actor.ground_elasticity == 0 and _actor.tech_window == 0:
-        _actor.preferred_xspeed = 0
-        _actor.preferred_yspeed = _actor.var['max_fall_speed']
-        _actor.doAction('Land')
-
 def grabLedges(_actor):
     # Check if we're colliding with any ledges.
     if not _actor.ledge_lock: #If we're not allowed to re-grab, don't bother calculating
@@ -2015,7 +2003,6 @@ state_dict = {
             "proneState": proneState,
             "airControl": airControl,
             "helplessControl": helplessControl,
-            "hitstunLanding": hitstunLanding,
             "grabLedges": grabLedges,     
             "checkGrounded": checkGrounded,
             "tiltReversible": tiltReversible,
