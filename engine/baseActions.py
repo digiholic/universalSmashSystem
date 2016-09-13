@@ -1298,17 +1298,22 @@ class BaseLedgeGetup(BaseLedge):
         if self.frame == 0:
             _actor.createMask([255,255,255], _actor.invulnerable, True, 24)
             _actor.preferred_yspeed = float(self.diff)/self.up_frame
+            _actor.change_y = float(self.diff)/self.up_frame
 
         if self.frame == self.up_frame:
             _actor.preferred_yspeed = 0
+            _actor.change_y = 0
             _actor.rect.bottom = self.target_height
             if self.ledge.side == 'left':
                 _actor.change_x = _actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
+                _actor.preferred_xspeed = _actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
             else:
                 _actor.change_x = -_actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
+                _actor.preferred_xspeed = -_actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
         
         if self.frame == self.side_frame:
             _actor.rect.centerx = self.target_x
+            _actor.preferred_xspeed = 0
                 
         if self.frame >= self.last_frame:
             _actor.doAction('NeutralAction')
