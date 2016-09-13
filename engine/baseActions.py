@@ -691,7 +691,34 @@ class Getup(action.Action):
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
+
+class SlowGetup(action.Action):
+    def __init__(self):
+        action.Action.__init__(self, 40)
         
+    def setUp(self, _actor):
+        if self.sprite_name == "": self.sprite_name = "prone"
+        action.Action.setUp(self, _actor)
+        
+        if self.last_frame < 40: self.last_frame = 40 #slow getups must be this long
+        
+        ground_blocks = _actor.checkGround()
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        if not block is None:
+            _actor.change_y = block.change_y
+
+        _actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
+        _actor.unRotate()
+        
+    def update(self, _actor):
+        action.Action.update(self, _actor)
+        if self.frame == self.last_frame:
+            _actor.doAction('Getup')
+        self.frame += 1
+        
+    def stateTransitions(self, _actor):
+        action.Action.stateTransitions(self, _actor)
+
 """
 @ai-move-up
 @ai-move-stop
