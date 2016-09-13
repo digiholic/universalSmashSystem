@@ -8,13 +8,11 @@ TUSSLE is currently in alpha, but development is moving quickly! If you want to 
 # How to play
 **Simple**:
 
-Currently, an unknown bug is preventing the EXE file from compiling. Please use the advanced option below.
-
-~~In the front page, click on "Download Zip" to get an archive of the game. Open it, and run main.exe. This will run the game at it's last stable compiled state. If the exe does not run at all, please submit an issue with the contents of your main.exe.log file. If you would like to run the most recent code, or are running the game on Linux, please see the advanced section.~~
+If you just want to play the game, you can download an executable from [Gamejolt](http://gamejolt.com/games/project-tussle/170803), and run main.exe. To pull the most recent data from GitHub, run Updater.exe.
 
 **Advanced**:
 
-After downloading the zip file as described above, run main.py in python. The game runs on python 2 or 3, and requires the modules pygame and numpy.
+After downloading the full source code, run main.py in python. The game runs on python 2 or 3, and requires the modules pygame and numpy.
 
 Windows users:
 * Download the Python installer from [python.org](https://www.python.org/downloads/windows/) (NOTE: Download 32-bit Python, even if your computer is 64-bit. Pygame only works with 32 bit python)
@@ -48,7 +46,7 @@ Player 2 -
 * Jump - I
 * Shield - O
 
-These controls can be re-bound in the menu in-game, or by modifying the file settings/settings.ini. If you want to use more than two players, it is recommended that you bind them to some left over keys and use a program such as joy2key to control them with external gamepads. Gamepad support is in the works, but is not currently functional.
+These controls can be re-bound in the menu in-game, or by modifying the file settings/settings.ini. To use a Gamepad, you can create a keybinding object inside of the settings menu in-game, and to assign it to a player, enter the player controls menu, and when re-binding a player's controls, hit a button on the gamepade you would like that fighter to use.
 
 Inside of the settings file, you can also modify things such as the screen size (NOTE: There are currently some layout bugs with bigger screens, and the camera doesn't zoom in as far, but the game is playable at larger resolutions). There are also Physics Presets inside of the settings/rules folder. These settings are mostly un-implemented and serve as reminders for us to do them later, but they are all planned to be modifiable.
 
