@@ -1262,20 +1262,19 @@ class LedgeGrab(BaseLedge):
         self.frame += 1
         
 class BaseLedgeGetup(BaseLedge):
-    def __init__(self, _ledge=None, _length=1, _upFrame=1, _switchFrame=2, _forwardFrame=3):
+    def __init__(self, _ledge=None, _length=1, _upFrame=1, _sideFrame=2):
         BaseLedge.__init__(self, _ledge, _length)
         self.up_frame = _upFrame
-        self.switch_frame = _switchFrame
-        self.forward_frame = _forwardFrame
+        self.side_frame = _sideFrame
         
     def setUp(self, _actor):
         BaseLedge.setUp(self, _actor)
         self.up_level = _actor.hurtbox.rect.top
         _actor.preferred_xspeed = 0
         _actor.preferred_yspeed = 0
+        _actor.invulnerable = self.last_frame
         if not hasattr(self, 'up_frame'): self.up_frame = 1
-        if not hasattr(self, 'switch_frame'): self.switch_frame = 2
-        if not hasattr(self, 'forward_frame'): self.forward_frame = 3
+        if not hasattr(self, 'side_frame'): self.side_frame = 2
         if self.ledge:
             self.target_height = self.ledge.platform.rect.top
             if self.ledge.side == 'left': self.target_x = self.ledge.platform.rect.left
@@ -1285,6 +1284,8 @@ class BaseLedgeGetup(BaseLedge):
 
     def tearDown(self, _actor, _nextAction):
         BaseLedge.tearDown(self, _actor, _nextAction)
+        _actor.invulnerable = 0
+        _actor.mask = None
         _actor.preferred_xspeed = 0
         _actor.preferred_yspeed = _actor.var['max_fall_speed']
         if _actor.grounded:
@@ -1296,20 +1297,18 @@ class BaseLedgeGetup(BaseLedge):
         
         if self.frame == 0:
             _actor.createMask([255,255,255], _actor.invulnerable, True, 24)
-            #_actor.preferred_yspeed = float(self.diff)/self.up_frame
-        
-        #If we're in the first phase of our climb
-        #if self.frame >= self.up_frame and self.frame < self.switch_frame:
-        #    _actor.preferred_yspeed = 0
-        
+            _actor.preferred_yspeed = float(self.diff)/self.up_frame
+
         if self.frame == self.up_frame:
+            _actor.preferred_yspeed = 0
             _actor.rect.bottom = self.target_height
             if self.ledge.side == 'left':
-                xdiff = _actor.hurtbox.rect.left - _actor.rect.left
-                _actor.rect.left = self.target_x - xdiff
+                _actor.change_x = _actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
             else:
-                xdiff = _actor.hurtbox.rect.right - _actor.rect.right
-                _actor.rect.right = self.target_x - xdiff
+                _actor.change_x = -_actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
+        
+        if self.frame == self.side_frame:
+            _actor.rect.centerx = self.target_x
                 
         if self.frame >= self.last_frame:
             _actor.doAction('NeutralAction')
