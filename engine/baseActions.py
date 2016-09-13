@@ -529,7 +529,7 @@ class HitStun(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="hitStun"
         action.Action.setUp(self, _actor)
-        self.tech_cooldown = 5
+        self.tech_cooldown = 10
         _actor.elasticity = _actor.var['hitstun_elasticity']
         
     def stateTransitions(self, _actor):
@@ -540,7 +540,7 @@ class HitStun(action.Action):
             _actor.tech_window = 7
             self.tech_cooldown = 40
         _actor.elasticity = _actor.var['hitstun_elasticity']
-        if self.frame > 10:
+        if self.frame > 15:
             if self.frame < self.last_frame and _actor.change_y >= _actor.var['max_fall_speed']: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']
             elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
@@ -588,7 +588,7 @@ class HitStun(action.Action):
             _actor.articles.add(art)
                     
         if self.frame == self.last_frame:
-            if self.last_frame > 10:
+            if self.last_frame > 15:
                 _actor.doAction('Tumble')
             else:
                 _actor.landing_lag = _actor.var['heavy_land_lag']
