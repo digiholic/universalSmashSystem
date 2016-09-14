@@ -525,12 +525,14 @@ class HitStun(action.Action):
     def __init__(self,_hitstun=1,_direction=0):
         action.Action.__init__(self, _hitstun)
         self.direction = _direction
+        self.do_slow_getup = False
 
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="hitStun"
         action.Action.setUp(self, _actor)
         self.tech_cooldown = 10
-        _actor.elasticity = _actor.var['hitstun_elasticity']
+        if not hasattr(self, 'do_slow_getup'):
+            self.do_slow_getup = False
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
@@ -540,8 +542,8 @@ class HitStun(action.Action):
             _actor.tech_window = 7
             self.tech_cooldown = 40
         _actor.elasticity = _actor.var['hitstun_elasticity']
-        if self.frame > 15:
-            if self.frame < self.last_frame and _actor.change_y >= _actor.var['max_fall_speed']: 
+        if self.last_frame > 15 and self.frame > 2:
+            if _actor.change_y >= _actor.var['max_fall_speed']: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']
             elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
                 _actor.ground_elasticity = 0
@@ -553,6 +555,8 @@ class HitStun(action.Action):
                     _actor.doAction('Prone')
             else: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
+        elif self.last_frame <= 15:
+            _actor.ground_elasticity = 0
         else:
             _actor.ground_elasticity = _actor.var['hitstun_elasticity']
         
@@ -567,7 +571,8 @@ class HitStun(action.Action):
     def update(self,_actor):
         action.Action.update(self, _actor)
         if self.tech_cooldown > 0: self.tech_cooldown -= 1
-        
+        if self.last_frame <= 15:
+            print(self.do_slow_getup)
         if self.frame == 0:
             (direct,mag) = _actor.getDirectionMagnitude()
             print("direction:", direct)
@@ -591,8 +596,12 @@ class HitStun(action.Action):
             if self.last_frame > 15:
                 _actor.doAction('Tumble')
             else:
-                _actor.landing_lag = _actor.var['heavy_land_lag']
-                _actor.doAction('Fall')
+                if _actor.grounded and self.do_slow_getup:
+                    print("Successful jab reset")
+                    _actor.doAction('SlowGetup')
+                else:
+                    _actor.landing_lag = _actor.var['heavy_land_lag']
+                    _actor.doAction('Fall')
 
         self.frame += 1
 
@@ -657,6 +666,11 @@ class Prone(action.Action):
 
         _actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
         _actor.unRotate()
+
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        if isinstance(_nextAction, HitStun) and self.frame < 15:
+            _nextAction.do_slow_getup = True
         
     def update(self, _actor):
         action.Action.update(self, _actor)

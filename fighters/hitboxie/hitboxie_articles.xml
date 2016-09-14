@@ -16,7 +16,8 @@
 				<base_knockback>2</base_knockback>
 				<knockback_growth>0</knockback_growth>
 				<trajectory>0</trajectory>
-				<hitstun_multiplier>1</hitstun_multiplier>
+				<base_hitstun>5</base_hitstun>
+				<hitstun_multiplier>0</hitstun_multiplier>
 				<transcendence>-1</transcendence>
 			</createHitbox>
 			<changeFighterSpeed>

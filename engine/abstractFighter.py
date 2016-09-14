@@ -850,7 +850,7 @@ class AbstractFighter():
         
         if hitstun_frames > 0.5:
             #If the current action is not hitstun or you're in hitstun, but there's not much of it left
-            if not isinstance(self.current_action, baseActions.HitStun) or (self.current_action.last_frame-self.current_action.frame)/float(settingsManager.getSetting('hitstun'))*100 <= hitstun_frames+15:
+            if not isinstance(self.current_action, baseActions.HitStun) or (self.current_action.last_frame-self.current_action.frame)/float(settingsManager.getSetting('hitstun')) <= hitstun_frames+15:
                 self.setSpeed((total_kb+additional_kb)*di_multiplier, _trajectory)
                 self.doHitStun(hitstun_frames*settingsManager.getSetting('hitstun'), _trajectory)
         
