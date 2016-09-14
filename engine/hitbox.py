@@ -284,12 +284,14 @@ class ReflectorHitbox(InertHitbox):
                 (_other.article.change_x, _other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), -1*self.velocity_multiplier*(2*projection[1]-v_other[1]))
             if hasattr(_other, 'damage') and hasattr(_other, 'shield_multiplier'):
                 self.priority -= _other.damage*_other.shield_multiplier
+                self.hp -= _other.damage*_other.shield_multiplier
                 _other.damage *= _other.damage*self.damage_multiplier
             elif hasattr(_other, 'damage'):
                 self.priority -= _other.damage
+                self.hp -= _other.damage
                 _other.damage *= _other.damage*self.damage_multiplier
             prevailed = Hitbox.compareTo(self, _other)
-            if not prevailed:
+            if not prevailed or self.hp <= 0:
                 self.owner.change_y = -15
                 self.owner.invulnerable = 20
                 self.owner.doStunned(400)
