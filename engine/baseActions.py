@@ -530,7 +530,7 @@ class HitStun(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="hitStun"
         action.Action.setUp(self, _actor)
-        self.tech_cooldown = 10
+        self.tech_cooldown = 5
         if not hasattr(self, 'do_slow_getup'):
             self.do_slow_getup = False
         
@@ -557,6 +557,9 @@ class HitStun(action.Action):
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
         elif self.last_frame <= 15:
             _actor.ground_elasticity = 0
+            if _actor.grounded and self.do_slow_getup:
+                print("Successful jab reset")
+                _actor.doAction('SlowGetup')
         else:
             _actor.ground_elasticity = _actor.var['hitstun_elasticity']
         
@@ -596,12 +599,8 @@ class HitStun(action.Action):
             if self.last_frame > 15:
                 _actor.doAction('Tumble')
             else:
-                if _actor.grounded and self.do_slow_getup:
-                    print("Successful jab reset")
-                    _actor.doAction('SlowGetup')
-                else:
-                    _actor.landing_lag = _actor.var['heavy_land_lag']
-                    _actor.doAction('Fall')
+                _actor.landing_lag = _actor.var['heavy_land_lag']
+                _actor.doAction('Fall')
 
         self.frame += 1
 

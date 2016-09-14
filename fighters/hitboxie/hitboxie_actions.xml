@@ -315,6 +315,21 @@
 			<changeSubimage>3</changeSubimage>
 		</frame>
 	</Prone>
+
+	<SlowGetup>
+		<length>40</length>
+		<sprite>land</sprite>
+		<sprite_rate>2</sprite_rate>
+		<frame number="0">
+			<setFighterVar var="sideSpecialUses">
+				<value type="int">1</value>
+			</setFighterVar>
+		</frame>
+		
+		<frame number="6">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+	</SlowGetup>
 		
 	<Stunned>
 		<length>1</length>
@@ -508,6 +523,10 @@
 				<xBias>0</xBias>
 				<yBias>-1</yBias>
 			</createHitbox>
+			
+			<setFighterVar var="invulnerable">
+				<value type="int">21</value>
+			</setFighterVar>
 		</setUp>
 
 		<vars>
@@ -2316,12 +2335,5 @@
 			<changeSubimage>14</changeSubimage>
 		</frame>
 	</Pummel>
-	
-	<LedgeAttack>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>LedgeAttack</action>
-		</loadCodeAction>
-	</LedgeAttack>
 	
 </actionList>
