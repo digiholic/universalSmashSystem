@@ -543,7 +543,10 @@ class HitStun(action.Action):
             print('Try tech')
             _actor.tech_window = 7
             self.tech_cooldown = 40
-        _actor.elasticity = _actor.var['hitstun_elasticity']
+        if _actor.tech_window > 0:
+            _actor.elasticity = 0
+        else:
+            _actor.elasticity = _actor.var['hitstun_elasticity']
         if self.last_frame > 15 and self.frame > 2:
             if _actor.change_y >= _actor.var['max_fall_speed']: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']
@@ -621,7 +624,10 @@ class Tumble(action.Action):
         
         (direct,_) = _actor.getDirectionMagnitude()
 
-        _actor.elasticity = _actor.var['hitstun_elasticity']/2
+        if _actor.tech_window > 0:
+            _actor.elasticity = 0
+        else:
+            _actor.elasticity = _actor.var['hitstun_elasticity']/2
         
         if _actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not _actor.grounded:
             print('Try tech')
