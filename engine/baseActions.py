@@ -728,10 +728,6 @@ class SlowGetup(action.Action):
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
 
-"""
-@ai-move-up
-@ai-move-stop
-"""
 class Jump(action.Action):
     def __init__(self,_length=1,_jumpFrame=0):
         action.Action.__init__(self, _length)
@@ -1645,6 +1641,7 @@ def neutralState(_actor):
 
 def crouchState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
+    tiltReversible(_actor)
     if _actor.keyHeld('shield'):
         if _actor.keysContain(invkey):
             _actor.doAction('BackwardRoll')
