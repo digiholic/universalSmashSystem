@@ -40,7 +40,7 @@ class Selector(Label):
         self.root.selected = None
 
     def updateName(self,_string):
-        pass
+        if _string: self.display_name.set(_string)
     
 class SubactionSelector(Selector):
     def __init__(self,_root,_data):
@@ -70,9 +70,8 @@ class SubactionSelector(Selector):
         self.root.root.actionModified()
 
     def updateName(self,_string=None):
-        import engine
-        if _string: self.display_name.set(_string)
-        else: self.display_name.set(self.data.getDisplayName())
+        Selector.updateName(self, _string)
+        self.display_name.set(self.data.getDisplayName())
 
 class PropertySelector(Selector):
     def __init__(self, _root, _owner, _varname, _fieldname, _vartype):
@@ -85,6 +84,14 @@ class PropertySelector(Selector):
         
         self.property_frame = ChangeAttributeFrame(self.root.parent.subaction_property_panel,[self.data])
     
+    def updateName(self, _string=None):
+        Selector.updateName(self, _string)
+        _owner = self.data[2]
+        _varname = self.data[3]
+        fielddata = ''
+        if hasattr(_owner, _varname): fielddata = getattr(_owner, _varname)
+        self.display_name.set(self.data[0]+': '+ str(fielddata))
+        
 class ChangeAttributeFrame(Frame):
     def __init__(self,_root,_attribSet):
         Frame.__init__(self,_root,height=_root.winfo_height())
@@ -218,6 +225,7 @@ class IfProperties(BasePropertiesFrame):
         self.addVariable(StringVar, 'function')
         self.addVariable(StringVar, 'if_actions')
         self.addVariable(StringVar, 'else_actions')
+        
         #Value is special, so they need to be made differently
         self.value_var = StringVar(self)
         self.value_var.set(_subaction.value)

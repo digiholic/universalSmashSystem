@@ -366,7 +366,7 @@ class Trapped(action.Action):
         # Also, the grabber should always check to see if the grabbee is still under grab
         self.frame += 1
         self.time += 1
-        print(self.frame, self.time)
+        print("In grab: " + str((self.frame, self.time)))
 
 class BaseGrab(action.Action):
     def __init__(self,_length=1):
@@ -385,8 +385,9 @@ class BaseGrab(action.Action):
     
     def update(self, _actor):
         action.Action.update(self, _actor)       
+        self.hold_point = (self.hold_point[0],self.hold_point[1]*_actor.facing)
         if self.frame == self.last_frame:
-            _actor.doAction('NeutralAction')
+            _actor.doAction('Release')
         self.frame += 1
         
 class Grabbing(BaseGrab):
@@ -397,8 +398,13 @@ class Grabbing(BaseGrab):
         BaseGrab.setUp(self, _actor)
         self.hold_point = (16,-16)
         if self.sprite_name=="": self.sprite_name ="grabbing"
+        #If they're both facing the same way, flip the foe so they are facing you
+        if _actor.grabbing.facing == _actor.facing:
+            _actor.grabbing.flip()
+            print(_actor.facing,_actor.grabbing.facing)
         
     def tearDown(self, _actor, _nextAction):
+        print(_nextAction.__class__.__name__)
         BaseGrab.tearDown(self, _actor, _nextAction)
         #TODO release
     
@@ -406,16 +412,12 @@ class Grabbing(BaseGrab):
         BaseGrab.stateTransitions(self, _actor)
         grabbingState(_actor)
         #If you aren't holding anything, let go
-        if _actor.grabbing is None:
+        if _actor.grabbing is None or not isinstance(_actor.grabbing.current_action, Grabbed):
             _actor.doAction('Release')
             
     def update(self, _actor):
-        #If they're both facing the same way, flip the foe so they are facing you
-        if self.frame == 0:
-            if _actor.grabbing.facing == _actor.facing:
-                _actor.grabbing.flip()
-                print(_actor.facing,_actor.grabbing.facing)
-        
+        if self.frame >= self.last_frame:
+            self.frame = 0
         BaseGrab.update(self, _actor)
         
 class Grabbed(Trapped):
@@ -450,7 +452,7 @@ class Grabbed(Trapped):
         else:
             (hold_x,hold_y) = (0,0)
         _actor.rect.centerx = grabber.rect.centerx + (hold_x * grabber.facing) + (_actor.grab_point[0] * -_actor.facing)
-        _actor.rect.centery = grabber.rect.centery + (hold_y * grabber.facing) + (_actor.grab_point[1] * -_actor.facing)
+        _actor.rect.centery = grabber.rect.centery + (hold_y) + (_actor.grab_point[1])
         
         if self.frame >= self.last_frame:
             #If the grabber's action doesn't have "escapable" set or if it is set to True, break out on last frame
@@ -461,9 +463,8 @@ class Grabbed(Trapped):
                 print('Cant break free')
 
 class Release(action.Action):
-    def __init__(self, _height=30):
+    def __init__(self):
         action.Action.__init__(self, 15)
-        self.height = _height
     
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="release"
@@ -472,6 +473,7 @@ class Release(action.Action):
         
     def update(self, _actor):
         action.Action.update(self, _actor)
+        print("Release!")
         checkGrounded(_actor)
         if self.frame >= self.last_frame:
             _actor.doAction('NeutralAction')
@@ -485,7 +487,7 @@ class Released(action.Action):
         if self.sprite_name=="": self.sprite_name ="released"
         action.Action.setUp(self, _actor)
         _actor.preferred_xspeed = 0
-        _actor.change_x = -5 * _actor.facing
+        _actor.change_x = -10 * _actor.facing
         #_actor.preferred_yspeed = _actor.var['max_fall_speed']
         _actor.grabbed_by = None
     
@@ -530,7 +532,7 @@ class HitStun(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="hitStun"
         action.Action.setUp(self, _actor)
-        self.tech_cooldown = 10
+        self.tech_cooldown = 5
         if not hasattr(self, 'do_slow_getup'):
             self.do_slow_getup = False
         
@@ -541,7 +543,10 @@ class HitStun(action.Action):
             print('Try tech')
             _actor.tech_window = 7
             self.tech_cooldown = 40
-        _actor.elasticity = _actor.var['hitstun_elasticity']
+        if _actor.tech_window > 0:
+            _actor.elasticity = 0
+        else:
+            _actor.elasticity = _actor.var['hitstun_elasticity']
         if self.last_frame > 15 and self.frame > 2:
             if _actor.change_y >= _actor.var['max_fall_speed']: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']
@@ -557,6 +562,9 @@ class HitStun(action.Action):
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
         elif self.last_frame <= 15:
             _actor.ground_elasticity = 0
+            if _actor.grounded and self.do_slow_getup:
+                print("Successful jab reset")
+                _actor.doAction('SlowGetup')
         else:
             _actor.ground_elasticity = _actor.var['hitstun_elasticity']
         
@@ -596,12 +604,8 @@ class HitStun(action.Action):
             if self.last_frame > 15:
                 _actor.doAction('Tumble')
             else:
-                if _actor.grounded and self.do_slow_getup:
-                    print("Successful jab reset")
-                    _actor.doAction('SlowGetup')
-                else:
-                    _actor.landing_lag = _actor.var['heavy_land_lag']
-                    _actor.doAction('Fall')
+                _actor.landing_lag = _actor.var['heavy_land_lag']
+                _actor.doAction('Fall')
 
         self.frame += 1
 
@@ -620,7 +624,10 @@ class Tumble(action.Action):
         
         (direct,_) = _actor.getDirectionMagnitude()
 
-        _actor.elasticity = _actor.var['hitstun_elasticity']/2
+        if _actor.tech_window > 0:
+            _actor.elasticity = 0
+        else:
+            _actor.elasticity = _actor.var['hitstun_elasticity']/2
         
         if _actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not _actor.grounded:
             print('Try tech')
@@ -728,10 +735,6 @@ class SlowGetup(action.Action):
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
 
-"""
-@ai-move-up
-@ai-move-stop
-"""
 class Jump(action.Action):
     def __init__(self,_length=1,_jumpFrame=0):
         action.Action.__init__(self, _length)
@@ -1512,6 +1515,8 @@ class BaseThrow(BaseGrab):
         if self.frame == self.last_frame:
             if _actor.grounded: _actor.doAction('NeutralAction')
             else: _actor.doAction('Fall')
+        for hitbox in self.hitboxes.values():
+            hitbox.update()
         BaseGrab.update(self, _actor)
 
 class Pummel(BaseGrab):
@@ -1521,6 +1526,8 @@ class Pummel(BaseGrab):
     def update(self, _actor):
         if self.frame == self.last_frame:
             _actor.doAction('BaseGrab')
+        for hitbox in self.hitboxes.values():
+            hitbox.update()
         BaseGrab.update(self, _actor)
     
 class ForwardThrow(BaseThrow):
@@ -1645,6 +1652,7 @@ def neutralState(_actor):
 
 def crouchState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
+    tiltReversible(_actor)
     if _actor.keyHeld('shield'):
         if _actor.keysContain(invkey):
             _actor.doAction('BackwardRoll')
