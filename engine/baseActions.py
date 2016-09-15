@@ -719,6 +719,7 @@ class SlowGetup(action.Action):
         _actor.unRotate()
         
     def update(self, _actor):
+        print('slowgetup')
         action.Action.update(self, _actor)
         if self.frame == self.last_frame:
             _actor.doAction('Getup')
@@ -888,10 +889,14 @@ class Land(action.Action):
         if self.frame == 0:
             _actor.preferred_yspeed = _actor.var['max_fall_speed']
             self.last_frame = _actor.landing_lag
-            if _actor.keyHeld('shield', 1) and not _actor.keyBuffered('shield', 20, 0.1, 1):
+            lcancel = settingsManager.getSetting('lagCancel')
+            if lcancel == 'normal':
+                if _actor.keyHeld('shield', 1) and not _actor.keyBuffered('shield', 20, 0.1, 1):
+                    print("l-cancel")
+                    self.last_frame = self.last_frame // 2
+            elif lcancel == 'auto':
                 print("l-cancel")
                 self.last_frame = self.last_frame // 2
-
         if self.frame == 1:
             #_actor.articles.add(article.LandingArticle(_actor)) #this looks awful don't try it
             pass

@@ -218,7 +218,9 @@ class Settings():
         self.setting['freeDodgeSpecialFall'] = getBoolean(preset_parser, preset, 'freeDodgeSpecialFall')
         self.setting['enableWavedash'] = getBoolean(preset_parser, preset, 'enableWavedash')     
         self.setting['airDodgeLag'] = int(getNumber(preset_parser, preset, 'airDodgeLag'))
-    
+        
+        self.setting['lagCancel'] = getString(preset_parser, preset, 'lagCancel')
+        
         print(self.setting)
     
     def loadControls(self):
