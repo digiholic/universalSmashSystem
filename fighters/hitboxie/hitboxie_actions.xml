@@ -331,17 +331,6 @@
 			<changeSubimage>3</changeSubimage>
 		</frame>
 	</SlowGetup>
-		
-		<frame number="0">
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
-		</frame>
-		
-		<frame number="6">
-			<changeSubimage>3</changeSubimage>
-		</frame>
-	</SlowGetup>
 	
 	<Stunned>
 		<length>1</length>
