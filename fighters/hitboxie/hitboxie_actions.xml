@@ -627,6 +627,7 @@
 		</frame>
 		
 		<frame number="4">
+			<playSound>jab</playSound>
 			<activateHitbox>jab</activateHitbox>
 		</frame>
 		<frame number="5">

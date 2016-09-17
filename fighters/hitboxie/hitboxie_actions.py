@@ -163,7 +163,7 @@ class ForwardSpecial(action.Action):
             
 class UpSpecial(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 70)
+        action.Action.__init__(self, 80)
         self.angle = 90
         self.sprite_rate = 0
         
@@ -200,12 +200,12 @@ class UpSpecial(action.Action):
         _actor.preferred_yspeed = _actor.var['max_fall_speed']
     
     def stateTransitions(self,_actor):
-        if self.frame < 19:
+        if self.frame < 31:
             _actor.change_y = 0
             _actor.preferred_yspeed = 0
-        if self.frame > 19:
+        if self.frame > 31:
             baseActions.grabLedges(_actor)
-        if self.frame >= 45:
+        if self.frame >= 56:
             _actor.preferred_yspeed = _actor.var['max_fall_speed']
             baseActions.airControl(_actor)
     
@@ -215,7 +215,7 @@ class UpSpecial(action.Action):
             _actor.accel(_actor.var['static_grip'])
         else:
             _actor.accel(_actor.var['air_control'])
-        if self.frame <= 19:
+        if self.frame <= 30:
             _actor.unRotate()
             _actor.change_x = 0
             _actor.change_y = 0
@@ -226,17 +226,19 @@ class UpSpecial(action.Action):
             direction = abstractFighter.getXYFromDM(self.angle, 1.0)
             print('direction: ',direction)
             _actor.rotateSprite(self.angle)
-        if self.frame == 2:
+        if self.frame == 0:
+            _actor.playSound('slingsquare')
+        if self.frame == 3:
             _actor.changeSpriteImage(5)
-        if self.frame == 4:
-            _actor.changeSpriteImage(6)
         if self.frame == 6:
+            _actor.changeSpriteImage(6)
+        if self.frame == 9:
             _actor.changeSpriteImage(7)
-        if self.frame == 8:
+        if self.frame == 12:
             _actor.changeSpriteImage(8)
-        if self.frame == 11:
+        if self.frame == 15:
             _actor.changeSpriteImage(9)
-        if self.frame == 19:
+        if self.frame == 30:
             self.launchHitbox.trajectory = self.angle
             self.flyingHitbox.trajectory = self.angle
             _actor.active_hitboxes.add(self.launchHitbox)
@@ -246,12 +248,12 @@ class UpSpecial(action.Action):
             _actor.change_x = direction[0] * 20
             _actor.preferred_xspeed = _actor.var['max_air_speed'] * direction[0]
             _actor.change_y = direction[1] * 20
-        if self.frame == 20:
+        if self.frame == 31:
             self.launchHitbox.kill()
             _actor.active_hitboxes.add(self.flyingHitbox)
-        if self.frame == 45:
+        if self.frame == 56:
             self.flyingHitbox.kill()
-        if self.frame > 20:
+        if self.frame > 31:
             if self.frame % 2 == 0:
                 _actor.changeSpriteImage((self.frame - 15) // 2,_loop=True)
             self.flyingHitbox.update()
