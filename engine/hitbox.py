@@ -337,7 +337,7 @@ class ShieldHitbox(Hitbox):
     def compareTo(self, _other):
         if (isinstance(_other, DamageHitbox) and not _other.ignore_shields) and self.owner.lockHitbox(_other):
             self.owner.shieldDamage(math.floor(_other.damage*_other.shield_multiplier), _other.base_knockback/5.0*math.cos(math.radians(_other.trajectory)), _other.hitlag_multiplier)
-            self.priority = self._owner.shield_integrity-8
+            self.priority = self.owner.shield_integrity-8
             prevailed = Hitbox.compareTo(self, _other)
             if not prevailed:
                 self.owner.change_y = -15
