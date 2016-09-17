@@ -337,7 +337,6 @@
 		<sprite>jump</sprite>
 		<sprite_rate>0</sprite_rate>
 		
-		
 		<tearDown>
 			<removeMask />
 		</tearDown>
@@ -973,6 +972,8 @@
 				<charge_damage>.1</charge_damage>
 				<charge_base_knockback>0.02</charge_base_knockback>
 			</createHitbox>
+			
+			<loadArticle name="firework">firework</loadArticle>
 		</setUp>
 		
 		<transitions>
@@ -984,6 +985,7 @@
 		</onClank>
 		
 		<frame number="12">
+			<activateArticle>firework</activateArticle>
 			<changeSubimage>5</changeSubimage>
 			<updateHitbox>popup</updateHitbox>
 			<activateHitbox>popup</activateHitbox>

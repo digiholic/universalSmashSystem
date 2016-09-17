@@ -56,4 +56,16 @@
 			<setFrame>2</setFrame>
 		</frame>
 	</ShineArticle>
+	
+	<firework>
+		<sprite>hitboxie_firework.png</sprite>
+		<length>24</length>
+		<img_width>92</img_width>
+		<sprite_rate>2</sprite_rate>
+		<origin_point>0,-64</origin_point>
+		
+		<frame number="before">
+			<recenterOnOrigin />
+		</frame>
+	</firework>
 </articles>
