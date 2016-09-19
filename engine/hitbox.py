@@ -69,10 +69,12 @@ class Hitbox(spriteManager.RectSprite):
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             _other.hitbox_contact.add(self)
             if self.hitbox_lock not in _other.hitbox_lock:
-                for subact in self.owner_on_hit_actions:
-                    subact.execute(self,self.owner)
-                for subact in self.other_on_hit_actions:
-                    subact.execute(self,_other)
+                if self.owner_on_hit_actions:
+                    for subact in self.owner_on_hit_actions:
+                        subact.execute(self,self.owner)
+                if self.other_on_hit_actions:
+                    for subact in self.other_on_hit_actions:
+                        subact.execute(self,_other)
                 
     def update(self):
         self.rect.width = self.size[0]
@@ -263,8 +265,9 @@ class ThrowHitbox(Hitbox):
     
     def activate(self):
         Hitbox.activate(self)
-        self.owner.grabbing.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
-        self.kill()
+        if (self.owner == self.owner.grabbing.grabbed_by):
+            self.owner.grabbing.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
+            self.kill()
             
                 
 class ReflectorHitbox(InertHitbox):
@@ -317,7 +320,9 @@ class FunnelReflectorHitbox(ReflectorHitbox):
                 _other.article.changeOwner(self.owner)
             if hasattr(_other.article, 'change_x') and hasattr(_other.article, 'change_y'):
                 v_other = [_other.article.change_x, _other.article.change_y]
-                v_self = getXYFromDM(getDirectionBetweenPoints(self.rect.center, _other.article.rect.center)+90, 1.0)
+                v_self = getXYFromDM(getDirectionBetweenPoints([self.rect.centerx+self.x_bias, self.rect.centery+self.y_bias], _other.article.rect.center)+90, 1.0)
+                v_self[0] *= self.x_draw
+                v_self[1] *= self.y_draw
                 dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
                 norm_sqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
                 ratio = 1 if norm_sqr == 0 else dot/norm_sqr
@@ -370,34 +375,17 @@ class ShieldHitbox(Hitbox):
    
     def compareTo(self, _other):
         if (isinstance(_other, DamageHitbox) and not _other.ignore_shields) and self.owner.lockHitbox(_other):
-            self.priority = self.owner.shield_integrity-8
+            if hasattr(_other, 'damage') and hasattr(_other, 'shield_multiplier'):
+                self.priority -= _other.damage*_other.shield_multiplier
+                self.hp -= _other.damage*_other.shield_multiplier
+            elif hasattr(_other, 'damage'):
+                self.priority -= _other.damage
+                self.hp -= _other.damage
             prevailed = Hitbox.compareTo(self, _other)
-            if not prevailed:
+            if not prevailed or self.hp <= 0:
                 self.owner.change_y = -15
                 self.owner.invulnerable = 20
                 self.owner.doStunned(400)
-        return True
-
-class PerfectShieldHitbox(Hitbox):
-    def __init__(self,_owner,_hitboxLock,_hitboxVars):
-        Hitbox.__init__(self,_owner,_hitboxLock,_hitboxVars)
-        self.hitbox_type = 'perfectShield'
-
-    def update(self):
-        Hitbox.update(self)
-
-    def compareTo(self, _other):
-        if (isinstance(_other, DamageHitbox) and not _other.ignore_shields) and self.owner.lockHitbox(_other) and _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags:
-            if hasattr(_other.article, 'changeOwner'):
-                _other.article.changeOwner(self.owner)
-            if hasattr(_other.article, 'change_x') and hasattr(_other.article, 'change_y'):
-                v_other = [_other.article.change_x, _other.article.change_y]
-                v_self = getXYFromDM(getDirectionBetweenPoints(self.rect.center, _other.article.rect.center)+90, 1.0)
-                dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
-                norm_sqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
-                ratio = 1 if norm_sqr == 0 else dot/norm_sqr
-                projection = [v_self[0]*ratio, v_self[1]*ratio]
-                (_other.article.change_x, _other.article.change_y) = (2*projection[0]-v_other[0], 2*projection[1]-v_other[1])
         return True
 
 class InvulnerableHitbox(Hitbox):
@@ -430,5 +418,6 @@ transcendence_dict = {
                      'projectile': -1,
                      'grounded': 0,
                      'aerial': 1, 
-                     'transcendent': 5
+                     'transcendent': 5,
+                     'reflector': 6
                      }

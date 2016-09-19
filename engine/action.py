@@ -33,6 +33,7 @@ class Action():
         self.actions_after_frame = []
         self.actions_at_last_frame = []
         self.actions_on_clank = []
+        self.actions_on_prevail = []
         
         #Conditional Action Groups for ifs and things
         #Dict in the form of "name" -> [Action List]

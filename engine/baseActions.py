@@ -970,7 +970,7 @@ class PlatformDrop(action.Action):
 
 class Shield(action.Action):
     def __init__(self, _newShield=True):
-        action.Action.__init__(self, 8)
+        action.Action.__init__(self, 12)
         self.new_shield = _newShield
    
     def setUp(self, _actor):
@@ -980,11 +980,12 @@ class Shield(action.Action):
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
-        shieldState(_actor)
+        if _actor.keysContain('shield'):
+            shieldState(_actor)
    
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        if not isinstance(_nextAction, ShieldStun):
+        if not isinstance(_nextAction, ShieldStun) and not isinstance(_nextAction, Parry):
             _actor.shield = False
        
     def update(self, _actor):
@@ -992,18 +993,21 @@ class Shield(action.Action):
         if _actor.grounded is False:
             _actor.shield = False
             _actor.doAction('Fall')
-        if self.frame == 0:
+        if self.frame == 4:
             _actor.shield = True
             if self.new_shield:
                 _actor.startShield()
             if _actor.keysContain('shield'):
                 self.frame += 1
             else:
-                self.frame += 2
-        elif self.frame == 1:
+                if self.new_shield:
+                    _actor.doAction('Parry')
+                else:
+                    self.frame += 2
+        elif self.frame == 5:
             if not _actor.keysContain('shield'):
                 self.frame += 1
-        elif self.frame >= 2 and self.frame < self.last_frame:
+        elif self.frame >= 6 and self.frame < self.last_frame:
             _actor.shield = False
             self.frame += 1
         elif self.frame >= self.last_frame:
@@ -1020,7 +1024,7 @@ class ShieldStun(action.Action):
 
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        if not isinstance(_nextAction, Shield) and not isinstance(_nextAction, ShieldStun):
+        if not isinstance(_nextAction, Shield) and not isinstance(_nextAction, ShieldStun) and not isinstance(_nextAction, Parry):
             _actor.shield = False
 
     def update(self, _actor):
@@ -1033,6 +1037,29 @@ class ShieldStun(action.Action):
         elif self.frame >= self.last_frame:
             _actor.landing_lag = 6
             _actor.doAction('Land')
+        self.frame += 1
+
+class Parry(action.Action):
+    def __init__(self, _length=1):
+        action.Action.__init__(self, _length)
+
+    def setUp(self, _actor):
+        if self.sprite_name=="": self.sprite_name="parry"
+        action.Action.setUp(self, _actor)
+
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        _actor.shield = False
+
+    def update(self, _actor):
+        action.Action.update(self, _actor)
+        if _actor.grounded is False:
+            _actor.shield = False
+            _actor.doAction('Fall')
+        if self.frame > 2:
+            _actor.shield = False
+        if self.frame >= self.last_frame:
+            _actor.doAction('NeutralAction')
         self.frame += 1
 
 class Stunned(action.Action):

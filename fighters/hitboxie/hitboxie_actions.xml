@@ -198,7 +198,7 @@
 	
 	
 	<Shield>
-		<length>4</length>
+		<length>12</length>
 		<sprite>jump</sprite>
 		<sprite_rate>0</sprite_rate>
 	</Shield>
