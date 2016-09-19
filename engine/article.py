@@ -224,9 +224,9 @@ class ShieldArticle(Article):
         self.scale = (self.owner.shield_integrity*self.owner.var['shield_size']/100.0)
 
     def onPrevail(self, _actor, _hitbox, _other):
-        if _hitbox == self.main_hitbox and self.frame > 2:
+        if _hitbox == self.main_hitbox and self.frame > 2 and (isinstance(_other, hitbox.DamageHitbox) and not _other.ignore_shields):
             _actor.shieldDamage(math.floor(_other.damage*_other.shield_multiplier), _other.base_knockback/5.0*math.cos(math.radians(_other.trajectory)), _other.hitlag_multiplier)
-        elif _hitbox == self.parry_hitbox:
+        elif _hitbox == self.parry_hitbox and (isinstance(_other, hitbox.DamageHitbox) or isinstance(_other, hitbox.GrabHitbox)):
             print("Successful parry!")
             _actor.doAction('NeutralAction')
             _other.owner.doAction('SlowGetup')

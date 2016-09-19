@@ -196,12 +196,17 @@
 		<sprite_rate>-3</sprite_rate>
 	</Getup>
 	
-	
 	<Shield>
 		<length>12</length>
 		<sprite>jump</sprite>
 		<sprite_rate>0</sprite_rate>
 	</Shield>
+
+	<Parry>
+		<length>30</length>
+		<sprite>jump</sprite>
+		<sprite_rate>0</sprite_rate>
+	</Parry>
 	
 	<ForwardRoll>
 		<length>46</length>
