@@ -220,27 +220,51 @@ class Battle():
                     print('Other hitbox: '+str(other))
                     hbox_clank = False
                     other_clank = False
-                    if not hbox.compareTo(other) and other.owner.lockHitbox(hbox):
-                        if hbox.article == None and hasattr(hbox.owner,'current_action'):
+                    hbox_prevail = False
+                    other_prevail = False
+                    if not hbox.compareTo(other):
+                        if other.owner.lockHitbox(hbox) and hasattr(hbox.owner,'current_action'):
                             hbox_clank = True
                         print("CLANK!")
-                    if not other.compareTo(hbox) and hbox.owner.lockHitbox(other):
-                        if other.article == None and hasattr(other.owner,'current_action'):
+                    else:
+                        if other.owner.lockHitbox(hbox) and hasattr(hbox.owner,'current_action'):
+                            hbox_prevail = True
+                    if not other.compareTo(hbox):
+                        if hbox.owner.lockHitbox(other) and hasattr(other.owner,'current_action'):
                             other_clank = True
                         print("CLANK!")
+                    else:
+                        if hbox.owner.lockHitbox(other) and hasattr(other.owner,'current_action'):
+                            other_prevail = True
                     if not isinstance(hbox, hitbox.InertHitbox) and not isinstance(other, hitbox.InertHitbox):
                         if hbox_clank:
                             if isinstance(hbox, hitbox.DamageHitbox):
                                 hbox.owner.applyPushback(hbox.base_knockback/5.0, hbox.getTrajectory()+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
                             else:
                                 hbox.owner.hitstop = 8
-                            hbox.owner.current_action.onClank(hbox.owner)
+                            if hbox.article == None:
+                                hbox.owner.current_action.onClank(hbox.owner, hbox, other)
+                            else:
+                                hbox.article.onClank(hbox.owner, hbox, other)
+                        if hbox_prevail:
+                            if hbox.article == None:
+                                hbox.owner.current_action.onPrevail(hbox.owner, hbox, other)
+                            else:
+                                hbox.article.onPrevail(hbox.owner, hbox, other)
                         if other_clank:
                             if isinstance(other, hitbox.DamageHitbox):
                                 other.owner.applyPushback(other.base_knockback/5.0, other.getTrajectory()+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
                             else:
                                 other.owner.hitstop = 8
-                            other.owner.current_action.onClank(other.owner)
+                            if other.article == None:
+                                other.owner.current_action.onClank(other.owner, other, hbox)
+                            else:
+                                other.article.onClank(other.owner, other, hbox)
+                        if other_prevail:
+                            if other.article == None:
+                                other.owner.current_action.onPrevail(other.owner, other, hbox)
+                            else:
+                                other.article.onPrevail(other.owner, other, hbox)
                     elif hbox_clank and other_clank:
                         if isinstance(hbox, hitbox.DamageHitbox):
                             hbox.owner.applyPushback(hbox.base_knockback/5.0, hbox.getTrajectory()+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)

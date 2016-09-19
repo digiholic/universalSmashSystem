@@ -38,7 +38,8 @@ class Hitbox(spriteManager.RectSprite):
                        'x_draw': 0.1,
                        'y_draw': 0.1,
                        'hp': 0,
-                       'ignore_shields': False
+                       'ignore_shields': False,
+                       'ignore_armor': False, 
                        }
         self.newVaraibles = _variables
         self.variable_dict.update(self.newVaraibles)
@@ -129,7 +130,7 @@ class DamageHitbox(Hitbox):
             if _other.lockHitbox(self):
                 if self.article is None:
                     self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
-                _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
         
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -165,7 +166,7 @@ class SakuraiAngleHitbox(DamageHitbox):
                     x_val = math.sqrt(knockback_ratio**2+1)/math.sqrt(2)
                     y_val = math.sqrt(knockback_ratio**2-1)/math.sqrt(2)
                     angle = math.atan2(y_val*math.sin(float(self.trajectory)/180*math.pi),x_val*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
-                _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, angle, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, angle, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -189,11 +190,11 @@ class AutolinkHitbox(DamageHitbox):
                     self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
                     angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
-                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                 elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
                     velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
                     angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
-                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -219,13 +220,13 @@ class FunnelHitbox(DamageHitbox):
                     y_diff = self.rect.centery - _other.rect.centery
                     x_vel = self.x_bias+self.x_draw*x_diff
                     y_vel = self.y_bias+self.y_draw*y_diff
-                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                 else:
                     x_diff = self.article.rect.centerx - _other.rect.centerx
                     y_diff = self.article.rect.centery - _other.rect.centery
                     x_vel = self.x_bias+self.x_draw*x_diff
                     y_vel = self.y_bias+self.y_draw*y_diff
-                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+                    _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -234,22 +235,24 @@ class GrabHitbox(Hitbox):
     def __init__(self,_owner,_lock,_variables):
         Hitbox.__init__(self, _owner, _lock, _variables)
         self.hitbox_type = 'grab'
+        import engine.subaction as subaction
+        import engine.baseActions as baseActions
+        self.owner_on_hit_actions.append(subaction.doAction('Grabbing'))
+        self.other_on_hit_actions.append(subaction.doAction('Grabbed'))
 
     def onCollision(self,_other):
-        Hitbox.onCollision(self, _other)
         if 'AbstractFighter' in list(map(lambda x:x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
-            if _other.lockHitbox(self):
+            if self.hitbox_lock not in _other.hitbox_lock:
                 self.owner.grabbing = _other
                 _other.grabbed_by = self.owner
-                self.owner.doAction('Grabbing')
-                _other.doAction('Grabbed')
+            Hitbox.onCollision(self, _other)
+        _other.lockHitbox(self)
                 
     def compareTo(self, _other):
         if not isinstance(_other, DamageHitbox) and not isinstance(_other, GrabHitbox) and not isinstance(_other, InvulnerableHitbox) and _other.owner is not None:
             self.owner.grabbing = _other
             _other.grabbed_by = self.owner
-            self.owner.doAction('Grabbing')
-            _other.doAction('Grabbed')
+            Hitbox.onCollision(self, _other.owner)
             return True
         return Hitbox.compareTo(self, _other)
 
@@ -260,7 +263,7 @@ class ThrowHitbox(Hitbox):
     
     def activate(self):
         Hitbox.activate(self)
-        self.owner.grabbing.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier)
+        self.owner.grabbing.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
         self.kill()
             
                 
@@ -277,6 +280,44 @@ class ReflectorHitbox(InertHitbox):
             if hasattr(_other.article, 'change_x') and hasattr(_other.article, 'change_y'):
                 v_other = [_other.article.change_x, _other.article.change_y]
                 v_self = getXYFromDM(self.trajectory, 1.0)
+                dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
+                norm_sqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
+                ratio = 1 if norm_sqr == 0 else dot/norm_sqr
+                projection = [v_self[0]*ratio, v_self[1]*ratio]
+                (_other.article.change_x, _other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), -1*self.velocity_multiplier*(2*projection[1]-v_other[1]))
+            if hasattr(_other, 'damage') and hasattr(_other, 'shield_multiplier'):
+                self.priority -= _other.damage*_other.shield_multiplier
+                self.hp -= _other.damage*_other.shield_multiplier
+                _other.damage *= _other.damage*self.damage_multiplier
+            elif hasattr(_other, 'damage'):
+                self.priority -= _other.damage
+                self.hp -= _other.damage
+                _other.damage *= _other.damage*self.damage_multiplier
+            prevailed = Hitbox.compareTo(self, _other)
+            if not prevailed or self.hp <= 0:
+                self.owner.change_y = -15
+                self.owner.invulnerable = 20
+                self.owner.doStunned(400)
+        return True
+
+    def onCollision(self, _other):
+        Hitbox.onCollision(self, _other)
+        if self.article and hasattr(self.article, 'onCollision'):
+            self.article.onCollision(_other)
+
+class FunnelReflectorHitbox(ReflectorHitbox):
+    def __init__(self,_owner,_hitboxLock,_hitboxVars):
+        InertHitbox.__init__(self,_owner,_hitboxLock,_hitboxVars)
+        self.hitbox_type = 'funnelReflector'
+        self.priority += self.hp
+        
+    def compareTo(self, _other):
+        if _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags and self.owner.lockHitbox(_other):
+            if hasattr(_other.article, 'changeOwner'):
+                _other.article.changeOwner(self.owner)
+            if hasattr(_other.article, 'change_x') and hasattr(_other.article, 'change_y'):
+                v_other = [_other.article.change_x, _other.article.change_y]
+                v_self = getXYFromDM(getDirectionBetweenPoints(self.rect.center, _other.article.rect.center)+90, 1.0)
                 dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
                 norm_sqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
                 ratio = 1 if norm_sqr == 0 else dot/norm_sqr
@@ -320,23 +361,15 @@ class AbsorberHitbox(InertHitbox):
             self.article.onCollision(_other)
 
 class ShieldHitbox(Hitbox):
-    def __init__(self, _center, _size, _owner, _hitboxLock):
-        Hitbox.__init__(self,_owner,_hitboxLock,{'center':_center,
-                                                'size':_size,
-                                                'transcendence':-5,
-                                                'priority':_owner.shield_integrity-8
-                                                })
+    def __init__(self, _owner, _hitboxLock, _hitboxVars):
+        Hitbox.__init__(self,_owner,_hitboxLock,_hitboxVars)
         self.hitbox_type = 'shield'
 
     def update(self):
-        self.priority = self.owner.shield_integrity-8
-        self.rect.width = self.owner.shield_integrity*self.owner.var['shield_size']
-        self.rect.height = self.owner.shield_integrity*self.owner.var['shield_size']
         Hitbox.update(self)
    
     def compareTo(self, _other):
         if (isinstance(_other, DamageHitbox) and not _other.ignore_shields) and self.owner.lockHitbox(_other):
-            self.owner.shieldDamage(math.floor(_other.damage*_other.shield_multiplier), _other.base_knockback/5.0*math.cos(math.radians(_other.trajectory)), _other.hitlag_multiplier)
             self.priority = self.owner.shield_integrity-8
             prevailed = Hitbox.compareTo(self, _other)
             if not prevailed:
@@ -346,17 +379,11 @@ class ShieldHitbox(Hitbox):
         return True
 
 class PerfectShieldHitbox(Hitbox):
-    def __init__(self, _center, _size, _owner, _hitboxLock):
-        Hitbox.__init__(self,_owner,_hitboxLock,{'center':_center,
-                                                'size':_size,
-                                                'transcendence':-5,
-                                                'priority':float("inf")
-                                                })
+    def __init__(self,_owner,_hitboxLock,_hitboxVars):
+        Hitbox.__init__(self,_owner,_hitboxLock,_hitboxVars)
         self.hitbox_type = 'perfectShield'
 
     def update(self):
-        self.rect.width = self.owner.shield_integrity*self.owner.var['shield_size']
-        self.rect.height = self.owner.shield_integrity*self.owner.var['shield_size']
         Hitbox.update(self)
 
     def compareTo(self, _other):

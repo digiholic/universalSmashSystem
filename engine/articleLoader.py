@@ -92,6 +92,12 @@ class ArticleLoader():
             for subact in article_xml.find('onClank'):
                 if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
                     actions_on_clank.append(subaction.SubAction.buildFromXml(subact.tag,subact))
+
+        actions_on_prevail = []
+        if article_xml.find('onPrevail') is not None:
+            for subact in article_xml.find('onPrevail'):
+                if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                    actions_on_prevail.append(subaction.SubAction.buildFromXml(subact.tag,subact))
         
         #Load all of the frames
         frames = article_xml.findall('frame')
@@ -162,6 +168,7 @@ class ArticleLoader():
         dyn_article.set_up_actions = set_up_actions
         dyn_article.tear_down_actions = tear_down_actions
         dyn_article.actions_on_clank = actions_on_clank
+        dyn_article.actions_on_prevail = actions_on_prevail
         dyn_article.conditional_actions = conditional_actions
         dyn_article.collision_actions = collision_actions
         if sprite_name: dyn_article.sprite_name = sprite_name

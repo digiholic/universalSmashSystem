@@ -3,6 +3,7 @@ import spriteManager
 import math
 import random
 import settingsManager
+import engine.hitbox as hitbox
 
 """
 Articles are generated sprites that have their own behavior. For example, projectiles, shields,
@@ -38,6 +39,7 @@ class DynamicArticle(spriteManager.SheetSprite):
         self.actions_before_frame = []
         self.actions_after_frame = []
         self.actions_at_last_frame = []
+        self.actions_on_prevail = []
         self.actions_on_clank = []
         self.conditional_actions = dict()
         self.set_up_actions = []
@@ -100,9 +102,13 @@ class DynamicArticle(spriteManager.SheetSprite):
             act.execute(self,self)
         self.kill()
 
-    def onClank(self,_actor):
+    def onPrevail(self,_actor,_hitbox,_other):
+        for act in self.actions_on_prevail:
+            act.execute(self,_actor,_hitbox,_other)
+
+    def onClank(self,_actor,_hitbox,_other):
         for act in self.actions_on_clank:
-            act.execute(self,_actor)
+            act.execute(self,_actor,_hitbox,_other)
     
     def onCollision(self,_other):
         others_classes = list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]
@@ -189,13 +195,32 @@ class AnimatedArticle(spriteManager.SheetSprite):
                 
 class ShieldArticle(Article):
     def __init__(self,_image,_owner):
-        import engine.hitbox as hitbox
         Article.__init__(self,_image, _owner, _owner.rect.center)
-        self.reflect_hitbox = hitbox.PerfectShieldHitbox([0,0], [_owner.shield_integrity*_owner.var['shield_size'], _owner.shield_integrity*_owner.var['shield_size']], _owner, hitbox.HitboxLock())
+        self.reflect_hitbox = hitbox.PerfectShieldHitbox(_owner, hitbox.HitboxLock(),
+                                                         {'center':[0,0],
+                                                          'size':[_owner.shield_integrity*_owner.var['shield_size'], _owner.shield_integrity*_owner.var['shield_size']],
+                                                          'transcendence':-5,
+                                                          'priority':float('inf'),
+                                                          'hp':float('inf'),
+                                                          'base_hitstun': 0,
+                                                          'hitstun_multiplier': 0,
+                                                          'velocity_multiplier': 1,
+                                                          'damage_multiplier': 1
+                                                         })
         self.reflect_hitbox.article = self
-        self.main_hitbox = hitbox.ShieldHitbox([0,0], [_owner.shield_integrity*_owner.var['shield_size'], _owner.shield_integrity*_owner.var['shield_size']], _owner, hitbox.HitboxLock())
+        self.main_hitbox = hitbox.ShieldHitbox(_owner, hitbox.HitboxLock(), 
+                                               {'center':[0,0],
+                                                'size':[_owner.shield_integrity*_owner.var['shield_size'], _owner.shield_integrity*_owner.var['shield_size']],
+                                                'transcendence':-5,
+                                                'priority':_owner.shield_integrity-8,
+                                                'hp':_owner.shield_integrity,
+                                               })
         self.main_hitbox.article = self
         self.scale = (self.owner.shield_integrity*self.owner.var['shield_size']/100.0)
+
+    def onPrevail(self, _actor, _hitbox, _other):
+        if _hitbox == self.main_hitbox:
+            _actor.shieldDamage(math.floor(_other.damage*_other.shield_multiplier), _other.base_knockback/5.0*math.cos(math.radians(_other.trajectory)), _other.hitlag_multiplier)
         
     def update(self):
         self.rect.center = [self.owner.rect.center[0]+50*self.owner.var['shield_size']*self.owner.getSmoothedInput(int(self.owner.key_bindings.timing_window['smoothing_window']), 0.5)[0], 
@@ -210,6 +235,11 @@ class ShieldArticle(Article):
             self.reflect_hitbox.kill()
             self.main_hitbox.kill()
             self.kill()     
+
+        self.reflect_hitbox.rect.size = [self.owner.shield_integrity*self.owner.var['shield_size'], self.owner.shield_integrity*self.owner.var['shield_size']]
+        self.main_hitbox.priority = self.owner.shield_integrity-8
+        self.main_hitbox.hp = self.owner.shield_integrity
+        self.main_hitbox.rect.size = [self.owner.shield_integrity*self.owner.var['shield_size'], self.owner.shield_integrity*self.owner.var['shield_size']]
         self.reflect_hitbox.update()
         self.main_hitbox.update()
         self.owner.shieldDamage(0.8, 0, 0)

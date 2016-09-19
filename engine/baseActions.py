@@ -1374,8 +1374,8 @@ class BaseAttack(action.Action):
         for _,hitbox in self.hitboxes.iteritems():
             hitbox.kill()
     
-    def onClank(self, _actor):
-        action.Action.onClank(self, _actor)
+    def onClank(self, _actor, _hitbox, _other):
+        action.Action.onClank(self, _actor, _hitbox, _other)
         for _,hitbox in self.hitboxes.iteritems():
             hitbox.kill()
                     
@@ -1400,7 +1400,7 @@ class AirAttack(BaseAttack):
         if not hasattr(self, 'fastfall_frame'):
             self.fastfall_frame = None
     
-    def onClank(self, _actor):
+    def onClank(self, _actor, _hitbox, _other):
         for _,hitbox in self.hitboxes.iteritems():
             hitbox.kill()
                     

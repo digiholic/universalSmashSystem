@@ -97,6 +97,11 @@ class ActionLoader():
             for subact in _newAction.actions_on_clank:
                 clank_elem.append(subact.getXmlElement())
             elem.append(clank_elem)
+        if len(_newAction.actions_on_prevail) > 0:
+            prevail_elem = ElementTree.Element('onPrevail')
+            for subact in _newAction.actions_on_prevail:
+                prevail_elem.append(subact.getXmlElement())
+            elem.append(prevail_elem)
         if len(_newAction.actions_before_frame) > 0:
             before_elem = ElementTree.Element('frame')
             before_elem.attrib['number'] = 'before'
@@ -217,6 +222,12 @@ class ActionLoader():
             for subact in action_xml.find('onClank'):
                 if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
                     actions_on_clank.append(subaction.SubAction.buildFromXml(subact.tag,subact))
+
+        actions_on_prevail = []
+        if action_xml.find('onPrevail') is not None:
+            for subact in action_xml.find('onPrevail'):
+                if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                    actions_on_prevail.append(subaction.SubAction.buildFromXml(subact.tag,subact))
         
         #Load all of the frames
         frames = action_xml.findall('frame')
@@ -288,6 +299,7 @@ class ActionLoader():
         dyn_action.set_up_actions = set_up_actions
         dyn_action.tear_down_actions = tear_down_actions
         dyn_action.actions_on_clank = actions_on_clank
+        dyn_action.actions_on_prevail = actions_on_prevail
         dyn_action.conditional_actions = conditional_actions
         dyn_action.events = event_actions
         if sprite_name: dyn_action.sprite_name = sprite_name

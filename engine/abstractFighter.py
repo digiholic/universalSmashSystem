@@ -810,7 +810,7 @@ class AbstractFighter():
     it is based off of Super Smash Bros. Brawl's knockback calculation, which is the one with the most information available (due to
     all the modding)
     """
-    def applyKnockback(self, _damage, _kb, _kbg, _trajectory, _weightInfluence=1, _hitstunMultiplier=1, _baseHitstun=1, _hitlagMultiplier=1):
+    def applyKnockback(self, _damage, _kb, _kbg, _trajectory, _weightInfluence=1, _hitstunMultiplier=1, _baseHitstun=1, _hitlagMultiplier=1, _ignoreArmor = False):
         self.hitstop = math.floor((_damage / 4.0 + 2)*_hitlagMultiplier)
         if self.grounded:
             self.hitstop_vibration = (3,0)
@@ -827,7 +827,7 @@ class AbstractFighter():
         # Thank you, ssbwiki!
         total_kb = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*_weightInfluence+100))*1.4) + 5) * s) + b
 
-        if _damage < self.flinch_damage_threshold or total_kb < self.flinch_knockback_threshold:
+        if not _ignoreArmor and (_damage < self.flinch_damage_threshold or total_kb < self.flinch_knockback_threshold):
             self.dealDamage(_damage*self.armor_damage_multiplier)
             return 0
 
@@ -842,7 +842,7 @@ class AbstractFighter():
 
         hitstun_frames = math.floor((total_kb+additional_kb)*_hitstunMultiplier+_baseHitstun)
         
-        if self.no_flinch_hits > 0:
+        if not _ignoreArmor and self.no_flinch_hits > 0:
             if hitstun_frames > 0.5:
                 self.no_flinch_hits -= 1
             self.dealDamage(_damage*self.armor_damage_multiplier)
@@ -978,7 +978,8 @@ class AbstractFighter():
         if self.shield_integrity > 0:
             self.shield_integrity -= _damage
             if _damage > 1:
-                self.doAction('shieldStun')
+                self.doAction('ShieldStun')
+                print(self.current_action)
                 self.hitstop = math.floor((self.damage / 4.0 + 2.0)*_hitlagMultiplier*settingsManager.getSetting('hitlag'))
                 self.change_x = _knockback
                 self.current_action.last_frame = math.floor(_damage*3/4.0*settingsManager.getSetting('shieldStun'))

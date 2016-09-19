@@ -113,7 +113,10 @@ class Action():
         for act in self.tear_down_actions:
             act.execute(self,_actor)
 
-    
-    def onClank(self,_actor):
+    def onPrevail(self,_actor,_hitbox,_other):
+        for act in self.actions_on_prevail:
+            act.execute(self,_actor)
+
+    def onClank(self,_actor,_hitbox,_other):
         for act in self.actions_on_clank:
             act.execute(self,_actor)
