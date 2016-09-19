@@ -246,7 +246,7 @@ class GrabHitbox(Hitbox):
                 self.owner.grabbing = _other
                 _other.grabbed_by = self.owner
             Hitbox.onCollision(self, _other)
-        _other.lockHitbox(self)
+            _other.lockHitbox(self)
                 
     def compareTo(self, _other):
         if not isinstance(_other, DamageHitbox) and not isinstance(_other, GrabHitbox) and not isinstance(_other, InvulnerableHitbox) and _other.owner is not None:

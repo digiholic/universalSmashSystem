@@ -385,7 +385,7 @@ class BaseGrab(action.Action):
     
     def update(self, _actor):
         action.Action.update(self, _actor)       
-        self.hold_point = (self.hold_point[0],self.hold_point[1]*_actor.facing)
+        self.hold_point = (self.hold_point[0],self.hold_point[1])
         if self.frame == self.last_frame:
             _actor.doAction('Release')
         self.frame += 1
