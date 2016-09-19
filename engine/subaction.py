@@ -761,7 +761,7 @@ class changeGravity(SubAction):
     subact_group = 'Behavior'
     fields = [NodeMap('new_gravity','float','changeGravity',False)]
     
-    def __init__(self,_newGrav):
+    def __init__(self,_newGrav=1):
         SubAction.__init__(self)
         self.new_gravity = _newGrav
         
