@@ -56,6 +56,11 @@ class Sprite(pygame.sprite.Sprite):
         bounding_rect.top += self.rect.top
         bounding_rect.left += self.rect.left
         return bounding_rect
+
+    def updatePosition(self,_rect):
+        self.rect = _rect.copy()
+        self.bounding_rect = self.getBoundingBox()
+        self.changed = True
         
         
 class SpriteHandler(Sprite):
@@ -86,11 +91,6 @@ class SpriteHandler(Sprite):
     def flipX(self):
         if self.flip == "right": self.flip = "left"
         else: self.flip = "right"
-        self.changed = True
-    
-    def updatePosition(self,_rect):
-        self.rect = _rect.copy()
-        self.bounding_rect = self.getBoundingBox()
         self.changed = True
                 
     def changeImage(self,_newImage,_subImage = 0):
