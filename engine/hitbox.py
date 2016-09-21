@@ -282,47 +282,17 @@ class ReflectorHitbox(InertHitbox):
                 _other.article.changeOwner(self.owner)
             if hasattr(_other.article, 'change_x') and hasattr(_other.article, 'change_y'):
                 v_other = [_other.article.change_x, _other.article.change_y]
-                v_self = getXYFromDM(self.trajectory, 1.0)
-                dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
-                norm_sqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
-                ratio = 1 if norm_sqr == 0 else dot/norm_sqr
-                projection = [v_self[0]*ratio, v_self[1]*ratio]
-                (_other.article.change_x, _other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), -1*self.velocity_multiplier*(2*projection[1]-v_other[1]))
-            if hasattr(_other, 'damage') and hasattr(_other, 'shield_multiplier'):
-                self.priority -= _other.damage*_other.shield_multiplier
-                self.hp -= _other.damage*_other.shield_multiplier
-                _other.damage *= _other.damage*self.damage_multiplier
-            elif hasattr(_other, 'damage'):
-                self.priority -= _other.damage
-                self.hp -= _other.damage
-                _other.damage *= _other.damage*self.damage_multiplier
-            prevailed = Hitbox.compareTo(self, _other)
-            if not prevailed or self.hp <= 0:
-                self.owner.change_y = -15
-                self.owner.invulnerable = 20
-                self.owner.doStunned(400)
-        return True
-
-    def onCollision(self, _other):
-        Hitbox.onCollision(self, _other)
-        if self.article and hasattr(self.article, 'onCollision'):
-            self.article.onCollision(_other)
-
-class FunnelReflectorHitbox(ReflectorHitbox):
-    def __init__(self,_owner,_hitboxLock,_hitboxVars):
-        InertHitbox.__init__(self,_owner,_hitboxLock,_hitboxVars)
-        self.hitbox_type = 'funnelReflector'
-        self.priority += self.hp
-        
-    def compareTo(self, _other):
-        if _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags and self.owner.lockHitbox(_other):
-            if hasattr(_other.article, 'changeOwner'):
-                _other.article.changeOwner(self.owner)
-            if hasattr(_other.article, 'change_x') and hasattr(_other.article, 'change_y'):
-                v_other = [_other.article.change_x, _other.article.change_y]
-                v_self = getXYFromDM(getDirectionBetweenPoints([self.rect.centerx+self.x_bias, self.rect.centery+self.y_bias], _other.article.rect.center)+90, 1.0)
-                v_self[0] *= self.x_draw
-                v_self[1] *= self.y_draw
+                if self.article is None:
+                    x_diff = self.rect.centerx - _other.article.rect.centerx
+                    y_diff = self.rect.centery - _other.article.rect.centery
+                    x_vel = self.x_bias+self.x_draw*x_diff
+                    y_vel = self.y_bias+self.y_draw*y_diff
+                else:
+                    x_diff = self.article.rect.centerx - _other.article.rect.centerx
+                    y_diff = self.article.rect.centery - _other.article.rect.centery
+                    x_vel = self.x_bias+self.x_draw*x_diff
+                    y_vel = self.y_bias+self.y_draw*y_diff
+                v_self = getXYFromDM(self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+90+self.trajectory)), 1.0)
                 dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
                 norm_sqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
                 ratio = 1 if norm_sqr == 0 else dot/norm_sqr

@@ -1110,6 +1110,8 @@ class createHitbox(SubAction):
             hitbox = engine.hitbox.AbsorberHitbox(_actor,hitbox_lock,self.hitbox_vars)
         elif self.hitbox_type == "invulnerable":
             hitbox = engine.hitbox.InvulnerableHitbox(_actor, hitbox_lock, self.hitbox_vars)
+        elif self.hitbox_type == "shield":
+            hitbox = engine.hitbox.ShieldHitbox(_actor, hitbox_lock, self.hitbox_vars)
         elif self.hitbox_type == "throw":
             hitbox = engine.hitbox.ThrowHitbox(_actor, hitbox_lock, self.hitbox_vars)
             
@@ -1154,7 +1156,8 @@ class createHitbox(SubAction):
         float_type = ['damage','base_knockback','knockback_growth','hitsun','damage_multiplier','velocity_multiplier',
                      'weightInfluence','shieldMultiplier','priorityDiff','charge_damage','charge_base_knockback','charge_knockback_growth',
                      'x_bias','y_bias','x_draw','y_draw','hitlag_multiplier']
-        int_type = ['trajectory','hp','transcendence','base_hitstun',]
+        int_type = ['trajectory','hp','transcendence','base_hitstun']
+        boolean_type = ['ignore_shields', 'ignore_armor']
         hitbox_lock = None
             
         for child in _node:
@@ -1225,6 +1228,7 @@ class modifyHitbox(SubAction):
                      'weightInfluence','shieldMultiplier','priorityDiff','charge_damage','charge_base_knockback','charge_knockback_growth',
                      'x_bias','y_bias','x_draw','y_draw','hitlag_multiplier']
         int_type = ['trajectory','hp','transcendence','base_hitstun','x_offset','y_offset','width','height']
+        boolean_type = ['ignore_shields', 'ignore_armor']
         
         for child in _node:
             tag = child.tag
@@ -1236,6 +1240,8 @@ class modifyHitbox(SubAction):
                 hitbox_vars[tag] = float(val)
             elif tag in int_type:
                 hitbox_vars[tag] = int(val)
+            elif tag in boolean_type:
+                hitbox_vars[tag] = bool(val)
         
         return modifyHitbox(hitbox_name,hitbox_vars)
         
