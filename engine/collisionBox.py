@@ -97,7 +97,7 @@ def getSizeCollisionsWith(_object,_spriteGroup):
     return sorted(filter(lambda r: intersectPoint(_object.ecb.current_ecb.rect, r.rect) != None, pygame.sprite.spritecollide(_object.ecb.current_ecb, _spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(_object.ecb.current_ecb.rect, q.rect)[0]))
 
 def catchMovement(_object, _other, _platformPhase=False):
-    _object.sprite.updatePosition(_object.rect)
+    _object.updatePosition(_object.rect)
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
 
@@ -123,7 +123,7 @@ def catchMovement(_object, _other, _platformPhase=False):
         
 #Prepare for article usage
 def eject(_object, _other, _platformPhase=False):
-    _object.sprite.updatePosition(_object.rect)
+    _object.updatePosition(_object.rect)
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
     contact = intersectPoint(_object.ecb.current_ecb.rect, check_rect)
@@ -149,7 +149,7 @@ def reflect(_object, _other):
         _object.elasticity = 0
     if not hasattr(_object, 'ground_elasticity'):
         _object.ground_elasticity = 0
-    _object.sprite.updatePosition(_object.rect)
+    _object.updatePosition(_object.rect)
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
     contact = intersectPoint(_object.ecb.current_ecb.rect, check_rect)

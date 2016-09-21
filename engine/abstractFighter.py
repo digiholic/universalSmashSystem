@@ -927,6 +927,9 @@ class AbstractFighter():
         
     def changeSpriteImage(self,_frame,_loop=False):
         self.sprite.changeSubImage(_frame,_loop)
+
+    def updatePosition(self, _updateRect):
+        return self.sprite.updatePosition(_updateRect)
     
     """
     Play a sound effect. If the sound is not in the fighter's SFX library, it will play the base sound.
