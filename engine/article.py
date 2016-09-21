@@ -196,7 +196,7 @@ class AnimatedArticle(spriteManager.SheetSprite):
 class ShieldArticle(Article):
     def __init__(self,_image,_owner):
         Article.__init__(self,_image, _owner, _owner.rect.center)
-        self.reflect_hitbox = hitbox.FunnelReflectorHitbox(_owner, hitbox.HitboxLock(),
+        self.reflect_hitbox = hitbox.ReflectorHitbox(_owner, hitbox.HitboxLock(),
                                                          {'center':[0,0],
                                                           'size':[_owner.shield_integrity*_owner.var['shield_size'], _owner.shield_integrity*_owner.var['shield_size']],
                                                           'transcendence':6,
