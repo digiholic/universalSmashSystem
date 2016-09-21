@@ -1185,6 +1185,8 @@ class SpotDodge(action.Action):
                 blocks = map(lambda x:x.solid,blocks)
                 if not any(blocks):
                     _actor.doAction('PlatformDrop')
+        if _actor.keyHeld('attack') and self.frame < 8 and _actor.hasAction('AirGrab'):
+            _actor.doAction('AirGrab')
         if self.frame == 1:
             _actor.change_x = 0
         elif self.frame == self.start_invuln_frame:
@@ -1533,6 +1535,15 @@ class GroundGrab(BaseAttack):
 class DashGrab(BaseAttack):
     def __init__(self,_length=0):
         BaseAttack.__init__(self, _length)
+
+class AirGrab(AirAttack):
+    def __init__(self,_length=0):
+        AirAttack.__init__(self, _length)
+
+    def update(self, _actor):
+        if self.frame == self.last_frame and not _actor.grounded:
+            _actor.doAction('Helpless')
+        AirAttack.update(self, _actor)
         
 class BaseThrow(BaseGrab):
     def __init__(self,_length=1):
@@ -1707,7 +1718,10 @@ def airState(_actor):
     if _actor.keyHeld('shield'):
         _actor.doAction('AirDodge')
     elif _actor.keyHeld('attack'):
-        _actor.doAirAttack()
+        if _actor.keysContain('shield'):
+            _actor.doAction('AirGrab')
+        else:
+            _actor.doAirAttack()
     elif _actor.keyHeld('special'):
         _actor.doAirSpecial()
     elif _actor.keyHeld('jump') and _actor.jumps > 0:
@@ -1740,6 +1754,8 @@ def tumbleState(_actor):
         tapReversible(_actor)
 
     if _actor.keyHeld('attack'):
+        if _actor.keysContain('shield'):
+            _actor.doAction('AirGrab')
         _actor.doAirAttack()
     elif _actor.keyHeld('special'):
         _actor.doAirSpecial()

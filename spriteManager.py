@@ -50,6 +50,12 @@ class Sprite(pygame.sprite.Sprite):
         import numpy as np
         arr = np.array(self.image)
         arr[arr < 10] = 0
+
+    def getBoundingBox(self):
+        bounding_rect = self.image.get_bounding_rect()
+        bounding_rect.top += self.rect.top
+        bounding_rect.left += self.rect.left
+        return bounding_rect
         
         
 class SpriteHandler(Sprite):
@@ -81,12 +87,6 @@ class SpriteHandler(Sprite):
         if self.flip == "right": self.flip = "left"
         else: self.flip = "right"
         self.changed = True
-    
-    def getBoundingBox(self):
-        bounding_rect = self.image.get_bounding_rect()
-        bounding_rect.top += self.rect.top
-        bounding_rect.left += self.rect.left
-        return bounding_rect
     
     def updatePosition(self,_rect):
         self.rect = _rect.copy()
@@ -177,6 +177,7 @@ class ImageSprite(Sprite):
         self.path = _path
         self.image = pygame.image.load(_path)
         self.rect = self.image.get_rect()
+        self.bounding_rect = self.getBoundingBox()
     
     def color_surface(self,_color,_alpha):
         arr = pygame.surfarray.pixels3d(self.image)
@@ -222,6 +223,7 @@ class SheetSprite(ImageSprite):
         
         self.image = self.image_list[0]
         self.rect = self.image.get_rect()
+        self.bounding_rect = self.getBoundingBox()
     
     def buildSubimage_list(self,_sheet,_offset):
         index = 0
@@ -361,6 +363,7 @@ class RectSprite(Sprite):
         
         self.rect = self.image.get_rect()
         self.rect.topleft = _rect.topleft    
+        self.bounding_rect = self.getBoundingBox()
         
         self.image.set_alpha(128)
         

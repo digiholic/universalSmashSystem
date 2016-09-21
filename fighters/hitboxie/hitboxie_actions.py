@@ -23,7 +23,7 @@ class ForwardSpecial(action.Action):
                      'y_bias': 0,
                      'hitlag_multiplier': 0,
                      'transcendence': -1,
-                     'priority': -7
+                     'priority': -6
                      }
         variables = {'center': [0,0],
                      'size': [80,80],
@@ -265,81 +265,6 @@ class UpSpecial(action.Action):
 #            BEGIN OVERRIDE CLASSES                    #
 ########################################################
 
-class LedgeAttack(baseActions.LedgeGetup):
-    def __init__(self):
-        baseActions.LedgeGetup.__init__(self,38)
-        self.sprite_rate = 0
-        self.up_frame = -1
-        
-    def setUp(self,_actor):
-        baseActions.LedgeGetup.setUp(self, _actor)
-        _actor.invulnerable = 24
-        _actor.createMask([255,255,255], 24, True, 24)
-        self.dash_hitbox = hitbox.DamageHitbox(_actor,hitbox.HitboxLock(),{
-                                                                         'center': [0,0],
-                                                                         'size': [70,70],
-                                                                         'damage': 2,
-                                                                         'base_knockback': 8,
-                                                                         'knockback_growth': 0.2,
-                                                                         'trajectory': 20,
-                                                                         'hitstun_multiplier': 2
-                                                                         })
-        self.chain_hitbox = hitbox.AutolinkHitbox(_actor,hitbox.HitboxLock(),{
-                                                                         'center': [0,0],
-                                                                         'size': [70,70],
-                                                                         'damage': 2,
-                                                                         'hitstun_multiplier': 2,
-                                                                         'x_bias': 0,
-                                                                         'y_bias': -1,
-                                                                         'velocity_multiplier': 1.5
-                                                                         })
-    def tearDown(self,_actor,_newAction):
-        self.dash_hitbox.kill()
-        self.chain_hitbox.kill()
-        _actor.change_x = 0
-        _actor.preferred_xspeed = 0
-
-    def update(self, _actor):
-        if self.frame == 0:
-            _actor.changeSprite("getup",0)
-        if (self.frame >= 0) and (self.frame <= 6):
-            _actor.changeSpriteImage(self.frame)
-            self.ecb_size = [0, 100]
-            if self.frame > 2:
-                _actor.change_y = -19
-            _actor.change_x = 0
-        if (self.frame >= 8) and (self.frame <= 14):
-            self.ecb_size = [0, 0]
-            _actor.change_y = 0
-            _actor.preferred_yspeed = 0
-            _actor.change_x = 11.5*_actor.facing
-            if (self.frame % 2 == 0):
-                _actor.changeSpriteImage(self.frame//2+4)
-        if self.frame == 15:
-            self.ecb_offset = [0,7]
-            self.ecb_size = [96, 78]
-            _actor.change_x = _actor.var['max_ground_speed']*_actor.facing
-            _actor.preferred_xspeed = _actor.var['max_ground_speed']*_actor.facing
-            _actor.changeSprite("nair", 0)
-            self.sprite_rate = 1
-            self.loop = True
-        if self.frame == 22:
-            self.sprite_rate = 2
-        self.dash_hitbox.update()
-        self.chain_hitbox.update()
-        if self.frame == 17:
-            _actor.active_hitboxes.add(self.chain_hitbox)
-        if self.frame == 21:
-            self.chain_hitbox.hitbox_lock = hitbox.HitboxLock()
-        if self.frame == 25:
-            self.chain_hitbox.hitbox_lock = hitbox.HitboxLock()
-        if self.frame == 29:
-            self.chain_hitbox.kill()
-            _actor.active_hitboxes.add(self.dash_hitbox)
-        if self.frame == 33:
-            self.dash_hitbox.kill()
-            _actor.preferred_xspeed = 0
-        baseActions.LedgeGetup.update(self, _actor)
 
 ########################################################
 #             BEGIN HELPER METHODS                     #

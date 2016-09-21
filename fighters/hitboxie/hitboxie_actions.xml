@@ -527,7 +527,7 @@
 				<size>70,70</size>
 				<damage>2</damage>
 				<base_knockback>8</base_knockback>
-				<knockback_growth>0.2</knockback_growth>
+				<knockback_growth>0.1</knockback_growth>
 				<trajectory>20</trajectory>
 			</createHitbox>
 			
@@ -1988,18 +1988,16 @@
 				<damage>2</damage>
 				<base_knockback>5</base_knockback>
 				<knockback_growth>0.1</knockback_growth>
-				<trajectory>20</trajectory>
+				<trajectory>90</trajectory>
 				<hitstun_multiplier>2</hitstun_multiplier>
 			</createHitbox>
-			<createHitbox type="autolink">
+			<createHitbox>
 				<name>chainHitbox</name>
 				<center>0,0</center>
 				<size>70,70</size>
 				<damage>2</damage>
-				<hitstun_multiplier>2</hitstun_multiplier>
-				<x_bias>0</x_bias>
-				<y_bias>-1</y_bias>
-				<velocity_multiplier>1.5</velocity_multiplier>
+				<trajectory>90</trajectory>
+				<base_knockback>1</base_knockback>
 			</createHitbox>
 		</setUp>
 		
