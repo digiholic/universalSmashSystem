@@ -39,311 +39,321 @@ class Battle():
         random.seed
         self.random_state = random.getstate
         
-    def startBattle(self,_screen):
-        # Fill background
-        background = pygame.Surface(_screen.get_size())
-        background = background.convert()
-        background.fill((128, 128, 128))
-        
-        _screen.fill(self.stage.background_color)
-        current_stage = self.stage
-        active_hitboxes = pygame.sprite.Group()
-        active_hurtboxes = pygame.sprite.Group()
-        
-        #game_objects
-        current_fighters = self.players[:] #We have to slice this list so it passes by value instead of reference
-        game_objects = []
-        game_objects.extend(current_fighters)
-        
-        track_stocks = True
-        track_time = True
-        if self.rules.stocks == 0:
-            track_stocks = False
-        if self.rules.time == 0:
-            track_time = False
+    def startBattle(self,_screen): 
+        # Try block to catch any and every error
+        try:
+            # Fill background
+            background = pygame.Surface(_screen.get_size())
+            background = background.convert()
+            background.fill((128, 128, 128))
             
-        clock_time = self.rules.time * 60
-        
-        gui_objects = []
-        
-        if track_time:
-            pygame.time.set_timer(pygame.USEREVENT+2, 1000)
-            countdown_sprite = spriteManager.TextSprite('5','full Pack 2025',128,[0,0,0])
-            countdown_sprite.rect.center = _screen.get_rect().center
-            count_alpha = 0
-            countdown_sprite.alpha(count_alpha)
-            gui_objects.append(countdown_sprite)
-            
-            clock_sprite = spriteManager.TextSprite('8:00','rexlia rg',32,[0,0,0])
-            clock_sprite.rect.topright = _screen.get_rect().topright
-            clock_sprite.changeText(str(clock_time / 60)+':'+str(clock_time % 60).zfill(2))
-            gui_objects.append(clock_sprite)
-        
-        gui_offset = _screen.get_rect().width / (len(self.players) + 1)
-        for fighter in current_fighters:
-            fighter.rect.midbottom = current_stage.spawn_locations[fighter.player_num]
-            fighter.sprite.updatePosition(fighter.rect)
-            fighter.ecb.normalize()
-            fighter.ecb.store()
-            fighter.game_state = current_stage
-            fighter.players = self.players
-            current_stage.follows.append(fighter.rect)
-            log = DataLog()
-            self.data_logs.append(log)
-            fighter.data_log = log
-            if track_stocks: fighter.stocks = self.rules.stocks
-            
-            percent_sprite = HealthTracker(fighter)
-            
-            percent_sprite.rect.bottom = _screen.get_rect().bottom
-            percent_sprite.rect.centerx = gui_offset
-
-            gui_offset += _screen.get_rect().width / (len(self.players) + 1)
-            
-            gui_objects.append(percent_sprite)
-        
-        center_stage_rect = pygame.rect.Rect((0,0),(16,16))
-        center_stage_rect.center = current_stage.size.center
-        current_stage.follows.append(center_stage_rect)
-        current_stage.initializeCamera()
-        
-        
-        clock = pygame.time.Clock()
-        clock_speed = 60
-        debug_mode = False
-        debug_pass = False
-        """
-        ExitStatus breaks us out of the loop. The battle loop can end in many ways, which is reflected here.
-        In general, ExitStatus positive means that the game was supposed to end, while a negative value indicates an error.
-        
-        ExitStatus == 1: Battle ended early by user. No Contest.
-        ExitStatus == 2: Battle ended by time or stock, decide winner, show victory screen
-        ExitStatus == -1: Battle ended in error.
-        """
-        exit_status = 0
-        
-        data_log = DataLog()
-        data_log.addSection('test', 1)
-        data_log.setData('test', 3, (lambda x,y: x + y))
-        self.dirty_rects = [pygame.Rect(0,0,self.settings['windowWidth'],self.settings['windowHeight'])]
-        while exit_status == 0:
-            for cont in self.controllers:
-                cont.passInputs()
-                
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-                    return -1
-                
-                for cont in self.controllers:
-                    cont.getInputs(event)
-                
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        print("saving screenshot")
-                        pygame.image.save(_screen,settingsManager.createPath('screenshot.jpg'))
-                    elif event.key == pygame.K_RSHIFT:
-                        debug_mode = not debug_mode
-                if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_ESCAPE:
-                        exit_status = 1
-                            
-                if event.type == pygame.USEREVENT+2:
-                    pygame.time.set_timer(pygame.USEREVENT+2, 1000)
-                    clock_sprite.changeText(str(clock_time / 60)+':'+str(clock_time % 60).zfill(2))
-                    clock_time -= 1
-                    if clock_time <= 5 and clock_time > 0:
-                        countdown_sprite.changeText(str(clock_time))
-                        count_alpha = 255
-                    if clock_time == 0:
-                        exit_status = 2
-            # End pygame event loop
-                                   
             _screen.fill(self.stage.background_color)
+            current_stage = self.stage
+            active_hitboxes = pygame.sprite.Group()
+            active_hurtboxes = pygame.sprite.Group()
             
-            current_stage.update()
-            current_stage.cameraUpdate()
-            active_hitboxes.add(current_stage.active_hitboxes)
-            active_hurtboxes.add(current_stage.active_hurtboxes)
+            #game_objects
+            current_fighters = self.players[:] #We have to slice this list so it passes by value instead of reference
+            game_objects = []
+            game_objects.extend(current_fighters)
             
-            draw_rects = current_stage.drawBG(_screen)
-            self.dirty_rects.extend(draw_rects)
+            track_stocks = True
+            track_time = True
+            if self.rules.stocks == 0:
+                track_stocks = False
+            if self.rules.time == 0:
+                track_time = False
+                
+            clock_time = self.rules.time * 60
             
-            for obj in game_objects:
-                obj.update()
+            gui_objects = []
+            
+            if track_time:
+                pygame.time.set_timer(pygame.USEREVENT+2, 1000)
+                countdown_sprite = spriteManager.TextSprite('5','full Pack 2025',128,[0,0,0])
+                countdown_sprite.rect.center = _screen.get_rect().center
+                count_alpha = 0
+                countdown_sprite.alpha(count_alpha)
+                gui_objects.append(countdown_sprite)
                 
-                foreground_articles = []
-                if hasattr(obj, 'articles'):
-                    for art in obj.articles:
-                        if art.draw_depth == -1:
-                            offset = current_stage.stageToScreen(art.rect)
-                            scale =  current_stage.getScale()
-                            draw_rect = art.draw(_screen,offset,scale)
-                            if draw_rect: self.dirty_rects.append(draw_rect)
-                        else: foreground_articles.append(art)
+                clock_sprite = spriteManager.TextSprite('8:00','rexlia rg',32,[0,0,0])
+                clock_sprite.rect.topright = _screen.get_rect().topright
+                clock_sprite.changeText(str(clock_time / 60)+':'+str(clock_time % 60).zfill(2))
+                gui_objects.append(clock_sprite)
+            
+            gui_offset = _screen.get_rect().width / (len(self.players) + 1)
+            for fighter in current_fighters:
+                fighter.rect.midbottom = current_stage.spawn_locations[fighter.player_num]
+                fighter.sprite.updatePosition(fighter.rect)
+                fighter.ecb.normalize()
+                fighter.ecb.store()
+                fighter.game_state = current_stage
+                fighter.players = self.players
+                current_stage.follows.append(fighter.rect)
+                log = DataLog()
+                self.data_logs.append(log)
+                fighter.data_log = log
+                if track_stocks: fighter.stocks = self.rules.stocks
                 
-                if hasattr(obj,'active_hitboxes'):
-                    active_hitboxes.add(obj.active_hitboxes)
-                if hasattr(obj, 'hurtbox'):
-                    active_hurtboxes.add(obj.hurtbox)
+                percent_sprite = HealthTracker(fighter)
                 
-                offset = current_stage.stageToScreen(obj.rect)
-                scale =  current_stage.getScale()
-                draw_rect = obj.draw(_screen,offset,scale)
-                if draw_rect: self.dirty_rects.append(draw_rect)
+                percent_sprite.rect.bottom = _screen.get_rect().bottom
+                percent_sprite.rect.centerx = gui_offset
+    
+                gui_offset += _screen.get_rect().width / (len(self.players) + 1)
                 
-                for art in foreground_articles:
-                    offset = current_stage.stageToScreen(art.rect)
+                gui_objects.append(percent_sprite)
+            
+            center_stage_rect = pygame.rect.Rect((0,0),(16,16))
+            center_stage_rect.center = current_stage.size.center
+            current_stage.follows.append(center_stage_rect)
+            current_stage.initializeCamera()
+            
+            
+            clock = pygame.time.Clock()
+            clock_speed = 60
+            debug_mode = False
+            debug_pass = False
+            """
+            ExitStatus breaks us out of the loop. The battle loop can end in many ways, which is reflected here.
+            In general, ExitStatus positive means that the game was supposed to end, while a negative value indicates an error.
+            
+            ExitStatus == 1: Battle ended early by submission. Declare the other players winners, show victory screen.
+            ExitStatus == 2: Battle ended by time or stock. Declare winner from stocks and percentage, show victory screen. 
+            ExitStatus == 3: Battle ended early by mutual agreement. Declare draw by agreement, return to menu. 
+            ExitStatus == -1: Battle ended in error. Print stack trace, return to menu. 
+            """
+            exit_status = 0
+            
+            data_log = DataLog()
+            data_log.addSection('test', 1)
+            data_log.setData('test', 3, (lambda x,y: x + y))
+            self.dirty_rects = [pygame.Rect(0,0,self.settings['windowWidth'],self.settings['windowHeight'])]
+            while exit_status == 0:
+                for cont in self.controllers:
+                    cont.passInputs()
+                    
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        sys.exit()
+                        return -1
+                    
+                    for cont in self.controllers:
+                        cont.getInputs(event)
+                    
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_RETURN:
+                            print("saving screenshot")
+                            pygame.image.save(_screen,settingsManager.createPath('screenshot.jpg'))
+                        elif event.key == pygame.K_RSHIFT:
+                            debug_mode = not debug_mode
+                    if event.type == pygame.KEYUP:
+                        if event.key == pygame.K_ESCAPE:
+                            exit_status = 1
+                                
+                    if event.type == pygame.USEREVENT+2:
+                        pygame.time.set_timer(pygame.USEREVENT+2, 1000)
+                        clock_sprite.changeText(str(clock_time / 60)+':'+str(clock_time % 60).zfill(2))
+                        clock_time -= 1
+                        if clock_time <= 5 and clock_time > 0:
+                            countdown_sprite.changeText(str(clock_time))
+                            count_alpha = 255
+                        if clock_time == 0:
+                            exit_status = 2
+                # End pygame event loop
+                                       
+                _screen.fill(self.stage.background_color)
+                
+                current_stage.update()
+                current_stage.cameraUpdate()
+                active_hitboxes.add(current_stage.active_hitboxes)
+                active_hurtboxes.add(current_stage.active_hurtboxes)
+                
+                draw_rects = current_stage.drawBG(_screen)
+                self.dirty_rects.extend(draw_rects)
+            
+                for obj in game_objects:
+                    obj.update()
+                
+                    foreground_articles = []
+                    if hasattr(obj, 'articles'):
+                        for art in obj.articles:
+                            if art.draw_depth == -1:
+                                offset = current_stage.stageToScreen(art.rect)
+                                scale =  current_stage.getScale()
+                                draw_rect = art.draw(_screen,offset,scale)
+                                if draw_rect: self.dirty_rects.append(draw_rect)
+                            else: foreground_articles.append(art)
+                    
+                    if hasattr(obj,'active_hitboxes'):
+                        active_hitboxes.add(obj.active_hitboxes)
+                    if hasattr(obj, 'hurtbox'):
+                        active_hurtboxes.add(obj.hurtbox)
+                    
+                    offset = current_stage.stageToScreen(obj.rect)
                     scale =  current_stage.getScale()
-                    draw_rect = art.draw(_screen,offset,scale)
+                    draw_rect = obj.draw(_screen,offset,scale)
                     if draw_rect: self.dirty_rects.append(draw_rect)
-                
-                if hasattr(obj, 'hurtbox'):
-                    if (self.settings['showHurtboxes']): 
-                        offset = current_stage.stageToScreen(obj.hurtbox.rect)
-                        draw_rect = obj.hurtbox.draw(_screen,offset,scale)
+                    
+                    for art in foreground_articles:
+                        offset = current_stage.stageToScreen(art.rect)
+                        scale =  current_stage.getScale()
+                        draw_rect = art.draw(_screen,offset,scale)
                         if draw_rect: self.dirty_rects.append(draw_rect)
-                if (self.settings['showHitboxes']):
-                    for hbox in active_hitboxes:
-                        draw_rect = hbox.draw(_screen,current_stage.stageToScreen(hbox.rect),scale)
-                        if draw_rect: self.dirty_rects.append(draw_rect)
-
-            hitbox_hits = pygame.sprite.groupcollide(active_hitboxes, active_hitboxes, False, False)
-            hurtbox_hits = pygame.sprite.groupcollide(active_hitboxes, active_hurtboxes, False, False)
-            platform_hits = pygame.sprite.groupcollide(active_hitboxes, self.stage.platform_list, False, False)
-            for hbox in hitbox_hits:
-                #first, check for clanks
-                hitbox_clank = hitbox_hits[hbox]
-                hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner)]
-                if hitbox_clank: print(hitbox_clank)
-                for other in hitbox_clank:
-                    print('Other hitbox: '+str(other))
-                    hbox_clank = False
-                    other_clank = False
-                    hbox_prevail = False
-                    other_prevail = False
-                    if not hbox.compareTo(other):
-                        if other.owner.lockHitbox(hbox) and hasattr(hbox.owner,'current_action'):
-                            hbox_clank = True
-                        print("CLANK!")
-                    else:
-                        if other.owner.lockHitbox(hbox) and hasattr(hbox.owner,'current_action'):
-                            hbox_prevail = True
-                    if not other.compareTo(hbox):
-                        if hbox.owner.lockHitbox(other) and hasattr(other.owner,'current_action'):
-                            other_clank = True
-                        print("CLANK!")
-                    else:
-                        if hbox.owner.lockHitbox(other) and hasattr(other.owner,'current_action'):
-                            other_prevail = True
-                    if not isinstance(hbox, hitbox.InertHitbox) and not isinstance(other, hitbox.InertHitbox):
-                        if hbox_clank:
+                    
+                    if hasattr(obj, 'hurtbox'):
+                        if (self.settings['showHurtboxes']): 
+                            offset = current_stage.stageToScreen(obj.hurtbox.rect)
+                            draw_rect = obj.hurtbox.draw(_screen,offset,scale)
+                            if draw_rect: self.dirty_rects.append(draw_rect)
+                    if (self.settings['showHitboxes']):
+                        for hbox in active_hitboxes:
+                            draw_rect = hbox.draw(_screen,current_stage.stageToScreen(hbox.rect),scale)
+                            if draw_rect: self.dirty_rects.append(draw_rect)
+    
+                hitbox_hits = pygame.sprite.groupcollide(active_hitboxes, active_hitboxes, False, False)
+                hurtbox_hits = pygame.sprite.groupcollide(active_hitboxes, active_hurtboxes, False, False)
+                platform_hits = pygame.sprite.groupcollide(active_hitboxes, self.stage.platform_list, False, False)
+                for hbox in hitbox_hits:
+                    #first, check for clanks
+                    hitbox_clank = hitbox_hits[hbox]
+                    hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner)]
+                    if hitbox_clank: print(hitbox_clank)
+                    for other in hitbox_clank:
+                        print('Other hitbox: '+str(other))
+                        hbox_clank = False
+                        other_clank = False
+                        hbox_prevail = False
+                        other_prevail = False
+                        if not hbox.compareTo(other):
+                            if other.owner.lockHitbox(hbox) and hasattr(hbox.owner,'current_action'):
+                                hbox_clank = True
+                            print("CLANK!")
+                        else:
+                            if other.owner.lockHitbox(hbox) and hasattr(hbox.owner,'current_action'):
+                                hbox_prevail = True
+                        if not other.compareTo(hbox):
+                            if hbox.owner.lockHitbox(other) and hasattr(other.owner,'current_action'):
+                                other_clank = True
+                            print("CLANK!")
+                        else:
+                            if hbox.owner.lockHitbox(other) and hasattr(other.owner,'current_action'):
+                                other_prevail = True
+                        if not isinstance(hbox, hitbox.InertHitbox) and not isinstance(other, hitbox.InertHitbox):
+                            if hbox_clank:
+                                if isinstance(hbox, hitbox.DamageHitbox):
+                                    hbox.owner.applyPushback(hbox.base_knockback/5.0, hbox.getTrajectory()+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
+                                else:
+                                    hbox.owner.hitstop = 8
+                                if hbox.article == None:
+                                    hbox.owner.current_action.onClank(hbox.owner, hbox, other)
+                                else:
+                                    hbox.article.onClank(hbox.owner, hbox, other)
+                            if hbox_prevail:
+                                if hbox.article == None:
+                                    hbox.owner.current_action.onPrevail(hbox.owner, hbox, other)
+                                else:
+                                    hbox.article.onPrevail(hbox.owner, hbox, other)
+                            if other_clank:
+                                if isinstance(other, hitbox.DamageHitbox):
+                                    other.owner.applyPushback(other.base_knockback/5.0, other.getTrajectory()+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
+                                else:
+                                    other.owner.hitstop = 8
+                                if other.article == None:
+                                    other.owner.current_action.onClank(other.owner, other, hbox)
+                                else:
+                                    other.article.onClank(other.owner, other, hbox)
+                            if other_prevail:
+                                if other.article == None:
+                                    other.owner.current_action.onPrevail(other.owner, other, hbox)
+                                else:
+                                    other.article.onPrevail(other.owner, other, hbox)
+                        elif hbox_clank and other_clank:
                             if isinstance(hbox, hitbox.DamageHitbox):
                                 hbox.owner.applyPushback(hbox.base_knockback/5.0, hbox.getTrajectory()+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
                             else:
                                 hbox.owner.hitstop = 8
-                            if hbox.article == None:
-                                hbox.owner.current_action.onClank(hbox.owner, hbox, other)
-                            else:
-                                hbox.article.onClank(hbox.owner, hbox, other)
-                        if hbox_prevail:
-                            if hbox.article == None:
-                                hbox.owner.current_action.onPrevail(hbox.owner, hbox, other)
-                            else:
-                                hbox.article.onPrevail(hbox.owner, hbox, other)
-                        if other_clank:
                             if isinstance(other, hitbox.DamageHitbox):
                                 other.owner.applyPushback(other.base_knockback/5.0, other.getTrajectory()+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
                             else:
                                 other.owner.hitstop = 8
-                            if other.article == None:
-                                other.owner.current_action.onClank(other.owner, other, hbox)
-                            else:
-                                other.article.onClank(other.owner, other, hbox)
-                        if other_prevail:
-                            if other.article == None:
-                                other.owner.current_action.onPrevail(other.owner, other, hbox)
-                            else:
-                                other.article.onPrevail(other.owner, other, hbox)
-                    elif hbox_clank and other_clank:
-                        if isinstance(hbox, hitbox.DamageHitbox):
-                            hbox.owner.applyPushback(hbox.base_knockback/5.0, hbox.getTrajectory()+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
-                        else:
-                            hbox.owner.hitstop = 8
-                        if isinstance(other, hitbox.DamageHitbox):
-                            other.owner.applyPushback(other.base_knockback/5.0, other.getTrajectory()+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
-                        else:
-                            other.owner.hitstop = 8
+                                
+                for hbox in hurtbox_hits:
+                    #then, hurtbox collisions
+                    hitbox_collisions = hurtbox_hits[hbox]
+                    for hurtbox in hitbox_collisions:
+                        if hbox.owner != hurtbox.owner:
+                            hbox.onCollision(hurtbox.owner)
+                            hurtbox.onHit(hbox)
                             
-            for hbox in hurtbox_hits:
-                #then, hurtbox collisions
-                hitbox_collisions = hurtbox_hits[hbox]
-                for hurtbox in hitbox_collisions:
-                    if hbox.owner != hurtbox.owner:
-                        hbox.onCollision(hurtbox.owner)
-                        hurtbox.onHit(hbox)
-                        
-            for hbox in platform_hits:
-                #then platform collisions
-                platform_collisions = platform_hits[hbox]
-                for wall in platform_collisions:
-                    hbox.onCollision(wall)            
-            
-            for fight in current_fighters:
-                if fight.rect.right < current_stage.blast_line.left or fight.rect.left > current_stage.blast_line.right or fight.rect.top > current_stage.blast_line.bottom or fight.rect.bottom < current_stage.blast_line.top:
-                    if not track_stocks:
-                        # Get score
-                        fight.die()
-                    else:
-                        fight.stocks -= 1
-                        print(fight.stocks)
-                        if fight.stocks == 0:
-                            fight.die(False)
-                            current_fighters.remove(fight)
-                            current_stage.follows.remove(fight.rect)
-                            #If someon's eliminated and there's 1 or fewer people left
-                            if len(current_fighters) < 2:
-                                exit_status = 2 #Game set
-                        else: fight.die()
-            # End object updates
-            draw_rects = current_stage.drawFG(_screen)    
-            self.dirty_rects.extend(draw_rects)
-            
-            for obj in gui_objects:
-                draw_rect = obj.draw(_screen, obj.rect.topleft,1)
-                if draw_rect: self.dirty_rects.append(draw_rect)
-            if track_time and clock_time <= 5:
-                count_alpha = max(0,count_alpha - 5)
-                countdown_sprite.alpha(count_alpha)
+                for hbox in platform_hits:
+                    #then platform collisions
+                    platform_collisions = platform_hits[hbox]
+                    for wall in platform_collisions:
+                        hbox.onCollision(wall)            
                 
+                for fight in current_fighters:
+                    if fight.rect.right < current_stage.blast_line.left or fight.rect.left > current_stage.blast_line.right or fight.rect.top > current_stage.blast_line.bottom or fight.rect.bottom < current_stage.blast_line.top:
+                        if not track_stocks:
+                            # Get score
+                            fight.die()
+                        else:
+                            fight.stocks -= 1
+                            print(fight.stocks)
+                            if fight.stocks == 0:
+                                fight.die(False)
+                                current_fighters.remove(fight)
+                                current_stage.follows.remove(fight.rect)
+                                #If someone's eliminated and there's 1 or fewer people left
+                                if len(current_fighters) < 2:
+                                    exit_status = 2 #Game set
+                            else: fight.die()
+                # End object updates
+                draw_rects = current_stage.drawFG(_screen)    
+                self.dirty_rects.extend(draw_rects)
+                
+                for obj in gui_objects:
+                    draw_rect = obj.draw(_screen, obj.rect.topleft,1)
+                    if draw_rect: self.dirty_rects.append(draw_rect)
+                if track_time and clock_time <= 5:
+                    count_alpha = max(0,count_alpha - 5)
+                    countdown_sprite.alpha(count_alpha)
+                 
+                clock.tick(clock_speed)
+                optimized_rects = engine.optimize_dirty_rects.optimize_dirty_rects(self.dirty_rects)
+                #pygame.display.update(optimized_rects)
+                self.dirty_rects = []
+                pygame.display.update()
+                if debug_mode:
+                    print("Paused, press left shift key again to continue")
+                    while not debug_pass:
+                        for event in pygame.event.get():
+                            if event.type == pygame.QUIT:
+                                exit_status = 1
+                            
+                            if event.type == pygame.KEYDOWN:
+                                if event.key == pygame.K_LSHIFT:
+                                    debug_pass = True
+                                    debug_mode = False
+                                elif event.key == pygame.K_RSHIFT:
+                                    debug_pass = True
+                            
+                            for cont in self.controllers:
+                                cont.getInputs(event)
+                    
+                debug_pass = False
+            # End while loop
+        except:
+            try:
+                import traceback
+                traceback.print_exc()
+            finally:
+                exit_status = -1
             
-            clock.tick(clock_speed) #change back
-            optimized_rects = engine.optimize_dirty_rects.optimize_dirty_rects(self.dirty_rects)
-            #pygame.display.update(optimized_rects)
-            self.dirty_rects = []
-            pygame.display.update()
-            if debug_mode:
-                print("Paused, press right ctrl key to continue")
-                while not debug_pass:
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            sys.exit()
-                            return -1
-                        
-                        if event.type == pygame.KEYDOWN:
-                            if event.key == pygame.K_RCTRL:
-                                debug_pass = True
-                        
-                        for cont in self.controllers:
-                            cont.getInputs(event)
-                
-            debug_pass = False
-                
-        # End while loop
-        
+            
         if exit_status == 1:
             musicManager.getMusicManager().stopMusic(1000)
-            print("NO CONTEST")
+            print("SUBMISSION")
         elif exit_status == 2:
             musicManager.getMusicManager().stopMusic()
             frame_hold = 0
@@ -356,7 +366,17 @@ class Battle():
                 frame_hold += 1
             print("GAME SET")
         elif exit_status == -1:
-            print("ERROR!")
+            musicManager.getMusicManager().stopMusic()
+            frame_hold = 0
+            game_sprite = spriteManager.TextSprite('NO CONTEST','full Pack 2025',64,[0,0,0])
+            game_sprite.rect.center = _screen.get_rect().center
+            while frame_hold < 150:
+                game_sprite.draw(_screen, game_sprite.rect.topleft, 1)
+                clock.tick(60)
+                pygame.display.flip()
+                frame_hold += 1
+            print("NO CONTEST")
+            
         
         self.endBattle(exit_status,_screen)    
         return exit_status # This'll pop us back to the character select screen.
@@ -382,9 +402,9 @@ class Battle():
     """    
     def endBattle(self,_exitStatus,_screen):
         if _exitStatus == -1:
-            #Don't show a results screen on error
+            print("See data log for details")
             return
-        elif _exitStatus == 2:
+        elif _exitStatus == 1 or _exitStatus == 2:
             result_sprites = []
             width = settingsManager.getSetting('windowWidth')
             height = settingsManager.getSetting('windowHeight')
@@ -441,8 +461,8 @@ class Battle():
                     return
                 pygame.display.flip()
             return
-        elif _exitStatus == 1:
-            #Game ended in no contest
+        else:
+            #Game ended in an unknown state
             return
         
 """
