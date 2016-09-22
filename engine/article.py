@@ -190,7 +190,6 @@ class AnimatedArticle(spriteManager.SheetSprite):
     
     def changeOwner(self, _newOwner):
         self.owner = _newOwner
-        self.hitbox.owner = _newOwner
     
     def activate(self):
         self.owner.articles.add(self)

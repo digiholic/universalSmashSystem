@@ -212,8 +212,6 @@ class Battle():
                             if draw_rect: self.dirty_rects.append(draw_rect)
     
                 hitbox_hits = pygame.sprite.groupcollide(active_hitboxes, active_hitboxes, False, False)
-                hurtbox_hits = pygame.sprite.groupcollide(active_hitboxes, active_hurtboxes, False, False)
-                platform_hits = pygame.sprite.groupcollide(active_hitboxes, self.stage.platform_list, False, False)
                 for hbox in hitbox_hits:
                     #first, check for clanks
                     hitbox_clank = hitbox_hits[hbox]
@@ -241,9 +239,9 @@ class Battle():
                                 other_prevail = True
                         if not isinstance(hbox, hitbox.InertHitbox) and not isinstance(other, hitbox.InertHitbox):
                             if hbox_clank:
-                                if isinstance(hbox, hitbox.DamageHitbox):
+                                if isinstance(hbox, hitbox.DamageHitbox) and hbox.article == None:
                                     hbox.owner.applyPushback(hbox.base_knockback/5.0, hbox.getTrajectory()+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
-                                else:
+                                elif hbox.article == None:
                                     hbox.owner.hitstop = 8
                                 if hbox.article == None:
                                     hbox.owner.current_action.onClank(hbox.owner, hbox, other)
@@ -255,9 +253,9 @@ class Battle():
                                 else:
                                     hbox.article.onPrevail(hbox.owner, hbox, other)
                             if other_clank:
-                                if isinstance(other, hitbox.DamageHitbox):
+                                if isinstance(other, hitbox.DamageHitbox) and other.article == None:
                                     other.owner.applyPushback(other.base_knockback/5.0, other.getTrajectory()+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
-                                else:
+                                elif other.article == None:
                                     other.owner.hitstop = 8
                                 if other.article == None:
                                     other.owner.current_action.onClank(other.owner, other, hbox)
@@ -269,15 +267,16 @@ class Battle():
                                 else:
                                     other.article.onPrevail(other.owner, other, hbox)
                         elif hbox_clank and other_clank:
-                            if isinstance(hbox, hitbox.DamageHitbox):
+                            if isinstance(hbox, hitbox.DamageHitbox) and hbox.article == None:
                                 hbox.owner.applyPushback(hbox.base_knockback/5.0, hbox.getTrajectory()+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
-                            else:
+                            elif hbox.article == None:
                                 hbox.owner.hitstop = 8
-                            if isinstance(other, hitbox.DamageHitbox):
+                            if isinstance(other, hitbox.DamageHitbox) and other.article == None:
                                 other.owner.applyPushback(other.base_knockback/5.0, other.getTrajectory()+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
-                            else:
+                            elif other.article == None:
                                 other.owner.hitstop = 8
                                 
+                hurtbox_hits = pygame.sprite.groupcollide(active_hitboxes, active_hurtboxes, False, False)
                 for hbox in hurtbox_hits:
                     #then, hurtbox collisions
                     hitbox_collisions = hurtbox_hits[hbox]
@@ -286,6 +285,7 @@ class Battle():
                             hbox.onCollision(hurtbox.owner)
                             hurtbox.onHit(hbox)
                             
+                platform_hits = pygame.sprite.groupcollide(active_hitboxes, self.stage.platform_list, False, False)
                 for hbox in platform_hits:
                     #then platform collisions
                     platform_collisions = platform_hits[hbox]
