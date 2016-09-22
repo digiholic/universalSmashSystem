@@ -1897,10 +1897,10 @@
 				<damage>4</damage>
 				<base_knockback>2</base_knockback>
 				<knockback_growth>0</knockback_growth>
-				<trajectory>270</trajectory>
+				<trajectory>330</trajectory>
 				<base_hitstun>0</base_hitstun>
 				<hitstun_multiplier type="float">2.8</hitstun_multiplier>
-				<transcendence>2</transcendence>
+				<transcendence>5</transcendence>
 			</createHitbox>
 			
 			<createHitbox type="reflector">
@@ -1910,8 +1910,11 @@
 				<damage_multiplier>1.3</damage_multiplier>
 				<velocity_multiplier>1.1</velocity_multiplier>
 				<hp>100</hp>
+				<y_bias>0</y_bias>
+				<x_draw>-0.1</x_draw>
+				<y_draw>0</y_draw>
 				<trajectory>0</trajectory>
-				<transcendence>2</transcendence>
+				<transcendence>6</transcendence>
 			</createHitbox>
 		</setUp>
 		
@@ -1924,8 +1927,8 @@
 		</tearDown>
 		
 		<frame number="before">
-			<updateHitbox>damage</updateHitbox>
 			<updateHitbox>reflect</updateHitbox>
+			<updateHitbox>damage</updateHitbox>
 		</frame>
 		<frame number="0">
 			<changeFighterSpeed>

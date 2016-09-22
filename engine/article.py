@@ -102,6 +102,11 @@ class DynamicArticle(spriteManager.SheetSprite):
             act.execute(self,self)
         self.kill()
 
+    def changeOwner(self, _newOwner):
+        self.owner = _newOwner
+        for hitbox in self.hitboxes.values():
+            hitbox.owner = _newOwner
+
     def onPrevail(self,_actor,_hitbox,_other):
         for act in self.actions_on_prevail:
             act.execute(self,_actor,_hitbox,_other)
@@ -226,7 +231,7 @@ class ShieldArticle(Article):
     def onPrevail(self, _actor, _hitbox, _other):
         if _hitbox == self.main_hitbox and self.frame > 2 and (isinstance(_other, hitbox.DamageHitbox) and not _other.ignore_shields):
             _actor.shieldDamage(math.floor(_other.damage*_other.shield_multiplier), _other.base_knockback/5.0*math.cos(math.radians(_other.trajectory)), _other.hitlag_multiplier)
-        elif _hitbox == self.parry_hitbox and (isinstance(_other, hitbox.DamageHitbox) or isinstance(_other, hitbox.GrabHitbox)):
+        elif _hitbox == self.parry_hitbox and _other.article is None and (isinstance(_other, hitbox.DamageHitbox) or isinstance(_other, hitbox.GrabHitbox)):
             print("Successful parry!")
             _actor.doAction('NeutralAction')
             _other.owner.doAction('SlowGetup')

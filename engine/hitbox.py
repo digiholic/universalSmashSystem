@@ -287,12 +287,13 @@ class ReflectorHitbox(InertHitbox):
                     y_diff = self.rect.centery - _other.article.rect.centery
                     x_vel = self.x_bias+self.x_draw*x_diff
                     y_vel = self.y_bias+self.y_draw*y_diff
+                    v_self = getXYFromDM(self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory))+90, 1.0)
                 else:
                     x_diff = self.article.rect.centerx - _other.article.rect.centerx
                     y_diff = self.article.rect.centery - _other.article.rect.centery
                     x_vel = self.x_bias+self.x_draw*x_diff
                     y_vel = self.y_bias+self.y_draw*y_diff
-                v_self = getXYFromDM(self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+90+self.trajectory)), 1.0)
+                    v_self = getXYFromDM(self.owner.getForwardWithOffset(self.article.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory))+90, 1.0)
                 dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
                 norm_sqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
                 ratio = 1 if norm_sqr == 0 else dot/norm_sqr
@@ -301,11 +302,11 @@ class ReflectorHitbox(InertHitbox):
             if hasattr(_other, 'damage') and hasattr(_other, 'shield_multiplier'):
                 self.priority -= _other.damage*_other.shield_multiplier
                 self.hp -= _other.damage*_other.shield_multiplier
-                _other.damage *= _other.damage*self.damage_multiplier
+                _other.damage *= self.damage_multiplier
             elif hasattr(_other, 'damage'):
                 self.priority -= _other.damage
                 self.hp -= _other.damage
-                _other.damage *= _other.damage*self.damage_multiplier
+                _other.damage *= self.damage_multiplier
             prevailed = Hitbox.compareTo(self, _other)
             if not prevailed or self.hp <= 0:
                 self.owner.change_y = -15
@@ -389,5 +390,4 @@ transcendence_dict = {
                      'grounded': 0,
                      'aerial': 1, 
                      'transcendent': 5,
-                     'reflector': 6
                      }
