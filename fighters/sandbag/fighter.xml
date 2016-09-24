@@ -47,6 +47,7 @@
 		<short_hop_height>8.5</short_hop_height>
 		<air_jump_height>15</air_jump_height>
 		<heavy_land_lag>4</heavy_land_lag>
+		<wavedash_lag>8</wavedash_lag>
 		<fastfall_multiplier>2</fastfall_multiplier>
 		<hitstun_elasticity>.8</hitstun_elasticity>
 		<shield_size>1</shield_size>

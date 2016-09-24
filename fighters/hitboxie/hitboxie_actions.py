@@ -97,8 +97,6 @@ class ForwardSpecial(action.Action):
     def update(self, _actor):
         if not self.should_continue:
             return
-        if _actor.grounded:
-            _actor.sideSpecialUses = 1
         _actor.changeSpriteImage(self.sprite_image%16)
         _actor.hurtbox.rect.width = 64
         _actor.hurtbox.rect.height = 64

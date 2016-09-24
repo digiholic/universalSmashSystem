@@ -3,17 +3,14 @@
 		<length>1</length>
 		<sprite>idle</sprite>
 		<sprite_rate>0</sprite_rate>
-		
-		<frame number="0">
+
+		<setUp>
 			<setFighterVar var="sideSpecialUses">
 				<value type="int">1</value>
 			</setFighterVar>
-		</frame>
+		</setUp>
 		<frame number="1">
 			<setFrame>1</setFrame>
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
 		</frame>
 	</NeutralAction>
 	
@@ -87,22 +84,22 @@
 		<length>6</length>
 		<sprite>land</sprite>
 		<sprite_rate>3</sprite_rate>
-		<frame number="0">
+		<setUp>
 			<setFighterVar var="sideSpecialUses">
 				<value type="int">1</value>
 			</setFighterVar>
-		</frame>
+		</setUp>
 	</Land>
 	
 	<HelplessLand>
 		<length>6</length>
 		<sprite>land</sprite>
 		<sprite_rate>3</sprite_rate>
-		<frame number="0">
+		<setUp>
 			<setFighterVar var="sideSpecialUses">
 				<value type="int">1</value>
 			</setFighterVar>
-		</frame>
+		</setUp>
 	</HelplessLand>
 	
 	<PlatformDrop>
@@ -265,10 +262,6 @@
 		<length>24</length>
 		<sprite>nair</sprite>
 		<sprite_rate>0</sprite_rate>
-
-		<vars>
-			<wavedash_lag type="int">8</wavedash_lag>
-		</vars>
 		
 		<frame number="4">
 			<changeSubimage>2</changeSubimage>
@@ -282,39 +275,33 @@
 		<length>1</length>
 		<sprite>jump</sprite>
 		<sprite_rate>0</sprite_rate>
-		<frame number="0">
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
-		</frame>
 	</LedgeGrab>
 	
 	
 	<HitStun>
 		<length>1</length>
 		<sprite>jump</sprite>
-		
-		<frame number="0">
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
-		</frame>
 	</HitStun>
 
 	<Tumble>
 		<length>1</length>
 		<sprite>jump</sprite>
+		<setUp>
+			<setFighterVar var="sideSpecialUses">
+				<value type="int">1</value>
+			</setFighterVar>
+		</setUp>
 	</Tumble>
 	
 	<Prone>
 		<length>40</length>
 		<sprite>land</sprite>
 		<sprite_rate>2</sprite_rate>
-		<frame number="0">
+		<setUp>
 			<setFighterVar var="sideSpecialUses">
 				<value type="int">1</value>
 			</setFighterVar>
-		</frame>
+		</setUp>
 		
 		<frame number="6">
 			<changeSubimage>3</changeSubimage>
@@ -326,11 +313,11 @@
 		<sprite>land</sprite>
 		<sprite_rate>2</sprite_rate>
 		
-		<frame number="0">
+		<setUp>
 			<setFighterVar var="sideSpecialUses">
 				<value type="int">1</value>
 			</setFighterVar>
-		</frame>
+		</setUp>
 		
 		<frame number="6">
 			<changeSubimage>3</changeSubimage>
@@ -341,11 +328,11 @@
 		<length>1</length>
 		<sprite>idle</sprite>
 		<sprite_rate>0</sprite_rate>
-		<frame number="0">
+		<setUp>
 			<setFighterVar var="sideSpecialUses">
 				<value type="int">1</value>
 			</setFighterVar>
-		</frame>
+		</setUp>
 	</Respawn>
 	
 	<Stunned>
@@ -389,11 +376,11 @@
 		<length>1</length>
 		<sprite>idle</sprite>
 		<sprite_rate>0</sprite_rate>
-		
+
 		<setUp>
-			<setFighterVariable var="sideSpecialUses">
+			<setFighterVar var="sideSpecialUses">
 				<value type="int">1</value>
-			</setFighterVariable>
+			</setFighterVar>
 		</setUp>
 	</Trapped>
 	

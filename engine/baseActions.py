@@ -5,6 +5,7 @@ import pygame
 import math
 import random
 import settingsManager
+import numpy
 
 class Move(action.Action):
     def __init__(self,_length=1):
@@ -1210,17 +1211,23 @@ class AirDodge(action.Action):
         action.Action.setUp(self, _actor)
         self.start_invuln_frame = 4
         self.end_invuln_frame = 20
-        self.wavedash_lag = 8
         self.move_vec = [0,0]
         
         if settingsManager.getSetting('airDodgeType') == 'directional':
             self.move_vec = _actor.getSmoothedInput(int(_actor.key_bindings.timing_window['smoothing_window']))
             _actor.change_x = self.move_vec[0]*_actor.var['dodge_speed']
             _actor.change_y = self.move_vec[1]*_actor.var['dodge_speed']
+        if not settingsManager.getSetting('freeDodgeSpecialFall') and settingsManager.getSetting('airDodgeType') == 'directional':
+            _actor.airdodges = 0
+
+        if settingsManager.getSetting('enableWavedash'):
+            _actor.updateLandingLag(_actor.var['wavedash_lag'])
+        else:
+            _actor.updateLandingLag(int(settingsManager.getSetting('airDodgeLag')))
         
     def tearDown(self,_actor,_nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        if settingsManager.getSetting('airDodgeType') == 'directional':
+        if settingsManager.getSetting('airDodgeType') == 'directional' and not isinstance(_nextAction, AirGrab):
             _actor.preferred_yspeed = _actor.var['max_fall_speed']
             _actor.preferred_xspeed = 0
         if _actor.mask: _actor.mask = None
@@ -1229,11 +1236,6 @@ class AirDodge(action.Action):
     
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
-        if self.frame == 0:
-            if settingsManager.getSetting('enableWavedash'):
-                _actor.updateLandingLag(self.wavedash_lag)
-            else:
-                _actor.updateLandingLag(int(settingsManager.getSetting('airDodgeLag')))
         if _actor.grounded:
             if not settingsManager.getSetting('enableWavedash'):
                 _actor.change_x = 0
@@ -1252,7 +1254,8 @@ class AirDodge(action.Action):
                 _actor.preferred_yspeed = 0
             elif self.frame == self.last_frame:
                 _actor.preferred_yspeed = _actor.var['max_fall_speed']
-
+        if _actor.keyHeld('attack') and self.frame < 8:
+            _actor.doAction('AirGrab')
         if self.frame == 6:
             _actor.updateLandingLag(settingsManager.getSetting('airDodgeLag'))
         if self.frame == self.start_invuln_frame:
@@ -1320,6 +1323,7 @@ class LedgeGrab(BaseLedge):
     def update(self, _actor):
         BaseLedge.update(self, _actor)
         _actor.jumps = _actor.var['jumps']
+        _actor.airdodges = 1
         if self.ledge.side == 'left':
             if _actor.facing == -1:
                 _actor.flip()
@@ -1537,13 +1541,38 @@ class DashGrab(BaseAttack):
         BaseAttack.__init__(self, _length)
 
 class AirGrab(AirAttack):
-    def __init__(self,_length=0):
+    def __init__(self, _length=0):
         AirAttack.__init__(self, _length)
+        
+    def setUp(self,_actor):
+        AirAttack.setUp(self,_actor)
+        if not settingsManager.getSetting('freeDodgeSpecialFall') and settingsManager.getSetting('airDodgeType') == 'directional':
+            _actor.airdodges = 0
 
-    def update(self, _actor):
-        if self.frame == self.last_frame and not _actor.grounded:
-            _actor.doAction('Helpless')
+        if settingsManager.getSetting('enableWavedash'):
+            _actor.updateLandingLag(_actor.var['wavedash_lag'])
+        else:
+            _actor.updateLandingLag(int(settingsManager.getSetting('airDodgeLag')))
+        
+    def tearDown(self,_actor,_nextAction):
+        AirAttack.tearDown(self, _actor, _nextAction)
+        if settingsManager.getSetting('airDodgeType') == 'directional':
+            _actor.preferred_yspeed = _actor.var['max_fall_speed']
+            _actor.preferred_xspeed = 0
+    
+    def stateTransitions(self, _actor):
+        AirAttack.stateTransitions(self, _actor)
+        if _actor.grounded:
+            if not settingsManager.getSetting('enableWavedash'):
+                _actor.change_x = 0
+                
+    def update(self,_actor):
         AirAttack.update(self, _actor)
+        if self.frame == self.last_frame:
+            if settingsManager.getSetting('freeDodgeSpecialFall'):
+                _actor.doAction('Helpless')
+            else:
+                _actor.doAction('Fall')
         
 class BaseThrow(BaseGrab):
     def __init__(self,_length=1):
@@ -1715,7 +1744,7 @@ def airState(_actor):
     if _actor.change_x > 0 and _actor.facing == -1 and _actor.keyBuffered('right', 1) and _actor.keyBuffered('right', int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6, 1):
         _actor.flip()
         print ("Reverse")
-    if _actor.keyHeld('shield'):
+    if _actor.keyHeld('shield') and _actor.airdodges == 1:
         _actor.doAction('AirDodge')
     elif _actor.keyHeld('attack'):
         if _actor.keysContain('shield'):
@@ -1856,7 +1885,7 @@ def dashState(_actor):
 def jumpState(_actor):
     airControl(_actor)
     tapReversible(_actor)
-    if _actor.keyHeld('shield'):
+    if _actor.keyHeld('shield') and _actor.airdodges == 1:
         _actor.doAction('AirDodge')
     elif _actor.keyHeld('attack'):
         _actor.doAirAttack()
@@ -2037,7 +2066,7 @@ def dodgeCancellable(_actor):
         _actor.changeAction('BackwardRoll')
     elif _actor.keyBuffered('shield') and _actor.keysContain('down', 0.6) and _actor.grounded:
         _actor.changeAction('SpotDodge')
-    elif _actor.keyBuffered('shield') and (_actor.keysContain('left', 0.2) or _actor.keysContain('right', 0.2) or _actor.keysContain('up', 0.2) or _actor.keysContain('down', 0.2)) and not _actor.grounded:
+    elif numpy.linalg.norm(_actor.getSmoothedInput()) >= 0.2 and not _actor.grounded and _actor.airdodges == 1:
         _actor.changeAction('AirDodge')
         
 def autoDodgeCancellable(_actor):
@@ -2048,8 +2077,10 @@ def autoDodgeCancellable(_actor):
         _actor.changeAction('BackwardRoll')
     elif _actor.keysContain('down', 0.6) and _actor.grounded:
         _actor.changeAction('SpotDodge')
-    elif (_actor.keysContain('left', 0.2) or _actor.keysContain('right', 0.2) or _actor.keysContain('up', 0.2) or _actor.keysContain('down', 0.2)) and not _actor.grounded:
+    elif not _actor.grounded and _actor.airdodges == 1:
         _actor.changeAction('AirDodge')
+    elif not _actor.grounded:
+        _actor.changeAction('Fall')
 
 def jumpCancellable(_actor):
     if _actor.keyBuffered('jump') and _actor.grounded:

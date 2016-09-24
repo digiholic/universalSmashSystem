@@ -78,6 +78,7 @@ class AbstractFighter():
                 'short_hop_height': 8.5,
                 'air_jump_height': 15.0,
                 'heavy_land_lag': 4,
+                'wavedash_lag': 8,
                 'fastfall_multiplier': 2.0,
                 'hitstun_elasticity': .8,
                 'shield_size': 1.0
@@ -309,6 +310,7 @@ class AbstractFighter():
         self.landing_lag = 6
         self.platform_phase = 0
         self.tech_window = 0
+        self.airdodges = 1
         
         self.change_x = 0
         self.change_y = 0
@@ -529,7 +531,9 @@ class AbstractFighter():
         elif self.change_y < self.preferred_yspeed:
             diff = self.preferred_yspeed - self.change_y
             self.change_y += min(diff, _multiplier*self.var['gravity'] * settingsManager.getSetting('gravity'))
-        if self.grounded: self.jumps = self.var['jumps']
+        if self.grounded: 
+            self.jumps = self.var['jumps']
+            self.airdodges = 1
 
     def checkGround(self):
         self.sprite.updatePosition(self.rect)

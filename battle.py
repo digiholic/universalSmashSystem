@@ -8,6 +8,9 @@ import fighters.sandbag.fighter
 import engine.hitbox as hitbox
 import engine.optimize_dirty_rects
 import colorsys
+import pdb
+import io
+import string
 from cgi import log
 
 """
@@ -325,24 +328,33 @@ class Battle():
                 self.dirty_rects = []
                 pygame.display.update()
                 if debug_mode:
-                    print("Paused, press left shift key again to continue")
-                    while not debug_pass:
+                    print("Paused, press left shift key again to continue, debugger coming soon (I promise)")
+                    while debug_mode:
                         for event in pygame.event.get():
                             if event.type == pygame.QUIT:
                                 exit_status = 1
                             
                             if event.type == pygame.KEYDOWN:
                                 if event.key == pygame.K_LSHIFT:
-                                    debug_pass = True
                                     debug_mode = False
-                                elif event.key == pygame.K_RSHIFT:
-                                    debug_pass = True
+                                    debug_pass = False
+                                elif event.key == pygame.K_RETURN:
+                                    debug_mode = True
+                                    if not debug_pass:
+                                        debug_pass = True
+                                        pygame.set_repeat(500, 100)
+                                    else:
+                                        debug_pass = False
+                                elif debug_pass:
+                                    print("Hold on, debugger functionality coming soon")
+                                    debug_pass = False
+                                        
+                                        
                             
-                            for cont in self.controllers:
-                                cont.getInputs(event)
-                    
-                debug_pass = False
-            # End while loop
+                            if not debug_pass:
+                                pygame.set_repeat() #Disable
+                                for cont in self.controllers:
+                                    cont.getInputs(event)
         except:
             try:
                 import traceback
@@ -401,69 +413,64 @@ class Battle():
     battle ended.
     """    
     def endBattle(self,_exitStatus,_screen):
-        if _exitStatus == -1:
-            print("See data log for details")
-            return
-        elif _exitStatus == 1 or _exitStatus == 2:
-            result_sprites = []
-            width = settingsManager.getSetting('windowWidth')
-            height = settingsManager.getSetting('windowHeight')
-            for i in range(0,len(self.players)):
-                print(self.players)
-                print("player"+str(i))
-                fighter = self.players[i]
-                result_sprite = spriteManager.RectSprite(pygame.Rect((width / 4) * i,0,(width / 4),height), pygame.Color(settingsManager.getSetting('playerColor'+str(i))))
-                result_sprite.image.set_alpha(255)
-                name_sprite = spriteManager.TextSprite(fighter.name,_size=24)
-                name_sprite.rect.midtop = (result_sprite.rect.width / 2,0)
-                result_sprite.image.blit(name_sprite.image,name_sprite.rect.topleft)
+        if not (_exitStatus == 1 or _exitStatus == 2 or _exitStatus == 3):
+            print("An error occured that caused TUSSLE to stop working. If you can replicate this error, please file a bug report so the relevant developers can fix it. Post-mortem debugging coming soon. ")
+        result_sprites = []
+        width = settingsManager.getSetting('windowWidth')
+        height = settingsManager.getSetting('windowHeight')
+        for i in range(0,len(self.players)):
+            print(self.players)
+            print("player"+str(i))
+            fighter = self.players[i]
+            result_sprite = spriteManager.RectSprite(pygame.Rect((width / 4) * i,0,(width / 4),height), pygame.Color(settingsManager.getSetting('playerColor'+str(i))))
+            result_sprite.image.set_alpha(255)
+            name_sprite = spriteManager.TextSprite(fighter.name,_size=24)
+            name_sprite.rect.midtop = (result_sprite.rect.width / 2,0)
+            result_sprite.image.blit(name_sprite.image,name_sprite.rect.topleft)
+            
+            score = fighter.data_log.getData('KOs') - fighter.data_log.getData('Falls')
+            text = spriteManager.TextSprite('Score: ' + str(score))
+            result_sprite.image.blit(text.image,(0,32))
                 
-                score = fighter.data_log.getData('KOs') - fighter.data_log.getData('Falls')
-                text = spriteManager.TextSprite('Score: ' + str(score))
-                result_sprite.image.blit(text.image,(0,32))
-                    
-                dist = 48
-                
-                print(fighter.data_log.data)
-                for item,val in fighter.data_log.data.items():
-                    text = spriteManager.TextSprite(str(item) + ': ' + str(val))
-                    result_sprite.image.blit(text.image,(0,dist))
-                    dist += 16
-                result_sprites.append(result_sprite)
-                confirmed_list = [False] * len(result_sprites) #This pythonic hacking will make a list of falses equal to the result panels
-           
-            while 1:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        sys.exit()
-                        return -1
-                    for i in range(0,len(self.players)):
-                        controls = settingsManager.getControls(i)
-                        k = controls.getInputs(event)
-                        if k == 'attack':
-                            result_sprites[i].image.set_alpha(0)
-                            confirmed_list[i] = True
-                        elif k == 'special':
-                            result_sprites[i].image.set_alpha(255)
-                            confirmed_list[i] = False
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_RETURN:
-                            print("saving screenshot")
-                            pygame.image.save(_screen,settingsManager.createPath('screenshot.jpg'))
-                        if event.key == pygame.K_ESCAPE:
-                            return
-                                
-                _screen.fill((0,0,0))
-                for sprite in result_sprites:
-                    sprite.draw(_screen, sprite.rect.topleft, 1.0)
-                
-                if all(confirmed_list):
-                    return
-                pygame.display.flip()
-            return
-        else:
-            #Game ended in an unknown state
-            return
+            dist = 48
+            
+            print(fighter.data_log.data)
+            for item,val in fighter.data_log.data.items():
+                text = spriteManager.TextSprite(str(item) + ': ' + str(val))
+                result_sprite.image.blit(text.image,(0,dist))
+                dist += 16
+            result_sprites.append(result_sprite)
+            confirmed_list = [False] * len(result_sprites) #This pythonic hacking will make a list of falses equal to the result panels
+       
+        while 1:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+                    return -1
+                for i in range(0,len(self.players)):
+                    controls = settingsManager.getControls(i)
+                    k = controls.getInputs(event)
+                    if k == 'attack':
+                        result_sprites[i].image.set_alpha(0)
+                        confirmed_list[i] = True
+                    elif k == 'special':
+                        result_sprites[i].image.set_alpha(255)
+                        confirmed_list[i] = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        print("Saving screenshot")
+                        pygame.image.save(_screen,settingsManager.createPath('screenshot.jpg'))
+                    if event.key == pygame.K_ESCAPE:
+                        return
+                            
+            _screen.fill((0,0,0))
+            for sprite in result_sprites:
+                sprite.draw(_screen, sprite.rect.topleft, 1.0)
+            
+            if all(confirmed_list):
+                return
+            pygame.display.flip()
+        return
         
 """
 The rules object determines the battle's rules.
