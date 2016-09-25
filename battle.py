@@ -3,6 +3,7 @@ import pygame
 import settingsManager
 import spriteManager
 import sys
+import os
 import musicManager
 import fighters.sandbag.fighter
 import engine.hitbox as hitbox
@@ -138,7 +139,7 @@ class Battle():
                     
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
-                        sys.exit()
+                        os._exit(1)
                         return -1
                     
                     for cont in self.controllers:
@@ -342,7 +343,7 @@ class Battle():
                                     debug_mode = True
                                     if not debug_pass:
                                         debug_pass = True
-                                        pygame.set_repeat(500, 100)
+                                        pygame.key.set_repeat(500, 100)
                                     else:
                                         debug_pass = False
                                 elif debug_pass:
@@ -352,7 +353,7 @@ class Battle():
                                         
                             
                             if not debug_pass:
-                                pygame.set_repeat() #Disable
+                                pygame.key.set_repeat() #Disable
                                 for cont in self.controllers:
                                     cont.getInputs(event)
         except:
@@ -445,7 +446,7 @@ class Battle():
         while 1:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    sys.exit()
+                    os._exit(1)
                     return -1
                 for i in range(0,len(self.players)):
                     controls = settingsManager.getControls(i)
