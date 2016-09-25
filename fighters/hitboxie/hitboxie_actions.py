@@ -209,21 +209,15 @@ class UpSpecial(action.Action):
     
     def update(self,_actor):
         _actor.landing_lag = 10
-        if _actor.grounded:
-            _actor.accel(_actor.var['static_grip'])
-        else:
-            _actor.accel(_actor.var['air_control'])
         if self.frame <= 30:
             _actor.unRotate()
             _actor.change_x = 0
             _actor.change_y = 0
-            if (_actor.getSmoothedInput() == [0, 0]):
-                self.angle = 90
-            else:
-                self.angle = math.atan2(-_actor.getSmoothedInput()[1], _actor.getSmoothedInput()[0])*180.0/math.pi
+            
+            self.angle = _actor.getSmoothedAngle(90)
             direction = abstractFighter.getXYFromDM(self.angle, 1.0)
-            print('direction: ',direction)
             _actor.rotateSprite(self.angle)
+            
         if self.frame == 0:
             _actor.playSound('slingsquare')
         if self.frame == 3:
@@ -236,6 +230,7 @@ class UpSpecial(action.Action):
             _actor.changeSpriteImage(8)
         if self.frame == 15:
             _actor.changeSpriteImage(9)
+            
         if self.frame == 30:
             self.launchHitbox.trajectory = self.angle
             self.flyingHitbox.trajectory = self.angle
@@ -246,6 +241,7 @@ class UpSpecial(action.Action):
             _actor.change_x = direction[0] * 20
             _actor.preferred_xspeed = _actor.var['max_air_speed'] * direction[0]
             _actor.change_y = direction[1] * 20
+            
         if self.frame == 31:
             self.launchHitbox.kill()
             _actor.active_hitboxes.add(self.flyingHitbox)

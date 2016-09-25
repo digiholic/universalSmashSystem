@@ -883,7 +883,7 @@ class AbstractFighter():
         
     def rotateSprite(self,_direction):
         self.sprite.rotate(-1 * (90 - _direction)) 
-            
+        
     def unRotate(self):
         self.sprite.rotate()
         
@@ -1197,7 +1197,20 @@ class AbstractFighter():
             smoothed_x /= final_magnitude/_maxMagnitude
             smoothed_y /= final_magnitude/_maxMagnitude
         return [smoothed_x, smoothed_y]
-        
+    
+    """
+    Returns the angle that the smoothedInput currently points to. 0 being forward, 90 being up
+    @_default: What to return if input is [0,0]
+    """    
+    def getSmoothedAngle(self,_default=90):
+        inputValue = self.getSmoothedInput()
+        print(inputValue)
+        if (inputValue == [0, 0]):
+            angle =  _default
+        else:
+            angle = math.atan2(-inputValue[1], inputValue[0])*180.0/math.pi
+        print('ANGLE:',angle)
+        return angle
     
     """
     This function checks if the player has Smashed in a direction. It does this by noting if the direction was

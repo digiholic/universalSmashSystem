@@ -2197,14 +2197,170 @@
 		</frame>
 	</BackThrow>
 	
-	<!-- Code Actions, TODO: pls fix -->
-	
+	<!-- Code Actions, TODO: pls fix
 	<UpSpecial>
 		<loadCodeAction>
 			<file>hitboxie_actions.py</file>
 			<action>UpSpecial</action>
 		</loadCodeAction>
+		
+		
+	</UpSpecial> -->
+	
+	<UpSpecial>
+		
+		<length>32</length>
+		<sprite>dsmash</sprite>
+		<sprite_rate>0</sprite_rate>
+		
+		<vars>
+			<angle type="int">90</angle>
+		</vars>
+		
+		<setUp>
+			<createHitbox>
+				<name>launchHitbox</name>
+				<center>0,0</center>
+				<size>64,64</size>
+				<damage>14</damage>
+				<base_knockback>12</base_knockback>
+				<knockback_growth>0.1</knockback_growth>
+				<trajectory>90</trajectory>
+				<hitstun_multiplier>2.8</hitstun_multiplier>
+			</createHitbox>
+		</setUp>
+		
+		
+		<frame number="before">
+			<updateLandingLag>10</updateLandingLag>
+			<unrotate />
+			
+			<changeFighterSpeed>
+				<xSpeed>0</xSpeed>
+				<ySpeed>0</ySpeed>
+			</changeFighterSpeed>
+			
+			<!-- Store the angle, since we use it in multiple places -->
+			<setVar source="action">
+				<variable>angle</variable>
+				<value type="int">
+					<function>
+						<functionName>getSmoothedAngle</functionName>
+					</function>
+				</value>
+			</setVar>
+			
+			<rotateSprite>
+				<var source="action">angle</var>
+			</rotateSprite>
+			
+		</frame>
+		
+		<frame number="0">
+			<playSound>slingsquare</playSound>
+		</frame>
+		<frame number="3">
+			<changeSubimage>5</changeSubimage>
+		</frame>
+		<frame number="6">
+			<changeSubimage>6</changeSubimage>
+		</frame>
+		<frame number="9">
+			<changeSubimage>7</changeSubimage>
+		</frame>
+		<frame number="12">
+			<changeSubimage>8</changeSubimage>
+		</frame>
+		<frame number="15">
+			<changeSubimage>9</changeSubimage>
+		</frame>
+		
+		<frame number="30">
+			<modifyHitbox name="launchHitbox">
+				<trajectory>
+					<var source="action">angle</var>
+				</trajectory>
+			</modifyHitbox>
+			<modifyHitbox name="flyingHitbox">
+				<trajectory>
+					<var source="action">angle</var>
+				</trajectory>
+			</modifyHitbox>
+			
+			<changeECB>
+				<size>92,92</size>
+			</changeECB>
+		</frame>
+		
+		<frame number="31">
+			<deactivateHitbox>launchHitbox</deactivateHitbox>
+			
+			<changeFighterSpeed>
+				<direction><var source="action">angle</var></direction>
+				<magnitude>20</magnitude>
+			</changeFighterSpeed>
+			
+			<doAction>UpSpecialFlight</doAction>
+		</frame>
 	</UpSpecial>
+	
+	<!-- This is going to make animating the flight much easier -->
+	<UpSpecialFlight>
+		<base>BaseAttack</base>
+		<length>50</length>
+		<sprite>airjump</sprite>
+		<sprite_rate>2</sprite_rate>
+		<loop>True</loop>
+		
+		<setUp>
+			<createHitbox>
+				<name>flyingHitbox</name>
+				<center>0,0</center>
+				<size>64,64</size>
+				<damage>8</damage>
+				<base_knockback>10</base_knockback>
+				<knockback_growth>0.05</knockback_growth>
+				<trajectory>90</trajectory>
+				<hitstun_multiplier>2</hitstun_multiplier>
+			</createHitbox>
+			
+			<activateHitbox>flyingHitbox</activateHitbox>
+		</setUp>
+		
+		<tearDown>
+			<unrotate />
+		</tearDown>
+		
+		<transitions>
+			<transitionState>grabLedges</transitionState>
+			
+			<if function="&gt;=">
+				<variable source="action">frame</variable>
+				<value type="int">26</value>
+				<pass>control</pass>
+			</if>
+		</transitions>
+		
+		<frame number="before">
+			<updateHitbox>flyingHitbox</updateHitbox>
+		</frame>
+		
+		<frame number="26">
+			<deactivateHitbox>flyingHitbox</deactivateHitbox>
+		</frame>
+		
+		<frame number="49">
+			<doAction>Helpless</doAction>
+		</frame>
+		
+		<conditional name="control">
+			<changeFighterPreferredSpeed>
+				<ySpeed><var source="actor">max_fall_speed</var></ySpeed>
+			</changeFighterPreferredSpeed>
+			<transitionState>airControl</transitionState>
+		</conditional>
+		
+	</UpSpecialFlight>
 	
 	<GroundGrab>
 		<length>30</length>
