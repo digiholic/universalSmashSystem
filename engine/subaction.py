@@ -28,10 +28,8 @@ def parseData(_data,_type="string",_default=None):
         else: source = 'actor'
         
         return VarData(source,varTag.text)
-    
     if _data.find('function') is not None:
         funcTag = _data.find('function')
-        
         if funcTag.attrib.has_key('source'): source = funcTag.attrib['source']
         else: source = 'actor'
         
@@ -67,7 +65,7 @@ class VarData():
     def __init__(self,_source,_var):
         self.source = _source
         self.var = _var
-    
+        
     def unpack(self,_action,_actor):
         if self.source == 'actor':
             if _actor.var.has_key(self.var):
@@ -94,9 +92,10 @@ class FuncData():
         self.source = _source
         self.functionName = _functionName
         self.args = _args
-        print(self.source,self.functionName,self.args)
         
     def unpack(self,_action,_actor):
+        print(self.source,self.functionName,self.args)
+        
         for argname,arg in self.args.iteritems():
             if isinstance(arg, FuncData) or isinstance(arg, VarData):
                 self.args[argname] = arg.unpack(_action,_actor)
@@ -180,29 +179,38 @@ class NodeMap():
                 nodePath = nodeList[0]
                 if len(nodePath) > 1: #If we've hit an attribute
                     if _rootNode.attrib.has_key(nodePath[1]):
+                        _subAction.defaultVars[self.variableName] = self.getTypeFromData(_rootNode.attrib[nodePath[1]])
                         setattr(_subAction, self.variableName, self.getTypeFromData(_rootNode.attrib[nodePath[1]]))
-                    else: setattr(_subAction, self.variableName, self.defaultValue)
-                    
+                    else:
+                        _subAction.defaultVars[self.variableName] = self.defaultValue
+                        setattr(_subAction, self.variableName, self.defaultValue)
                     return
                 else:
+                    _subAction.defaultVars[self.variableName] = parseData(_rootNode, self.variableType, self.defaultValue)
                     setattr(_subAction, self.variableName, parseData(_rootNode, self.variableType, self.defaultValue))
                     return
                 
             for nodePath in nodeList[1:]: #iterate through everything else
                 currentPosition = currentPosition.find(nodePath[0])
                 if currentPosition is None: #If we hit a dead end
+                    _subAction.defaultVars[self.variableName] = self.defaultValue
                     setattr(_subAction,self.variableName,self.defaultValue)
                     return
                 if len(nodePath) > 1: #If we've hit an attribute
                     if currentPosition.attrib.has_key(nodePath[1]):
+                        _subAction.defaultVars[self.variableName] = self.getTypeFromData(currentPosition.attrib[nodePath[1]])
                         setattr(_subAction, self.variableName, self.getTypeFromData(currentPosition.attrib[nodePath[1]]))
-                    else: setattr(_subAction, self.variableName, self.defaultValue)
+                    else:
+                        _subAction.defaultVars[self.variableName] = self.defaultValue
+                        setattr(_subAction, self.variableName, self.defaultValue)
                     return
                 
             #If we leave the loop and haven't exited, we didn't hit an attrib either.
+            _subAction.defaultVars[self.variableName] = parseData(currentPosition, self.variableType, self.defaultValue)
             setattr(_subAction, self.variableName, parseData(currentPosition, self.variableType, self.defaultValue))
             return
         
+        _subAction.defaultVars[self.variableName] = self.defaultValue
         setattr(_subAction,self.variableName,self.defaultValue)
         return
         #Iterate through list, scanning nodes as you go
@@ -273,15 +281,14 @@ class SubAction():
     fields = []
     
     def __init__(self):
-        pass
+        self.defaultVars = dict()
     
     def execute(self, _action, _actor):
-        for field in self.fields:
-            if hasattr(self, field.variableName):
-                variable = getattr(self, field.variableName)
-                if isinstance(variable, VarData) or isinstance(variable, FuncData):
-                    setattr(self,field.variableName,variable.unpack(_action,_actor))
-                
+        print(self.defaultVars)
+        for tag,variable in self.defaultVars.iteritems():
+            if isinstance(variable, VarData) or isinstance(variable, FuncData):
+                setattr(self, tag, variable.unpack(_action,_actor))
+                print(getattr(self, tag))   
     
     def getDisplayName(self):
         return ''
@@ -320,6 +327,7 @@ class If(SubAction):
               ]
     
     def __init__(self,_variable='',_source='action',_function='==',_value='True',_ifActions='',_elseActions=''):
+        SubAction.__init__(self)
         self.variable = _variable
         self.source = _source
         self.function = _function
@@ -401,6 +409,7 @@ class ifButton(SubAction):
     subact_group = 'Control'
     
     def __init__(self,_button='',_check='keyBuffered',_bufferFrom=0,_bufferTo=0,_threshold=0.1,_ifActions='',_elseActions='',_beyondAction=False):
+        SubAction.__init__(self)
         self.button = _button
         self.check = _check
         self.buffer_from = _bufferFrom
@@ -699,36 +708,45 @@ class changeFighterSpeed(SubAction):
               NodeMap('x_relative','bool','changeFighterSpeed>xSpeed|relative',False),
               NodeMap('speed_y','float','changeFighterSpeed>ySpeed',None),
               NodeMap('y_relative','bool','changeFighterSpeed>ySpeed|relative',False),
+              NodeMap('direction','int','changeFighterSpeed>direction',None),
+              NodeMap('magnitude','float','changeFighterSpeed>magnitude',None),
               ]
     
-    def __init__(self,_speedX = None, _speedY = None, _xRelative = False, _yRelative = False):
+    def __init__(self,_speedX = None, _speedY = None, _xRelative = False, _yRelative = False, _direction = None, _magnitude = None):
         SubAction.__init__(self)
         self.speed_x = _speedX
         self.speed_y = _speedY
         self.x_relative = _xRelative
         self.y_relative = _yRelative
+        self.direction = _direction
+        self.magnitude = _magnitude
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        if self.speed_x is not None:
-            if type(self.speed_x) is tuple:
-                owner,value = self.speed_x
-                if owner == 'actor':
-                    self.speed_x = _actor.var[value]
-                elif owner == 'action':
-                    self.speed_x = getattr(self, value)
-            if self.x_relative: _actor.change_x = self.speed_x*_actor.facing
-            else: _actor.change_x = self.speed_x
-        
-        if self.speed_y is not None:
-            if type(self.speed_y) is tuple:
-                owner,value = self.speed_y
-                if owner == 'actor':
-                    self.speed_y = _actor.var[value]
-                elif owner == 'action':
-                    self.speed_y = getattr(self, value)
-            if self.y_relative:_actor.change_y += self.speed_y
-            else: _actor.change_y = self.speed_y
+        if self.direction is not None and self.magnitude is not None:
+            x,y = settingsManager.getXYFromDM(self.direction,self.magnitude)
+            _actor.change_x = x
+            _actor.change_y = y    
+        else:
+            if self.speed_x is not None:
+                if type(self.speed_x) is tuple:
+                    owner,value = self.speed_x
+                    if owner == 'actor':
+                        self.speed_x = _actor.var[value]
+                    elif owner == 'action':
+                        self.speed_x = getattr(self, value)
+                if self.x_relative: _actor.change_x = self.speed_x*_actor.facing
+                else: _actor.change_x = self.speed_x
+            
+            if self.speed_y is not None:
+                if type(self.speed_y) is tuple:
+                    owner,value = self.speed_y
+                    if owner == 'actor':
+                        self.speed_y = _actor.var[value]
+                    elif owner == 'action':
+                        self.speed_y = getattr(self, value)
+                if self.y_relative:_actor.change_y += self.speed_y
+                else: _actor.change_y = self.speed_y
         
         
     def getPropertiesPanel(self, _root):
@@ -915,6 +933,7 @@ class updateLandingLag(SubAction):
               ]
     
     def __init__(self,_newLag=0,_reset = False):
+        SubAction.__init__(self)
         self.new_lag = _newLag
         self.reset = _reset
         
@@ -988,7 +1007,6 @@ class setVar(SubAction):
         if self.source == 'action': source = _action
         elif self.source == 'fighter': source = _actor
         
-        print(self.attr,self.source,self.val,self.relative)
         if not self.attr =='': #If there's a variable to set
             if hasattr(source, 'var') and source.var.has_key(self.attr): #if it has a var dict, let's check it first
                 if self.relative: source.var[self.attr] += self.val
@@ -1201,7 +1219,9 @@ class modifyHitbox(SubAction):
             if hitbox:
                 for name,value in self.hitbox_vars.iteritems():
                     if hasattr(hitbox, name):
-                        setattr(hitbox, name, value)
+                        if isinstance(value, VarData) or isinstance(value, FuncData):
+                            setattr(hitbox, name, value.unpack(_action,_actor))
+                        else: setattr(hitbox, name, value)
         
     def getDisplayName(self):
         return 'Modify Hitbox: ' + str(self.hitbox_name)
@@ -1233,16 +1253,20 @@ class modifyHitbox(SubAction):
         for child in _node:
             tag = child.tag
             val = child.text
+            
             #special cases
             if tag in tuple_type:
-                hitbox_vars[tag] = make_tuple(val)
+                _type = 'tuple'
             elif tag in float_type:
-                hitbox_vars[tag] = float(val)
+                _type = 'float'
             elif tag in int_type:
-                hitbox_vars[tag] = int(val)
+                _type = 'int'
             elif tag in boolean_type:
-                hitbox_vars[tag] = bool(val)
-        
+                _type = 'bool'
+            
+            val = parseData(child, _type, None)
+            hitbox_vars[tag] = val
+            
         return modifyHitbox(hitbox_name,hitbox_vars)
         
 class activateHitbox(SubAction):
@@ -1596,6 +1620,32 @@ class executeCode(SubAction):
         SubAction.execute(self, _action, _actor)
         exec(self.codeString)
     
+class rotateSprite(SubAction):
+    subact_group = 'Sprite'
+    fields = [NodeMap('angle', 'int', 'rotateSprite', 0)]
+    
+    def __init__(self):
+        SubAction.__init__(self)
+        self.angle = 0
+        
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+        _actor.rotateSprite(self.angle)
+    
+    def getDisplayName(self):
+        return 'Rotate Sprite ' + self.angle + ' degrees'
+            
+class unrotateSprite(SubAction):
+    subact_group = 'Sprite'
+    fields = []
+    
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+        _actor.unRotate()
+        
+    def getDisplayName(self):
+        return 'Unrotate Sprite'
+    
 subaction_dict = {
                  #Control Flow
                  'setFrame': changeActionFrame,
@@ -1613,6 +1663,8 @@ subaction_dict = {
                  'changeSubimage': changeFighterSubimage,
                  'shiftSprite': shiftSpritePosition,
                  'flip': flip,
+                 'rotateSprite': rotateSprite,
+                 'unrotate': unrotateSprite,
                  
                  #Behavior
                  'shiftPosition': shiftFighterPosition,

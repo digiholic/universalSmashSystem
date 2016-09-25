@@ -5,6 +5,7 @@ import os
 import sys
 import imp
 import engine.controller
+import math
 try:
     from configparser import SafeConfigParser
 except ImportError:
@@ -535,6 +536,16 @@ Main method for debugging purposes
 def test():
     print(getSetting().setting)
     
+
+"""
+A helper function to get the X and Y magnitudes from the Direction and Magnitude of a trajectory
+"""
+def getXYFromDM(_direction,_magnitude):
+    rad = math.radians(_direction)
+    x = round(math.cos(rad) * _magnitude,5)
+    y = -round(math.sin(rad) * _magnitude,5)
+    return (x,y)
+
 
 if __name__  == '__main__': test()
 
