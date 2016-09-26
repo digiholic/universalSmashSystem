@@ -7,11 +7,13 @@ import os
 import musicManager
 import fighters.sandbag.fighter
 import engine.hitbox as hitbox
+import menu.debugConsole as debugConsole
 import engine.optimize_dirty_rects
 import colorsys
 import pdb
 import io
 import string
+import menu
 from cgi import log
 
 """
@@ -38,12 +40,14 @@ class Battle():
         self.stage = _stage
         self.input_buffer = None
         self.data_logs = []
+
         
         #TODO bring over InputBuffer from fighter.
         random.seed
         self.random_state = random.getstate
         
     def startBattle(self,_screen): 
+        debug_console = debugConsole.debugConsole(_screen)
         # Try block to catch any and every error
         try:
             # Fill background
@@ -329,26 +333,33 @@ class Battle():
                 self.dirty_rects = []
                 pygame.display.update()
                 if debug_mode:
-                    print("Paused, press left shift key again to continue, debugger coming soon (I promise)")
+                    print("Paused, press left shift key again to continue, press tab to get a really buggy debugger")
                     while debug_mode:
+                        if debug_pass:
+                            debug_console.display(_screen)
                         for event in pygame.event.get():
                             if event.type == pygame.QUIT:
                                 exit_status = 1
+                                debug_mode = False
+                                debug_pass = False
                             
-                            if event.type == pygame.KEYDOWN:
-                                if event.key == pygame.K_LSHIFT:
+                            if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+                                if event.key == pygame.K_LSHIFT and event.type == pygame.KEYDOWN:
                                     debug_mode = False
                                     debug_pass = False
-                                elif event.key == pygame.K_RETURN:
+                                elif event.key == pygame.K_TAB and event.type == pygame.KEYUP:
                                     debug_mode = True
                                     if not debug_pass:
+                                        print("Entered debug console")
                                         debug_pass = True
                                         pygame.key.set_repeat(500, 100)
                                     else:
+                                        print("Exited debug console")
                                         debug_pass = False
+                                        pygame.key.set_repeat()
                                 elif debug_pass:
-                                    print("Hold on, debugger functionality coming soon")
-                                    debug_pass = False
+                                    print("Passing input to debug console: " + str(event.key))
+                                    debug_console.acceptInput(event)
                                         
                                         
                             
