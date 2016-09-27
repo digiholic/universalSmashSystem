@@ -66,7 +66,7 @@ class AbstractFighter():
                 'run_speed': 11.0,
                 'max_air_speed': 5.5,
                 'aerial_transition_speed': 9.0,
-                'crawl_speed': 2.5,
+                'crawl_speed': 0,
                 'dodge_speed': 10.0,
                 'friction': 0.3,
                 'static_grip': 0.3,
@@ -84,14 +84,16 @@ class AbstractFighter():
                 'shield_size': 1.0
                 }
         
+        self.defaultAttr = dict()
         try:
             for stat in self.xml_data.find('stats'):
                 vartype = type(self.var[stat.tag]).__name__
-                if vartype == 'int': self.var[stat.tag] = int(stat.text)
-                if vartype == 'float': self.var[stat.tag] = float(stat.text)
+                if vartype == 'int': self.defaultAttr[stat.tag] = int(stat.text)
+                if vartype == 'float': self.defaultAttr[stat.tag] = float(stat.text)
                 
-        except: pass
+        except: self.defaultAttr = self.var.copy()
         
+        self.defaultVar = dict()
         try:
             for var in self.xml_data.find('variables'):
                 vartype = 'string'
@@ -100,7 +102,7 @@ class AbstractFighter():
                 if vartype == 'int': val = int(val)
                 elif vartype == 'float': val = float(val)
                 elif vartype == 'bool': val = bool(val)
-                setattr(self, var.tag, val)
+                self.defaultVar[var.tag] = val
         except: pass
         
         try:
@@ -299,6 +301,11 @@ class AbstractFighter():
             
         self.hurtbox = hitbox.Hurtbox(self,self.sprite.bounding_rect,[255,255,0])
         
+        # Set the attributes and variables
+        self.var = self.defaultAttr.copy()
+        for tag,val in self.defaultVar.iteritems():
+            setattr(self, tag, val)
+            
         #state variables and flags
         self.angle = 0
         self.grounded = False
