@@ -14,6 +14,7 @@ import pdb
 import io
 import string
 import menu
+import inspect
 from cgi import log
 
 """
@@ -47,7 +48,11 @@ class Battle():
         self.random_state = random.getstate
         
     def startBattle(self,_screen): 
-        debug_console = debugConsole.debugConsole(_screen)
+        debugger = pdb.Pdb()
+        debugger.reset()
+        debugger.set_continue()
+        debugger.set_trace = lambda: None
+        debug_console = debugConsole.debugConsole(_screen, self)
         # Try block to catch any and every error
         try:
             # Fill background
@@ -337,6 +342,7 @@ class Battle():
                     while debug_mode:
                         if debug_pass:
                             debug_console.display(_screen)
+                            pygame.display.update()
                         for event in pygame.event.get():
                             if event.type == pygame.QUIT:
                                 exit_status = 1
