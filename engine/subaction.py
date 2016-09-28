@@ -94,8 +94,6 @@ class FuncData():
         self.args = _args
         
     def unpack(self,_action,_actor):
-        print(self.source,self.functionName,self.args)
-        
         for argname,arg in self.args.iteritems():
             if isinstance(arg, FuncData) or isinstance(arg, VarData):
                 self.args[argname] = arg.unpack(_action,_actor)
@@ -284,12 +282,10 @@ class SubAction():
         self.defaultVars = dict()
     
     def execute(self, _action, _actor):
-        print(self.defaultVars)
         for tag,variable in self.defaultVars.iteritems():
             if isinstance(variable, VarData) or isinstance(variable, FuncData):
                 setattr(self, tag, variable.unpack(_action,_actor))
-                print(getattr(self, tag))   
-    
+                
     def getDisplayName(self):
         return ''
     
@@ -433,7 +429,6 @@ class ifButton(SubAction):
         elif self.check == 'keyBuffered':
             cond = _actor.keyBuffered(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyTapped':
-            print(self.button,working_from)
             cond = _actor.keyTapped(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyHeld':
             cond = _actor.keyHeld(self.button, working_from, self.threshold, self.buffer_to)
@@ -539,7 +534,6 @@ class ifButton(SubAction):
             buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
             buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
             threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
-            print(buffer_from,buffer_to)
         elif check == 'keyHeld':
             buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
             buffer_to = int(loadNodeWithDefault(_node, 'to', 0))

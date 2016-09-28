@@ -140,7 +140,6 @@ class Stop(action.Action):
         #print(self.frame,_actor.sprite.index)
         _actor.preferred_xspeed = 0
         checkGrounded(_actor)
-        print(self.frame,self.last_frame)
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
@@ -154,8 +153,7 @@ class Stop(action.Action):
         _actor.accel(_actor.var['static_grip'])
         if isinstance(nextAction, Pivot):
             nextAction.frame = self.frame
-            print(self.frame)
-        
+            
 class RunPivot(action.Action):
     def __init__(self,length=1):
         action.Action.__init__(self, length)
@@ -529,6 +527,7 @@ class HitStun(action.Action):
         action.Action.__init__(self, _hitstun)
         self.direction = _direction
         self.do_slow_getup = False
+        self.feet_planted = True #A variable to check if we ever leave the ground
 
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="hitStun"
@@ -548,26 +547,28 @@ class HitStun(action.Action):
             _actor.elasticity = 0
         else:
             _actor.elasticity = _actor.var['hitstun_elasticity']
-        if self.last_frame > 15 and self.frame > 2:
-            if _actor.change_y >= _actor.var['max_fall_speed']: 
+        
+        if not self.feet_planted:
+            if self.last_frame > 15 and self.frame > 2:
+                if _actor.change_y >= _actor.var['max_fall_speed']: 
+                    _actor.ground_elasticity = _actor.var['hitstun_elasticity']
+                elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
+                    _actor.ground_elasticity = 0
+                    if _actor.grounded:
+                        _actor.doAction('Prone')
+                elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
+                    _actor.ground_elasticity = 0
+                    if _actor.grounded: 
+                        _actor.doAction('Prone')
+                else: 
+                    _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
+            elif self.last_frame <= 15:
+                _actor.ground_elasticity = 0
+                if _actor.grounded and self.do_slow_getup:
+                    print("Successful jab reset")
+                    _actor.doAction('SlowGetup')
+            else:
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']
-            elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
-                _actor.ground_elasticity = 0
-                if _actor.grounded:
-                    _actor.doAction('Prone')
-            elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
-                _actor.ground_elasticity = 0
-                if _actor.grounded: 
-                    _actor.doAction('Prone')
-            else: 
-                _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
-        elif self.last_frame <= 15:
-            _actor.ground_elasticity = 0
-            if _actor.grounded and self.do_slow_getup:
-                print("Successful jab reset")
-                _actor.doAction('SlowGetup')
-        else:
-            _actor.ground_elasticity = _actor.var['hitstun_elasticity']
         
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
@@ -579,6 +580,8 @@ class HitStun(action.Action):
         
     def update(self,_actor):
         action.Action.update(self, _actor)
+        if not _actor.grounded:
+            self.feet_planted = False
         if self.tech_cooldown > 0: self.tech_cooldown -= 1
         if self.last_frame <= 15:
             print(self.do_slow_getup)
@@ -603,10 +606,15 @@ class HitStun(action.Action):
                     
         if self.frame == self.last_frame:
             if self.last_frame > 15:
-                _actor.doAction('Tumble')
+                if _actor.grounded:
+                    _actor.doAction('NeutralAction')
+                else: _actor.doAction('Tumble')
             else:
-                _actor.landing_lag = _actor.var['heavy_land_lag']
-                _actor.doAction('Fall')
+                if _actor.grounded:
+                    _actor.doAction('NeutralAction')
+                else:
+                    _actor.landing_lag = _actor.var['heavy_land_lag']
+                    _actor.doAction('Fall')
 
         self.frame += 1
 
