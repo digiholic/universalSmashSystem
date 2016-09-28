@@ -98,7 +98,6 @@ class Hitbox(spriteManager.RectSprite):
                     self.article.onPrevail(self.owner, self, _other)
                 return True
             else:
-                _other.owner.lockHitbox(self)
                 if self.article == None:
                     self.owner.current_action.onClank(self.owner, self, _other)
                 else:

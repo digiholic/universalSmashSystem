@@ -227,8 +227,16 @@ class Battle():
                     hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner)]
                     if hitbox_clank: print(hitbox_clank)
                     for other in hitbox_clank:
+                        hbox_clank = False
+                        other_clank = False
                         if not hbox.compareTo(other):
+                            hbox_clank = True
                             print("CLANK!")
+                        if not other.compareTo(hbox):
+                            other_clank = True
+                            print("clank!")
+                        if hbox_clank: other.owner.lockHitbox(hbox)
+                        if other_clank: hbox.owner.lockHitbox(other)
                                 
                 hurtbox_hits = pygame.sprite.groupcollide(active_hitboxes, active_hurtboxes, False, False)
                 for hbox in hurtbox_hits:
