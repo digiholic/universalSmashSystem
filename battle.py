@@ -48,10 +48,6 @@ class Battle():
         self.random_state = random.getstate
         
     def startBattle(self,_screen): 
-        debugger = pdb.Pdb()
-        debugger.reset()
-        debugger.set_continue()
-        debugger.set_trace = lambda: None
         debug_console = debugConsole.debugConsole(_screen, self)
         # Try block to catch any and every error
         try:
@@ -231,63 +227,8 @@ class Battle():
                     hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner)]
                     if hitbox_clank: print(hitbox_clank)
                     for other in hitbox_clank:
-                        print('Other hitbox: '+str(other))
-                        hbox_clank = False
-                        other_clank = False
-                        hbox_prevail = False
-                        other_prevail = False
                         if not hbox.compareTo(other):
-                            if other.owner.lockHitbox(hbox) and hasattr(hbox.owner,'current_action'):
-                                hbox_clank = True
                             print("CLANK!")
-                        else:
-                            if other.owner.lockHitbox(hbox) and hasattr(hbox.owner,'current_action'):
-                                hbox_prevail = True
-                        if not other.compareTo(hbox):
-                            if hbox.owner.lockHitbox(other) and hasattr(other.owner,'current_action'):
-                                other_clank = True
-                            print("CLANK!")
-                        else:
-                            if hbox.owner.lockHitbox(other) and hasattr(other.owner,'current_action'):
-                                other_prevail = True
-                        if not isinstance(hbox, hitbox.InertHitbox) and not isinstance(other, hitbox.InertHitbox):
-                            if hbox_clank:
-                                if isinstance(hbox, hitbox.DamageHitbox) and hbox.article == None:
-                                    hbox.owner.applyPushback(hbox.base_knockback/5.0, hbox.getTrajectory()+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
-                                elif hbox.article == None:
-                                    hbox.owner.hitstop = 8
-                                if hbox.article == None:
-                                    hbox.owner.current_action.onClank(hbox.owner, hbox, other)
-                                else:
-                                    hbox.article.onClank(hbox.owner, hbox, other)
-                            if hbox_prevail:
-                                if hbox.article == None:
-                                    hbox.owner.current_action.onPrevail(hbox.owner, hbox, other)
-                                else:
-                                    hbox.article.onPrevail(hbox.owner, hbox, other)
-                            if other_clank:
-                                if isinstance(other, hitbox.DamageHitbox) and other.article == None:
-                                    other.owner.applyPushback(other.base_knockback/5.0, other.getTrajectory()+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
-                                elif other.article == None:
-                                    other.owner.hitstop = 8
-                                if other.article == None:
-                                    other.owner.current_action.onClank(other.owner, other, hbox)
-                                else:
-                                    other.article.onClank(other.owner, other, hbox)
-                            if other_prevail:
-                                if other.article == None:
-                                    other.owner.current_action.onPrevail(other.owner, other, hbox)
-                                else:
-                                    other.article.onPrevail(other.owner, other, hbox)
-                        elif hbox_clank and other_clank:
-                            if isinstance(hbox, hitbox.DamageHitbox) and hbox.article == None:
-                                hbox.owner.applyPushback(hbox.base_knockback/5.0, hbox.getTrajectory()+180, (hbox.damage/4.0+2.0)*hbox.hitlag_multiplier + 6.0)
-                            elif hbox.article == None:
-                                hbox.owner.hitstop = 8
-                            if isinstance(other, hitbox.DamageHitbox) and other.article == None:
-                                other.owner.applyPushback(other.base_knockback/5.0, other.getTrajectory()+180, (other.damage/4.0+2.0)*other.hitlag_multiplier + 6.0)
-                            elif other.article == None:
-                                other.owner.hitstop = 8
                                 
                 hurtbox_hits = pygame.sprite.groupcollide(active_hitboxes, active_hurtboxes, False, False)
                 for hbox in hurtbox_hits:

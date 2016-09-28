@@ -431,7 +431,7 @@ class AbstractFighter():
         self.current_action.update(self) #update our action
         
         if self.mask:self.mask = self.mask.update()
-        self.shield_integrity += 0.2
+        self.shield_integrity += 0.15
         if self.shield_integrity > 100: self.shield_integrity = 100
         #reset the flash if you're still invulnerable
         if not self.mask and (self.respawn_invulnerable > 0 or self.invulnerable > 0):
@@ -870,6 +870,7 @@ class AbstractFighter():
 
     def applyPushback(self, _kb, _trajectory, _hitlag):
         self.hitstop = math.floor(_hitlag*settingsManager.getSetting('hitlag'))
+        print(self.hitstop)
         (x, y) = getXYFromDM(_trajectory, _kb)
         self.change_x += x
         if not self.grounded:
@@ -987,21 +988,6 @@ class AbstractFighter():
     
     def startShield(self):
         self.articles.add(article.ShieldArticle(settingsManager.createPath("sprites/melee_shield.png"),self))
-        
-    def shieldDamage(self,_damage,_knockback,_hitlagMultiplier):
-        if self.shield_integrity > 0:
-            self.shield_integrity -= _damage
-            if _damage > 1:
-                self.doAction('ShieldStun')
-                print(self.current_action)
-                self.hitstop = math.floor((self.damage / 4.0 + 2.0)*_hitlagMultiplier*settingsManager.getSetting('hitlag'))
-                self.change_x = _knockback
-                self.current_action.last_frame = math.floor(_damage*3/4.0*settingsManager.getSetting('shieldStun'))
-        else:
-            self.change_y = -15
-            self.invulnerable = 20
-            self.shield_integrity = 100
-            self.doStunned(400)
     
     def updateLandingLag(self,_lag,_reset=False):
         if _reset: self.landing_lag = _lag

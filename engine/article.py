@@ -229,7 +229,11 @@ class ShieldArticle(Article):
 
     def onPrevail(self, _actor, _hitbox, _other):
         if _hitbox == self.main_hitbox and self.frame > 2 and (isinstance(_other, hitbox.DamageHitbox) and not _other.ignore_shields):
-            _actor.shieldDamage(math.floor(_other.damage*_other.shield_multiplier), _other.base_knockback/5.0*math.cos(math.radians(_other.trajectory)), _other.hitlag_multiplier)
+            _actor.doAction('SheildStun')
+            _actor.shield_integrity -= _other.damage*_other.shield_multiplier
+            _actor.hitstop = math.floor((_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier*settingsManager.getSetting('hitlag'))
+            _actor.change_x = _other.base_knockback/5.0*math.cos(math.radians(_other.trajectory))
+            _actor.current_action.last_frame = math.floor((_other.damage*_other.shield_multiplier*3/4.0+_other.base_hitstun//5)*settingsManager.getSetting('shieldStun'))
         elif _hitbox == self.parry_hitbox and _other.article is None and (isinstance(_other, hitbox.DamageHitbox) or isinstance(_other, hitbox.GrabHitbox)):
             print("Successful parry!")
             _actor.doAction('NeutralAction')
@@ -269,7 +273,7 @@ class ShieldArticle(Article):
         self.reflect_hitbox.update()
         self.main_hitbox.update()
         self.parry_hitbox.update() 
-        self.owner.shieldDamage(0.8, 0, 0)
+        self.owner.shield_integrity -= 1
         self.frame += 1       
    
     def draw(self,_screen,_offset,_scale):
