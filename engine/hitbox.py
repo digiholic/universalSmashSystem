@@ -255,10 +255,6 @@ class GrabHitbox(Hitbox):
     def __init__(self,_owner,_lock,_variables):
         Hitbox.__init__(self, _owner, _lock, _variables)
         self.hitbox_type = 'grab'
-        import engine.subaction as subaction
-        import engine.baseActions as baseActions
-        self.owner_on_hit_actions.append(subaction.doAction('Grabbing'))
-        self.other_on_hit_actions.append(subaction.doAction('Grabbed'))
 
     def doGrab(self, _opponent):
         self.owner.doAction('Grabbing')
@@ -269,7 +265,7 @@ class GrabHitbox(Hitbox):
         if 'AbstractFighter' in list(map(lambda x:x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if self.article is None:
                 self.owner.grabbing = _other
-                _other.grabbed_by = self
+                _other.grabbed_by = self.owner
                 self.doGrab(_other)
             #TODO: Add functionality for article command grabs
                 
@@ -277,9 +273,9 @@ class GrabHitbox(Hitbox):
         if Hitbox.compareTo(self, _other):
             if not isinstance(_other, InertHitbox) and not isinstance(_other, InvulnerableHitbox) and not self.ignore_shields:
                 if self.article is None:
-                    self.owner.grabbing = _other
-                    _other.grabbed_by = self
-                    self.doGrab(_other)
+                    self.owner.grabbing = _other.owner
+                    _other.owner.grabbed_by = self.owner
+                    self.doGrab(_other.owner)
                 #TODO: Add functionality for article command grabs
             return True
         else: 
@@ -307,7 +303,7 @@ class ReflectorHitbox(InertHitbox):
         self.priority += self.hp
         
     def compareTo(self, _other):
-        if Hitbox.compareTo(_other) and self.hp >= 0:
+        if Hitbox.compareTo(self, _other) and self.hp >= 0:
             if not isinstance(_other, InertHitbox) and (isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox)) and self.owner != _other.owner and _other.hitbox_lock not in self.owner.hitbox_lock and isinstance_other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags:
                 if hasattr(_other.article, 'changeOwner'):
                     _other.article.changeOwner(self.owner)
