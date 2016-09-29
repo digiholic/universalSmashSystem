@@ -1229,6 +1229,10 @@ def pygprint(self, obj='', *objs, sep=' ', end='\n', fgcolor=None, bgcolor=None,
         if char is not None:
             self.putchar(char, x=x, y=y, fgcolor=fgcolor, bgcolor=bgcolor)
 
+    # Some classes expect this method. We don't need it, so pass. 
+    def flush(self):
+        pass
+
 
     # File-like Object methods:
     def write(self, text, x=None, y=None, fgcolor=None, bgcolor=None):

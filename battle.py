@@ -117,7 +117,6 @@ class Battle():
             self.clock = pygame.time.Clock()
             self.clock_speed = 60
             self.debug_mode = False
-            self.debug_pass = False
             """
             ExitStatus breaks us out of the loop. The battle loop can end in many ways, which is reflected here.
             In general, ExitStatus positive means that the game was supposed to end, while a negative value indicates an error.
@@ -186,7 +185,7 @@ class Battle():
                 cont.getInputs(event)
             
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
+                if event.key == pygame.K_F2:
                     print("saving screenshot")
                     pygame.image.save(self.screen,settingsManager.createPath('screenshot.jpg'))
                 elif event.key == pygame.K_RSHIFT:
@@ -205,55 +204,18 @@ class Battle():
                 if self.clock_time == 0:
                     self.exit_status = 2
         # End pygame event loop
-                               
-        self.screen.fill(self.stage.background_color)
         
         self.stage.update()
         self.stage.cameraUpdate()
         self.active_hitboxes.add(self.stage.active_hitboxes)
         self.active_hurtboxes.add(self.stage.active_hurtboxes)
-        
-        draw_rects = self.stage.drawBG(self.screen)
-        self.dirty_rects.extend(draw_rects)
     
         for obj in self.game_objects:
             obj.update()
-        
-            foreground_articles = []
-            if hasattr(obj, 'articles'):
-                for art in obj.articles:
-                    if art.draw_depth == -1:
-                        offset = self.stage.stageToScreen(art.rect)
-                        scale =  self.stage.getScale()
-                        draw_rect = art.draw(self.screen,offset,scale)
-                        if draw_rect: self.dirty_rects.append(draw_rect)
-                    else: foreground_articles.append(art)
-            
             if hasattr(obj,'active_hitboxes'):
                 self.active_hitboxes.add(obj.active_hitboxes)
             if hasattr(obj, 'hurtbox'):
                 self.active_hurtboxes.add(obj.hurtbox)
-            
-            offset = self.stage.stageToScreen(obj.rect)
-            scale =  self.stage.getScale()
-            draw_rect = obj.draw(self.screen,offset,scale)
-            if draw_rect: self.dirty_rects.append(draw_rect)
-            
-            for art in foreground_articles:
-                offset = self.stage.stageToScreen(art.rect)
-                scale =  self.stage.getScale()
-                draw_rect = art.draw(self.screen,offset,scale)
-                if draw_rect: self.dirty_rects.append(draw_rect)
-            
-            if hasattr(obj, 'hurtbox'):
-                if (self.settings['showHurtboxes']): 
-                    offset = self.stage.stageToScreen(obj.hurtbox.rect)
-                    draw_rect = obj.hurtbox.draw(self.screen,offset,scale)
-                    if draw_rect: self.dirty_rects.append(draw_rect)
-            if (self.settings['showHitboxes']):
-                for hbox in self.active_hitboxes:
-                    draw_rect = hbox.draw(self.screen,self.stage.stageToScreen(hbox.rect),scale)
-                    if draw_rect: self.dirty_rects.append(draw_rect)
 
         hitbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hitboxes, False, False)
         for hbox in hitbox_hits:
@@ -306,6 +268,51 @@ class Battle():
                             self.exit_status = 2 #Game set
                     else: fight.die()
         # End object updates
+        self.draw()
+        pygame.display.update()
+        if self.debug_mode:
+            print("Paused, press left shift key again to continue, press tab to get a really buggy debugger")
+            while self.debug_mode:
+                self.debugLoop()
+
+    def draw(self):
+        self.screen.fill(self.stage.background_color)
+        
+        draw_rects = self.stage.drawBG(self.screen)
+        self.dirty_rects.extend(draw_rects)
+
+        for obj in self.game_objects:
+            foreground_articles = []
+            if hasattr(obj, 'articles'):
+                for art in obj.articles:
+                    if art.draw_depth == -1:
+                        offset = self.stage.stageToScreen(art.rect)
+                        scale =  self.stage.getScale()
+                        draw_rect = art.draw(self.screen,offset,scale)
+                        if draw_rect: self.dirty_rects.append(draw_rect)
+                    else: foreground_articles.append(art)
+
+            offset = self.stage.stageToScreen(obj.rect)
+            scale =  self.stage.getScale()
+            draw_rect = obj.draw(self.screen,offset,scale)
+            if draw_rect: self.dirty_rects.append(draw_rect)
+            
+            for art in foreground_articles:
+                offset = self.stage.stageToScreen(art.rect)
+                scale =  self.stage.getScale()
+                draw_rect = art.draw(self.screen,offset,scale)
+                if draw_rect: self.dirty_rects.append(draw_rect)
+            if hasattr(obj, 'hurtbox'):
+                if (self.settings['showHurtboxes']): 
+                    offset = self.stage.stageToScreen(obj.hurtbox.rect)
+                    draw_rect = obj.hurtbox.draw(self.screen,offset,scale)
+                    if draw_rect: self.dirty_rects.append(draw_rect)
+            if (self.settings['showHitboxes']):
+                for hbox in self.active_hitboxes:
+                    draw_rect = hbox.draw(self.screen,self.stage.stageToScreen(hbox.rect),scale)
+                    if draw_rect: self.dirty_rects.append(draw_rect)
+
+
         draw_rects = self.stage.drawFG(self.screen)    
         self.dirty_rects.extend(draw_rects)
         
@@ -320,44 +327,24 @@ class Battle():
         optimized_rects = engine.optimize_dirty_rects.optimize_dirty_rects(self.dirty_rects)
         #pygame.display.update(optimized_rects)
         self.dirty_rects = []
-        pygame.display.update()
-        if self.debug_mode:
-            print("Paused, press left shift key again to continue, press tab to get a really buggy debugger")
-            while self.debug_mode:
-                self.debugLoop()
+        
             
     def debugLoop(self):
-        if self.debug_pass:
-            self.debug_console.display(self.screen)
-            pygame.display.update()
+        self.draw()
+        pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.exit_status = 1
                 self.debug_mode = False
-                self.debug_pass = False
             
             if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
                 if event.key == pygame.K_LSHIFT and event.type == pygame.KEYDOWN:
                     self.debug_mode = False
-                    self.debug_pass = False
-                elif event.key == pygame.K_TAB and event.type == pygame.KEYUP:
-                    self.debug_mode = True
-                    if not self.debug_pass:
-                        print("Entered debug console")
-                        self.debug_pass = True
-                        pygame.key.set_repeat(500, 100)
-                    else:
-                        print("Exited debug console")
-                        self.debug_pass = False
-                        pygame.key.set_repeat()
-                elif self.debug_pass:
-                    print("Passing input to debug console: " + str(event.key))
-                    self.debug_console.acceptInput(event)
+                elif event.key == pygame.K_TAB and event.type == pygame.KEYDOWN:
+                    self.debug_console.cmdloop() #Drop into the console
                         
-            if not self.debug_pass:
-                pygame.key.set_repeat() #Disable
-                for cont in self.controllers:
-                    cont.getInputs(event)
+            for cont in self.controllers:
+                cont.getInputs(event)
         
     """
     In a normal game, the frame input won't matter.
