@@ -271,7 +271,7 @@ class Battle():
         self.draw()
         pygame.display.update()
         if self.debug_mode:
-            print("Paused, press left shift key again to continue, press tab to get a really buggy debugger")
+            print("Paused, press left shift key again to continue, press tab to drop into the debugger console")
             while self.debug_mode:
                 self.debugLoop()
 
@@ -341,7 +341,7 @@ class Battle():
                 if event.key == pygame.K_LSHIFT and event.type == pygame.KEYDOWN:
                     self.debug_mode = False
                 elif event.key == pygame.K_TAB and event.type == pygame.KEYDOWN:
-                    self.debug_console.cmdloop() #Drop into the console
+                    self.debug_console.set_trace() #Drop into the console
                         
             for cont in self.controllers:
                 cont.getInputs(event)

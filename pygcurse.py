@@ -222,8 +222,8 @@ class PygcurseSurface(object):
         self._surfaceobj = pygame.Surface((self._pixelwidth, self._pixelheight))
         self._surfaceobj = self._surfaceobj.convert_alpha() # TODO - This is needed for erasing, but does this have a performance hit?
 
-        self.encoding = "utf8"
-
+        self.encoding = "utf8" #Some programs check for this
+        self.escaping = None #Temporary buffer for ANSI escape sequences
 
     def input(self, prompt='', x=None, y=None, maxlength=None, fgcolor=None, bgcolor=None, promptfgcolor=None, promptbgcolor=None, whitelistchars=None, blacklistchars=None, callbackfn=None, fps=None):
         """
@@ -396,6 +396,42 @@ def pygprint(self, obj='', *objs, sep=' ', end='\n', fgcolor=None, bgcolor=None,
             self._windowsurface.blit(self._surfaceobj, self._surfaceobj.get_rect())
             if self._autodisplayupdate:
                 pygame.display.update()
+
+    def _checkescape(self, char, doescape=True):
+        """
+        Catches ANSI escape sequences. Returns whether or not to print the character regularly. 
+        """
+        if ord(char) == 27 and self.escaping is None: #Start escape
+            self.escaping = ''
+            return False
+        elif ord(char) == 91 and self.escaping is None: #Start escape
+            self.escaping = '['
+            return False
+        elif ord(char) >= 128 and ord(char) <= 159:
+            self.escaping = unichr(ord(char)-64)
+            if doescape:
+                self._escape()
+            self.escaping = None
+            return False
+        elif self.escaping is not None:
+            if ord(char) == 91 and self.escaping == '':
+                self.escaping = '['
+                return False
+            elif ord(char) >= 64 and ord(char) <= 126:
+                self.escaping += char
+                if doescape:
+                    self._escape()
+                self.escaping = None
+                return False
+            else:
+                self.escaping += char
+                return False
+        else:
+            return True
+
+    def _escape(self):
+        """Processes ANSI escape sequences."""
+        pass #We'll get to this soon
 
 
     def _drawinputcursor(self):
@@ -1057,8 +1093,9 @@ def pygprint(self, obj='', *objs, sep=' ', end='\n', fgcolor=None, bgcolor=None,
         if bgcolor is not None:
             self._screenbgcolor[x][y] = getpygamecolor(bgcolor)
 
-        self._screenchar[x][y] = char[0]
-        self._screendirty[x][y] = True
+        if not self._checkescape(char):
+            self._screenchar[x][y] = char[0]
+            self._screendirty[x][y] = True
 
         if self._autoupdate:
             self.update()
@@ -1089,7 +1126,11 @@ def pygprint(self, obj='', *objs, sep=' ', end='\n', fgcolor=None, bgcolor=None,
         tempcurx = x
         tempcury = y
         for i in range(len(chars)):
-            if tempcurx >= self._width or chars[i] in ('\n', '\r'): # TODO - wait, this isn't right. We should be ignoring one of these newlines.
+
+            if not self._checkescape(chars[i]):
+                pass
+                
+            elif tempcurx >= self._width or chars[i] in ('\n', '\r'): # TODO - wait, this isn't right. We should be ignoring one of these newlines.
                 tempcurx = indent and x or 0
                 tempcury += 1
             if tempcury >= self._height: # putchars() does not cause a scroll.
@@ -1254,7 +1295,10 @@ def pygprint(self, obj='', *objs, sep=' ', end='\n', fgcolor=None, bgcolor=None,
         i = 0
         tempcursorx = self._cursorx - 1
         while i < len(text):
-            if text[i] == '\n':
+            
+            if not self._checkescape(text[i], False):
+                pass #We'll figure this out soon
+            elif text[i] == '\n':
                 tempcursorx = 0
             elif text[i] == '\t':
                 numspaces = self._tabsize - ((i+1) + tempcursorx % self._tabsize)
@@ -1288,7 +1332,9 @@ def pygprint(self, obj='', *objs, sep=' ', end='\n', fgcolor=None, bgcolor=None,
         """
 
         for i in range(len(text)):
-            if text[i] in ('\n', '\r'): # TODO - wait, this isn't right. We should be ignoring one of these newlines. Otherwise \r\n shows up as two newlines.
+            if not self._checkescape(text[i]):
+                print(self.escaping)
+            elif text[i] in ('\n', '\r'): # TODO - wait, this isn't right. We should be ignoring one of these newlines. Otherwise \r\n shows up as two newlines.
                 self._cursory += 1
                 self._cursorx = 0
             else:
@@ -2379,27 +2425,16 @@ _shiftchars = {'`':'~', '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7
 
 def interpretkeyevent(keyEvent):
     """Returns the character represented by the pygame.event.Event object in keyEvent. This makes adjustments for the shift key and capslock."""
-    #if keyEvent.type == KEYUP:
     key = keyEvent.key
     if (key >= 32 and key < 127) or key in (ord('\n'), ord('\r'), ord('\t')):
         caps = bool(keyEvent.mod & KMOD_CAPS)
         shift = bool(keyEvent.mod & KMOD_LSHIFT or keyEvent.mod & KMOD_RSHIFT)
-        char = chr(key)
+        char = unichr(key)
         if char.isalpha() and (caps ^ shift):
             char = char.upper()
         elif shift and char in _shiftchars:
             char = _shiftchars[char]
         return char
-    """
-    elif keyEvent.type == KEYDOWN:
-        key = keyEvent.unicode
-        if key != '' and ((key >= 32 and key < 127) or (key > 159) or key in (ord('\n'), ord('\r'), ord('\t'), ord('\b'))):
-            print((pygame.key.name(keyEvent.key), keyEvent.key))
-            return key
-        elif (key >= 32 and key < 127) or key in (ord('\n'), ord('\r'), ord('\t'), ord('\b')):
-            print(pygame.key.name(keyEvent.key))
-            return key
-    """
     return None # None means that there is no printable character corresponding to this keyEvent
 
 

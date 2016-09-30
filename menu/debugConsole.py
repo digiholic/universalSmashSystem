@@ -1,23 +1,24 @@
 import sys
 import cmd
+import pdb
 import io
 import settingsManager
 import spriteManager
 import pygame
 import pygcurse
 
-class debugConsole(cmd.Cmd):
-    def __init__(self, _surface, _gameEnv, _font="joystix monospace", _size=12, _height=8):
+class debugConsole(pdb.Pdb):
+    def __init__(self, _surface, _gameEnv, _font="joystix monospace", _size=9, _height=24):
         self.game_env = _gameEnv
         text_dims = pygame.font.Font(settingsManager.createPath(_font+".ttf"),_size).size(" ") #Used to determine how much space is available
         self.text_width = int(_surface.get_width()/text_dims[0])
         self.render_corner = [0, _surface.get_height()-text_dims[1]*_height]
         self.pyg_surface = pygcurse.PygcurseSurface(self.text_width, _height, pygame.font.Font(settingsManager.createPath(_font+".ttf"),_size))
         self.pyg_surface.setscreencolors(fgcolor=None, bgcolor=None, clear=True)
-        cmd.Cmd.__init__(self, stdin=self, stdout=self.pyg_surface) #Yay for duck typing
+        pdb.Pdb.__init__(self, stdin=self, stdout=self.pyg_surface) #Yay for duck typing
+        #pdb.Pdb.__init__(self, stdin=self) #Yay for duck typing
         self.use_rawinput = False
         self.prompt = "> "
-        self.intro = "To exit the debugger console, press escape. "
 
     def display(self):
         self.game_env.draw()
@@ -27,7 +28,12 @@ class debugConsole(cmd.Cmd):
 
     def postcmd(self, _stop, _line):
         self.display()
-        return cmd.Cmd.postcmd(self, _stop, _line)
+        return pdb.Pdb.postcmd(self, _stop, _line)
+
+    def interaction(self, frame, traceback):
+        self.setup(frame, traceback)
+        self.cmdloop()
+        self.forget()
 
     #Shamelessly copied and modified from pygcurses. See pygcurse.py for license details. 
     def readline(self):
@@ -53,10 +59,3 @@ class debugConsole(cmd.Cmd):
 
     def emptyline(self):
         pass #Don't want to cause problems
-
-    def do_exit(self, _args):
-        return True
-
-    
-
-
