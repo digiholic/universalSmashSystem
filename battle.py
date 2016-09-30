@@ -15,6 +15,7 @@ import io
 import string
 import menu
 import inspect
+import bdb
 from cgi import log
 
 """
@@ -332,19 +333,22 @@ class Battle():
     def debugLoop(self):
         self.draw()
         pygame.display.update()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.exit_status = 1
-                self.debug_mode = False
-            
-            if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-                if event.key == pygame.K_LSHIFT and event.type == pygame.KEYDOWN:
+        try:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.exit_status = 1
                     self.debug_mode = False
-                elif event.key == pygame.K_TAB and event.type == pygame.KEYDOWN:
-                    self.debug_console.set_trace() #Drop into the console
-                        
-            for cont in self.controllers:
-                cont.getInputs(event)
+                
+                if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+                    if event.key == pygame.K_LSHIFT and event.type == pygame.KEYDOWN:
+                        self.debug_mode = False
+                    elif event.key == pygame.K_TAB and event.type == pygame.KEYDOWN:
+                        self.debug_console.set_trace() #Drop into the console
+                            
+                for cont in self.controllers:
+                    cont.getInputs(event)
+        except bdb.BdbQuit:
+            pass
         
     """
     In a normal game, the frame input won't matter.
