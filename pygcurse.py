@@ -51,6 +51,7 @@ authors and should not be interpreted as representing official policies, either 
 or implied, of Al Sweigart.
 """
 
+import string
 import copy
 import time
 import sys
@@ -220,6 +221,8 @@ class PygcurseSurface(object):
 
         self._surfaceobj = pygame.Surface((self._pixelwidth, self._pixelheight))
         self._surfaceobj = self._surfaceobj.convert_alpha() # TODO - This is needed for erasing, but does this have a performance hit?
+
+        self.encoding = "utf8"
 
 
     def input(self, prompt='', x=None, y=None, maxlength=None, fgcolor=None, bgcolor=None, promptfgcolor=None, promptbgcolor=None, whitelistchars=None, blacklistchars=None, callbackfn=None, fps=None):
@@ -2376,6 +2379,7 @@ _shiftchars = {'`':'~', '1':'!', '2':'@', '3':'#', '4':'$', '5':'%', '6':'^', '7
 
 def interpretkeyevent(keyEvent):
     """Returns the character represented by the pygame.event.Event object in keyEvent. This makes adjustments for the shift key and capslock."""
+    #if keyEvent.type == KEYUP:
     key = keyEvent.key
     if (key >= 32 and key < 127) or key in (ord('\n'), ord('\r'), ord('\t')):
         caps = bool(keyEvent.mod & KMOD_CAPS)
@@ -2386,6 +2390,16 @@ def interpretkeyevent(keyEvent):
         elif shift and char in _shiftchars:
             char = _shiftchars[char]
         return char
+    """
+    elif keyEvent.type == KEYDOWN:
+        key = keyEvent.unicode
+        if key != '' and ((key >= 32 and key < 127) or (key > 159) or key in (ord('\n'), ord('\r'), ord('\t'), ord('\b'))):
+            print((pygame.key.name(keyEvent.key), keyEvent.key))
+            return key
+        elif (key >= 32 and key < 127) or key in (ord('\n'), ord('\r'), ord('\t'), ord('\b')):
+            print(pygame.key.name(keyEvent.key))
+            return key
+    """
     return None # None means that there is no printable character corresponding to this keyEvent
 
 
