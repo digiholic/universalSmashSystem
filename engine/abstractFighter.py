@@ -828,6 +828,13 @@ class AbstractFighter():
         else:
             self.hitstop_vibration = (0,3)
         self.hitstop_pos = self.rect.center
+
+        #Crouch cancelling
+        if _actor.current_action.name in ('Crouch', 'CrouchCancel'):
+            _kb *= 0.5
+            _kbg *= 0.9
+            _baseHitstun = 0
+            _hitstunMultiplier *= 0.8
         
         p = float(self.damage)
         d = float(_damage)
