@@ -94,7 +94,7 @@ class Pivot(action.Action):
         action.Action.setUp(self, _actor)
         num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['pivot_grip']))
         if num_frames < self.last_frame:
-            self.frame = min(self.last_frame-num_frames, self.last_frame)
+            self.frame = min(self.last_frame-num_frames, self.last_frame-1)
         else:
             self.last_frame = num_frames
         
@@ -141,7 +141,7 @@ class Stop(action.Action):
         action.Action.setUp(self, _actor)
         num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['pivot_grip']))
         if num_frames < self.last_frame:
-            self.frame = min(self.last_frame-num_frames, self.last_frame)
+            self.frame = min(self.last_frame-num_frames, self.last_frame-1)
         else:
             self.last_frame = num_frames
         
@@ -171,7 +171,7 @@ class RunPivot(action.Action):
         action.Action.setUp(self, _actor)
         num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['static_grip']))
         if num_frames < self.last_frame:
-            self.frame = min(self.last_frame-num_frames, self.last_frame)
+            self.frame = min(self.last_frame-num_frames, self.last_frame-1)
         else:
             self.last_frame = num_frames
         
@@ -213,7 +213,7 @@ class RunStop(action.Action):
         action.Action.setUp(self, _actor)
         num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['static_grip']))
         if num_frames < self.last_frame:
-            self.frame = min(self.last_frame-num_frames, self.last_frame)
+            self.frame = min(self.last_frame-num_frames, self.last_frame-1)
         else:
             self.last_frame = num_frames
         
@@ -611,14 +611,7 @@ class HitStun(action.Action):
                     _actor.rotateSprite(self.direction)
             
         if self.frame % max(1,int(100.0/max(math.hypot(_actor.change_x, _actor.change_y), 1))) == 0 and self.frame < self.last_frame:
-            color = pygame.Color(settingsManager.getSetting('playerColor' + str(_actor.player_num)))
-            if _actor.hit_tagged and hasattr(_actor.hit_tagged, 'player_num'):
-                other_color = pygame.Color(settingsManager.getSetting('playerColor' + str(_actor.hit_tagged.player_num)))
-                color[0] = (color[0]+other_color[0])//2
-                color[1] = (color[1]+other_color[1])//2
-                color[2] = (color[2]+other_color[2])//2
-
-            art = article.HitArticle(_actor, _actor.rect.center, 1, math.degrees(math.atan2(_actor.change_y, -_actor.change_x))+random.randrange(-30, 30), .5*math.hypot(_actor.change_x, _actor.change_y), .02*(math.hypot(_actor.change_x, _actor.change_y)+1), color)
+            art = article.HitArticle(_actor, _actor.rect.center, 1, math.degrees(math.atan2(_actor.change_y, -_actor.change_x))+random.randrange(-30, 30), .5*math.hypot(_actor.change_x, _actor.change_y), .02*(math.hypot(_actor.change_x, _actor.change_y)+1), _actor.trail_color)
             _actor.articles.add(art)
                     
         if self.frame == self.last_frame:

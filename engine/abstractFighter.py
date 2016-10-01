@@ -323,6 +323,7 @@ class AbstractFighter():
         self.change_y = 0
         self.preferred_xspeed = 0
         self.preferred_yspeed = 0
+        self.trail_color = pygame.Color(settingsManager.getSetting('playerColor' + str(self.player_num)))
         
         #facing right = 1, left = -1
         self.facing = 1

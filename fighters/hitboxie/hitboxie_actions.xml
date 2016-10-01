@@ -676,6 +676,7 @@
 				<base_knockback>2</base_knockback>
 				<knockback_growth>0.2</knockback_growth>
 				<trajectory>40</trajectory>
+				<color>191,191,0</color>
 			</createHitbox>
 		</setUp>
 
@@ -730,6 +731,7 @@
 				<charge_damage>.426</charge_damage>
 				<charge_base_knockback>0.04</charge_base_knockback>
 				<hitstun_multiplier type="float">1.6</hitstun_multiplier>
+				<color>255,255,0</color>
 			</createHitbox>
 		</setUp>
 
@@ -975,6 +977,7 @@
 				<trajectory>80</trajectory>
 				<charge_damage>.1</charge_damage>
 				<charge_base_knockback>0.02</charge_base_knockback>
+				<color>255,0,0</color>
 			</createHitbox>
 			
 			<loadArticle name="firework">firework</loadArticle>
@@ -1441,6 +1444,7 @@
 				<knockback_growth>0.3</knockback_growth>
 				<trajectory>270</trajectory>
 				<hitboxLock>sharedLock</hitboxLock>
+				<color>255,255,255</color>
 			</createHitbox>
 		</setUp>
 		
@@ -1532,6 +1536,7 @@
 				<trajectory>90</trajectory>
 				<hitboxLock>shared</hitboxLock>
 				<transcendence>1</transcendence>
+				<color>0,255,255</color>
 			</createHitbox>
 		</setUp>
 		
@@ -1888,6 +1893,7 @@
 				<base_hitstun>0</base_hitstun>
 				<hitstun_multiplier type="float">3</hitstun_multiplier>
 				<transcendence>5</transcendence>
+				<color>0,255,255</color>
 			</createHitbox>
 			
 			<createHitbox type="reflector">
