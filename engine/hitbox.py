@@ -1,4 +1,5 @@
 import math
+import random
 import pygame
 import spriteManager
 import settingsManager
@@ -40,6 +41,7 @@ class Hitbox(spriteManager.RectSprite):
                        'hp': 0,
                        'ignore_shields': False,
                        'ignore_armor': False, 
+                       'color': (127,127,127)
                        }
         self.newVaraibles = _variables
         self.variable_dict.update(self.newVaraibles)
@@ -65,6 +67,11 @@ class Hitbox(spriteManager.RectSprite):
         self.other_on_hit_actions = []
         
     def onCollision(self,_other):
+        if self.color == None:
+            if self.article == None:
+                pygame.Color(settingsManager.getSetting('playerColor' + str(self.owner.player_num)))
+            else:
+                pygame.Color(settingsManager.getSetting('playerColor' + str(self.article.owner.player_num)))
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             _other.hitbox_contact.add(self)
@@ -91,18 +98,7 @@ class Hitbox(spriteManager.RectSprite):
 
     def compareTo(self, _other):
         if not isinstance(_other, InertHitbox) and (isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox)) and self.owner != _other.owner and _other.hitbox_lock not in self.owner.hitbox_lock:
-            if self.transcendence + _other.transcendence > 0 or self.priority - _other.priority >= 8: 
-                if self.article == None:
-                    self.owner.current_action.onPrevail(self.owner, self, _other)
-                else:
-                    self.article.onPrevail(self.owner, self, _other)
-                return True
-            else:
-                if self.article == None:
-                    self.owner.current_action.onClank(self.owner, self, _other)
-                else:
-                    self.article.onClank(self.owner, self, _other)
-                return False
+            return self.transcendence + _other.transcendence > 0 or self.priority - _other.priority >= 8
         else: return True
     
     def activate(self):
@@ -141,6 +137,15 @@ class DamageHitbox(Hitbox):
                 if self.article is None:
                     self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                 _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
+                _other.trail_color = self.color
+                offset = random.randrange(0, 359)
+                hit_intersection = self.rect.clip(_other.hurtbox.rect).center
+                hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
+                from article import HitArticle
+                for i in range(int(hitlag)):
+                    art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.color)
+                    self.owner.articles.add(art)
+                    
         
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -150,8 +155,6 @@ class DamageHitbox(Hitbox):
         else:
             if self.article is None:
                 self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier + (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
-            else:
-                self.article.hitstop = (self.damage / 4.0 + 2.0)*self.hitlag_multiplier + (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier
             return False
     
     def charge(self):
@@ -280,8 +283,6 @@ class GrabHitbox(Hitbox):
         else: 
             if self.article is None:
                 self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier + (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
-            else:
-                self.article.hitstop = (self.damage / 4.0 + 2.0)*self.hitlag_multiplier + (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier
             return False
 
 class ThrowHitbox(Hitbox):
@@ -293,6 +294,7 @@ class ThrowHitbox(Hitbox):
         Hitbox.activate(self)
         if (self.owner == self.owner.grabbing.grabbed_by):
             self.owner.grabbing.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
+            self.owner.grabbing.trail_color = self.color
             self.kill()
             
 class ReflectorHitbox(InertHitbox):
@@ -382,8 +384,6 @@ class ShieldHitbox(Hitbox):
                     self.hp -= _other.damage
                 if _other.article is None:
                     _other.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory()+180, (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
-                else:
-                    _other.article.hitstop = (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier
             return True
         else:
             self.owner.change_y = -15
@@ -403,12 +403,8 @@ class InvulnerableHitbox(Hitbox):
         if not isinstance(_other, InertHitbox) and (isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox)) and not _other.ignore_shields and self.owner.lockHitbox(_other):
             if self.article is None:
                 self.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory(), (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
-            else:
-                self.article.hitstop = (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier
             if _other.article is None:
                 _other.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory()+180, (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
-            else:
-                _other.article.hitstop = (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier
         return True
 
 def getXYFromDM(_direction,_magnitude):
