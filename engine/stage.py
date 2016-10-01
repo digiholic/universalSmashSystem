@@ -114,17 +114,17 @@ class Stage():
     """
     If Center is not given, will shift the camera by the given x and y
     If Center is True, will center the camera on the given x and y
+    If Force is True, it will move the camera instead of the preferred position
     """
-    def moveCamera(self,_x,_y,_center=False):
+    def moveCamera(self,_x,_y,_center=False,_force=False):
+        if _force: new_rect = self.camera_position
+        else: new_rect = self.camera_preferred_position
+        
         if _center:
-            new_rect = self.camera_preferred_position.copy()
             new_rect.center = [_x,_y]
         else:
-            new_rect = self.camera_preferred_position.copy()
             new_rect.x += _x
             new_rect.y += _y
-        self.camera_preferred_position = new_rect
-        
     
     """
     Okay, this method's a doozy. It'll reposition and rescale the camera as necessary.

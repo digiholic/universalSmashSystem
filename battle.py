@@ -273,6 +273,8 @@ class Battle():
         pygame.display.update()
         if self.debug_mode:
             print("Paused, press shift key again to continue, press tab to drop into the debugger console")
+            self.cameraX = 0
+            self.cameraY = 0
             while self.debug_mode:
                 self.debugLoop()
 
@@ -329,7 +331,6 @@ class Battle():
         #pygame.display.update(optimized_rects)
         self.dirty_rects = []
         
-            
     def debugLoop(self):
         self.draw()
         pygame.display.update()
@@ -339,14 +340,29 @@ class Battle():
                     self.exit_status = 1
                     self.debug_mode = False
                 
-                if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-                    if (event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT) and event.type == pygame.KEYDOWN:
+                if event.type == pygame.KEYDOWN:
+                    if (event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT):
                         self.debug_mode = False
-                    elif event.key == pygame.K_TAB and event.type == pygame.KEYDOWN:
+                    elif event.key == pygame.K_TAB:
                         self.debug_console.set_trace() #Drop into the console
-                            
+                    elif event.key == pygame.K_LEFT:
+                        self.cameraX = -5
+                    elif event.key == pygame.K_RIGHT:
+                        self.cameraX = 5
+                    elif event.key == pygame.K_UP:
+                        self.cameraY = -5
+                    elif event.key == pygame.K_DOWN:
+                        self.cameraY = 5
+                elif event.type == pygame.KEYUP:
+                    if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                        self.cameraX = 0
+                    elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                        self.cameraY = 0
                 for cont in self.controllers:
                     cont.getInputs(event)
+                
+            
+            self.stage.moveCamera(self.cameraX,self.cameraY)    
         except bdb.BdbQuit:
             pass
         
