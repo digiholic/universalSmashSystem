@@ -189,7 +189,7 @@ class Battle():
                 if event.key == pygame.K_F2:
                     print("saving screenshot")
                     pygame.image.save(self.screen,settingsManager.createPath('screenshot.jpg'))
-                elif event.key == pygame.K_RSHIFT:
+                elif (event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT):
                     self.debug_mode = not self.debug_mode
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_ESCAPE:
@@ -272,7 +272,7 @@ class Battle():
         self.draw()
         pygame.display.update()
         if self.debug_mode:
-            print("Paused, press left shift key again to continue, press tab to drop into the debugger console")
+            print("Paused, press shift key again to continue, press tab to drop into the debugger console")
             while self.debug_mode:
                 self.debugLoop()
 
@@ -340,7 +340,7 @@ class Battle():
                     self.debug_mode = False
                 
                 if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-                    if event.key == pygame.K_LSHIFT and event.type == pygame.KEYDOWN:
+                    if (event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT) and event.type == pygame.KEYDOWN:
                         self.debug_mode = False
                     elif event.key == pygame.K_TAB and event.type == pygame.KEYDOWN:
                         self.debug_console.set_trace() #Drop into the console
