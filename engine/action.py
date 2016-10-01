@@ -26,7 +26,7 @@ class Action():
         self.hitbox_locks = {}
         self.articles = {}
         
-        self.name = self.__class__
+        self.name = str(self.__class__).split('.')[-1]
         
         self.actions_at_frame = [[]]
         self.actions_before_frame = []
