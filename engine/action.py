@@ -49,11 +49,9 @@ class Action():
     # an error.
     def update(self,_actor):
         if self.sprite_rate is not 0:
-            if self.frame % self.sprite_rate == 0:
-                if self.sprite_rate < 0:
-                    _actor.changeSpriteImage((self.frame / self.sprite_rate)-1, _loop=self.loop)
-                else:
-                    _actor.changeSpriteImage(self.frame / self.sprite_rate, _loop=self.loop)
+            if self.sprite_rate < 0:
+                _actor.changeSpriteImage((self.frame // self.sprite_rate)-1, _loop=self.loop)
+            else:                 _actor.changeSpriteImage(self.frame // self.sprite_rate, _loop=self.loop)
                     
         for act in self.actions_before_frame:
             act.execute(self,_actor)
@@ -85,11 +83,10 @@ class Action():
                 act.execute(self,_actor)
         
         if self.sprite_rate is not 0:
-            if self.frame % self.sprite_rate == 0:
-                if self.sprite_rate < 0:
-                    _actor.changeSpriteImage((self.frame / self.sprite_rate)-1, _loop=self.loop)
-                else:
-                    _actor.changeSpriteImage(self.frame / self.sprite_rate, _loop=self.loop)
+            if self.sprite_rate < 0:
+                _actor.changeSpriteImage((self.frame // self.sprite_rate)-1, _loop=self.loop)
+            else:
+                _actor.changeSpriteImage(self.frame // self.sprite_rate, _loop=self.loop)
                 
         self.frame += 1         
     
