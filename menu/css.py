@@ -163,7 +163,7 @@ class FighterWheel():
         
         blank_image.blit(self.wheel_shadow.image,[0,0])
         _screen.blit(blank_image, _location)
-                     
+        
 class PlayerPanel(pygame.Surface):
     def __init__(self,_playerNum):
         pygame.Surface.__init__(self,(settingsManager.getSetting('windowWidth')//2,
@@ -173,8 +173,10 @@ class PlayerPanel(pygame.Surface):
         self.player_num = _playerNum
         self.wheel = FighterWheel(_playerNum)
         self.active = False
+        self.ready = False
         self.active_object = self.wheel
         self.chosen_fighter = None
+        self.myBots = []
         
         self.wheel_increment = 0
         self.hold_time = 0
@@ -206,7 +208,9 @@ class PlayerPanel(pygame.Surface):
             self.active = True
             return
         if _key == 'special' and self.active == True:
-            if self.active_object == self.wheel:
+            if len(self.myBots > 0):
+                pass #will disable bots
+            elif self.active_object == self.wheel:
                 self.active = False
                 return
             else:
@@ -228,7 +232,11 @@ class PlayerPanel(pygame.Surface):
                 self.bg_surface.set_alpha(240)
                 self.active_object = None
                 self.chosen_fighter = self.wheel.fighterAt(0)
-                
+        elif _key == 'jump':
+            pass #change color
+        elif _key == 'shield':
+            pass #add bot
+        
     def keyReleased(self,_key):
         if _key == 'right' or _key == 'left':
             self.wheel_increment = 0
