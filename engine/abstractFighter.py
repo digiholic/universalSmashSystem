@@ -830,7 +830,7 @@ class AbstractFighter():
         self.hitstop_pos = self.rect.center
 
         #Crouch cancelling
-        if _actor.current_action.name in ('Crouch', 'CrouchCancel'):
+        if self.current_action.name in ('Crouch', 'CrouchCancel'):
             _kb *= 0.5
             _kbg *= 0.9
             _baseHitstun = 0
