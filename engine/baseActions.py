@@ -92,6 +92,11 @@ class Pivot(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name = "pivot"
         action.Action.setUp(self, _actor)
+        num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['pivot_grip']))
+        if num_frames < self.last_frame:
+            self.frame = min(self.last_frame-num_frames, self.last_frame)
+        else:
+            self.last_frame = num_frames
         
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
@@ -134,6 +139,11 @@ class Stop(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name = "stop"
         action.Action.setUp(self, _actor)
+        num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['pivot_grip']))
+        if num_frames < self.last_frame:
+            self.frame = min(self.last_frame-num_frames, self.last_frame)
+        else:
+            self.last_frame = num_frames
         
     def update(self, _actor):
         action.Action.update(self, _actor)
@@ -151,8 +161,6 @@ class Stop(action.Action):
     def tearDown(self, _actor, nextAction):
         action.Action.tearDown(self, _actor, nextAction)
         _actor.accel(_actor.var['static_grip'])
-        if isinstance(nextAction, Pivot):
-            nextAction.frame = self.frame
             
 class RunPivot(action.Action):
     def __init__(self,length=1):
@@ -161,12 +169,15 @@ class RunPivot(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="runPivot" 
         action.Action.setUp(self, _actor)
-        _actor.flip()
+        num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['static_grip']))
+        if num_frames < self.last_frame:
+            self.frame = min(self.last_frame-num_frames, self.last_frame)
+        else:
+            self.last_frame = num_frames
         
     def tearDown(self, _actor, nextAction):
         action.Action.tearDown(self, _actor, nextAction)
         _actor.preferred_xspeed = 0
-        #_actor.flip()
         if isinstance(nextAction, Dash):
             nextAction.accel = False
         
@@ -176,10 +187,10 @@ class RunPivot(action.Action):
         
     def update(self,_actor):
         action.Action.update(self, _actor)
-        if _actor.grounded is False:
-            _actor.doAction('Fall')
         _actor.accel(_actor.var['static_grip'])
         checkGrounded(_actor)
+        if self.frame == 0:
+            _actor.flip()
         if self.frame != self.last_frame:
             self.frame += 1
             _actor.preferred_xspeed = _actor.var['run_speed']*_actor.facing
@@ -200,11 +211,17 @@ class RunStop(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="runStop"
         action.Action.setUp(self, _actor)
+        num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['static_grip']))
+        if num_frames < self.last_frame:
+            self.frame = min(self.last_frame-num_frames, self.last_frame)
+        else:
+            self.last_frame = num_frames
         
     def update(self, _actor):
         action.Action.update(self, _actor)
         _actor.preferred_xspeed = 0
         checkGrounded(_actor)
+        _actor.accel(_actor.var['static_grip'])
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
@@ -1839,7 +1856,6 @@ def stopState(_actor):
     elif _actor.keyHeld('jump'):
         _actor.doAction('Jump')
     elif _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
-        print("run")
         _actor.doDash(_actor.getFacingDirection())
     elif _actor.keyHeld(invkey):
         print("pivot")

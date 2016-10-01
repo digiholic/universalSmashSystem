@@ -1066,7 +1066,7 @@ class AbstractFighter():
             return False
         first_down_frame = reduce(lambda j, k: j if j != None else (k if down_frames[k] else None), range(len(down_frames)), None)
         last_up_frame = reduce(lambda j, k: k if up_frames[k] else j, range(len(up_frames)), None)
-        if first_down_frame <= last_up_frame:
+        if first_down_frame >= last_up_frame:
             self.last_input_frame = 0
             return True
         return False
@@ -1084,7 +1084,7 @@ class AbstractFighter():
             return True
         first_down_frame = reduce(lambda j, k: j if j != None else (k if down_frames[k] else None), range(len(down_frames)), None)
         last_up_frame = reduce(lambda j, k: k if up_frames[k] else j, range(len(up_frames)), None)
-        if first_down_frame > last_up_frame:
+        if first_down_frame < last_up_frame:
             self.last_input_frame = 0
             return True
         return False
@@ -1110,7 +1110,7 @@ class AbstractFighter():
             return False
         first_up_frame = reduce(lambda j, k: j if j != None else (k if up_frames[k] else None), range(len(up_frames)), None)
         last_down_frame = reduce(lambda j, k: k if down_frames[k] else j, range(len(down_frames)), None)
-        if first_up_frame <= last_down_frame:
+        if first_up_frame < last_down_frame:
             self.last_input_frame = 0
             return True
         return False
@@ -1128,7 +1128,7 @@ class AbstractFighter():
             return True
         first_up_frame = reduce(lambda j, k: j if j != None else (k if up_frames[k] else None), range(len(up_frames)), None)
         last_down_frame = reduce(lambda j, k: k if down_frames[k] else j, range(len(down_frames)), None)
-        if first_up_frame > last_down_frame:
+        if first_up_frame >= last_down_frame:
             self.last_input_frame = 0
             return True
         return False

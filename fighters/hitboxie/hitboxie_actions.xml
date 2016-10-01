@@ -1886,7 +1886,7 @@
 				<knockback_growth>0</knockback_growth>
 				<trajectory>330</trajectory>
 				<base_hitstun>0</base_hitstun>
-				<hitstun_multiplier type="float">2.8</hitstun_multiplier>
+				<hitstun_multiplier type="float">3</hitstun_multiplier>
 				<transcendence>5</transcendence>
 			</createHitbox>
 			
@@ -1935,7 +1935,7 @@
 			</createMask>
 			<playSound>shine</playSound>
 		</frame>
-		<frame number="1">
+		<frame number="7">
 			<deactivateHitbox>damage</deactivateHitbox>
 		</frame>
 		<frame number="8">
@@ -2196,16 +2196,6 @@
 			<flip />
 		</frame>
 	</BackThrow>
-	
-	<!-- Code Actions, TODO: pls fix
-	<UpSpecial>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>UpSpecial</action>
-		</loadCodeAction>
-		
-		
-	</UpSpecial> -->
 	
 	<UpSpecial>
 		
