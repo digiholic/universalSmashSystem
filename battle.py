@@ -275,6 +275,7 @@ class Battle():
             print("Paused, press shift key again to continue, press tab to drop into the debugger console")
             self.cameraX = 0
             self.cameraY = 0
+            self.zoomVal = 0
             while self.debug_mode:
                 self.debugLoop()
 
@@ -353,16 +354,23 @@ class Battle():
                         self.cameraY = -5
                     elif event.key == pygame.K_DOWN:
                         self.cameraY = 5
+                    elif event.key == pygame.K_z:
+                        self.zoomVal = 0.01
+                    elif event.key == pygame.K_x:
+                        self.zoomVal = -0.01
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                         self.cameraX = 0
                     elif event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                         self.cameraY = 0
+                    elif event.key == pygame.K_z or event.key == pygame.K_x:
+                        self.zoomVal = 0
                 for cont in self.controllers:
                     cont.getInputs(event)
                 
             
-            self.stage.moveCamera(self.cameraX,self.cameraY)    
+            self.stage.moveCamera(self.cameraX,self.cameraY)
+            self.stage.zoomCamera(self.zoomVal)    
         except bdb.BdbQuit:
             pass
         

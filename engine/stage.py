@@ -126,6 +126,12 @@ class Stage():
             new_rect.x += _x
             new_rect.y += _y
     
+    def zoomCamera(self,zoomVal):
+        self.zoom_level += zoomVal
+        
+        self.camera_position.width  = round(float(settingsManager.getSetting('windowWidth'))  * self.zoom_level)
+        self.camera_position.height = round(float(settingsManager.getSetting('windowHeight')) * self.zoom_level)
+    
     """
     Okay, this method's a doozy. It'll reposition and rescale the camera as necessary.
     Each chunk is commented as it goes if you need to follow along.
