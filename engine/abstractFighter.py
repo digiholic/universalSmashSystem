@@ -167,6 +167,18 @@ class AbstractFighter():
             self.actions = baseActions
             self.action_file = baseActions.__file__
         
+        
+        spriteName = self.sprite_prefix + self.default_sprite + '.png'
+        self.sprite = spriteManager.SheetSprite(os.path.join(self.base_dir,self.sprite_directory,spriteName), self.sprite_width)
+        self.rect = self.sprite.rect
+        
+        
+        self.game_state = None
+        self.players = None
+        
+        # data_log holds information for the post-game results screen
+        self.data_log = None
+        
     def saveFighter(self,_path=None):
         if not _path: _path = os.path.join(self.base_dir,'fighter.xml')
         tree = ElementTree.Element('fighter')
@@ -210,7 +222,7 @@ class AbstractFighter():
         else: elem.text = ''
         return elem
     
-    def initialize(self):
+    def loadSpriteLibrary(self,_color):
         directory = os.path.join(self.base_dir,self.sprite_directory)
         try:
             scale = float(self.xml_data.find('scale').text)
@@ -221,18 +233,10 @@ class AbstractFighter():
                                                   self.sprite_prefix,
                                                   self.default_sprite,
                                                   self.sprite_width,
-                                                  self.color_palettes[self.player_num],
+                                                  self.color_palettes[_color],
                                                   scale)
         
-        self.rect = self.sprite.rect
-        
-        self.game_state = None
-        self.players = None
-        
-        # data_log holds information for the post-game results screen
-        self.data_log = None
-        
-        
+    def initialize(self):
         self.last_input_frame = 0
 
         # Super armor variables
