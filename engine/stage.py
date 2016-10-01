@@ -129,6 +129,9 @@ class Stage():
     def zoomCamera(self,zoomVal):
         self.zoom_level += zoomVal
         
+        self.zoom_level = max(self.zoom_level,0.25)
+        self.zoom_level = min(self.zoom_level,4)
+        
         oldWidth = self.camera_position.width
         oldHeight = self.camera_position.height
         self.camera_position.width  = round(float(settingsManager.getSetting('windowWidth'))  * self.zoom_level)
@@ -216,7 +219,7 @@ class Stage():
             if abs(h - w) <= 0.02:
                 # Fuck it, close enough.
                 return h
-            print("Scaling Error", h, w, abs(h-w))
+            print("Scaling Error", h, w, abs(h-w), self.zoom_level)
             return w
         
     """
