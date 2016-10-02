@@ -314,7 +314,7 @@ class HitArticle(Article):
             base_color = [127, 127, 127]
         else:
             base_color = _colorBase
-        for i in range(0, 100):
+        for i in range(0, 15):
             random_displacement = random.choice(self.color_change_array)
             if base_color[0] + random_displacement[0] < 0:
                 base_color[0] = 0

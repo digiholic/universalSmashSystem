@@ -130,23 +130,17 @@ class AbstractFighter():
             self.sound_path_short = ''
         #self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),'articles.py',_suffix=str(player_num))
         try:
-            directory = os.path.join(_baseDir,self.xml_data.find('sprite_directory').text)
-            prefix = self.xml_data.find('sprite_prefix').text
-            default_sprite = self.xml_data.find('default_sprite').text
-            img_width = int(self.xml_data.find('sprite_width').text)
             self.sprite_directory = self.xml_data.find('sprite_directory').text
+            self.sprite_prefix = self.xml_data.find('sprite_prefix').text
+            self.default_sprite = self.xml_data.find('default_sprite').text
+            self.sprite_width = int(self.xml_data.find('sprite_width').text)
         except:
             print('Could not load sprites')
-            directory = settingsManager.createPath('sprites')
-            prefix = ''
-            default_sprite = 'sandbag_idle'
-            img_width = 64
             self.sprite_directory = settingsManager.createPath('sprites')
+            self.sprite_prefix = ''
+            self.default_sprite = 'sandbag_idle'
+            self.sprite_width = 64
             
-        self.sprite_prefix = prefix
-        self.default_sprite = default_sprite
-        self.sprite_width = img_width
-        
         self.color_palettes = []
         try:
             for color_palette in self.xml_data.findall('color_palette'):
@@ -162,12 +156,6 @@ class AbstractFighter():
         while len(self.color_palettes) < 4:
             self.color_palettes.append({})
         
-        color = self.color_palettes[self.player_num] #TODO: Pick colors
-        
-        print(directory,prefix,default_sprite,img_width,color,scale)
-        self.sprite = spriteManager.SpriteHandler(str(directory),prefix,default_sprite,img_width,color,scale)
-        
-        #try:
         try:
             actions = self.xml_data.find('actions').text
             self.action_file = actions
@@ -179,7 +167,11 @@ class AbstractFighter():
             self.actions = baseActions
             self.action_file = baseActions.__file__
         
+        
+        spriteName = self.sprite_prefix + self.default_sprite + '.png'
+        self.sprite = spriteManager.SheetSprite(os.path.join(self.base_dir,self.sprite_directory,spriteName), self.sprite_width)
         self.rect = self.sprite.rect
+        
         
         self.game_state = None
         self.players = None
@@ -230,6 +222,20 @@ class AbstractFighter():
         else: elem.text = ''
         return elem
     
+    def loadSpriteLibrary(self,_color):
+        directory = os.path.join(self.base_dir,self.sprite_directory)
+        try:
+            scale = float(self.xml_data.find('scale').text)
+        except:
+            scale = 1.0
+        
+        self.sprite = spriteManager.SpriteHandler(str(directory),
+                                                  self.sprite_prefix,
+                                                  self.default_sprite,
+                                                  self.sprite_width,
+                                                  self.color_palettes[_color],
+                                                  scale)
+        
     def initialize(self):
         self.last_input_frame = 0
 
@@ -323,6 +329,7 @@ class AbstractFighter():
         self.change_y = 0
         self.preferred_xspeed = 0
         self.preferred_yspeed = 0
+        self.trail_color = pygame.Color(settingsManager.getSetting('playerColor' + str(self.player_num)))
         
         #facing right = 1, left = -1
         self.facing = 1
@@ -828,6 +835,13 @@ class AbstractFighter():
         else:
             self.hitstop_vibration = (0,3)
         self.hitstop_pos = self.rect.center
+
+        #Crouch cancelling
+        if self.current_action.name in ('Crouch', 'CrouchCancel'):
+            _kb *= 0.5
+            _kbg *= 0.9
+            _baseHitstun = 0
+            _hitstunMultiplier *= 0.8
         
         p = float(self.damage)
         d = float(_damage)

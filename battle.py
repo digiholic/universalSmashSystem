@@ -88,6 +88,7 @@ class Battle():
             
             gui_offset = self.screen.get_rect().width / (len(self.players) + 1)
             for fighter in self.current_fighters:
+                fighter.loadSpriteLibrary(fighter.player_num)
                 fighter.rect.midbottom = self.stage.spawn_locations[fighter.player_num]
                 fighter.sprite.updatePosition(fighter.rect)
                 fighter.ecb.normalize()
@@ -233,8 +234,20 @@ class Battle():
                 if not other.compareTo(hbox):
                     other_clank = True
                     print("clank!")
-                if hbox_clank: other.owner.lockHitbox(hbox)
-                if other_clank: hbox.owner.lockHitbox(other)
+                if hbox_clank: 
+                    other.owner.lockHitbox(hbox)
+                    if hbox.article == None: hbox.owner.current_action.onClank(hbox.owner, hbox, other)
+                    else: hbox.article.onClank(hbox.owner, hbox, other)
+                else:
+                    if hbox.article == None: hbox.owner.current_action.onPrevail(hbox.owner, hbox, other)
+                    else: hbox.article.onPrevail(hbox.owner, hbox, other)
+                if other_clank: 
+                    hbox.owner.lockHitbox(other)
+                    if other.article == None: other.owner.current_action.onClank(other.owner, other, hbox)
+                    else: other.article.onClank(other.owner, other, hbox)
+                else:
+                    if other.article == None: other.owner.current_action.onPrevail(other.owner, other, hbox)
+                    else: other.article.onPrevail(other.owner, other, hbox)
                         
         hurtbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hurtboxes, False, False)
         for hbox in hurtbox_hits:

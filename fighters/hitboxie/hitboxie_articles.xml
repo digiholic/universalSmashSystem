@@ -20,6 +20,7 @@
 				<base_hitstun>5</base_hitstun>
 				<hitstun_multiplier>0</hitstun_multiplier>
 				<transcendence>-1</transcendence>
+				<color>0,0,0</color>
 			</createHitbox>
 			<changeFighterSpeed>
 				<xSpeed relative="True">24</xSpeed>
