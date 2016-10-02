@@ -9,8 +9,8 @@ import stages.true_arena as stage
 import engine.cpuPlayer as cpuPlayer
 import engine.abstractFighter as abstractFighter
 import sss
-    
 import musicManager
+
 class CSSScreen():
     def __init__(self,_rules=None):
         settings = settingsManager.getSetting().setting
