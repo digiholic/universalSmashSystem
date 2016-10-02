@@ -1164,7 +1164,7 @@ class createHitbox(SubAction):
         #build the variable dict
         variables = {}
         #these lists let the code know which keys should be which types.
-        tuple_type = ['center','size']
+        tuple_type = ['center','size','color']
         float_type = ['damage','base_knockback','knockback_growth','hitsun','damage_multiplier','velocity_multiplier',
                      'weightInfluence','shieldMultiplier','priorityDiff','charge_damage','charge_base_knockback','charge_knockback_growth',
                      'x_bias','y_bias','x_draw','y_draw','hitlag_multiplier']
@@ -1237,7 +1237,7 @@ class modifyHitbox(SubAction):
         hitbox_name = _node.attrib['name']
         hitbox_vars = {}
         
-        tuple_type = ['center','size']
+        tuple_type = ['center','size','color']
         float_type = ['damage','base_knockback','knockback_growth','hitsun','damageMultiplier','velocityMultiplier',
                      'weightInfluence','shieldMultiplier','priorityDiff','charge_damage','charge_base_knockback','charge_knockback_growth',
                      'x_bias','y_bias','x_draw','y_draw','hitlag_multiplier']
