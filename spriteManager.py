@@ -46,6 +46,11 @@ class Sprite(pygame.sprite.Sprite):
         _screen.blit(blit_sprite,new_rect) #Until this starts working
         return None
     
+    def rotate(self,_angle = 0):
+        self.angle = _angle
+        self.changed = True
+    
+    
     def getColorIndexes(self,_color):
         import numpy as np
         arr = np.array(self.image)
@@ -112,10 +117,6 @@ class SpriteHandler(Sprite):
     
     def currentAnimLength(self):
         return len(self.image_library[self.flip][self.current_sheet])
-    
-    def rotate(self,_angle = 0):
-        self.angle = _angle
-        self.changed = True
     
     def get_image(self):
         try:
