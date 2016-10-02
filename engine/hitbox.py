@@ -62,6 +62,12 @@ class Hitbox(spriteManager.RectSprite):
         spriteManager.RectSprite.__init__(self,pygame.Rect([0,0],self.size),[255,0,0])
         self.rect.center = [_owner.rect.center[0] + self.center[0], _owner.rect.center[1] + self.center[1]]
         self.article = None
+
+        if self.trail_color is None: 
+            if self.article is None:
+                self.trail_color = settingsManager.getSetting('playerColor' + str(self.owner.player_num))
+            else:
+                self.trail_color = settingsManager.getSetting('playerColor' + str(self.article.owner.player_num))
         
         self.owner_on_hit_actions = []
         self.other_on_hit_actions = []
@@ -132,11 +138,6 @@ class DamageHitbox(Hitbox):
                 if self.article is None:
                     self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                 _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
-                if self.trail_color is None:
-                    if self.article is None:
-                        self.trail_color = settingsManager.getSetting('playerColor' + str(self.owner.player_num))
-                    else:
-                        self.trail_color = settingsManager.getSetting('playerColor' + str(self.article.owner.player_num))
                 _other.trail_color = self.trail_color
                 
                 offset = random.randrange(0, 359)
@@ -190,6 +191,7 @@ class SakuraiAngleHitbox(DamageHitbox):
                     y_val = math.sqrt(knockback_ratio**2-1)/math.sqrt(2)
                     angle = math.atan2(y_val*math.sin(float(self.trajectory)/180*math.pi),x_val*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
                 _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, angle, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
+                _other.trail_color = self.trail_color
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -214,10 +216,12 @@ class AutolinkHitbox(DamageHitbox):
                     velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
                     angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
                     _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
+                    _other.trail_color = self.trail_color
                 elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
                     velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
                     angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
                     _other.applyKnockback(self.damage,velocity*self.velocity_multiplier+self.base_knockback,self.knockback_growth,getForwardWithOffset(self.article.facing*(angle+self.trajectory), self.article),self.weight_influence,self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
+                    _other.trail_color = self.trail_color
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -244,12 +248,14 @@ class FunnelHitbox(DamageHitbox):
                     x_vel = self.x_bias+self.x_draw*x_diff
                     y_vel = self.y_bias+self.y_draw*y_diff
                     _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
+                    _other.trail_color = self.trail_color
                 else:
                     x_diff = self.article.rect.centerx - _other.rect.centerx
                     y_diff = self.article.rect.centery - _other.rect.centery
                     x_vel = self.x_bias+self.x_draw*x_diff
                     y_vel = self.y_bias+self.y_draw*y_diff
                     _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, getForwardWithOffset(self.article.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory), self.article), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
+                    _other.trail_color = self.trail_color
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -295,11 +301,6 @@ class ThrowHitbox(Hitbox):
         Hitbox.activate(self)
         if (self.owner == self.owner.grabbing.grabbed_by):
             self.owner.grabbing.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
-            if self.trail_color is None: 
-                if self.article is None:
-                    self.trail_color = settingsManager.getSetting('playerColor' + str(self.owner.player_num))
-                else:
-                    self.trail_color = settingsManager.getSetting('playerColor' + str(self.article.owner.player_num))
             self.owner.grabbing.trail_color = self.trail_color
             self.kill()
             

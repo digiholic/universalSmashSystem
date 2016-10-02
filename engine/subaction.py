@@ -1096,6 +1096,8 @@ class createHitbox(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
+        if not isinstance(_actor, engine.abstractFighter.AbstractFighter):
+            _actor = _actor.owner
         if self.hitbox_name == '': return #Don't make a hitbox without a name or we'll lose it
         #Use an existing hitbox lock by name, or create a new one
         
