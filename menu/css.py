@@ -216,11 +216,7 @@ class PlayerPanel(pygame.Surface):
                 self.wheel.changeSelected(self.wheel_increment)
                 
                 self.current_color = self.player_num
-                self.icon.recolor(self.icon.image,
-                                  self.icon_color,
-                                  pygame.Color('#cccccc'))
-                self.icon_color = pygame.Color('#cccccc')
-                
+                self.recolorIcon(True)
                 
                 self.icon = self.wheel.fighterAt(0).franchise_icon
                 self.icon.rect.center = self.get_rect().center
@@ -259,6 +255,8 @@ class PlayerPanel(pygame.Surface):
             if self.active_object == self.wheel:
                 self.bg_surface = self.copy()
                 self.bg_surface.set_alpha(240)
+                self.recolorIcon(True)
+                self.recolorIcon()
                 self.active_object = None
                 self.chosen_fighter = self.wheel.fighterAt(0)
                 self.chosen_fighter.current_color = self.current_color
@@ -290,15 +288,22 @@ class PlayerPanel(pygame.Surface):
         if self.player_num == 2 or self.player_num == 3: offset[1] = self.get_height()
         _screen.blit(self,offset)
         
-    def recolorIcon(self):
-        display_color = self.wheel.fighterAt(0).palette_display
-        new_color = display_color[self.current_color % len(display_color)]
-        
-        #If the icon matches the background, make it default to the icon color 
-        if new_color == pygame.Color(self.fill_color):
-            new_color = pygame.Color('#cccccc')
+    def recolorIcon(self,_reset=False):
+        if _reset:
+            self.icon.recolor(self.icon.image,
+                                  self.icon_color,
+                                  pygame.Color('#cccccc'))
+            self.icon_color = pygame.Color('#cccccc')    
             
-        self.icon.recolor(self.icon.image,
-                          self.icon_color,
-                          new_color)
-        self.icon_color = new_color
+        else:
+            display_color = self.wheel.fighterAt(0).palette_display
+            new_color = display_color[self.current_color % len(display_color)]
+            
+            #If the icon matches the background, make it default to the icon color 
+            if new_color == pygame.Color(self.fill_color):
+                new_color = pygame.Color('#cccccc')
+                
+            self.icon.recolor(self.icon.image,
+                              self.icon_color,
+                              new_color)
+            self.icon_color = new_color
