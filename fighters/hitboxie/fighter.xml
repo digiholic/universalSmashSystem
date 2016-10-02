@@ -13,7 +13,7 @@
 	<sound_path>sfx/</sound_path>
 	<actions>hitboxie_actions.xml</actions>
 	
-	<color_palette id='0' displayColor='#000000'>
+	<color_palette id='0' displayColor='#202020'>
 	</color_palette>
 	
 	<color_palette id='1' displayColor='#0000FF'>

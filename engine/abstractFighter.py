@@ -133,6 +133,7 @@ class AbstractFighter():
             self.sprite_width = 64
             
         self.color_palettes = []
+        self.palette_display = []
         try:
             for color_palette in self.xml_data.findall('color_palette'):
                 color_dict = {}
@@ -142,6 +143,7 @@ class AbstractFighter():
                     color_dict[(from_color.r, from_color.g, from_color.b)] = (to_color.r, to_color.g, to_color.b)
                 
                 self.color_palettes.append(color_dict)
+                self.palette_display.append(pygame.Color(color_palette.attrib['displayColor']))
         except: pass
         
         while len(self.color_palettes) < 4:

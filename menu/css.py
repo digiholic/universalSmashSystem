@@ -135,6 +135,13 @@ class FighterWheel():
         self.visible_sprites = [None for _ in range(self.wheel_size)]
         self.animateWheel()
         self.wheel_shadow = spriteManager.ImageSprite(settingsManager.createPath(os.path.join("sprites","cssbar_shadow.png")))
+        self.fill_color='#000000'
+        
+    def setFillColor(self,_color):
+        self.wheel_shadow.recolor(self.wheel_shadow.image,
+                                  pygame.Color(self.fill_color),
+                                  pygame.Color(_color))
+        self.fill_color = _color
         
     def changeSelected(self,_increment):
         self.current_index = self.current_index + _increment
@@ -186,6 +193,15 @@ class PlayerPanel(pygame.Surface):
         self.bg_surface = None
         self.current_color = _playerNum
     
+        self.icon = spriteManager.ImageSprite(settingsManager.createPath('sprites/default_franchise_icon.png'))
+        self.icon.rect.center = self.get_rect().center
+        self.icon_color = pygame.Color('#cccccc')
+        
+        self.fill_color = '#000000'
+        self.wheel.setFillColor(self.fill_color)
+        
+        self.recolorIcon()
+        
     def update(self):
         if self.wheel_increment != 0:
             if self.hold_time > self.hold_distance:
@@ -196,14 +212,26 @@ class PlayerPanel(pygame.Surface):
                 elif self.hold_distance == 20:
                     self.hold_distance = 10
                 settingsManager.getSfx().playSound('selectL')
+                
                 self.wheel.changeSelected(self.wheel_increment)
+                
+                self.current_color = self.player_num
+                self.icon.recolor(self.icon.image,
+                                  self.icon_color,
+                                  pygame.Color('#cccccc'))
+                self.icon_color = pygame.Color('#cccccc')
+                
+                
+                self.icon = self.wheel.fighterAt(0).franchise_icon
+                self.icon.rect.center = self.get_rect().center
+                self.recolorIcon()
                 self.hold_time = 0
             else:
                 self.hold_time += 1
                 
         if self.bg_surface and self.bg_surface.get_alpha() > 128:
             self.bg_surface.set_alpha(self.bg_surface.get_alpha() - 10)
-                
+    
     def keyPressed(self,_key):
         if _key != 'special' and self.active == False:
             self.active = True
@@ -224,13 +252,9 @@ class PlayerPanel(pygame.Surface):
         if _key == 'left':
             if self.active_object == self.wheel:
                 self.wheel_increment = -1
-                self.current_color = self.player_num
-                print('current color:',self.current_color)
         elif _key == 'right':
             if self.active_object == self.wheel:
                 self.wheel_increment = 1
-                self.current_color = self.player_num
-                print('current color:',self.current_color)
         elif _key == 'attack':
             if self.active_object == self.wheel:
                 self.bg_surface = self.copy()
@@ -240,7 +264,7 @@ class PlayerPanel(pygame.Surface):
                 self.chosen_fighter.current_color = self.current_color
         elif _key == 'jump':
             self.current_color += 1
-            print('current color:',self.current_color)
+            self.recolorIcon()
         elif _key == 'shield':
             pass #add bot
         
@@ -252,11 +276,12 @@ class PlayerPanel(pygame.Surface):
     
     def draw(self,_screen):
         if self.active:
-            self.fill((0,0,0))
+            self.fill(pygame.Color(self.fill_color))
             if self.bg_surface:
                 self.blit(self.bg_surface,[0,0])
             else:
                 self.wheel.draw(self,self.wheel_offset)
+                self.icon.draw(self, self.icon.rect.topleft,1.0)
         else:
             self.fill(pygame.Color(settingsManager.getSetting('playerColor' + str(self.player_num))))
             #draw closed shutter
@@ -264,3 +289,16 @@ class PlayerPanel(pygame.Surface):
         if self.player_num == 1 or self.player_num == 3: offset[0] = self.get_width()
         if self.player_num == 2 or self.player_num == 3: offset[1] = self.get_height()
         _screen.blit(self,offset)
+        
+    def recolorIcon(self):
+        display_color = self.wheel.fighterAt(0).palette_display
+        new_color = display_color[self.current_color % len(display_color)]
+        
+        #If the icon matches the background, make it default to the icon color 
+        if new_color == pygame.Color(self.fill_color):
+            new_color = pygame.Color('#cccccc')
+            
+        self.icon.recolor(self.icon.image,
+                          self.icon_color,
+                          new_color)
+        self.icon_color = new_color
