@@ -132,12 +132,13 @@ class DamageHitbox(Hitbox):
                 if self.article is None:
                     self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                 _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
-                if self.trail_color is None: 
+                if self.trail_color is None:
                     if self.article is None:
                         self.trail_color = settingsManager.getSetting('playerColor' + str(self.owner.player_num))
                     else:
                         self.trail_color = settingsManager.getSetting('playerColor' + str(self.article.owner.player_num))
                 _other.trail_color = self.trail_color
+                
                 offset = random.randrange(0, 359)
                 hit_intersection = self.rect.clip(_other.hurtbox.rect).center
                 hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
@@ -298,7 +299,7 @@ class ThrowHitbox(Hitbox):
                 if self.article is None:
                     self.trail_color = settingsManager.getSetting('playerColor' + str(self.owner.player_num))
                 else:
-                    self.trail_color = psettingsManager.getSetting('playerColor' + str(self.article.owner.player_num))
+                    self.trail_color = settingsManager.getSetting('playerColor' + str(self.article.owner.player_num))
             self.owner.grabbing.trail_color = self.trail_color
             self.kill()
             
