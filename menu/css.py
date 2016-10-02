@@ -184,6 +184,7 @@ class PlayerPanel(pygame.Surface):
         self.wheel_offset = [(self.get_width() - 256) // 2,
                             (self.get_height() - 32)]
         self.bg_surface = None
+        self.current_color = _playerNum
     
     def update(self):
         if self.wheel_increment != 0:
@@ -208,7 +209,7 @@ class PlayerPanel(pygame.Surface):
             self.active = True
             return
         if _key == 'special' and self.active == True:
-            if len(self.myBots > 0):
+            if len(self.myBots) > 0:
                 pass #will disable bots
             elif self.active_object == self.wheel:
                 self.active = False
@@ -223,17 +224,23 @@ class PlayerPanel(pygame.Surface):
         if _key == 'left':
             if self.active_object == self.wheel:
                 self.wheel_increment = -1
+                self.current_color = self.player_num
+                print('current color:',self.current_color)
         elif _key == 'right':
             if self.active_object == self.wheel:
                 self.wheel_increment = 1
+                self.current_color = self.player_num
+                print('current color:',self.current_color)
         elif _key == 'attack':
             if self.active_object == self.wheel:
                 self.bg_surface = self.copy()
                 self.bg_surface.set_alpha(240)
                 self.active_object = None
                 self.chosen_fighter = self.wheel.fighterAt(0)
+                self.chosen_fighter.current_color = self.current_color
         elif _key == 'jump':
-            pass #change color
+            self.current_color += 1
+            print('current color:',self.current_color)
         elif _key == 'shield':
             pass #add bot
         

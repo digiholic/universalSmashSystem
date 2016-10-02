@@ -22,10 +22,6 @@ class AbstractFighter():
         """
         Load the fighter variables from fighter.xml
         """
-        directory = os.path.join(_baseDir,'sprites')
-        prefix = ''
-        default_sprite = 'idle'
-        img_width = '64'
         try:
             self.xml_data = ElementTree.parse(os.path.join(_baseDir,'fighter.xml')).getroot()
         except:
@@ -52,11 +48,6 @@ class AbstractFighter():
             css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
             self.css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
         self.css_icon = spriteManager.ImageSprite(css_icon_path)
-        
-        try:
-            scale = float(self.xml_data.find('scale').text)
-        except:
-            scale = 1.0
         
         self.var = {
                 'weight': 100,
@@ -173,6 +164,7 @@ class AbstractFighter():
         self.rect = self.sprite.rect
         
         
+        self.current_color = self.player_num
         self.game_state = None
         self.players = None
         
@@ -222,18 +214,21 @@ class AbstractFighter():
         else: elem.text = ''
         return elem
     
-    def loadSpriteLibrary(self,_color):
+    def loadSpriteLibrary(self,_color=None):
         directory = os.path.join(self.base_dir,self.sprite_directory)
         try:
             scale = float(self.xml_data.find('scale').text)
         except:
             scale = 1.0
         
+        if _color == None: _color = self.current_color
+        
+        
         self.sprite = spriteManager.SpriteHandler(str(directory),
                                                   self.sprite_prefix,
                                                   self.default_sprite,
                                                   self.sprite_width,
-                                                  self.color_palettes[_color],
+                                                  self.color_palettes[_color % len(self.color_palettes)],
                                                   scale)
         
     def initialize(self):
@@ -931,11 +926,11 @@ class AbstractFighter():
                 
             self.initialize()
             for i in range(0, 19):
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18, 30, 1.5, pygame.Color(color))
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18, 30, 1.5, color)
                 self.articles.add(next_hit_article)
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18+6, 60, 1.5, pygame.Color(color))
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18+6, 60, 1.5, color)
                 self.articles.add(next_hit_article)
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18+12, 90, 1.5, pygame.Color(color))
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18+12, 90, 1.5, color)
                 self.articles.add(next_hit_article)
             self.rect.midbottom = self.game_state.spawn_locations[self.player_num]
             self.rect.bottom -= 200
