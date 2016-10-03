@@ -561,6 +561,8 @@ The Data Log object keeps track of information that happens in-game, such as sco
 A log will be made for each character, and it will be given to them on load. They will keep track of updating their logs,
 and characters are free to give it new information as they see fit. For example, you could make a character like Game & Watch log
 how many of each number he scored.
+
+AbstractFighters report KOs, Falls, and Damage Taken. Hitboxes report Damage Dealt.
 """
 class DataLog(object):
     def __init__(self):
@@ -582,3 +584,6 @@ class DataLog(object):
     def setData(self,_section,_value,_function = (lambda x,y: y)):
         self.data[_section] = _function(self.getData(_section),_value)
         print(str(_section) + ": " + str(self.data[_section]))
+    
+    def addToData(self,_section,_amount):
+        self.data[_section] += _amount

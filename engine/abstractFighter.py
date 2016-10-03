@@ -813,6 +813,9 @@ class AbstractFighter():
             self.damage = 999
         if self.damage <= 0:
             self.damage = 0
+            
+        if self.data_log:
+            self.data_log.addToData('Damage Taken',_damage)
     
     """
     Do Knockback to the fighter.
@@ -927,11 +930,10 @@ class AbstractFighter():
         self.change_x = 0
         self.change_y = 0
         self.jumps = self.var['jumps']
-        self.data_log.setData('Falls',1,lambda x,y: x+y)
+        self.data_log.addToData('Falls',1)
         if self.hit_tagged != None:
             if hasattr(self.hit_tagged, 'data_log'):
-                self.hit_tagged.data_log.setData('KOs',1,lambda x,y: x+y)
-        
+                self.hit_tagged.data_log.addToData('KOs',1)
         if _respawn:
             if self.hit_tagged is not None:
                 color = settingsManager.getSetting('playerColor' + str(self.hit_tagged.player_num))

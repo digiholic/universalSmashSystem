@@ -139,6 +139,7 @@ class DamageHitbox(Hitbox):
             if _other.lockHitbox(self):
                 if self.article is None:
                     self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+                self.owner.data_log.addToData('Damage Dealt',self.damage)
                 _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                 _other.trail_color = self.trail_color
                 
@@ -193,6 +194,7 @@ class SakuraiAngleHitbox(DamageHitbox):
                     x_val = math.sqrt(knockback_ratio**2+1)/math.sqrt(2)
                     y_val = math.sqrt(knockback_ratio**2-1)/math.sqrt(2)
                     angle = math.atan2(y_val*math.sin(float(self.trajectory)/180*math.pi),x_val*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
+                self.owner.data_log.addToData('Damage Dealt',self.damage)
                 _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, angle, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                 _other.trail_color = self.trail_color
 
@@ -218,11 +220,13 @@ class AutolinkHitbox(DamageHitbox):
                     self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
                     velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
                     angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
+                    self.owner.data_log.addToData('Damage Dealt',self.damage)
                     _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                     _other.trail_color = self.trail_color
                 elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
                     velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
                     angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
+                    self.owner.data_log.addToData('Damage Dealt',self.damage)
                     _other.applyKnockback(self.damage,velocity*self.velocity_multiplier+self.base_knockback,self.knockback_growth,getForwardWithOffset(self.article.facing*(angle+self.trajectory), self.article),self.weight_influence,self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                     _other.trail_color = self.trail_color
 
@@ -250,6 +254,7 @@ class FunnelHitbox(DamageHitbox):
                     y_diff = self.rect.centery - _other.rect.centery
                     x_vel = self.x_bias+self.x_draw*x_diff
                     y_vel = self.y_bias+self.y_draw*y_diff
+                    self.owner.data_log.addToData('Damage Dealt',self.damage)
                     _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                     _other.trail_color = self.trail_color
                 else:
@@ -257,6 +262,7 @@ class FunnelHitbox(DamageHitbox):
                     y_diff = self.article.rect.centery - _other.rect.centery
                     x_vel = self.x_bias+self.x_draw*x_diff
                     y_vel = self.y_bias+self.y_draw*y_diff
+                    self.owner.data_log.addToData('Damage Dealt',self.damage)
                     _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, getForwardWithOffset(self.article.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory), self.article), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                     _other.trail_color = self.trail_color
 
@@ -305,6 +311,7 @@ class ThrowHitbox(Hitbox):
     def activate(self):
         Hitbox.activate(self)
         if (self.owner == self.owner.grabbing.grabbed_by):
+            self.owner.data_log.addToData('Damage Dealt',self.damage)
             self.owner.grabbing.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
             self.owner.grabbing.trail_color = self.trail_color
             self.kill()
