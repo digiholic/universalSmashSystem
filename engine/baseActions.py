@@ -565,27 +565,26 @@ class HitStun(action.Action):
         else:
             _actor.elasticity = _actor.var['hitstun_elasticity']
         
-        if not self.feet_planted:
-            if self.last_frame > 15 and self.frame > 2:
-                if _actor.change_y >= _actor.var['max_fall_speed']: 
-                    _actor.ground_elasticity = _actor.var['hitstun_elasticity']
-                elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
-                    _actor.ground_elasticity = 0
-                    if _actor.grounded:
-                        _actor.doAction('Prone')
-                elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
-                    _actor.ground_elasticity = 0
-                    if _actor.grounded: 
-                        _actor.doAction('Prone')
-                else: 
-                    _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
-            elif self.last_frame <= 15:
-                _actor.ground_elasticity = 0
-                if _actor.grounded and self.do_slow_getup:
-                    print("Successful jab reset")
-                    _actor.doAction('SlowGetup')
-            else:
+        if self.last_frame > 15 and self.frame > 2:
+            if _actor.change_y >= _actor.var['max_fall_speed']: 
                 _actor.ground_elasticity = _actor.var['hitstun_elasticity']
+            elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
+                _actor.ground_elasticity = 0
+                if _actor.grounded and not self.feet_planted:
+                    _actor.doAction('Prone')
+            elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
+                _actor.ground_elasticity = 0
+                if _actor.grounded and not self.feet_planted: 
+                    _actor.doAction('Prone')
+            else: 
+                _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
+        elif self.last_frame <= 15:
+            _actor.ground_elasticity = 0
+            if _actor.grounded and self.do_slow_getup:
+                print("Successful jab reset")
+                _actor.doAction('SlowGetup')
+        else:
+            _actor.ground_elasticity = _actor.var['hitstun_elasticity']
         
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
@@ -898,7 +897,7 @@ class Land(action.Action):
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
-        #_actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
+        _actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
 
 
     def tearDown(self, _actor, _nextAction):
@@ -936,7 +935,7 @@ class HelplessLand(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="helplessLand"
         action.Action.setUp(self, _actor)
-        #_actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
+        _actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
 
 
     def update(self,_actor):
