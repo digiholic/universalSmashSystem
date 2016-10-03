@@ -226,26 +226,20 @@ class Battle():
             hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner)]
             if hitbox_clank: print(hitbox_clank)
             for other in hitbox_clank:
-                hbox_clank = False
-                other_clank = False
-                if not hbox.compareTo(other):
-                    hbox_clank = True
-                    print("CLANK!")
-                if not other.compareTo(hbox):
-                    other_clank = True
-                    print("clank!")
-                if hbox_clank: 
+                hbox_clank = hbox.compareTo(other)
+                other_clank = other.compareTo(hbox)
+                if hbox_clank == -1: 
                     other.owner.lockHitbox(hbox)
                     if hbox.article == None: hbox.owner.current_action.onClank(hbox.owner, hbox, other)
                     else: hbox.article.onClank(hbox.owner, hbox, other)
-                else:
+                elif hbox_clank == 1:
                     if hbox.article == None: hbox.owner.current_action.onPrevail(hbox.owner, hbox, other)
                     else: hbox.article.onPrevail(hbox.owner, hbox, other)
-                if other_clank: 
+                if other_clank == -1: 
                     hbox.owner.lockHitbox(other)
                     if other.article == None: other.owner.current_action.onClank(other.owner, other, hbox)
                     else: other.article.onClank(other.owner, other, hbox)
-                else:
+                elif other_clank == 1:
                     if other.article == None: other.owner.current_action.onPrevail(other.owner, other, hbox)
                     else: other.article.onPrevail(other.owner, other, hbox)
                         
