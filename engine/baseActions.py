@@ -1737,7 +1737,7 @@ def neutralState(_actor):
 
 def crouchState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
-    tiltReversible(_actor)
+    tapReversible(_actor)
     if _actor.keyHeld('shield'):
         if _actor.keysContain(invkey):
             _actor.doAction('BackwardRoll')

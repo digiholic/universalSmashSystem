@@ -66,7 +66,7 @@ class AbstractFighter():
                 'run_speed': 11.0,
                 'max_air_speed': 5.5,
                 'aerial_transition_speed': 9.0,
-                'crawl_speed': 0,
+                'crawl_speed': 2.5,
                 'dodge_speed': 10.0,
                 'friction': 0.3,
                 'static_grip': 0.3,
