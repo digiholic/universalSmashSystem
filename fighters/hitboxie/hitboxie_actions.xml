@@ -22,9 +22,9 @@
 	</Stop>
 	
 	<RunStop>
-		<length>12</length>
+		<length>18</length>
 		<sprite>pivot</sprite>
-		<sprite_rate>4</sprite_rate>
+		<sprite_rate>6</sprite_rate>
 		
 	</RunStop>
 	
@@ -124,13 +124,6 @@
 				<value type="bool">False</value>
 				<pass>noAccel</pass>
 			</if>
-			
-			<!-- Demonstration to show function, don't uncomment unless you like lag -->
-			<!--print>
-				<function source="settingsManager.py">
-					<functionName>getSetting</functionName>
-				</function>
-			</print-->
 		</frame>
 		<frame number="last">
 			<setFrame>12</setFrame>
@@ -148,12 +141,6 @@
 		<vars>
 			<run_start_frame type="int">8</run_start_frame>
 		</vars>
-		
-		<frame number="4">
-			<changeFighterPreferredSpeed>
-				<xSpeed relative="true">9</xSpeed>
-			</changeFighterPreferredSpeed>
-		</frame>
 	</Dash>
 	
 	<Pivot>
@@ -164,9 +151,9 @@
 	</Pivot>
 	
 	<RunPivot>
-		<length>15</length>
+		<length>20</length>
 		<sprite>pivot</sprite>
-		<sprite_rate>-3</sprite_rate>
+		<sprite_rate>-4</sprite_rate>
 	</RunPivot>
 	
 	<Grabbing>
