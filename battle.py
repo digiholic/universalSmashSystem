@@ -77,8 +77,8 @@ class Battle():
                 pygame.time.set_timer(pygame.USEREVENT+2, 1000)
                 countdown_sprite = spriteManager.TextSprite('5','full Pack 2025',128,[0,0,0])
                 countdown_sprite.rect.center = self.screen.get_rect().center
-                count_alpha = 0
-                countdown_sprite.alpha(count_alpha)
+                self.count_alpha = 0
+                countdown_sprite.alpha(self.count_alpha)
                 self.gui_objects.append(countdown_sprite)
                 
                 self.clock_sprite = spriteManager.TextSprite('8:00','rexlia rg',32,[0,0,0])
@@ -202,7 +202,7 @@ class Battle():
                 self.clock_time -= 1
                 if self.clock_time <= 5 and self.clock_time > 0:
                     self.countdown_sprite.changeText(str(self.clock_time))
-                    count_alpha = 255
+                    self.count_alpha = 255
                 if self.clock_time == 0:
                     self.exit_status = 2
         # End pygame event loop
@@ -331,8 +331,8 @@ class Battle():
             draw_rect = obj.draw(self.screen, obj.rect.topleft,1)
             if draw_rect: self.dirty_rects.append(draw_rect)
         if self.track_time and self.clock_time <= 5:
-            count_alpha = max(0,count_alpha - 5)
-            self.countdown_sprite.alpha(count_alpha)
+            self.count_alpha = max(0,self.count_alpha - 5)
+            self.countdown_sprite.alpha(self.count_alpha)
          
         self.clock.tick(self.clock_speed)
         optimized_rects = engine.optimize_dirty_rects.optimize_dirty_rects(self.dirty_rects)
@@ -561,6 +561,8 @@ The Data Log object keeps track of information that happens in-game, such as sco
 A log will be made for each character, and it will be given to them on load. They will keep track of updating their logs,
 and characters are free to give it new information as they see fit. For example, you could make a character like Game & Watch log
 how many of each number he scored.
+
+AbstractFighters report KOs, Falls, and Damage Taken. Hitboxes report Damage Dealt.
 """
 class DataLog(object):
     def __init__(self):
@@ -582,3 +584,6 @@ class DataLog(object):
     def setData(self,_section,_value,_function = (lambda x,y: y)):
         self.data[_section] = _function(self.getData(_section),_value)
         print(str(_section) + ": " + str(self.data[_section]))
+    
+    def addToData(self,_section,_amount):
+        self.data[_section] += _amount
