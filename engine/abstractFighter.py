@@ -149,6 +149,12 @@ class AbstractFighter():
         while len(self.color_palettes) < 4:
             self.color_palettes.append({})
         
+        self.costumes = [self.sprite_prefix]
+        try:
+            for costume in self.xml_data.findall('costume'):
+                self.costumes.append(costume.text)
+        except: pass
+        
         try:
             actions = self.xml_data.find('actions').text
             self.action_file = actions
@@ -165,8 +171,8 @@ class AbstractFighter():
         self.sprite = spriteManager.SheetSprite(os.path.join(self.base_dir,self.sprite_directory,spriteName), self.sprite_width)
         self.rect = self.sprite.rect
         
-        
         self.current_color = self.player_num
+        self.current_costume = self.sprite_prefix
         self.game_state = None
         self.players = None
         
@@ -201,6 +207,11 @@ class AbstractFighter():
                 color_elem.append(map_elem)
             tree.append(color_elem)
         stats_elem = ElementTree.Element('stats')
+        
+        for costume in self.costumes:
+            if not costume == self.sprite_prefix:
+                tree.append(self.createElement('costume', costume))
+            
         for tag,val in self.var.iteritems():
             stats_elem.append(self.createElement(tag, val))
         tree.append(stats_elem)
@@ -227,11 +238,12 @@ class AbstractFighter():
         
         
         self.sprite = spriteManager.SpriteHandler(str(directory),
-                                                  self.sprite_prefix,
+                                                  self.current_costume,
                                                   self.default_sprite,
                                                   self.sprite_width,
                                                   self.color_palettes[_color % len(self.color_palettes)],
                                                   scale)
+        self.rect = self.sprite.rect
         
     def initialize(self):
         self.last_input_frame = 0
