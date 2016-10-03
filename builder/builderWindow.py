@@ -151,7 +151,8 @@ class MainFrame(Tk):
                 return
         else:
             new_fighter = engine.abstractFighter.AbstractFighter(dirname,0)
-            
+        
+        new_fighter.loadSpriteLibrary(0)
         new_fighter.initialize()
         fighter = new_fighter
         self.wm_title('Legacy Editor - '+fighter.name)        
@@ -182,14 +183,13 @@ class MenuBar(Menu):
         self.file_menu.add_command(label="Load Fighter", command=self.loadFighter)
         self.file_menu.add_command(label="Save Fighter", command=self.saveFighter)
         self.file_menu.add_separator()
-        self.file_menu.add_command(label="Exit", command=self.root.destroy)
+        #self.file_menu.add_command(label="Exit", command=self.root.destroy)
         
         self.action_menu.add_command(label="Add Action", command=self.addAction)
         self.action_menu.add_command(label="Save Action", command=self.saveAction, state=DISABLED)
         self.action_menu.add_command(label="Delete Action", command=self.deleteAction, state=DISABLED)
         self.action_menu.add_separator()
         self.action_menu.add_command(label="Add Conditional", command=self.addConditional, state=DISABLED)
-        
         
         self.root.fighter_string.trace('w',self.changeFighter)
         self.root.action_string.trace('w',self.changeAction)
