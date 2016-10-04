@@ -61,6 +61,7 @@ class debugConsole(pdb.Pdb):
         pass #Don't want to cause problems
 
     def do_setdamage(self, _args):
+        """Sets the damage of a fighter to a value.\nSyntax: setdamage <player_num> <value>\nNote that player_num is zero indexed."""
         split_args = _args.split(' ')
         if len(self.game_env.current_fighters) > int(split_args[0]):
             dmg = max(0,min(999,int(split_args[1]))) #clamp it between 0 and 999
