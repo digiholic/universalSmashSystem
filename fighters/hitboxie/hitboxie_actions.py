@@ -14,6 +14,7 @@ class ForwardSpecial(action.Action):
         self.should_continue = True
 
     def setUp(self, _actor):
+        action.Action.setUp(self, _actor)
         #TODO Attribute checking
         ambience =  {'center': [0,0],
                      'size': [80,80],
@@ -98,9 +99,9 @@ class ForwardSpecial(action.Action):
         if not self.should_continue:
             return
         _actor.changeSpriteImage(self.sprite_image%16)
-        _actor.hurtbox.rect.width = 64
-        _actor.hurtbox.rect.height = 64
-        _actor.hurtbox.rect.center = _actor.sprite.bounding_rect.center
+        _actor.auto_hurtbox.rect.width = 64
+        _actor.auto_hurtbox.rect.height = 64
+        _actor.auto_hurtbox.rect.center = _actor.sprite.bounding_rect.center
         _actor.accel(_actor.var['air_control'])
         if self.frame <= self.last_frame-2:
             self.sprite_image += 1
@@ -157,102 +158,6 @@ class ForwardSpecial(action.Action):
                     _actor.landing_lag = 25
                     _actor.doAction('Fall')
 
-        self.frame += 1
-            
-class UpSpecial(action.Action):
-    def __init__(self):
-        action.Action.__init__(self, 80)
-        self.angle = 90
-        self.sprite_rate = 0
-        
-    def setUp(self, _actor):
-        action.Action.setUp(self,_actor)
-        shared_lock = hitbox.HitboxLock()
-        self.launchHitbox = hitbox.DamageHitbox(_actor,shared_lock,
-                                                {'center':[0,0],
-                                                 'size':[64,64],
-                                                 'damage':14,
-                                                 'base_knockback':12,
-                                                 'knockback_growth':0.1,
-                                                 'trajectory': 90,
-                                                 'hitstun_multiplier':2.8                                                 
-                                                 })
-        self.flyingHitbox = hitbox.DamageHitbox(_actor,shared_lock,
-                                                {'center':[0,0],
-                                                 'size':[64,64],
-                                                 'damage':8,
-                                                 'base_knockback':10,
-                                                 'knockback_growth':0.05,
-                                                 'trajectory': 90,
-                                                 'hitstun_multiplier':2                                                
-                                                 })
-        _actor.changeSprite('dsmash')
-        _actor.changeSpriteImage(4)
-        
-        
-    def tearDown(self, _actor, _newAction):
-        action.Action.tearDown(self,_actor,_newAction)
-        self.launchHitbox.kill()
-        self.flyingHitbox.kill()
-        _actor.unRotate()
-        _actor.preferred_yspeed = _actor.var['max_fall_speed']
-    
-    def stateTransitions(self,_actor):
-        if self.frame < 31:
-            _actor.change_y = 0
-            _actor.preferred_yspeed = 0
-        if self.frame > 31:
-            baseActions.grabLedges(_actor)
-        if self.frame >= 56:
-            _actor.preferred_yspeed = _actor.var['max_fall_speed']
-            baseActions.airControl(_actor)
-    
-    def update(self,_actor):
-        _actor.landing_lag = 10
-        if self.frame <= 30:
-            _actor.unRotate()
-            _actor.change_x = 0
-            _actor.change_y = 0
-            
-            self.angle = _actor.getSmoothedAngle(90)
-            direction = abstractFighter.getXYFromDM(self.angle, 1.0)
-            _actor.rotateSprite(self.angle)
-            
-        if self.frame == 0:
-            _actor.playSound('slingsquare')
-        if self.frame == 3:
-            _actor.changeSpriteImage(5)
-        if self.frame == 6:
-            _actor.changeSpriteImage(6)
-        if self.frame == 9:
-            _actor.changeSpriteImage(7)
-        if self.frame == 12:
-            _actor.changeSpriteImage(8)
-        if self.frame == 15:
-            _actor.changeSpriteImage(9)
-            
-        if self.frame == 30:
-            self.launchHitbox.trajectory = self.angle
-            self.flyingHitbox.trajectory = self.angle
-            _actor.active_hitboxes.add(self.launchHitbox)
-            _actor.changeSprite('airjump')
-            self.ecb_size = [92, 92]
-            _actor.preferred_yspeed = _actor.var['max_fall_speed']
-            _actor.change_x = direction[0] * 20
-            _actor.preferred_xspeed = _actor.var['max_air_speed'] * direction[0]
-            _actor.change_y = direction[1] * 20
-            
-        if self.frame == 31:
-            self.launchHitbox.kill()
-            _actor.active_hitboxes.add(self.flyingHitbox)
-        if self.frame == 56:
-            self.flyingHitbox.kill()
-        if self.frame > 31:
-            if self.frame % 2 == 0:
-                _actor.changeSpriteImage((self.frame - 15) // 2,_loop=True)
-            self.flyingHitbox.update()
-        if self.frame == self.last_frame:
-            _actor.doAction('Helpless')
         self.frame += 1
 
 ########################################################

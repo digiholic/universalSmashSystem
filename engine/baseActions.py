@@ -1362,7 +1362,6 @@ class BaseLedgeGetup(BaseLedge):
         
     def setUp(self, _actor):
         BaseLedge.setUp(self, _actor)
-        self.up_level = _actor.hurtbox.rect.top
         _actor.preferred_xspeed = 0
         _actor.preferred_yspeed = 0
         _actor.invulnerable = self.last_frame

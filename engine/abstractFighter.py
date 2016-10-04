@@ -313,8 +313,9 @@ class AbstractFighter():
         elif hasattr(self.actions, 'NeutralAction'):
             class_ = getattr(self.actions,'NeutralAction')
             self.current_action = class_()
-            
-        self.hurtbox = hitbox.Hurtbox(self,self.sprite.bounding_rect,[255,255,0])
+
+        self.active_hurtboxes = pygame.sprite.Group()
+        self.auto_hurtbox = hitbox.Hurtbox(self)
         
         # Set the attributes and variables
         self.var = self.defaultAttr.copy()
@@ -438,10 +439,6 @@ class AbstractFighter():
                 self.current_action.frame = self.current_action.last_frame
             self.tech_window -= 1
 
-        # We set the hurbox to be the Bounding Rect of the sprite.
-        # It is done here, so that the hurtbox can be changed by the action.
-        self.hurtbox.rect = self.sprite.bounding_rect.copy()
-        
         #Step three, change state and update
         self.current_action.stateTransitions(self)
         self.current_action.update(self) #update our action
@@ -980,12 +977,19 @@ class AbstractFighter():
             sfxlib.playSound(_sound,'base')
     
     """
-    Activates a hitbbox, adding it to your active_hitboxes list.
+    Activates a hitbox, adding it to your active_hitboxes list.
     @_hitbox - the hitbox to activate
     """
     def activateHitbox(self,_hitbox):
         self.active_hitboxes.add(_hitbox)
         _hitbox.activate()
+
+    """
+    Activates a hurtbox, adding it to your active_hurtboxes list.
+    @_hurtbox - the hitbox to activate
+    """
+    def activateHurtbox(self,_hurtbox):
+        self.active_hurtboxes.add(_hurtbox)
         
     """
     This will "lock" the hitbox so that another hitbox with the same ID from the same fighter won't hit again.

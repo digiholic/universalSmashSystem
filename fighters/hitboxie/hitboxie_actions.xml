@@ -524,8 +524,6 @@
 			<side_frame type="int">12</side_frame>
 		</vars>
 		<frame number="before">
-			<updateHitbox>dashHitbox</updateHitbox>
-			<updateHitbox>chainHitbox</updateHitbox>
 			<modifyHurtbox>
 				<center centerOn="image">0,0</center>
 				<size>64,64</size>
@@ -611,10 +609,6 @@
 		<transitions>
 			<transitionState>checkGrounded</transitionState>
 		</transitions>
-
-		<frame number="before">
-			<updateHitbox>jab</updateHitbox>
-		</frame>
 		
 		<frame number="4">
 			<playSound>jab</playSound>
@@ -687,7 +681,6 @@
 			<playSound>ftilt</playSound>
 		</frame>
 		<frame number="14">
-			<updateHitbox>fTilt0</updateHitbox>
 			<activateHitbox>fTilt0</activateHitbox>
 		</frame>
 		<frame number="16">
@@ -758,7 +751,6 @@
 		</frame>
 		<frame number="16">
 			<changeSubimage>7</changeSubimage>
-			<updateHitbox>fSmash0</updateHitbox>
 			<activateHitbox>fSmash0</activateHitbox>
 		</frame>
 		<frame number="32">
@@ -819,12 +811,6 @@
 		<transitions>
 			<transitionState>checkGrounded</transitionState>
 		</transitions>
-		
-		<frame number="before">
-			<updateHitbox>sweet</updateHitbox>
-			<updateHitbox>tangy</updateHitbox>
-			<updateHitbox>sour</updateHitbox>
-		</frame>
 		
 		<frame number="0">
 			<playSound>utilt</playSound>
@@ -981,37 +967,31 @@
 		<frame number="12">
 			<activateArticle>firework</activateArticle>
 			<changeSubimage>5</changeSubimage>
-			<updateHitbox>popup</updateHitbox>
 			<activateHitbox>popup</activateHitbox>
 		</frame>
 		<frame number="15">
 			<changeSubimage>6</changeSubimage>
 			<deactivateHitbox>popup</deactivateHitbox>
-			<updateHitbox>weakL</updateHitbox>
 			<activateHitbox>weakL</activateHitbox>
 		</frame>
 		<frame number="18">
 			<changeSubimage>7</changeSubimage>
 			<deactivateHitbox>weakL</deactivateHitbox>
-			<updateHitbox>weakR</updateHitbox>
 			<activateHitbox>weakR</activateHitbox>
 		</frame>
 		<frame number="21">
 			<changeSubimage>8</changeSubimage>
 			<deactivateHitbox>weakR</deactivateHitbox>
-			<updateHitbox>weakL</updateHitbox>
 			<activateHitbox>weakL</activateHitbox>
 		</frame>
 		<frame number="24">
 			<changeSubimage>9</changeSubimage>
 			<deactivateHitbox>weakL</deactivateHitbox>
-			<updateHitbox>weakR</updateHitbox>
 			<activateHitbox>weakR</activateHitbox>
 		</frame>
 		<frame number="27">
 			<changeSubimage>10</changeSubimage>
 			<deactivateHitbox>weakR</deactivateHitbox>
-			<updateHitbox>uSmash</updateHitbox>
 			<activateHitbox>uSmash</activateHitbox>
 		</frame>
 		<frame number="last">
@@ -1069,11 +1049,6 @@
 			<doAction>NeutralAction</doAction>
 		</onClank>
 		
-		<frame number="before">
-			<updateHitbox>spikeBox</updateHitbox>
-			<updateHitbox>rightHbox</updateHitbox>
-			<updateHitbox>leftHbox</updateHitbox>
-		</frame>
 		<frame number="0">
 			<playSound>dtilt</playSound>
 		</frame>
@@ -1192,11 +1167,6 @@
 			<doAction>NeutralAction</doAction>
 		</onClank>
 		
-		<frame number="before">
-			<updateHitbox>rightHbox</updateHitbox>
-			<updateHitbox>leftHbox</updateHitbox>
-
-		</frame>
 		<frame number="10">
 			<activateHitbox>rightHbox1</activateHitbox>
 			<activateHitbox>leftHbox1</activateHitbox>
@@ -1290,7 +1260,6 @@
 		</transitions>
 		
 		<frame number="before">
-			<updateHitbox>nairBox</updateHitbox>
 			<modifyHurtbox>
 				<center centerOn="image">0,0</center>
 				<size>64,64</size>
@@ -1365,9 +1334,6 @@
 			</createHitbox>
 		</setUp>
 		
-		<frame number="before">
-			<updateHitbox>bairBox</updateHitbox>
-		</frame>
 		<frame number="2">
 			<updateLandingLag>10</updateLandingLag>
 			<changeFighterSpeed>
@@ -1435,10 +1401,6 @@
 			</createHitbox>
 		</setUp>
 		
-		<frame number="before">
-			<updateHitbox>sourSpot</updateHitbox>
-			<updateHitbox>sweetSpot</updateHitbox>
-		</frame>
 		<frame number="0">
 			<updateLandingLag>20</updateLandingLag>
 			<playSound>fair</playSound>
@@ -1531,11 +1493,6 @@
 			<transitionState>airControl</transitionState>
 		</transitions>
 		
-		<frame number="before">
-			<updateHitbox>sour</updateHitbox>
-			<updateHitbox>tangy</updateHitbox>
-			<updateHitbox>sweet</updateHitbox>
-		</frame>
 		<frame number="0">
 			<updateLandingLag>16</updateLandingLag>
 			<playSound>uair</playSound>	
@@ -1642,13 +1599,6 @@
 			<exec>_actor.rect.y += _actor.sprite.bounding_rect.height-64</exec>
 		</tearDown>
 		
-		<frame number="before">
-			<updateHitbox>downHbox</updateHitbox>
-			<updateHitbox>leftDiagHbox</updateHitbox>
-			<updateHitbox>rightDiagHbox</updateHitbox>
-			<updateHitbox>leftSourHbox</updateHitbox>
-			<updateHitbox>rightSourHbox</updateHitbox>
-		</frame>
 		<frame number="3">
 			<updateLandingLag>16</updateLandingLag>
 		</frame>
@@ -1739,8 +1689,6 @@
 		</setUp>
 		
 		<frame number="before">
-			<updateHitbox>dashHitbox</updateHitbox>
-			<updateHitbox>chainHitbox</updateHitbox>
 			<modifyHurtbox>
 				<center centerOn="image">0,0</center>
 				<size>64,64</size>
@@ -1790,15 +1738,14 @@
 		<frame number="14">
 			<changeSubimage>7</changeSubimage>
 		</frame>
-
-		<frame number="18">
+		<frame number="20">
+			<changeSubimage>8</changeSubimage>
+		</frame>
+		<frame number="21">
 			<ifButton>
 				<button check="keysContain">special</button>
 				<pass>repeatAttack</pass>
 			</ifButton>
-		</frame>
-		<frame number="20">
-			<changeSubimage>8</changeSubimage>
 		</frame>
 		<frame number="26">
 			<changeSubimage>9</changeSubimage>
@@ -1905,11 +1852,6 @@
 			</changeFighterPreferredSpeed>
 			<removeMask></removeMask>
 		</tearDown>
-		
-		<frame number="before">
-			<updateHitbox>reflect</updateHitbox>
-			<updateHitbox>damage</updateHitbox>
-		</frame>
 		<frame number="0">
 			<changeFighterSpeed>
 				<ySpeed>0</ySpeed>
@@ -1988,11 +1930,6 @@
 			<transitionState>checkGrounded</transitionState>
 		</transitions>
 		
-		<frame number="before">
-			<updateHitbox>dashHitbox</updateHitbox>
-			<updateHitbox>chainHitbox</updateHitbox>
-		</frame>
-		
 		<frame number="12">
 			<activateHitbox>chainHitbox</activateHitbox>
 		</frame>
@@ -2034,10 +1971,6 @@
 				<trajectory>40</trajectory>
 			</createHitbox>
 		</setUp>
-		
-		<frame number="after">
-			<updateHitbox>throwBox</updateHitbox>
-		</frame>
 		<frame number="14">
 			<activateHitbox>throwBox</activateHitbox>
 		</frame>
@@ -2324,10 +2257,6 @@
 			</if>
 		</transitions>
 		
-		<frame number="before">
-			<updateHitbox>flyingHitbox</updateHitbox>
-		</frame>
-		
 		<frame number="26">
 			<deactivateHitbox>flyingHitbox</deactivateHitbox>
 		</frame>
@@ -2455,10 +2384,6 @@
 				<hitlag_multiplier>0</hitlag_multiplier>
 			</createHitbox>
 		</setUp>
-
-		<frame number="before">
-			<updateHitbox>jab</updateHitbox>
-		</frame>
 		
 		<frame number="4">
 			<activateHitbox>jab</activateHitbox>

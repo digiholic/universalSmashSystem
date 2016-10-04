@@ -216,8 +216,8 @@ class Battle():
             obj.update()
             if hasattr(obj,'active_hitboxes'):
                 self.active_hitboxes.add(obj.active_hitboxes)
-            if hasattr(obj, 'hurtbox'):
-                self.active_hurtboxes.add(obj.hurtbox)
+            if hasattr(obj, 'active_hurtboxes'):
+                self.active_hurtboxes.add(obj.active_hurtboxes)
 
         hitbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hitboxes, False, False)
         for hbox in hitbox_hits:
@@ -313,10 +313,9 @@ class Battle():
                 scale =  self.stage.getScale()
                 draw_rect = art.draw(self.screen,offset,scale)
                 if draw_rect: self.dirty_rects.append(draw_rect)
-            if hasattr(obj, 'hurtbox'):
-                if (self.settings['showHurtboxes']): 
-                    offset = self.stage.stageToScreen(obj.hurtbox.rect)
-                    draw_rect = obj.hurtbox.draw(self.screen,offset,scale)
+            if (self.settings['showHurtboxes']): 
+                for hbox in self.active_hurtboxes:
+                    draw_rect = hbox.draw(self.screen,self.stage.stageToScreen(hbox.rect),scale)
                     if draw_rect: self.dirty_rects.append(draw_rect)
             if (self.settings['showHitboxes']):
                 for hbox in self.active_hitboxes:

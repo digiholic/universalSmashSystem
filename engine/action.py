@@ -24,6 +24,7 @@ class Action():
         
         self.hitboxes = {}
         self.hitbox_locks = {}
+        self.hurtboxes = {}
         self.articles = {}
         
         self.name = str(self.__class__).split('.')[-1]
@@ -63,10 +64,15 @@ class Action():
                 act.execute(self,_actor)
         for act in self.actions_after_frame:
             act.execute(self,_actor)
+        for hitbox in self.hitboxes.values():
+            hitbox.update()
+        for hurtbox in self.hurtboxes.values():
+            hurtbox.update()
             
     def updateAnimationOnly(self,_actor):
         animation_actions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition,
-                            subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox, subaction.updateHitbox)
+                            subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox, 
+                            subaction.activateHurtbox, subaction.deactivateHurtbox, subaction.modifyHurtbox)
         for act in self.actions_before_frame:
             if isinstance(act, animation_actions):
                 act.execute(self,_actor)
@@ -87,6 +93,11 @@ class Action():
                 _actor.changeSpriteImage((self.frame // self.sprite_rate)-1, _loop=self.loop)
             else:
                 _actor.changeSpriteImage(self.frame // self.sprite_rate, _loop=self.loop)
+
+        for hitbox in self.hitboxes.values():
+            hitbox.update()
+        for hurtbox in self.hurtboxes.values():
+            hurtbox.update()
                 
         self.frame += 1         
     
@@ -104,10 +115,16 @@ class Action():
         
         for act in self.set_up_actions:
             act.execute(self,_actor)
+
+        if not len(self.hurtboxes):
+            self.hurtboxes['auto'] = _actor.auto_hurtbox
+            _actor.activateHurtbox(self.hurtboxes['auto'])
             
     def tearDown(self,_actor,_nextAction):
         for hitbox in self.hitboxes.values():
             hitbox.kill()
+        for hurtbox in self.hurtboxes.values():
+            hurtbox.kill()
         for act in self.tear_down_actions:
             act.execute(self,_actor)
 

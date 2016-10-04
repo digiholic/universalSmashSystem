@@ -1310,27 +1310,6 @@ class deactivateHitbox(SubAction):
         return 'Deactivate Hitbox: ' + self.hitbox_name
 
 
-class updateHitbox(SubAction):
-    subact_group = 'Hitbox'
-    fields = [NodeMap('hitbox_name','string','updateHitbox','')
-              ]
-    
-    def __init__(self,_hitboxName=''):
-        SubAction.__init__(self)
-        self.hitbox_name = _hitboxName
-    
-    def getPropertiesPanel(self, _root):
-        return subactionSelector.UpdateHitboxProperties(_root,self)
-    
-    def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
-        if _action.hitboxes.has_key(self.hitbox_name):
-            _action.hitboxes[self.hitbox_name].update()
-    
-    def getDisplayName(self):
-        return 'Update Hitbox Position: ' + self.hitbox_name
-
-
 class unlockHitbox(SubAction):
     subact_group = 'Hitbox'
     fields = [NodeMap('hitbox_name','string','unlockHitbox','')
@@ -1351,48 +1330,157 @@ class unlockHitbox(SubAction):
     def getDisplayName(self):
         return 'Unlock Hitbox: ' + self.hitbox_name
 
+# Create a new hurtbox
+class createHurtbox(SubAction):
+    subact_group = 'Hurtbox'
     
-# Change the fighter's Hurtbox (where they have to be hit to take damage)
-# This is not done automatically when sprites change, so if your sprite takes the fighter out of his usual bounding box, make sure to change it.
-# If a hurtbox overlaps a hitbox, the hitbox will be resolved first, so the fighter won't take damage in the case of clashes.
-class modifyHurtBox(SubAction):
-    subact_group = 'Behavior'
-    fields = [NodeMap('center','tuple','modifyHurtbox>center',(0,0)),
-              NodeMap('size','tuple','modifyHurtbox>size',(0,0)),
-              NodeMap('image_center','bool','modifyHurtbox>center|centerOn',False)
-              ]
-    
-    def __init__(self,_center=[0,0],_size=[0,0],_imageCenter = False):
+    def __init__(self, _name='', _variables={}):
         SubAction.__init__(self)
-        self.center = _center
-        self.size = _size
-        self.image_center = _imageCenter
+        self.hurtbox_name = _name
+        self.hurtbox_vars = _variables
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        _actor.hurtbox.rect.size = self.size
-        if self.image_center:
-            _actor.hurtbox.rect.centerx = (_actor.sprite.bounding_rect.centerx + self.center[0])
-            _actor.hurtbox.rect.centery = (_actor.sprite.bounding_rect.centery + self.center[1])
-        else:
-            _actor.hurtbox.rect.centerx = _actor.sprite.rect.centerx + self.center[0]
-            _actor.hurtbox.rect.centery = _actor.sprite.rect.centery + self.center[1]
+        if not isinstance(_actor, engine.abstractFighter.AbstractFighter):
+            _actor = _actor.owner
+        if self.hurtbox_name == '': return 
         
+        hurtbox = engine.hitbox.Hurtbox(_actor,self.hurtbox_vars)
+        _action.hurtboxes[self.hurtbox_name] = hurtbox
+        _actor.activateHurtbox(_action.hurtboxes[self.hurtbox_name])
+    
     def getDisplayName(self):
-        return 'Modify Fighter Hurtbox'
+        return 'Create New Hurtbox: ' + self.hitbox_name
+    
+    def getPropertiesPanel(self, _root):
+        return subactionSelector.ModifyHitboxProperties(_root,self,newHurtbox=True)
+       
+    def getXmlElement(self):
+        elem = ElementTree.Element('createHurbox')
+        name_elem = ElementTree.Element('name')
+        name_elem.text = self.hurtbox_name
+        elem.append(name_elem)
+        for tag,value in self.hurtbox_vars.iteritems():
+            new_elem = ElementTree.Element(tag)
+            new_elem.text = str(value)
+            elem.append(new_elem)
+        return elem
     
     @staticmethod
     def customBuildFromXml(_node):
-        center = [0, 0]
-        size = [0, 0]
-        image_center = False
-        if _node.find('center') is not None:
-            center = map(int, _node.find('center').text.split(','))
-        if _node.find('center').attrib.has_key('centerOn') and _node.find('center').attrib['centerOn'] == 'image':
-            image_center = True
-        if _node.find('size') is not None:
-            size = map(int, _node.find('size').text.split(','))
-        return modifyHurtBox(center,size,image_center)
+        #build the variable dict
+        variables = {}
+        #these lists let the code know which keys should be which types.
+        tuple_type = ['center','size','fix_size_multiplier','self_size_multiplier']
+            
+        for child in _node:
+            tag = child.tag
+            val = child.text
+
+            if tag == 'name':
+                name = val
+            elif tag in tuple_type:
+                variables[tag] = make_tuple(val)
+            else:
+                print('string variable',tag,val)
+                variables[tag] = val
+            
+        return createHurtbox(name, hurtbox_type, variables, hurtbox_focus)
+
+# Change the properties of an existing hurtbox
+class modifyHurtbox(SubAction):
+    subact_group = 'Hurtbox'
+    
+    def __init__(self,_hurtboxName='',_hurtboxVars={}):
+        SubAction.__init__(self)
+        self.hurtbox_name = _hitboxName
+        self.hurtbox_vars = _hitboxVars
+        
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+        if _action.hurtboxes.has_key(self.hurtbox_name):
+            hurtbox = _action.hurtboxes[self.hurtbox_name]
+            if hurtbox:
+                for name,value in self.hurtbox_vars.iteritems():
+                    if hasattr(hurtbox, name):
+                        if isinstance(value, VarData) or isinstance(value, FuncData):
+                            setattr(hurtbox, name, value.unpack(_action,_actor))
+                        else: setattr(hurtbox, name, value)
+        
+    def getDisplayName(self):
+        return 'Modify Hurtbox: ' + str(self.hitbox_name)
+    
+    def getPropertiesPanel(self, _root):
+        return subactionSelector.ModifyHitboxProperties(_root,self,newHurtbox=False)
+        
+    def getXmlElement(self):
+        elem = ElementTree.Element('modifyHurtbox')
+        elem.attrib['name'] = self.hitbox_name
+        for tag,value in self.hitbox_vars.iteritems():
+            new_elem = ElementTree.Element(tag)
+            new_elem.text = str(value)
+            elem.append(new_elem)
+        return elem
+    
+    @staticmethod
+    def customBuildFromXml(_node):
+        hitbox_name = loadNodeWithDefault(_node, 'name', 'auto')
+        hitbox_vars = {}
+        
+        tuple_type = ['center','size','fix_size_multiplier','self_size_multiplier']
+        
+        for child in _node:
+            tag = child.tag
+            val = child.text
+            
+            #special cases
+            if tag in tuple_type:
+                _type = 'tuple'
+            
+            val = parseData(child, _type, None)
+            hitbox_vars[tag] = val
+            
+        return modifyHitbox(hitbox_name,hitbox_vars)
+
+class activateHurtbox(SubAction):
+    subact_group = 'Hurtbox'
+    fields = [NodeMap('hurtbox_name','string','activateHurtbox','')
+              ]
+    
+    def __init__(self,_hitboxName=''):
+        SubAction.__init__(self)
+        self.hurtbox_name = _hurtboxName
+    
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+        if _action.hurtboxes.has_key(self.hurtbox_name):
+            _actor.activateHurtbox(_action.hurtboxes[self.hurtbox_name])
+    
+    def getPropertiesPanel(self, _root):
+        return subactionSelector.UpdateHurtboxProperties(_root,self)
+    
+    def getDisplayName(self):
+        return 'Activate Hurtbox: ' + self.hurtbox_name
+    
+class deactivateHurtbox(SubAction):
+    subact_group = 'Hurtbox'
+    fields = [NodeMap('hurtbox_name','string','deactivateHurtbox','')
+              ]
+    
+    def __init__(self,_hurtboxName=''):
+        SubAction.__init__(self)
+        self.urtbox_name = _hurtboxName
+    
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+        if _action.hurtboxes.has_key(self.hurtbox_name):
+            _action.hurtboxes[self.hurtbox_name].kill()
+    
+    def getPropertiesPanel(self, _root):
+        return subactionSelector.UpdateHurtboxProperties(_root,self)
+    
+    def getDisplayName(self):
+        return 'Deactivate Hurtbox: ' + self.hurtbox_name
 
 class changeECB(SubAction):
     subact_group = 'Behavior'
@@ -1670,7 +1758,6 @@ subaction_dict = {
                  'changeFighterSpeed': changeFighterSpeed,
                  'changeFighterPreferredSpeed': changeFighterPreferredSpeed,
                  'changeECB': changeECB,
-                 'modifyHurtbox': modifyHurtBox,
                  'updateLandingLag': updateLandingLag,
                  'createMask': createMask,
                  'removeMask': removeMask,
@@ -1681,9 +1768,14 @@ subaction_dict = {
                  'createHitbox': createHitbox,
                  'activateHitbox': activateHitbox,
                  'deactivateHitbox': deactivateHitbox,
-                 'updateHitbox': updateHitbox,
                  'modifyHitbox': modifyHitbox,
                  'unlockHitbox': unlockHitbox,
+
+                 #Hurtbox Manipulation
+                 'createHurtbox': createHurtbox,
+                 'activateHurtbox': activateHurtbox,
+                 'deactivateHurtbox': deactivateHurtbox,
+                 'modifyHurtbox': modifyHurtbox,
                  
                  #Articles
                  'loadArticle': loadArticle,
