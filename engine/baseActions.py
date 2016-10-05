@@ -688,8 +688,8 @@ class Prone(action.Action):
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
+            _actor.rect.bottom = block.rect.top
 
-        _actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
         _actor.unRotate()
 
     def tearDown(self, _actor, _nextAction):
@@ -897,7 +897,7 @@ class Land(action.Action):
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
-        _actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
+            _actor.rect.bottom = block.rect.top
 
 
     def tearDown(self, _actor, _nextAction):
@@ -935,7 +935,10 @@ class HelplessLand(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="helplessLand"
         action.Action.setUp(self, _actor)
-        _actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        if not block is None:
+            _actor.change_y = block.change_y
+            _actor.rect.bottom = block.rect.top
 
 
     def update(self,_actor):

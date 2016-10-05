@@ -169,11 +169,6 @@
 		</setUp>
 	</Grabbing>
 	
-	<Helpless>
-		<length>0</length>
-		<sprite>jump</sprite>
-	</Helpless>
-	
 	<Getup>
 		<length>12</length>
 		<sprite>land</sprite>
@@ -1596,7 +1591,7 @@
 		</setUp>
 		
 		<tearDown>
-			<exec>_actor.rect.y += _actor.sprite.bounding_rect.height-64</exec>
+			<exec scope="actor">rect.y += sprite.bounding_rect.height-64</exec>
 		</tearDown>
 		
 		<frame number="3">
