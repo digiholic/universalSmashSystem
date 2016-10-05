@@ -66,7 +66,7 @@ class debugConsole(pdb.Pdb):
         if len(self.game_env.current_fighters) > int(split_args[0]):
             dmg = max(0,min(999,int(split_args[1]))) #clamp it between 0 and 999
             self.game_env.current_fighters[int(split_args[0])].damage = dmg 
-            self.pyg_surface.write('Setting player '+split_args[0]+' damage to '+dmg+'\n')
+            self.pyg_surface.write('Setting player '+split_args[0]+' damage to '+str(dmg)+'\n')
         else: self.pyg_surface.write('Could not find player '+split_args[0]+'\n')
         return False
     
