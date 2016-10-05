@@ -9,8 +9,7 @@
 	<sprite_width>128</sprite_width>
 	<default_sprite>idle</default_sprite>
 	<article_path>sprites/</article_path>
-	
-	<actions>sandbag_actions.py</actions>
+	<actions>hitboxie_actions.xml</actions>
 	
 	<color_palette id='0' displayColor='#000000'>
 		
@@ -30,7 +29,7 @@
 	<stats>
 		<weight>100</weight>
 		<gravity>0.5</gravity>
-		<max_fall_speed>20</max_fall_speed>
+		<max_fall_speed>100</max_fall_speed>
 		<max_ground_speed>7</max_ground_speed>
 		<run_speed>11</run_speed>
 		<max_air_speed>5.5</max_air_speed>
@@ -38,16 +37,16 @@
 		<crawl_speed>2.5</crawl_speed>
 		<dodge_speed>10</dodge_speed>
 		<friction>0.3</friction>
-		<static_grip>0.3</static_grip>
-		<pivot_grip>0.6</pivot_grip>
+		<static_grip>1.5</static_grip>
+		<pivot_grip>2.5</pivot_grip>
 		<air_resistance>0.2</air_resistance>
-		<air_control>0.2</air_control>
-		<jumps>1</jumps>
+		<air_control>1.0</air_control>
+		<jumps>999999</jumps>
 		<jump_height>12.5</jump_height>
 		<short_hop_height>8.5</short_hop_height>
 		<air_jump_height>15</air_jump_height>
-		<heavy_land_lag>4</heavy_land_lag>
-		<wavedash_lag>8</wavedash_lag>
+		<heavy_land_lag>1</heavy_land_lag>
+		<wavedash_lag>1</wavedash_lag>
 		<fastfall_multiplier>2</fastfall_multiplier>
 		<hitstun_elasticity>.8</hitstun_elasticity>
 		<shield_size>1</shield_size>

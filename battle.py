@@ -5,7 +5,6 @@ import spriteManager
 import sys
 import os
 import musicManager
-import fighters.sandbag.fighter
 import engine.hitbox as hitbox
 import menu.debugConsole as debugConsole
 import engine.optimize_dirty_rects
@@ -62,14 +61,15 @@ class Battle():
         
         # Try block to catch any and every error
         try:
+            self.clock = pygame.time.Clock()
+            self.clock_speed = 60
+            self.clock_time = self.rules.time * 60
             self.screen.fill(self.stage.background_color)
             
             #game_objects
             self.current_fighters = self.players[:] #We have to slice this list so it passes by value instead of reference
             self.game_objects = []
             self.game_objects.extend(self.current_fighters)
-               
-            self.clock_time = self.rules.time * 60
             
             self.gui_objects = []
             
@@ -115,9 +115,6 @@ class Battle():
             self.stage.follows.append(center_stage_rect)
             self.stage.initializeCamera()
             
-            
-            self.clock = pygame.time.Clock()
-            self.clock_speed = 60
             self.debug_mode = False
             """
             ExitStatus breaks us out of the loop. The battle loop can end in many ways, which is reflected here.

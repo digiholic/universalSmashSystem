@@ -193,7 +193,7 @@ class DamageHitbox(Hitbox):
                 _other.trail_color = self.trail_color
                 
                 offset = random.randrange(0, 359)
-                hit_intersection = self.rect.clip(_other.hurtbox.rect).center
+                hit_intersection = self.rect.clip(_other.sprite.rect).center
                 hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
                 from article import HitArticle
                 for i in range(int(hitlag)):
