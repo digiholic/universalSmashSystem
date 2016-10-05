@@ -129,14 +129,6 @@ class ActionLoader():
                     frameElem.append(subact.getXmlElement())
                 elem.append(frameElem)
         
-        for cond,cond_list in _newAction.conditional_actions.iteritems():
-            if len(cond_list) > 0:
-                cond_elem = ElementTree.Element('conditional')
-                cond_elem.attrib['name'] = str(cond)
-                for subact in cond_list:
-                    cond_elem.append(subact.getXmlElement())
-                elem.append(cond_elem)
-        
         for event_name,event in _newAction.events.iteritems():
             if len(event) > 0:
                 event_elem = ElementTree.Element('Event')
@@ -268,17 +260,10 @@ class ActionLoader():
                          
             subactions_at_frame.append(sublist) #Put the list in, whether it's empty or not
         
-        conditional_actions = dict()
-        conds = action_xml.findall('conditional')
-        for cond in conds:
-            conditional_list = []
-            for subact in cond:
-                if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
-                    conditional_list.append(subaction.SubAction.buildFromXml(subact.tag,subact))
-            conditional_actions[cond.attrib['name']] = conditional_list
-         
         event_actions = dict()
         events = action_xml.findall('event')
+        #Because we're merging events and conditionals, this checks for either.
+        events.extend(action_xml.findall('conditional'))
         for event in events:
             event_list = []
             for subact in event:
@@ -300,7 +285,6 @@ class ActionLoader():
         dyn_action.tear_down_actions = tear_down_actions
         dyn_action.actions_on_clank = actions_on_clank
         dyn_action.actions_on_prevail = actions_on_prevail
-        dyn_action.conditional_actions = conditional_actions
         dyn_action.events = event_actions
         if sprite_name: dyn_action.sprite_name = sprite_name
         if sprite_rate: dyn_action.base_sprite_rate = sprite_rate
