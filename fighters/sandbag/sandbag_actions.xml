@@ -1,0 +1,660 @@
+<actionList>
+	<NeutralAction>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</NeutralAction>
+	
+	<Stop>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Stop>
+	
+	<RunStop>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</RunStop>
+	
+	<Crouch>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Crouch>
+	
+	<CrouchGetup>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</CrouchGetup>
+	
+	<Fall>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Fall>
+	
+	<Jump>
+		<length>11</length>
+		<sprite>idle</sprite>
+		
+		<vars>
+			<jump_frame type="int">8</jump_frame>
+		</vars>
+		<tearDown>
+			<changeFighterPreferredSpeed>
+				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
+			</changeFighterPreferredSpeed>
+		</tearDown>
+		<frame number="10">
+			<ifButton>
+				<button check="keysContain">jump</button>
+				<pass>float</pass>
+			</ifButton>
+		</frame>
+		<conditional name="float">
+			<setFrame>9</setFrame>
+			<changeFighterPreferredSpeed>
+				<ySpeed>0</ySpeed>
+			</changeFighterPreferredSpeed>
+		</conditional>
+	</Jump>
+	
+	<AirJump>
+		<length>11</length>
+		<sprite>idle</sprite>
+		
+		<vars>
+			<jump_frame type="int">8</jump_frame>
+		</vars>
+		<tearDown>
+			<changeFighterPreferredSpeed>
+				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
+			</changeFighterPreferredSpeed>
+		</tearDown>
+		<frame number="10">
+			<ifButton>
+				<button check="keysContain">jump</button>
+				<pass>float</pass>
+			</ifButton>
+		</frame>
+		<conditional name="float">
+			<setFrame>9</setFrame>
+			<changeFighterPreferredSpeed>
+				<ySpeed>0</ySpeed>
+			</changeFighterPreferredSpeed>
+		</conditional>
+	</AirJump>
+	
+	<Helpless>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Helpless>
+	
+	<Land>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Land>
+	
+	<HelplessLand>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</HelplessLand>
+	
+	<PlatformDrop>
+		<length>15</length>
+		<sprite>idle</sprite>
+		
+		<vars>
+			<phase_frame type="int">6</phase_frame>
+			<phase_length type="int">10</phase_length>
+		</vars>
+	</PlatformDrop>
+	
+	<Move>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Move>
+	
+	<Dash>
+		<length>1</length>
+		<sprite>idle</sprite>
+
+		<vars>
+			<run_start_frame type="int">0</run_start_frame>
+		</vars>
+	</Dash>
+	
+	<Pivot>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Pivot>
+	
+	<RunPivot>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</RunPivot>
+	
+	<Grabbing>
+		<length>1</length>
+		<sprite>idle</sprite>
+		
+		<setUp>
+			<changeFighterSpeed>
+				<xSpeed>0</xSpeed>
+			</changeFighterSpeed>
+		</setUp>
+	</Grabbing>
+	
+	<Helpless>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Helpless>
+	
+	<Getup>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Getup>
+	
+	<Shield>
+		<length>8</length>
+		<sprite>idle</sprite>
+	</Shield>
+
+	<Parry>
+		<length>10</length>
+		<sprite>idle</sprite>
+	</Parry>
+	
+	<ForwardRoll>
+		<length>46</length>
+		<sprite>idle</sprite>
+	</ForwardRoll>
+	
+	<BackwardRoll>
+		<length>50</length>
+		<sprite>idle</sprite>
+	</BackwardRoll>
+	
+	<SpotDodge>
+		<length>24</length>
+		<sprite>idle</sprite>
+	</SpotDodge>
+	
+	<AirDodge>
+		<length>24</length>
+		<sprite>idle</sprite>
+	</AirDodge>
+	
+	<LedgeGrab>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</LedgeGrab>
+	
+	
+	<HitStun>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</HitStun>
+
+	<Tumble>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Tumble>
+	
+	<Prone>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Prone>
+	
+	<SlowGetup>
+		<length>40</length>
+		<sprite>idle</sprite>
+	</SlowGetup>
+
+	<Respawn>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Respawn>
+	
+	<Stunned>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Stunned>
+	
+		
+	<ShieldStun>
+		<length>1</length>
+		<sprite>idle</sprite>
+		
+		<setUp>
+			<createMask>
+				<color>#bf3fbf</color>
+				<duration>999</duration>
+				<pulse>8</pulse>
+			</createMask>
+		</setUp>
+		
+		<tearDown>
+			<removeMask />
+		</tearDown>
+	</ShieldStun>
+	
+	<Trapped>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Trapped>
+	
+	<Grabbed>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Grabbed>
+	
+	<Release>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Release>
+	
+	<Released>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Released>
+	
+	<LedgeGetup>
+		<length>3</length>
+		<sprite>idle</sprite>
+		<sprite_rate>0</sprite_rate>
+
+		<vars>
+			<up_frame type="int">1</up_frame>
+			<side_frame type="int">2</side_frame>
+		</vars>
+	</LedgeGetup>
+	
+	<LedgeRoll>
+		<length>37</length>
+		<sprite>idle</sprite>
+
+		<vars>
+			<up_frame type="int">1</up_frame>
+			<side_frame type="int">2</side_frame>
+		</vars>
+		<frame number="15">
+			<changeFighterSpeed>
+				<xSpeed relative="True">
+					<var source="actor">dodge_speed</var>
+				</xSpeed>
+			</changeFighterSpeed>
+		</frame>
+	</LedgeRoll>
+
+	<LedgeAttack>
+		<length>37</length>
+		<sprite>idle</sprite>
+
+		<vars>
+			<up_frame type="int">1</up_frame>
+			<side_frame type="int">2</side_frame>
+		</vars>
+		<frame number="15">
+			<changeFighterSpeed>
+				<xSpeed relative="True">
+					<var source="actor">max_ground_speed</var>
+				</xSpeed>
+			</changeFighterSpeed>
+		</frame>
+	</LedgeAttack>
+	
+	<NeutralAttack>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<if function="==">
+				<variable source="actor">facing</variable>
+				<value type="int">1</value>
+				<pass>increment</pass>
+				<fail>decrement</fail>
+			</if>
+			<print>Weight = </print>
+			<print>
+				<statement>actor,weight</statement>
+			</print>
+		</frame>
+
+		<conditional name="increment">
+			<setFighterVar var="weight">
+				<value relative="true">2</value>
+			</setFighterVar>
+		</conditional>
+
+		<conditional name="decrement">
+			<setFighterVar var="weight">
+				<value relative="true">-2</value>
+			</setFighterVar>
+		</conditional>
+	</NeutralAttack>
+	
+	<ForwardAttack>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<if function="==">
+				<variable source="actor">facing</variable>
+				<value type="int">1</value>
+				<pass>increment</pass>
+				<fail>decrement</fail>
+			</if>
+			<print>Gravity = </print>
+			<print>
+				<statement>actor,gravity</statement>
+			</print>
+		</frame>
+
+		<conditional name="increment">
+			<setFighterVar var="gravity">
+				<value relative="true">0.01</value>
+			</setFighterVar>
+		</conditional>
+
+		<conditional name="decrement">
+			<setFighterVar var="gravity">
+				<value relative="true">-0.01</value>
+			</setFighterVar>
+		</conditional>
+	</ForwardAttack>
+	
+	<ForwardSmash>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<if function="==">
+				<variable source="actor">facing</variable>
+				<value type="int">1</value>
+				<pass>increment</pass>
+				<fail>decrement</fail>
+			</if>
+			<print>Gravity = </print>
+			<print>
+				<statement>actor,gravity</statement>
+			</print>
+		</frame>
+
+		<conditional name="increment">
+			<setFighterVar var="gravity">
+				<value relative="true">0.1</value>
+			</setFighterVar>
+		</conditional>
+
+		<conditional name="decrement">
+			<setFighterVar var="gravity">
+				<value relative="true">-0.1</value>
+			</setFighterVar>
+		</conditional>
+	</ForwardSmash>
+	
+	<UpAttack>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<if function="==">
+				<variable source="actor">facing</variable>
+				<value type="int">1</value>
+				<pass>increment</pass>
+				<fail>decrement</fail>
+			</if>
+			<print>Friction = </print>
+			<print>
+				<statement>actor,friction</statement>
+			</print>
+		</frame>
+
+		<conditional name="increment">
+			<setFighterVar var="friction">
+				<value relative="true">0.01</value>
+			</setFighterVar>
+		</conditional>
+
+		<conditional name="decrement">
+			<setFighterVar var="friction">
+				<value relative="true">-0.01</value>
+			</setFighterVar>
+		</conditional>
+	</UpAttack>
+	
+	<UpSmash>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<if function="==">
+				<variable source="actor">facing</variable>
+				<value type="int">1</value>
+				<pass>increment</pass>
+				<fail>decrement</fail>
+			</if>
+			<print>Friction = </print>
+			<print>
+				<statement>actor,friction</statement>
+			</print>
+		</frame>
+
+		<conditional name="increment">
+			<setFighterVar var="friction">
+				<value relative="true">0.05</value>
+			</setFighterVar>
+		</conditional>
+
+		<conditional name="decrement">
+			<setFighterVar var="friction">
+				<value relative="true">-0.05</value>
+			</setFighterVar>
+		</conditional>
+	</UpSmash>
+	
+	<DownAttack>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<if function="==">
+				<variable source="actor">facing</variable>
+				<value type="int">1</value>
+				<pass>increment</pass>
+				<fail>decrement</fail>
+			</if>
+			<print>Air resistance = </print>
+			<print>
+				<statement>actor,air_resistance</statement>
+			</print>
+		</frame>
+
+		<conditional name="increment">
+			<setFighterVar var="air_resistance">
+				<value relative="true">0.01</value>
+			</setFighterVar>
+		</conditional>
+
+		<conditional name="decrement">
+			<setFighterVar var="air_resistance">
+				<value relative="true">-0.01</value>
+			</setFighterVar>
+		</conditional>
+	</DownAttack>
+
+	<DownSmash>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<if function="==">
+				<variable source="actor">facing</variable>
+				<value type="int">1</value>
+				<pass>increment</pass>
+				<fail>decrement</fail>
+			</if>
+			<print>Air resistance = </print>
+			<print>
+				<statement>actor,air_resistance</statement>
+			</print>
+		</frame>
+
+		<conditional name="increment">
+			<setFighterVar var="air_resistance">
+				<value relative="true">0.05</value>
+			</setFighterVar>
+		</conditional>
+
+		<conditional name="decrement">
+			<setFighterVar var="air_resistance">
+				<value relative="true">-0.05</value>
+			</setFighterVar>
+		</conditional>
+	</DownSmash>
+	
+	<NeutralAir>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<print>Weight = </print>
+			<print>
+				<statement>actor,weight</statement>
+			</print>
+		</frame>
+	</NeutralAir>
+	
+	<BackAir>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<print>Gravity = </print>
+			<print>
+				<statement>actor,gravity</statement>
+			</print>
+		</frame>
+	</BackAir>
+	
+	<ForwardAir>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<print>Gravity = </print>
+			<print>
+				<statement>actor,gravity</statement>
+			</print>
+		</frame>
+	</ForwardAir>
+	
+	<UpAir>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<print>Friction = </print>
+			<print>
+				<statement>actor,friction</statement>
+			</print>
+		</frame>
+	</UpAir>
+	
+	<DownAir>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<print>Air Resistance = </print>
+			<print>
+				<statement>actor,air_resistance</statement>
+			</print>
+		</frame>
+	</DownAir>
+	
+	<DashAttack>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<setFighterVar var="weight">
+				<value relative="true">100</value>
+			</setFighterVar>
+			<setFighterVar var="gravity">
+				<value relative="true">0.5</value>
+			</setFighterVar>
+			<setFighterVar var="friction">
+				<value relative="true">0.3</value>
+			</setFighterVar>
+			<setFighterVar var="air_resistance">
+				<value relative="true">0.2</value>
+			</setFighterVar>
+			<print>Resetting</print>
+		</frame>
+	</DashAttack>
+	
+	<NeutralSpecial>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<setFighterVar var="weight">
+				<value relative="true">100</value>
+			</setFighterVar>
+			<print>Resetting weight</print>
+		</frame>
+	</NeutralSpecial>
+
+	<ForwardSpecial>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<setFighterVar var="gravity">
+				<value relative="true">0.5</value>
+			</setFighterVar>
+			<print>Resetting gravity</print>
+		</frame>
+	</ForwardSpecial>
+	
+	<DownSpecial>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<setFighterVar var="friction">
+				<value relative="true">0.3</value>
+			</setFighterVar>
+			<print>Resetting friction</print>
+		</frame>
+	</DownSpecial>
+	
+	<GetupAttack>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<frame number="0">
+			<setFighterVar var="air_resistance">
+				<value relative="true">0.2</value>
+			</setFighterVar>
+			<print>Resetting air resistance</print>
+		</frame>
+	</GetupAttack>
+	
+	<ForwardThrow>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</ForwardThrow>
+	
+	<DownThrow>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</DownThrow>
+	
+	<UpThrow>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</UpThrow>
+	
+	<BackThrow>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</BackThrow>
+	
+	<GroundGrab>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</GroundGrab>
+	
+	<DashGrab>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</DashGrab>
+	
+	<Pummel>
+		<length>1</length>
+		<sprite>idle</sprite>
+	</Pummel>
+	
+</actionList>
