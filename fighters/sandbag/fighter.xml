@@ -41,13 +41,13 @@
 		<pivot_grip>2.5</pivot_grip>
 		<air_resistance>0.2</air_resistance>
 		<air_control>1.0</air_control>
-		<jumps>999999</jumps>
-		<jump_height>12.5</jump_height>
-		<short_hop_height>8.5</short_hop_height>
-		<air_jump_height>15</air_jump_height>
+		<jumps>1</jumps>
+		<jump_height>8</jump_height>
+		<short_hop_height>4</short_hop_height>
+		<air_jump_height>0</air_jump_height>
 		<heavy_land_lag>1</heavy_land_lag>
 		<wavedash_lag>1</wavedash_lag>
-		<fastfall_multiplier>2</fastfall_multiplier>
+		<fastfall_multiplier>1</fastfall_multiplier>
 		<hitstun_elasticity>.8</hitstun_elasticity>
 		<shield_size>1</shield_size>
 	</stats>

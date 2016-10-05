@@ -46,6 +46,13 @@ def parseData(_data,_type="string",_default=None):
                 args[arg.tag] = val
                 
         return FuncData(source,funcName,args)
+
+    if _data.find('eval') is not None:
+        evalTag = _data.find('eval')
+        if evalTag.attrib.has_key('scope'): scope = evalTag.attrib['scope']
+        else: scope = 'action'
+        return EvalData(scope, evalTag.text)
+        
     
     if _type=="dynamic":
         if _data.attrib.has_key('type'):
@@ -123,6 +130,31 @@ class FuncData():
                 return None
             #TODO we'll fix this later. Add in the ability to call a function by filepath.
         return None
+
+"""
+An object that will execute a line of python code and returns its return value
+Pulls data at runtime
+"""
+class EvalData():
+    def __init__(self,_scope,_str):
+        self.str = _str
+        self.scope = _scope
+        
+    def unpack(self,_action,_actor):
+        if self.scope == 'action':
+            working_locals = {field: getattr(_action, field) for field in dir(_action)}
+        elif self.scope == 'actor':
+            working_locals = {field: getattr(_actor, field) for field in dir(_actor)}
+        elif self.scope == 'global':
+            working_locals = globals()
+        elif self.scope == 'battle':
+            working_locals = {field: getattr(_actor.game_state, field) for field in dir(_actor.game_state)}
+        elif self.scope == 'local':
+            working_locals = locals()
+        else:
+            print(self.scope + " is not a valid scope")
+            return None
+        return eval(self.str, globals(), working_locals)
     
 """
 Used for building subActions dynamically. Each one has a path to get to its XML data,
@@ -1697,7 +1729,8 @@ class recenterOnOrigin(SubAction):
     
 class executeCode(SubAction):
     subact_group = 'Control'
-    fields = [NodeMap('codeString', 'string', 'exec', '')]
+    fields = [NodeMap('codeString', 'string', 'exec', ''),
+              NodeMap('scope', 'string', 'exec|scope', 'action')]
     
     def __init__(self):
         SubAction.__init__(self)
@@ -1705,7 +1738,24 @@ class executeCode(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        exec(self.codeString)
+        if self.scope == 'action':
+            working_locals = {field: getattr(_action, field) for field in dir(_action)}
+        elif self.scope == 'actor':
+            working_locals = {field: getattr(_actor, field) for field in dir(_actor)}
+        elif self.scope == 'global':
+            working_locals = globals()
+        elif self.scope == 'battle':
+            working_locals = {field: getattr(_actor.game_state, field) for field in dir(_actor.game_state)}
+        elif self.scope == 'local':
+            working_locals = locals()
+        else:
+            print(self.scope + " is not a valid scope")
+            return None
+        print working_locals
+        exec self.codeString in globals(), working_locals
+
+    def getDisplayName(self):
+        return 'Execute ' + self.codeString + ' in the ' + self.scope + ' scope'
     
 class rotateSprite(SubAction):
     subact_group = 'Sprite'
