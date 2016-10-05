@@ -75,14 +75,14 @@ class AbstractFighter():
                 'shield_size': 1.0
                 }
         
-        self.defaultAttr = dict()
+        self.defaultAttr = self.var.copy()
         try:
             for stat in self.xml_data.find('stats'):
                 vartype = type(self.var[stat.tag]).__name__
                 if vartype == 'int': self.defaultAttr[stat.tag] = int(stat.text)
                 if vartype == 'float': self.defaultAttr[stat.tag] = float(stat.text)
                 
-        except: self.defaultAttr = self.var.copy()
+        except: pass
         
         self.defaultVar = dict()
         try:
@@ -272,7 +272,7 @@ class AbstractFighter():
         
         # Connect the key_bindings object to the fighter and flush any residual inputs
         self.key_bindings = settingsManager.getControls(self.player_num)
-        self.key_bindings.loadFighter(self)
+        self.key_bindings.linkObject(self)
         self.key_bindings.flushInputs()
         
         self.input_buffer = InputBuffer()
