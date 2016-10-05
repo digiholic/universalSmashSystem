@@ -9,7 +9,7 @@
 	<sprite_width>128</sprite_width>
 	<default_sprite>idle</default_sprite>
 	<article_path>sprites/</article_path>
-	<actions>hitboxie_actions.xml</actions>
+	<actions>sandbag_actions.xml</actions>
 	
 	<color_palette id='0' displayColor='#000000'>
 		

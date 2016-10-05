@@ -334,7 +334,7 @@ class If(SubAction):
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
         if self.variable == '': return
-        if self.source == 'fighter':
+        if self.source == 'fighter' or self.source == 'actor':
             #If this is for an article, we want to use the owner as the actor
             if isinstance(_actor, engine.article.DynamicArticle):
                 actor = _actor.owner

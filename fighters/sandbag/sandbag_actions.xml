@@ -312,19 +312,19 @@
 			</if>
 			<print>Weight = </print>
 			<print>
-				<statement>actor,weight</statement>
+				<var source="actor">weight</var>
 			</print>
 		</frame>
 
 		<conditional name="increment">
 			<setFighterVar var="weight">
-				<value relative="true">2</value>
+				<value relative="true" type="float">2</value>
 			</setFighterVar>
 		</conditional>
 
 		<conditional name="decrement">
 			<setFighterVar var="weight">
-				<value relative="true">-2</value>
+				<value relative="true" type="float">-2</value>
 			</setFighterVar>
 		</conditional>
 	</NeutralAttack>
@@ -341,19 +341,19 @@
 			</if>
 			<print>Gravity = </print>
 			<print>
-				<statement>actor,gravity</statement>
+				<var source="actor">gravity</var>
 			</print>
 		</frame>
 
 		<conditional name="increment">
 			<setFighterVar var="gravity">
-				<value relative="true">0.01</value>
+				<value relative="true" type="float">0.01</value>
 			</setFighterVar>
 		</conditional>
 
 		<conditional name="decrement">
 			<setFighterVar var="gravity">
-				<value relative="true">-0.01</value>
+				<value relative="true" type="float">-0.01</value>
 			</setFighterVar>
 		</conditional>
 	</ForwardAttack>
@@ -370,19 +370,19 @@
 			</if>
 			<print>Gravity = </print>
 			<print>
-				<statement>actor,gravity</statement>
+				<var source="actor">gravity</var>
 			</print>
 		</frame>
 
 		<conditional name="increment">
 			<setFighterVar var="gravity">
-				<value relative="true">0.1</value>
+				<value relative="true" type="float">0.1</value>
 			</setFighterVar>
 		</conditional>
 
 		<conditional name="decrement">
 			<setFighterVar var="gravity">
-				<value relative="true">-0.1</value>
+				<value relative="true" type="float">-0.1</value>
 			</setFighterVar>
 		</conditional>
 	</ForwardSmash>
@@ -399,19 +399,19 @@
 			</if>
 			<print>Friction = </print>
 			<print>
-				<statement>actor,friction</statement>
+				<var source="actor">friction</var>
 			</print>
 		</frame>
 
 		<conditional name="increment">
 			<setFighterVar var="friction">
-				<value relative="true">0.01</value>
+				<value relative="true" type="float">0.01</value>
 			</setFighterVar>
 		</conditional>
 
 		<conditional name="decrement">
 			<setFighterVar var="friction">
-				<value relative="true">-0.01</value>
+				<value relative="true" type="float">-0.01</value>
 			</setFighterVar>
 		</conditional>
 	</UpAttack>
@@ -428,19 +428,19 @@
 			</if>
 			<print>Friction = </print>
 			<print>
-				<statement>actor,friction</statement>
+				<var source="actor">friction</var>
 			</print>
 		</frame>
 
 		<conditional name="increment">
 			<setFighterVar var="friction">
-				<value relative="true">0.05</value>
+				<value relative="true" type="float">0.05</value>
 			</setFighterVar>
 		</conditional>
 
 		<conditional name="decrement">
 			<setFighterVar var="friction">
-				<value relative="true">-0.05</value>
+				<value relative="true" type="float">-0.05</value>
 			</setFighterVar>
 		</conditional>
 	</UpSmash>
@@ -457,19 +457,19 @@
 			</if>
 			<print>Air resistance = </print>
 			<print>
-				<statement>actor,air_resistance</statement>
+				<var source="actor">air_resistance</var>
 			</print>
 		</frame>
 
 		<conditional name="increment">
 			<setFighterVar var="air_resistance">
-				<value relative="true">0.01</value>
+				<value relative="true" type="float">0.01</value>
 			</setFighterVar>
 		</conditional>
 
 		<conditional name="decrement">
 			<setFighterVar var="air_resistance">
-				<value relative="true">-0.01</value>
+				<value relative="true" type="float">-0.01</value>
 			</setFighterVar>
 		</conditional>
 	</DownAttack>
@@ -486,19 +486,19 @@
 			</if>
 			<print>Air resistance = </print>
 			<print>
-				<statement>actor,air_resistance</statement>
+				<var source="actor">air_resistance</var>
 			</print>
 		</frame>
 
 		<conditional name="increment">
 			<setFighterVar var="air_resistance">
-				<value relative="true">0.05</value>
+				<value relative="true" type="float">0.05</value>
 			</setFighterVar>
 		</conditional>
 
 		<conditional name="decrement">
 			<setFighterVar var="air_resistance">
-				<value relative="true">-0.05</value>
+				<value relative="true" type="float">-0.05</value>
 			</setFighterVar>
 		</conditional>
 	</DownSmash>
@@ -509,7 +509,7 @@
 		<frame number="0">
 			<print>Weight = </print>
 			<print>
-				<statement>actor,weight</statement>
+				<var source="actor">weight</var>
 			</print>
 		</frame>
 	</NeutralAir>
@@ -520,7 +520,7 @@
 		<frame number="0">
 			<print>Gravity = </print>
 			<print>
-				<statement>actor,gravity</statement>
+				<var source="actor">gravity</var>
 			</print>
 		</frame>
 	</BackAir>
@@ -531,7 +531,7 @@
 		<frame number="0">
 			<print>Gravity = </print>
 			<print>
-				<statement>actor,gravity</statement>
+				<var source="actor">gravity</var>
 			</print>
 		</frame>
 	</ForwardAir>
@@ -542,7 +542,7 @@
 		<frame number="0">
 			<print>Friction = </print>
 			<print>
-				<statement>actor,friction</statement>
+				<var source="actor">friction</var>
 			</print>
 		</frame>
 	</UpAir>
@@ -553,7 +553,7 @@
 		<frame number="0">
 			<print>Air Resistance = </print>
 			<print>
-				<statement>actor,air_resistance</statement>
+				<var source="actor">air_resistance</var>
 			</print>
 		</frame>
 	</DownAir>
@@ -563,16 +563,16 @@
 		<sprite>idle</sprite>
 		<frame number="0">
 			<setFighterVar var="weight">
-				<value relative="true">100</value>
+				<value relative="true" type="float">100</value>
 			</setFighterVar>
 			<setFighterVar var="gravity">
-				<value relative="true">0.5</value>
+				<value relative="true" type="float">0.5</value>
 			</setFighterVar>
 			<setFighterVar var="friction">
-				<value relative="true">0.3</value>
+				<value relative="true" type="float">0.3</value>
 			</setFighterVar>
 			<setFighterVar var="air_resistance">
-				<value relative="true">0.2</value>
+				<value relative="true" type="float">0.2</value>
 			</setFighterVar>
 			<print>Resetting</print>
 		</frame>
@@ -583,7 +583,7 @@
 		<sprite>idle</sprite>
 		<frame number="0">
 			<setFighterVar var="weight">
-				<value relative="true">100</value>
+				<value relative="true" type="float">100</value>
 			</setFighterVar>
 			<print>Resetting weight</print>
 		</frame>
@@ -594,7 +594,7 @@
 		<sprite>idle</sprite>
 		<frame number="0">
 			<setFighterVar var="gravity">
-				<value relative="true">0.5</value>
+				<value relative="true" type="float">0.5</value>
 			</setFighterVar>
 			<print>Resetting gravity</print>
 		</frame>
@@ -605,7 +605,7 @@
 		<sprite>idle</sprite>
 		<frame number="0">
 			<setFighterVar var="friction">
-				<value relative="true">0.3</value>
+				<value relative="true" type="float">0.3</value>
 			</setFighterVar>
 			<print>Resetting friction</print>
 		</frame>
@@ -616,7 +616,7 @@
 		<sprite>idle</sprite>
 		<frame number="0">
 			<setFighterVar var="air_resistance">
-				<value relative="true">0.2</value>
+				<value relative="true" type="float">0.2</value>
 			</setFighterVar>
 			<print>Resetting air resistance</print>
 		</frame>
