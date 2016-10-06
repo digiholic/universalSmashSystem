@@ -55,7 +55,7 @@ class JoystickMonitor(spriteManager.Sprite):
         spriteManager.Sprite.__init__(self)
         self.joystick_sprite = spriteManager.ImageSprite(settingsManager.createPath('sprites/joyTest.png'))
         self.j_loc_sprite = spriteManager.RectSprite(pygame.Rect(0,0,10,10),[255,255,255])
-        self.j_status = spriteManager.TextSprite('No Input','rexlia rg')
+        self.j_status = spriteManager.TextSprite('No Input','leaguespartan-bold')
         
         self.j_status.rect.midtop = self.joystick_sprite.rect.midbottom
         

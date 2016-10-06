@@ -349,10 +349,10 @@ class GamepadMenu(SubMenu):
         if self.controller_list:
             self.current_controller = 0
         
-        self.menu_text = [spriteManager.TextSprite(self.controller_list[self.current_controller][0],'rexlia rg',18,[255,255,255]),
+        self.menu_text = [spriteManager.TextSprite(self.controller_list[self.current_controller][0],'leaguespartan-bold',18,[255,255,255]),
                          spriteManager.TextSprite('Exit','full Pack 2025',20,[255,255,255])]
         
-        self.status_text = spriteManager.TextSprite('Controller not connected','rexlia rg',16,[255,255,255])
+        self.status_text = spriteManager.TextSprite('Controller not connected','leaguespartan-bold',16,[255,255,255])
         
         if self.controller_list[self.current_controller][0] in self.connected_controllers:
             self.status_text.changeText('Controller connected')
@@ -361,24 +361,24 @@ class GamepadMenu(SubMenu):
             self.status_text.changeText('Controller not connected')
             self.status_text.changeColor([55,55,55])
                             
-        self.action_column = [spriteManager.TextSprite('left','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('right','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('up','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('down','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('attack','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('special','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('jump','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('shield','rexlia rg',16,[55,55,55]),
+        self.action_column = [spriteManager.TextSprite('left','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('right','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('up','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('down','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('attack','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('special','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('jump','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('shield','leaguespartan-bold',16,[55,55,55]),
                              ]
         
-        self.key_column = [spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+        self.key_column = [spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
                           ]
         
         
@@ -549,31 +549,31 @@ class PlayerControlsMenu(SubMenu):
     def __init__(self,_parent):
         SubMenu.__init__(self, _parent)
         
-        self.menu_text = [spriteManager.TextSprite('Player 1','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Smash Timing Window: 4','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Repeat Timing Window: 8','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Buffer Window: 8','rexlia rg',18,[255,255,255]),
-                         spriteManager.TextSprite('Smoothing Window: 64','rexlia rg',18,[255,255,255]),
+        self.menu_text = [spriteManager.TextSprite('Player 1','leaguespartan-bold',18,[255,255,255]),
+                         spriteManager.TextSprite('Smash Timing Window: 4','leaguespartan-bold',18,[255,255,255]),
+                         spriteManager.TextSprite('Repeat Timing Window: 8','leaguespartan-bold',18,[255,255,255]),
+                         spriteManager.TextSprite('Buffer Window: 8','leaguespartan-bold',18,[255,255,255]),
+                         spriteManager.TextSprite('Smoothing Window: 64','leaguespartan-bold',18,[255,255,255]),
                          spriteManager.TextSprite('Exit','full Pack 2025',20,[255,255,255])]
         
-        self.action_column = [spriteManager.TextSprite('left','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('right','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('up','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('down','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('attack','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('special','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('jump','rexlia rg',16,[55,55,55]),
-                             spriteManager.TextSprite('shield','rexlia rg',16,[55,55,55]),
+        self.action_column = [spriteManager.TextSprite('left','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('right','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('up','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('down','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('attack','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('special','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('jump','leaguespartan-bold',16,[55,55,55]),
+                             spriteManager.TextSprite('shield','leaguespartan-bold',16,[55,55,55]),
                              ]
         
-        self.key_column = [spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
-                          spriteManager.TextSprite('---','rexlia rg',16,[55,55,55]),
+        self.key_column = [spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
+                          spriteManager.TextSprite('---','leaguespartan-bold',16,[55,55,55]),
                           ]
         
         self.smash_window = 4
@@ -581,7 +581,7 @@ class PlayerControlsMenu(SubMenu):
         self.buffer_window = 8
         self.smoothing_window = 64
         
-        self.status_text = spriteManager.TextSprite('','rexlia rg',16,[255,255,255])
+        self.status_text = spriteManager.TextSprite('','leaguespartan-bold',16,[255,255,255])
         
         self.player_num = 0
         
@@ -814,8 +814,8 @@ class SoundMenu(SubMenu):
         self.music_vol = int(self.settings['music_volume'] * 10)
         self.sound_vol = int(self.settings['sfxVolume'] * 10)
         
-        self.menu_text = [spriteManager.TextSprite('Music Volume: '+str(self.music_vol),'rexlia rg',16,[255,255,255]),
-                         spriteManager.TextSprite('SFX Volume: '+str(self.sound_vol),'rexlia rg',16,[255,255,255]),
+        self.menu_text = [spriteManager.TextSprite('Music Volume: '+str(self.music_vol),'leaguespartan-bold',16,[255,255,255]),
+                         spriteManager.TextSprite('SFX Volume: '+str(self.sound_vol),'leaguespartan-bold',16,[255,255,255]),
                          spriteManager.TextSprite('Save', 'full Pack 2025', 24, [255,255,255]),
                          spriteManager.TextSprite('Cancel', 'full Pack 2025', 24, [255,255,255]),
                          ]
@@ -861,7 +861,7 @@ class ModulesMenu(SubMenu):
         self.menu_text = [
                          spriteManager.TextSprite('Back','full Pack 2025',24,[255,255,255])
                          ]
-        self.status_text = spriteManager.TextSprite('Module Manager not yet available','rexlia rg',18,[255,255,255])
+        self.status_text = spriteManager.TextSprite('Module Manager not yet available','leaguespartan-bold',18,[255,255,255])
         
         self.menu_text[0].rect.centerx = settingsManager.getSetting('windowSize')[0] / 2
         self.menu_text[0].rect.bottom = settingsManager.getSetting('windowSize')[1] - 100
@@ -1178,10 +1178,10 @@ class OptionButton(spriteManager.TextSprite):
             print("Not in list of options")
             self.selected_value = 0
         
-        self.name_text = spriteManager.TextSprite(_name, 'rexlia rg',18,[100,100,100])
+        self.name_text = spriteManager.TextSprite(_name, 'leaguespartan-bold',18,[100,100,100])
         self.name_text.rect.left = 20
         
-        self.val_text = spriteManager.TextSprite(str(self.possibleVals[self.selected_value]), 'rexlia rg',18,[100,100,100])
+        self.val_text = spriteManager.TextSprite(str(self.possibleVals[self.selected_value]), 'leaguespartan-bold',18,[100,100,100])
         self.val_text.rect.right = 620
         
     def changeColor(self,_color):
@@ -1348,7 +1348,7 @@ class UpdateMenu(SubMenu):
         self.menu_text = [spriteManager.TextSprite('Check','full Pack 2025',24,[255,255,255]),
                          spriteManager.TextSprite('Cancel','full Pack 2025',24,[255,255,255])]
         
-        self.status_text = spriteManager.TextSprite('','rexlia rg',24,[255,255,255])
+        self.status_text = spriteManager.TextSprite('','leaguespartan-bold',24,[255,255,255])
         
         self.menu_text[0].rect.centerx = self._parent.settings['windowSize'][0] / 3
         self.menu_text[1].rect.centerx = (self._parent.settings['windowSize'][0] / 3)*2

@@ -79,7 +79,7 @@ class Battle():
                 countdown_sprite.alpha(self.count_alpha)
                 self.gui_objects.append(countdown_sprite)
                 
-                self.clock_sprite = spriteManager.TextSprite('8:00','rexlia rg',32,[0,0,0])
+                self.clock_sprite = spriteManager.TextSprite('8:00','leaguespartan-bold',32,[0,0,0])
                 self.clock_sprite.rect.topright = self.screen.get_rect().topright
                 self.clock_sprite.changeText(str(self.clock_time / 60)+':'+str(self.clock_time % 60).zfill(2))
                 self.gui_objects.append(self.clock_sprite)

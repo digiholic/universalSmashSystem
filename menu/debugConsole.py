@@ -8,7 +8,7 @@ import pygame
 import pygcurse
 
 class debugConsole(pdb.Pdb):
-    def __init__(self, _surface, _gameEnv, _font="joystix monospace", _size=9, _height=24):
+    def __init__(self, _surface, _gameEnv, _font="unifont-9.0.02", _size=16, _height=24):
         self.game_env = _gameEnv
         text_dims = pygame.font.Font(settingsManager.createPath(_font+".ttf"),_size).size(" ") #Used to determine how much space is available
         self.text_width = int(_surface.get_width()/text_dims[0])

@@ -264,28 +264,20 @@ class ActionLoader():
         #Interpret frame ranges
         for frame in frames:
             if "," in frame.attrib['number'] and frame.attrib['number'].replace(",","").replace(" ","").isdigit():
-                try: #Results not guaranteed
-                    for subact in frame:
-                        if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
-                            for frame_num in make_tuple(frame.attrib['number']):
-                                subactions_at_frame[frame_num].append(subaction.SubAction.buildFromXml(subact.tag,subact))
-                except:
-                    print("Invalid tuple: " + frame.attrib['number'])
-                finally: 
-                    frames.remove(frame)
+                for subact in frame:
+                    if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                        for frame_num in make_tuple(frame.attrib['number']):
+                            subactions_at_frame[frame_num].append(subaction.SubAction.buildFromXml(subact.tag,subact))
+                frames.remove(frame)
 
         for frame in frames:
             if "-" in frame.attrib['number'] and frame.attrib['number'].replace("-","").replace(" ","").isdigit():
-                #try: #Results not guaranteed
-                    ends = frame.attrib['number'].split("-")
-                    for subact in frame:
-                        if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
-                            for frame_num in range(int(ends[0]), int(ends[1])+1):
-                                subactions_at_frame[frame_num].append(subaction.SubAction.buildFromXml(subact.tag,subact))
-                #except:
-                #    print("Invalid range: " + frame.attrib['number'])
-                #finally: 
-                #    frames.remove(frame)
+                ends = frame.attrib['number'].split("-")
+                for subact in frame:
+                    if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                        for frame_num in range(int(ends[0]), int(ends[1])+1):
+                            subactions_at_frame[frame_num].append(subaction.SubAction.buildFromXml(subact.tag,subact))
+                frames.remove(frame)
                     
         conditional_actions = dict()
         conds = action_xml.findall('conditional')
