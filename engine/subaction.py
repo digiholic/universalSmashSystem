@@ -1364,15 +1364,37 @@ class unlockHitbox(SubAction):
     def getDisplayName(self):
         return 'Unlock Hitbox: ' + self.hitbox_name
 
-class Charge(SubAction):
+class charge(SubAction):
     subact_group = 'Hitbox'
-    fields = [NodeMap('maxCharge','int','charge|maxCharge',10),
-              NodeMap('startChargeFrame','int','charge',0)
+    fields = [NodeMap('max_charge','int','charge|maxCharge',10),
+              NodeMap('start_charge_frame','int','charge',0),
+              NodeMap('supress_mask','bool','charge|noMask',False)
               ]
     
-    def __init__(self,_max,_chargeFrame):
-        pass
-    
+    def __init__(self,_max=10,_chargeFrame=0,_noMask=False):
+        SubAction.__init__(self)
+        self.max_charge = _max
+        self.start_charge_frame = _chargeFrame
+        self.supress_mask = _noMask
+        
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+        if hasattr(_action, 'chargeLevel'):
+            _action.chargeLevel += 1
+        else:
+            _action.chargeLevel = 1
+            #If we're starting out, start flashing unless asked not to
+            if not self.supress_mask:
+                _actor.createMask([255,255,0],72,True,32)
+        
+        if _actor.keysContain('attack') and _action.chargeLevel <= self.max_charge:
+            for _,hitbox in _action.hitboxes.iteritems():
+                hitbox.charge()
+            
+            _action.frame = self.start_charge_frame
+        else:
+            #We're moving on. Turn off the flashing
+            _actor.mask = None
 # Create a new hurtbox
 class createHurtbox(SubAction):
     subact_group = 'Hurtbox'
@@ -1833,6 +1855,7 @@ subaction_dict = {
                  'deactivateHitbox': deactivateHitbox,
                  'modifyHitbox': modifyHitbox,
                  'unlockHitbox': unlockHitbox,
+                 'charge': charge,
 
                  #Hurtbox Manipulation
                  'createHurtbox': createHurtbox,

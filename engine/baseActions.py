@@ -1472,34 +1472,6 @@ class AirAttack(BaseAttack):
     def update(self, _actor):
         BaseAttack.update(self, _actor)
             
-class ChargeAttack(BaseAttack):
-    def __init__(self,_length=1,_startChargeFrame=1,_endChargeFrame=1,_maxCharge=0):
-        BaseAttack.__init__(self, _length)
-        self.start_charge_frame = _startChargeFrame
-        self.end_charge_frame = _endChargeFrame
-        self.max_charge = 1
-        
-    def setUp(self, _actor):
-        self.chargeLevel = 0
-        BaseAttack.setUp(self, _actor)
-        
-    def update(self, _actor):
-        BaseAttack.update(self, _actor)
-        if self.frame == self.start_charge_frame:
-            if _actor.keysContain('attack') and self.chargeLevel == 0:
-                _actor.createMask([255,255,0],72,True,32)
-        
-        #Find solution for multiple hitboxes
-        if self.frame == self.end_charge_frame:
-            if _actor.keysContain('attack') and self.chargeLevel <= self.max_charge:
-                for _,hitbox in self.hitboxes.iteritems():
-                    hitbox.charge()
-                self.chargeLevel += 1
-                self.frame = self.start_charge_frame
-        
-        if self.frame == (self.end_charge_frame+1):
-            _actor.mask = None
-
 class NeutralAttack(BaseAttack):
     def __init__(self, _length=0):
         BaseAttack.__init__(self, _length)
@@ -1516,17 +1488,17 @@ class DownAttack(BaseAttack):
     def __init__(self, _length=0):
         BaseAttack.__init__(self, _length)
 
-class ForwardSmash(ChargeAttack):
+class ForwardSmash(BaseAttack):
     def __init__(self,_length=0):
-        ChargeAttack.__init__(self, _length,0,1)
+        BaseAttack.__init__(self, _length)
         
-class UpSmash(ChargeAttack):
+class UpSmash(BaseAttack):
     def __init__(self,_length=0):
-        ChargeAttack.__init__(self, _length,0,1)
+        BaseAttack.__init__(self, _length)
         
-class DownSmash(ChargeAttack):
+class DownSmash(BaseAttack):
     def __init__(self,_length=0):
-        ChargeAttack.__init__(self, _length,0,1)
+        BaseAttack.__init__(self, _length)
         
 class NeutralAir(AirAttack):
     def __init__(self,_length=0):

@@ -637,12 +637,6 @@
 		<sprite>fsmash</sprite>
 		<sprite_rate>2</sprite_rate>
 		
-		<vars>
-			<start_charge_frame type="int">6</start_charge_frame>
-			<end_charge_frame type="int">8</end_charge_frame>
-			<max_charge type="int">15</max_charge>
-		</vars>
-		
 		<setUp>
 			<createHitbox>
 				<name>fSmash0</name>
@@ -674,6 +668,9 @@
 		<onClank>
 			<doAction>NeutralAction</doAction>
 		</onClank>
+		<frame number="8">
+			<charge maxCharge="15">6</charge>
+		</frame>
 		<frame number="14">
 			<changeSubimage>6</changeSubimage>
 		</frame>
@@ -785,12 +782,6 @@
 		<sprite>usmash</sprite>
 		<sprite_rate>2</sprite_rate>
 		
-		<vars>
-			<start_charge_frame type="int">6</start_charge_frame>
-			<end_charge_frame type="int">8</end_charge_frame>
-			<max_charge type="int">15</max_charge>
-		</vars>
-		
 		<setUp>
 			<createHitbox>
 				<name>popup</name>
@@ -850,6 +841,10 @@
 		<onClank>
 			<doAction>NeutralAction</doAction>
 		</onClank>
+		
+		<frame number="8">
+			<charge maxCharge="15">6</charge>
+		</frame>
 		
 		<frame number="12">
 			<activateArticle>firework</activateArticle>
@@ -962,11 +957,6 @@
 		<sprite>dsmash</sprite>
 		<sprite_rate>2</sprite_rate>
 		
-		<vars>
-			<start_charge_frame type="int">8</start_charge_frame>
-			<end_charge_frame type="int">10</end_charge_frame>
-			<max_charge type="int">15</max_charge>
-		</vars>
 		
 		<setUp>
 			<changeFighterPreferredSpeed>
@@ -1059,6 +1049,7 @@
 			<activateHitbox>leftHbox1</activateHitbox>
 			<playSound>dsmash</playSound>
 			<changeSubimage>5</changeSubimage>
+			<charge maxCharge="15">8</charge>
 		</frame>
 		<frame number="11">
 			<deactivateHitbox>rightHbox1</deactivateHitbox>
