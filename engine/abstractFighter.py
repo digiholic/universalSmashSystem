@@ -172,7 +172,7 @@ class AbstractFighter():
         self.rect = self.sprite.rect
         
         self.current_color = self.player_num
-        self.current_costume = self.sprite_prefix
+        self.current_costume = 0
         self.game_state = None
         self.players = None
         
@@ -238,7 +238,7 @@ class AbstractFighter():
         
         
         self.sprite = spriteManager.SpriteHandler(str(directory),
-                                                  self.current_costume,
+                                                  self.costumes[self.current_costume % len(self.costumes)],
                                                   self.default_sprite,
                                                   self.sprite_width,
                                                   self.color_palettes[_color % len(self.color_palettes)],

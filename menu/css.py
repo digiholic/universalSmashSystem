@@ -192,7 +192,8 @@ class PlayerPanel(pygame.Surface):
                             (self.get_height() - 32)]
         self.bg_surface = None
         self.current_color = _playerNum
-    
+        self.current_costume = 0
+        
         self.icon = spriteManager.ImageSprite(settingsManager.createPath('sprites/default_franchise_icon.png'))
         self.icon.rect.center = self.get_rect().center
         self.icon_color = pygame.Color('#cccccc')
@@ -260,11 +261,12 @@ class PlayerPanel(pygame.Surface):
                 self.active_object = None
                 self.chosen_fighter = self.wheel.fighterAt(0)
                 self.chosen_fighter.current_color = self.current_color
+                self.chosen_fighter.current_costume = self.current_costume
         elif _key == 'jump':
             self.current_color += 1
             self.recolorIcon()
         elif _key == 'shield':
-            pass #add bot
+            self.current_costume += 1
         
     def keyReleased(self,_key):
         if _key == 'right' or _key == 'left':

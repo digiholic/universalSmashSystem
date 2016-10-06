@@ -44,6 +44,8 @@
 		<color_map from_color='#000000' to_color='#FFFFFF'></color_map>
 	</color_palette>
 	
+	<costume>hitolantern_</costume>
+	
 	<stats>
 		<weight>100</weight>
 		<gravity>0.5</gravity>
