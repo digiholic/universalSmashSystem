@@ -71,8 +71,15 @@ class Hitbox(spriteManager.RectSprite):
         
         self.owner_on_hit_actions = []
         self.other_on_hit_actions = []
+      
+        self.chargeLevel = 0
         
     def onCollision(self,_other):
+        self.damage += (self.charge_damage * self.chargeLevel)
+        self.priority += (self.charge_damage * self.chargeLevel)
+        self.base_knockback += (self.charge_base_knockback * self.chargeLevel)
+        self.knockback_growth += (self.charge_knockback_growth * self.chargeLevel)
+        
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             _other.hitbox_contact.add(self)
@@ -213,10 +220,7 @@ class DamageHitbox(Hitbox):
         else: return clank_state
     
     def charge(self):
-        self.damage += self.charge_damage
-        self.priority += self.charge_damage
-        self.base_knockback += self.charge_base_knockback
-        self.knockback_growth += self.charge_knockback_growth
+        self.chargeLevel += 1
         
 class SakuraiAngleHitbox(DamageHitbox):
     def __init__(self,_owner,_lock,_variables):

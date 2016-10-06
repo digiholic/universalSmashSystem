@@ -32,7 +32,7 @@ class CSSScreen():
         for i in range(0,4):
             self.player_controls.append(settingsManager.getControls(i))
             self.player_panels.append(PlayerPanel(i))
-            self.player_controls[i].fighter = self.player_panels[i] #So playerPanel will take the inputs
+            self.player_controls[i].linkObject(self.player_panels[i]) #So playerPanel will take the inputs
             self.player_controls[i].flushInputs()
         
         status = 0
@@ -60,7 +60,7 @@ class CSSScreen():
                                 panel.chosen_fighter = None
                                 panel.bg_surface = None                
                             for i in range(0,4):
-                                self.player_controls[i].fighter = self.player_panels[i] #So playerPanel will take the inputs
+                                self.player_controls[i].linkObject(self.player_panels[i]) #So playerPanel will take the inputs
                                 self.player_controls[i].flushInputs()
                 if event.type == pygame.QUIT:
                     status = -1

@@ -393,13 +393,13 @@ class If(SubAction):
             
         cond = function(variable,self.value)
         if cond:
-            if self.if_actions and _action.conditional_actions.has_key(self.if_actions):
-                for act in _action.conditional_actions[self.if_actions]:
+            if self.if_actions and _action.events.has_key(self.if_actions):
+                for act in _action.events[self.if_actions]:
                     act.execute(_action,_actor)
                     
         else:
-            if self.else_actions and _action.conditional_actions.has_key(self.else_actions):
-                for act in _action.conditional_actions[self.else_actions]:
+            if self.else_actions and _action.events.has_key(self.else_actions):
+                for act in _action.events[self.else_actions]:
                     act.execute(_action,_actor)
     
     def getPropertiesPanel(self, _root):
@@ -476,12 +476,12 @@ class ifButton(SubAction):
             return
 
         if cond:
-            if self.if_actions and _action.conditional_actions.has_key(self.if_actions):
-                for act in _action.conditional_actions[self.if_actions]:
+            if self.if_actions and _action.events.has_key(self.if_actions):
+                for act in _action.events[self.if_actions]:
                     act.execute(_action,_actor)
         else:
-            if self.else_actions and _action.conditional_actions.has_key(self.else_actions):
-                for act in _action.conditional_actions[self.else_actions]:
+            if self.else_actions and _action.events.has_key(self.else_actions):
+                for act in _action.events[self.else_actions]:
                     act.execute(_action,_actor)
     
     def getPropertiesPanel(self, _root):

@@ -36,9 +36,9 @@ class Action(object):
         self.actions_on_clank = []
         self.actions_on_prevail = []
         
-        #Conditional Action Groups for ifs and things
+        #Events are Action Groups for ifs and things
         #Dict in the form of "name" -> [Action List]
-        self.conditional_actions = dict()
+        self.events = dict()
         
         self.state_transition_actions = []
         self.set_up_actions = []

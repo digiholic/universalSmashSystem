@@ -391,7 +391,7 @@ def saveGamepad(_settings):
         if not parser.has_section(controller_name):
             parser.add_section(controller_name)
         
-        for key,value in gamepad.pad_bindings.axis_bindings.iteritems():
+        for key,value in gamepad.key_bindings.axis_bindings.iteritems():
             neg,pos = value
             if not neg: neg = 'none'
             if not pos: pos = 'none'

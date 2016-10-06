@@ -21,8 +21,6 @@ from cgi import log
 The battle object actually creates the fight and plays it out on screen.
 It calls the update function of all of the fighters and the stage, and draws them.
 It takes a Rules object (see below), a list of players, and a stage.
-
-
 """
 class Battle():
     def __init__(self,_rules,_players,_stage,_randomSeed=None):
@@ -35,7 +33,7 @@ class Battle():
         self.controllers = []
         for player in _players:
             player.initialize()
-            player.key_bindings.loadFighter(player)
+            player.key_bindings.linkObject(player)
             self.controllers.append(player.key_bindings)
             
         self.stage = _stage
