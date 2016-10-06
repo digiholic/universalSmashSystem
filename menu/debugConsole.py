@@ -69,4 +69,26 @@ class debugConsole(pdb.Pdb):
             self.pyg_surface.write('Setting player '+split_args[0]+' damage to '+str(dmg)+'\n')
         else: self.pyg_surface.write('Could not find player '+split_args[0]+'\n')
         return False
-    
+
+    def do_advance(self, _args):
+        """Advances the game the given number of frames.\nSyntax: advance <num_frames>"""
+        #TODO: Allow stepping without an argument
+        split_args = _args.split(' ')
+        num_frames = int(split_args[0])
+        frames_advanced = 0
+        if num_frames > 0:
+            for frame in range(num_frames):
+                self.game_env.debug_mode = False
+                self.game_env.gameEventLoop()
+                frames_advanced += 1
+                if self.game_env.exit_status != 0:
+                    break
+            self.game_env.debug_mode = True
+            self.pyg_surface.write('Advanced '+split_args[0]+' frames\n')
+            return self.game_env.exit_status != 0
+        elif num_frames == 0:
+            self.pyg_surface.write('Advanced 0 frames\n')
+            return False
+        elif num_frames < 0:
+            self.pyg_surface.write('Can\'t advance negative frames\n')
+            return False

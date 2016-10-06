@@ -215,6 +215,8 @@ class Battle():
                 self.active_hurtboxes.add(obj.active_hurtboxes)
 
         hitbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hitboxes, False, False)
+        hurtbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hurtboxes, False, False)
+        platform_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.stage.platform_list, False, False)
         for hbox in hitbox_hits:
             #first, check for clanks
             hitbox_clank = hitbox_hits[hbox]
@@ -238,7 +240,6 @@ class Battle():
                     if other.article == None: other.owner.current_action.onPrevail(other.owner, other, hbox)
                     else: other.article.onPrevail(other.owner, other, hbox)
                         
-        hurtbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hurtboxes, False, False)
         for hbox in hurtbox_hits:
             #then, hurtbox collisions
             hitbox_collisions = hurtbox_hits[hbox]
@@ -247,7 +248,6 @@ class Battle():
                     hbox.onCollision(hurtbox.owner)
                     hurtbox.onHit(hbox)
                     
-        platform_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.stage.platform_list, False, False)
         for hbox in platform_hits:
             #then platform collisions
             platform_collisions = platform_hits[hbox]
