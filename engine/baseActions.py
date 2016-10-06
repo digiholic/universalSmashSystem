@@ -935,6 +935,7 @@ class HelplessLand(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="helplessLand"
         action.Action.setUp(self, _actor)
+        ground_blocks = _actor.checkGround()
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y

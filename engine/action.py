@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ElementTree
 # The action class is used for creating attacks, movement options,
 # air dodges, rolls, and pretty much anything that happens to your
 # character. It has a length, and keeps track of its current frame.
-class Action():
+class Action(object):
     def __init__(self,_length=0):
         self.frame = 0
         self.last_frame = _length
@@ -49,11 +49,6 @@ class Action():
     # The update skeleton function. You must implement it for every action or you will get
     # an error.
     def update(self,_actor):
-        if self.sprite_rate is not 0:
-            if self.sprite_rate < 0:
-                _actor.changeSpriteImage((self.frame // self.sprite_rate)-1, _loop=self.loop)
-            else:                 _actor.changeSpriteImage(self.frame // self.sprite_rate, _loop=self.loop)
-                    
         for act in self.actions_before_frame:
             act.execute(self,_actor)
         if self.frame < len(self.actions_at_frame):
@@ -64,6 +59,10 @@ class Action():
                 act.execute(self,_actor)
         for act in self.actions_after_frame:
             act.execute(self,_actor)
+        if self.sprite_rate is not 0:
+            if self.sprite_rate < 0:
+                _actor.changeSpriteImage((self.frame // self.sprite_rate)-1, _loop=self.loop)
+            else:                 _actor.changeSpriteImage(self.frame // self.sprite_rate, _loop=self.loop)
         for hitbox in self.hitboxes.values():
             hitbox.update()
         for hurtbox in self.hurtboxes.values():

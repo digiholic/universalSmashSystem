@@ -102,7 +102,7 @@ class FuncData():
         
     def unpack(self,_action,_actor):
         for argname,arg in self.args.iteritems():
-            if isinstance(arg, FuncData) or isinstance(arg, VarData):
+            if isinstance(arg, FuncData) or isinstance(arg, VarData) or isinstance(arg, EvalData):
                 self.args[argname] = arg.unpack(_action,_actor)
                 
         if self.source == 'actor':
@@ -135,7 +135,7 @@ class FuncData():
 An object that will execute a line of python code and returns its return value
 Pulls data at runtime
 """
-class EvalData():
+class EvalData(object):
     def __init__(self,_scope,_str):
         self.str = _str
         self.scope = _scope
@@ -315,7 +315,7 @@ class SubAction():
     
     def execute(self, _action, _actor):
         for tag,variable in self.defaultVars.iteritems():
-            if isinstance(variable, VarData) or isinstance(variable, FuncData):
+            if isinstance(variable, VarData) or isinstance(variable, FuncData) or isinstance(variable, EvalData):
                 setattr(self, tag, variable.unpack(_action,_actor))
                 
     def getDisplayName(self):
@@ -629,18 +629,21 @@ class changeFighterSprite(SubAction):
 # ChangeFighterSubimage will change the subimage of a sheetSprite without changing the sprite.
 class changeFighterSubimage(SubAction):
     subact_group = 'Sprite'
-    fields = [NodeMap('index','int','changeSubimage',0)
+    fields = [NodeMap('index','int','changeSubimage',0),
+              NodeMap('relative','bool','changeSubimage|relative',False)
               ]
     
-    def __init__(self,_index=0):
+    def __init__(self,_index=0,_relative=False):
         SubAction.__init__(self)
         self.index = _index
+        self.relative = _relative
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
         _action.sprite_rate = 0 #sprite_rate has been broken, so we have to ignore it from now on
         #TODO changeSpriteRate subaction
-        _actor.changeSpriteImage(self.index)
+        if self.relative: _actor.changeSpriteImage(self.index+_actor.sprite.index)
+        else: _actor.changeSpriteImage(self.index)
         
     def getDisplayName(self):
         return 'Change Subimage: '+str(self.index)
@@ -1250,7 +1253,7 @@ class modifyHitbox(SubAction):
             if hitbox:
                 for name,value in self.hitbox_vars.iteritems():
                     if hasattr(hitbox, name):
-                        if isinstance(value, VarData) or isinstance(value, FuncData):
+                        if isinstance(value, VarData) or isinstance(value, FuncData) or isinstance(value, EvalData):
                             setattr(hitbox, name, value.unpack(_action,_actor))
                         else: setattr(hitbox, name, value)
         
@@ -1390,10 +1393,10 @@ class createHurtbox(SubAction):
         _actor.activateHurtbox(_action.hurtboxes[self.hurtbox_name])
     
     def getDisplayName(self):
-        return 'Create New Hurtbox: ' + self.hitbox_name
+        return 'Create New Hurtbox: ' + self.hurtbox_name
     
     def getPropertiesPanel(self, _root):
-        return subactionSelector.ModifyHitboxProperties(_root,self,newHurtbox=True)
+        return subactionSelector.ModifyHurtboxProperties(_root,self,newHurtbox=True)
        
     def getXmlElement(self):
         elem = ElementTree.Element('createHurbox')
@@ -1443,20 +1446,20 @@ class modifyHurtbox(SubAction):
             if hurtbox:
                 for name,value in self.hurtbox_vars.iteritems():
                     if hasattr(hurtbox, name):
-                        if isinstance(value, VarData) or isinstance(value, FuncData):
+                        if isinstance(value, VarData) or isinstance(value, FuncData) or isinstance(value, EvalData):
                             setattr(hurtbox, name, value.unpack(_action,_actor))
                         else: setattr(hurtbox, name, value)
         
     def getDisplayName(self):
-        return 'Modify Hurtbox: ' + str(self.hitbox_name)
+        return 'Modify Hurtbox: ' + str(self.hurtbox_name)
     
     def getPropertiesPanel(self, _root):
-        return subactionSelector.ModifyHitboxProperties(_root,self,newHurtbox=False)
+        return subactionSelector.ModifyHurtboxProperties(_root,self,newHurtbox=False)
         
     def getXmlElement(self):
         elem = ElementTree.Element('modifyHurtbox')
-        elem.attrib['name'] = self.hitbox_name
-        for tag,value in self.hitbox_vars.iteritems():
+        elem.attrib['name'] = self.hurtbox_name
+        for tag,value in self.hurtbox_vars.iteritems():
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)
@@ -1464,8 +1467,8 @@ class modifyHurtbox(SubAction):
     
     @staticmethod
     def customBuildFromXml(_node):
-        hitbox_name = loadNodeWithDefault(_node, 'name', 'auto')
-        hitbox_vars = {}
+        hurtbox_name = loadNodeWithDefault(_node, 'name', 'auto')
+        hurtbox_vars = {}
         
         tuple_type = ['center','size','fix_size_multiplier','self_size_multiplier']
         
@@ -1478,9 +1481,9 @@ class modifyHurtbox(SubAction):
                 _type = 'tuple'
             
             val = parseData(child, _type, None)
-            hitbox_vars[tag] = val
+            hurtbox_vars[tag] = val
             
-        return modifyHitbox(hitbox_name,hitbox_vars)
+        return modifyHurtbox(hurtbox_name,hurtbox_vars)
 
 class activateHurtbox(SubAction):
     subact_group = 'Hurtbox'

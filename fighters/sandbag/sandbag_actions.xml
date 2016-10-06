@@ -17,7 +17,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</Stop>
 	
@@ -34,7 +34,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</RunStop>
 	
@@ -51,7 +51,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</Crouch>
 	
@@ -68,55 +68,11 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</CrouchGetup>
 	
 	<Fall>
-		<length>2</length>
-		<sprite>idle</sprite>
-		<frame number="before">
-			<changeFighterPreferredSpeed>
-				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
-			</changeFighterPreferredSpeed>
-			<ifButton>
-				<button check="keysContain">up</button>
-				<pass>fallback</pass>
-			</ifButton>
-		</frame>
-		<conditional name="fallback">
-			<doAction>Helpless</doAction>
-		</conditional>
-	</Fall>
-	
-	<Jump>
-		<length>9</length>
-		<sprite>idle</sprite>
-		
-		<vars>
-			<jump_frame type="int">7</jump_frame>
-		</vars>
-		<frame number="8">
-			<doAction>Helpless</doAction>
-			<changeFighterPreferredSpeed>
-				<ySpeed>0</ySpeed>
-			</changeFighterPreferredSpeed>
-		</frame>
-	</Jump>
-	
-	<AirJump>
-		<length>2</length>
-		<sprite>idle</sprite>
-		
-		<vars>
-			<jump_frame type="int">1</jump_frame>
-		</vars>
-		<frame number="before">
-			<doAction>Fall</doAction>
-		</frame>
-	</AirJump>
-	
-	<Helpless>
 		<length>1</length>
 		<sprite>idle</sprite>
 		<frame number="before">
@@ -142,6 +98,52 @@
 				<ySpeed relative="true">1</ySpeed>
 			</changeFighterSpeed>
 		</conditional>
+	</Fall>
+	
+	<Jump>
+		<length>9</length>
+		<sprite>idle</sprite>
+		
+		<vars>
+			<jump_frame type="int">7</jump_frame>
+		</vars>
+		<frame number="8">
+			<changeFighterPreferredSpeed>
+				<ySpeed>0</ySpeed>
+			</changeFighterPreferredSpeed>
+		</frame>
+	</Jump>
+	
+	<AirJump>
+		<length>2</length>
+		<sprite>idle</sprite>
+		
+		<vars>
+			<jump_frame type="int">1</jump_frame>
+		</vars>
+		<tearDown>
+			<setFighterVar var="jumps">1</setFighterVar>
+		</tearDown>
+		<frame number="before">
+			<doAction>Helpless</doAction>
+		</frame>
+	</AirJump>
+	
+	<Helpless>
+		<length>2</length>
+		<sprite>idle</sprite>
+		<frame number="before">
+			<changeFighterPreferredSpeed>
+				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
+			</changeFighterPreferredSpeed>
+			<ifButton>
+				<button check="keysContain">up</button>
+				<pass>fallback</pass>
+			</ifButton>
+		</frame>
+		<conditional name="fallback">
+			<doAction>Helpless</doAction>
+		</conditional>
 	</Helpless>
 	
 	<Land>
@@ -162,7 +164,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</Land>
 	
@@ -184,7 +186,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</HelplessLand>
 	
@@ -196,18 +198,6 @@
 			<phase_frame type="int">6</phase_frame>
 			<phase_length type="int">10</phase_length>
 		</vars>
-		<frame number="before">
-			<ifButton>
-				<button check="keysContain">up</button>
-				<pass>fallback</pass>
-			</ifButton>
-		</frame>
-		<conditional name="fallback">
-			<changeFighterSpeed>
-				<ySpeed relative="false">-1</ySpeed>
-			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
-		</conditional>
 	</PlatformDrop>
 	
 	<Move>
@@ -223,7 +213,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</Move>
 	
@@ -244,7 +234,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</Dash>
 	
@@ -261,7 +251,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</Pivot>
 	
@@ -278,7 +268,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</RunPivot>
 	
@@ -361,7 +351,7 @@
 				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
 			</changeFighterPreferredSpeed>
 			<createMask>
-				<color>#ff0000</color>
+				<color>#ff00ff</color>
 				<duration>999</duration>
 				<pulse>8</pulse>
 			</createMask>
@@ -389,7 +379,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</SlowGetup>
 
@@ -459,7 +449,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</Released>
 	
@@ -487,7 +477,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 	</LedgeGetup>
 	
@@ -514,7 +504,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 		<frame number="15">
 			<changeFighterSpeed>
@@ -548,7 +538,7 @@
 			<changeFighterSpeed>
 				<ySpeed relative="false">-1</ySpeed>
 			</changeFighterSpeed>
-			<doAction>Helpless</doAction>
+			<doAction>Fall</doAction>
 		</conditional>
 		<frame number="15">
 			<changeFighterSpeed>
