@@ -16,7 +16,6 @@ class debugConsole(pdb.Pdb):
         self.pyg_surface = pygcurse.PygcurseSurface(self.text_width, _height, pygame.font.Font(settingsManager.createPath(_font+".ttf"),_size))
         self.pyg_surface.setscreencolors(fgcolor=None, bgcolor=None, clear=True)
         pdb.Pdb.__init__(self, stdin=self, stdout=self.pyg_surface) #Yay for duck typing
-        #pdb.Pdb.__init__(self, stdin=self) #Yay for duck typing
         self.use_rawinput = False
         self.prompt = "> "
 
@@ -32,7 +31,7 @@ class debugConsole(pdb.Pdb):
 
     def interaction(self, frame, traceback):
         self.setup(frame, traceback)
-        self.cmdloop()
+        self.cmdloop("Welcome to the debug console. For help, type '?'. ")
         self.forget()
 
     #Shamelessly copied and modified from pygcurses. See pygcurse.py for license details. 

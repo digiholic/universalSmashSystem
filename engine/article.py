@@ -27,9 +27,9 @@ class DynamicArticle(spriteManager.SheetSprite):
         self.change_y = 0
         self.sprite_rate = _spriteRate
         self.draw_depth = _draw_depth
-        self.facing = 1
         self.origin_point = _originPoint
         self.starting_direction = _startingDirection
+        self.facing = _startingDirection
         self.tags = _tags
         
         self.hitboxes = {}
@@ -234,10 +234,13 @@ class ShieldArticle(Article):
             _actor.hitstop = math.floor((_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier*settingsManager.getSetting('hitlag'))
             _actor.change_x = _other.base_knockback/5.0*math.cos(math.radians(_other.trajectory))
             _actor.current_action.last_frame = math.floor((_other.damage*_other.shield_multiplier*3/4.0+_other.base_hitstun//5)*settingsManager.getSetting('shieldStun'))
-        elif _hitbox == self.parry_hitbox and _other.article is None and (isinstance(_other, hitbox.DamageHitbox) or isinstance(_other, hitbox.GrabHitbox)):
+        elif _hitbox == self.parry_hitbox or _hitbox == self.reflect_hitbox and (isinstance(_other, hitbox.DamageHitbox) or isinstance(_other, hitbox.GrabHitbox)):
             print("Successful parry!")
             _actor.doAction('NeutralAction')
             _other.owner.doAction('SlowGetup')
+        elif _hitbox == self.reflect_hitbox and (isinstance(_other, hitbox.DamageHitbox) and not _other.ignore_shields):
+            if isinstance(self.owner.current_action, baseActions.Parry):
+                _actor.doAction('NeutralAction')
 
     def onClank(self, _actor, _hitbox, _other):
         self.owner.change_y = -15

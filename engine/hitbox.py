@@ -382,24 +382,18 @@ class ReflectorHitbox(InertHitbox):
                 if hasattr(_other.article, 'changeOwner'):
                     _other.article.changeOwner(self.owner)
                 if hasattr(_other.article, 'change_x') and hasattr(_other.article, 'change_y'):
-                    v_other = [_other.article.change_x, _other.article.change_y]
                     if self.article is None:
                         x_diff = self.rect.centerx - _other.article.rect.centerx
                         y_diff = self.rect.centery - _other.article.rect.centery
-                        x_vel = self.x_bias+self.x_draw*x_diff
-                        y_vel = self.y_bias+self.y_draw*y_diff
-                        v_self = getXYFromDM(self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory))+90, 1.0)
                     else:
                         x_diff = self.article.rect.centerx - _other.article.rect.centerx
                         y_diff = self.article.rect.centery - _other.article.rect.centery
-                        x_vel = self.x_bias+self.x_draw*x_diff
-                        y_vel = self.y_bias+self.y_draw*y_diff
-                        v_self = getXYFromDM(getForwardWithOffset(self.article.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory), self.article)+90, 1.0)
-                    dot = v_other[0]*v_self[0]+v_other[1]*v_self[1]
-                    norm_sqr = v_self[0]*v_self[0]+v_self[1]*v_self[1]
-                    ratio = 1 if norm_sqr == 0 else dot/norm_sqr
-                    projection = [v_self[0]*ratio, v_self[1]*ratio]
-                    (_other.article.change_x, _other.article.change_y) = (self.velocity_multiplier*(2*projection[0]-v_other[0]), -1*self.velocity_multiplier*(2*projection[1]-v_other[1]))
+                    x_vel = self.x_bias+self.x_draw*x_diff
+                    y_vel = self.y_bias+self.y_draw*y_diff
+                    reflect_deviation = math.degrees(math.atan2(-y_vel,x_vel))+self.owner.getForwardWithOffset(self.trajectory)*(1 if _other.article.facing == -1 else -1)
+                    reflect_angle = math.degrees(math.atan2(_other.article.change_y, _other.article.change_x*(-1 if _other.article.facing == -1 else 1)))+180+reflect_deviation
+                    reflect_speed = math.hypot(_other.article.change_x, _other.article.change_y)
+                    (_other.article.change_x, _other.article.change_y) = getXYFromDM(reflect_angle, reflect_speed)
                 if hasattr(_other, 'damage') and hasattr(_other, 'shield_multiplier'):
                     self.priority -= _other.damage*_other.shield_multiplier
                     self.hp -= _other.damage*_other.shield_multiplier
