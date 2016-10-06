@@ -1341,7 +1341,6 @@ class deactivateHitbox(SubAction):
     def getDisplayName(self):
         return 'Deactivate Hitbox: ' + self.hitbox_name
 
-
 class unlockHitbox(SubAction):
     subact_group = 'Hitbox'
     fields = [NodeMap('hitbox_name','string','unlockHitbox','')
@@ -1362,6 +1361,15 @@ class unlockHitbox(SubAction):
     def getDisplayName(self):
         return 'Unlock Hitbox: ' + self.hitbox_name
 
+class Charge(SubAction):
+    subact_group = 'Hitbox'
+    fields = [NodeMap('maxCharge','int','charge|maxCharge',10),
+              NodeMap('startChargeFrame','int','charge',0)
+              ]
+    
+    def __init__(self,_max,_chargeFrame):
+        pass
+    
 # Create a new hurtbox
 class createHurtbox(SubAction):
     subact_group = 'Hurtbox'
@@ -1417,7 +1425,7 @@ class createHurtbox(SubAction):
                 print('string variable',tag,val)
                 variables[tag] = val
             
-        return createHurtbox(name, hurtbox_type, variables, hurtbox_focus)
+        return createHurtbox(name, variables)
 
 # Change the properties of an existing hurtbox
 class modifyHurtbox(SubAction):
@@ -1425,8 +1433,8 @@ class modifyHurtbox(SubAction):
     
     def __init__(self,_hurtboxName='',_hurtboxVars={}):
         SubAction.__init__(self)
-        self.hurtbox_name = _hitboxName
-        self.hurtbox_vars = _hitboxVars
+        self.hurtbox_name = _hurtboxName
+        self.hurtbox_vars = _hurtboxVars
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
@@ -1479,7 +1487,7 @@ class activateHurtbox(SubAction):
     fields = [NodeMap('hurtbox_name','string','activateHurtbox','')
               ]
     
-    def __init__(self,_hitboxName=''):
+    def __init__(self,_hurtboxName=''):
         SubAction.__init__(self)
         self.hurtbox_name = _hurtboxName
     
@@ -1489,7 +1497,8 @@ class activateHurtbox(SubAction):
             _actor.activateHurtbox(_action.hurtboxes[self.hurtbox_name])
     
     def getPropertiesPanel(self, _root):
-        return subactionSelector.UpdateHurtboxProperties(_root,self)
+        #return subactionSelector.UpdateHurtboxProperties(_root,self)
+        return None
     
     def getDisplayName(self):
         return 'Activate Hurtbox: ' + self.hurtbox_name
@@ -1509,7 +1518,8 @@ class deactivateHurtbox(SubAction):
             _action.hurtboxes[self.hurtbox_name].kill()
     
     def getPropertiesPanel(self, _root):
-        return subactionSelector.UpdateHurtboxProperties(_root,self)
+        #return subactionSelector.UpdateHurtboxProperties(_root,self)
+        return None
     
     def getDisplayName(self):
         return 'Deactivate Hurtbox: ' + self.hurtbox_name
