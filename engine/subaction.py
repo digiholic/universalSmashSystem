@@ -1479,7 +1479,7 @@ class modifyHurtbox(SubAction):
             #special cases
             if tag in tuple_type:
                 _type = 'tuple'
-            
+            else: _type = 'string'
             val = parseData(child, _type, None)
             hurtbox_vars[tag] = val
             
