@@ -46,6 +46,7 @@ class Controller(BaseController):
     def __init__(self,_bindings,_timing_window = dict()):
         BaseController.__init__(self, _bindings)
         self.timing_window = _timing_window
+        print(self.timing_window)
     
     def getInputs(self,_event,_push = True, _outputOnRelease = True):
         if _event.type not in [pygame.KEYDOWN, pygame.KEYUP]:

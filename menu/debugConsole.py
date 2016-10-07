@@ -72,6 +72,7 @@ class debugConsole(pdb.Pdb):
     def do_advance(self, _args):
         """Advances the game the given number of frames.\nSyntax: advance <num_frames>"""
         #TODO: Allow stepping without an argument
+        if _args == '': _args = '1'
         split_args = _args.split(' ')
         num_frames = int(split_args[0])
         frames_advanced = 0

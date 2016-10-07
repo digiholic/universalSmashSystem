@@ -246,7 +246,7 @@ class Settings():
             
             for key in timing_window.keys():
                 if self.parser.has_option(group_name, key):
-                    timing_window[key] = self.parser.get(group_name,key)
+                    timing_window[key] = int(self.parser.get(group_name,key))
             
             for opt in self.parser.options(group_name):
                 if self.key_name_map.has_key(opt):
@@ -397,7 +397,7 @@ def saveGamepad(_settings):
             if not pos: pos = 'none'
             parser.set(controller_name,'a'+str(key),'('+str(neg)+','+str(pos)+')' )
         
-        for key,value in gamepad.pad_bindings.button_bindings.iteritems():
+        for key,value in gamepad.key_bindings.button_bindings.iteritems():
             parser.set(controller_name,'b'+str(key),str(value))
             
     with open(os.path.join(getSetting().datadir.replace('main.exe',''),'settings','gamepads.ini'), 'w') as configfile:

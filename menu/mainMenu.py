@@ -625,7 +625,6 @@ class PlayerControlsMenu(SubMenu):
         if _optionNum == 1:
             self.smash_window = max(1,self.smash_window + _direction)
             settingsManager.getControls(self.player_num).timing_window['smash_window'] = self.smash_window
-            print(settingsManager.getControls(self.player_num).timing_window['smash_window'])
         if _optionNum == 2:
             self.repeat_window = max(1,self.repeat_window + _direction)
             settingsManager.getControls(self.player_num).timing_window['repeat_window'] = self.repeat_window
@@ -729,6 +728,12 @@ class PlayerControlsMenu(SubMenu):
                         new_controller = engine.controller.Controller(new_key_binding)
                         settingsManager.getSetting().setting['controls_'+str(self.player_num)] = new_controller
                         settingsManager.getSetting().setting['control_type_'+str(self.player_num)] = 'Keyboard'
+                        
+                        settingsManager.getControls(self.player_num).timing_window['smash_window'] = self.smash_window
+                        settingsManager.getControls(self.player_num).timing_window['repeat_window'] = self.repeat_window
+                        settingsManager.getControls(self.player_num).timing_window['buffer_window'] = self.buffer_window
+                        settingsManager.getControls(self.player_num).timing_window['smoothing_window'] = self.smoothing_window
+            
                         settingsManager.saveSettings(settingsManager.getSetting().setting)
                         self.status_text.changeText('')
                         return 0
