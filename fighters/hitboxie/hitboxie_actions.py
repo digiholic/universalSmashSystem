@@ -40,9 +40,9 @@ class ForwardSpecial(action.Action):
         self.ambient_hitbox = hitbox.Hitbox(_actor, hitbox.HitboxLock(), ambience)
         self.chain_hitbox = hitbox.AutolinkHitbox(_actor, hitbox.HitboxLock(), variables)
         self.fling_hitbox = self.sideSpecialHitbox(_actor)
-        self.num_frames = 0
         self.ecb_offset = [0,7]
         self.ecb_size = [64, 78]
+        self.charge = 0
         if _actor.sideSpecialUses == 1:
             _actor.sideSpecialUses = 0
         else:
@@ -50,7 +50,6 @@ class ForwardSpecial(action.Action):
             return
         _actor.change_x = 0
         _actor.preferred_xspeed = 0
-        _actor.flinch_knockback_threshold = 4
         _actor.changeSprite("nair",0)
     
     def onClank(self,_actor):
@@ -66,7 +65,9 @@ class ForwardSpecial(action.Action):
                          'knockback_growth':0.1,
                          'trajectory':300,
                          'shield_multiplier':10,
-                         'hitlag_multiplier':2
+                         'hitlag_multiplier':2,
+                         'charge_damage':0.08333,
+                         'charge_base_knockback':0.04167
                          }
             hitbox.DamageHitbox.__init__(self, _actor, hitbox.HitboxLock(), variables)
             
@@ -92,7 +93,6 @@ class ForwardSpecial(action.Action):
     def tearDown(self, _actor, _newAction):
         self.chain_hitbox.kill()
         self.fling_hitbox.kill()
-        _actor.flinch_knockback_threshold = 0
         _actor.preferred_xspeed = 0
 
     def update(self, _actor):
@@ -116,7 +116,7 @@ class ForwardSpecial(action.Action):
                     self.frame -= 1
             else: #Actually launch forwards
                 _actor.preferred_yspeed = _actor.var['max_fall_speed']
-                self.num_frames += 1
+                self.charge += 1
                 self.chain_hitbox.update()
                 _actor.active_hitboxes.add(self.chain_hitbox)
                 (key, invkey) = _actor.getForwardBackwardKeys()
@@ -128,35 +128,25 @@ class ForwardSpecial(action.Action):
                 if _actor.keysContain(invkey):
                     _actor.preferred_xspeed = _actor.var['aerial_transition_speed']//2*_actor.facing
                     self.frame += 2
-                    if (self.frame > self.last_frame-2):
-                        self.frame = self.last_frame-2
                 elif _actor.keysContain(key):
                     _actor.preferred_xspeed = _actor.var['aerial_transition_speed']*_actor.facing
-                    if (self.frame > self.last_frame-2):
-                        self.frame = self.last_frame-2
                 else:
                     _actor.preferred_xspeed = _actor.var['aerial_transition_speed']*3//4*_actor.facing
                     self.frame += 1
-                    if (self.frame > self.last_frame-2):
-                        self.frame = self.last_frame-2
+                if (self.frame > self.last_frame-2):
+                    self.frame = self.last_frame-2
                 
         else:
             if self.frame == self.last_frame-1:
-                self.fling_hitbox.damage += int(float(self.num_frames)/float(24))
-                self.fling_hitbox.priority += int(float(self.num_frames)/float(24))
-                self.fling_hitbox.base_knockback += float(self.num_frames)/float(24)
                 self.fling_hitbox.update()
                 _actor.active_hitboxes.add(self.fling_hitbox)
+                print(self.fling_hitbox.damage)
             else:
                 self.fling_hitbox.kill()
             self.chain_hitbox.kill()
             if self.frame >= self.last_frame:
-                if _actor.grounded:
-                    _actor.landing_lag = 25
-                    _actor.doAction('Land')
-                else:
-                    _actor.landing_lag = 25
-                    _actor.doAction('Fall')
+                _actor.landing_lag = 25
+                _actor.doAction('Fall')
 
         self.frame += 1
 

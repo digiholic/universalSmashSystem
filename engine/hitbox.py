@@ -41,7 +41,8 @@ class Hitbox(spriteManager.RectSprite):
                        'hp': 0,
                        'ignore_shields': False,
                        'ignore_armor': False, 
-                       'trail_color': None
+                       'trail_color': None,
+                       'charge_source': 'charge'
                        }
         self.newVariables = _variables
         self.variable_dict.update(self.newVariables)
@@ -71,15 +72,9 @@ class Hitbox(spriteManager.RectSprite):
         
         self.owner_on_hit_actions = []
         self.other_on_hit_actions = []
-      
-        self.chargeLevel = 0
+        self.charge = 0
         
     def onCollision(self,_other):
-        self.damage += (self.charge_damage * self.chargeLevel)
-        self.priority += (self.charge_damage * self.chargeLevel)
-        self.base_knockback += (self.charge_base_knockback * self.chargeLevel)
-        self.knockback_growth += (self.charge_knockback_growth * self.chargeLevel)
-        
         #This unbelievably convoluted function call basically means "if this thing's a fighter" without having to import fighter
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             _other.hitbox_contact.add(self)
@@ -100,6 +95,16 @@ class Hitbox(spriteManager.RectSprite):
             self.rect.center = [self.article.rect.center[0] + self.center[0]*self.article.facing, self.article.rect.center[1] + self.center[1]]
         else:
             self.rect.center = [self.article.rect.center[0] + self.center[0], self.article.rect.center[1] + self.center[1]]
+        if self.article == None:
+            if hasattr(self.owner.current_action, self.charge_source):
+                self.charge = getattr(self.owner.current_action, self.charge_source)
+        else:
+            if hasattr(self.article, self.charge_source):
+                self.charge = getattr(self.article, self.charge_source)
+        self.damage = self.variable_dict['damage']+self.charge*self.variable_dict['charge_damage']
+        self.priority = self.variable_dict['priority']+self.charge*self.variable_dict['charge_damage']
+        self.base_knockback = self.variable_dict['base_knockback']+self.charge*self.variable_dict['charge_base_knockback']
+        self.knockback_growth = self.variable_dict['knockback_growth']+self.charge*self.variable_dict['charge_knockback_growth']
         
     def getTrajectory(self):
         return self.trajectory
@@ -187,6 +192,7 @@ class DamageHitbox(Hitbox):
         Hitbox.__init__(self,_owner,_lock,_variables)
         self.hitbox_type = 'damage'
         self.priority += self.damage
+        self.variable_dict['priority'] += self.damage
         
     def onCollision(self,_other):
         Hitbox.onCollision(self, _other)
@@ -374,6 +380,7 @@ class ReflectorHitbox(InertHitbox):
         InertHitbox.__init__(self,_owner,_hitboxLock,_hitboxVars)
         self.hitbox_type = 'reflector'
         self.priority += self.hp
+        self.variable_dict['priority'] += self.hp
         
     def compareTo(self, _other):
         clank_state = Hitbox.compareTo(self, _other)

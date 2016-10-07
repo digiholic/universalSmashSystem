@@ -957,81 +957,32 @@
 		<sprite>dsmash</sprite>
 		<sprite_rate>2</sprite_rate>
 		
-		
 		<setUp>
 			<changeFighterPreferredSpeed>
 				<xSpeed>0</xSpeed>
 			</changeFighterPreferredSpeed>
 			
 			<createHitbox type="sakurai">
-				<name>rightHbox1</name>
+				<name>rightHbox</name>
 				<center>14,0</center>
 				<size>24,52</size>
 				<damage>8</damage>
 				<base_knockback>8</base_knockback>
 				<knockback_growth>0.07</knockback_growth>
 				<trajectory>45</trajectory>
-				<charge_damage>.1</charge_damage>
+				<charge_damage>0.1</charge_damage>
 				<hitboxLock>main</hitboxLock>
 			</createHitbox>
 			
 			<createHitbox type="sakurai">
-				<name>leftHbox1</name>
+				<name>leftHbox</name>
 				<center>-14,0</center>
 				<size>24,52</size>
 				<damage>8</damage>
 				<base_knockback>8</base_knockback>
 				<knockback_growth>0.07</knockback_growth>
 				<trajectory>135</trajectory>
-				<charge_damage>.1</charge_damage>
-				<hitboxLock>main</hitboxLock>
-			</createHitbox>
-
-			<createHitbox type="sakurai">
-				<name>rightHbox2</name>
-				<center>24,13</center>
-				<size>24,52</size>
-				<damage>12</damage>
-				<base_knockback>8</base_knockback>
-				<knockback_growth>0.11</knockback_growth>
-				<trajectory>30</trajectory>
-				<charge_damage>.15</charge_damage>
-				<hitboxLock>main</hitboxLock>
-			</createHitbox>
-			
-			<createHitbox type="sakurai">
-				<name>leftHbox2</name>
-				<center>-24,13</center>
-				<size>24,52</size>
-				<damage>12</damage>
-				<base_knockback>8</base_knockback>
-				<knockback_growth>0.11</knockback_growth>
-				<trajectory>150</trajectory>
-				<charge_damage>.15</charge_damage>
-				<hitboxLock>main</hitboxLock>
-			</createHitbox>
-
-			<createHitbox type="sakurai">
-				<name>rightHbox3</name>
-				<center>34,26</center>
-				<size>24,52</size>
-				<damage>16</damage>
-				<base_knockback>8</base_knockback>
-				<knockback_growth>0.15</knockback_growth>
-				<trajectory>15</trajectory>
-				<charge_damage>.2</charge_damage>
-				<hitboxLock>main</hitboxLock>
-			</createHitbox>
-			
-			<createHitbox type="sakurai">
-				<name>leftHbox3</name>
-				<center>-34,26</center>
-				<size>24,52</size>
-				<damage>16</damage>
-				<base_knockback>8</base_knockback>
-				<knockback_growth>0.15</knockback_growth>
-				<trajectory>135</trajectory>
-				<charge_damage>.2</charge_damage>
+				<charge_damage>0.1</charge_damage>
 				<hitboxLock>main</hitboxLock>
 			</createHitbox>
 		</setUp>
@@ -1043,63 +994,74 @@
 		<onClank>
 			<doAction>NeutralAction</doAction>
 		</onClank>
+		<frame number="9">
+			<charge maxCharge="15">7</charge>
+			<changeSubimage>5</changeSubimage>
+		</frame>
 		
 		<frame number="10">
-			<activateHitbox>rightHbox1</activateHitbox>
-			<activateHitbox>leftHbox1</activateHitbox>
-			<playSound>dsmash</playSound>
-			<changeSubimage>5</changeSubimage>
-			<charge maxCharge="15">8</charge>
+			<activateHitbox>rightHbox</activateHitbox>
+			<activateHitbox>leftHbox</activateHitbox>
 		</frame>
 		<frame number="11">
-			<deactivateHitbox>rightHbox1</deactivateHitbox>
-			<deactivateHitbox>leftHbox1</deactivateHitbox>
-			<activateHitbox>rightHbox2</activateHitbox>
-			<activateHitbox>leftHbox2</activateHitbox>
+			<modifyHitbox name="rightHbox">
+				<center>24,13</center>
+				<damage>12</damage>
+				<knockback_growth>0.11</knockback_growth>
+				<trajectory>30</trajectory>
+				<charge_damage>0.15</charge_damage>
+			</modifyHitbox>
+			<modifyHitbox name="leftHbox">
+				<center>-24,13</center>
+				<damage>12</damage>
+				<knockback_growth>0.11</knockback_growth>
+				<trajectory>150</trajectory>
+				<charge_damage>0.15</charge_damage>
+			</modifyHitbox>
+			<playSound>dsmash</playSound>
 			<changeSubimage>6</changeSubimage>
 		</frame>
 		<frame number="12">
-			<deactivateHitbox>rightHbox2</deactivateHitbox>
-			<deactivateHitbox>leftHbox2</deactivateHitbox>
-			<activateHitbox>rightHbox3</activateHitbox>
-			<activateHitbox>leftHbox3</activateHitbox>
+			<modifyHitbox name="rightHbox">
+				<center>34,26</center>
+				<damage>16</damage>
+				<knockback_growth>0.15</knockback_growth>
+				<trajectory>15</trajectory>
+				<charge_damage>0.2</charge_damage>
+			</modifyHitbox>
+			<modifyHitbox name="leftHbox">
+				<center>-34,26</center>
+				<damage>16</damage>
+				<knockback_growth>0.15</knockback_growth>
+				<trajectory>135</trajectory>
+				<charge_damage>0.2</charge_damage>
+			</modifyHitbox>
 			<changeSubimage>7</changeSubimage>
 		</frame>
 		<frame number="14">
 			<changeSubimage>8</changeSubimage>
 		</frame>
 		<frame number="16">
-			<deactivateHitbox>rightHbox3</deactivateHitbox>
-			<deactivateHitbox>leftHbox3</deactivateHitbox>
-			<activateHitbox>rightHbox2</activateHitbox>
-			<activateHitbox>leftHbox2</activateHitbox>
-			<modifyHitbox name="rightHbox2">
-				<center>(34,26)</center>
+			<modifyHitbox name="rightHbox">
+				<damage>12</damage>
+				<knockback_growth>0.09</knockback_growth>
+				<trajectory>30</trajectory>
+				<charge_damage>0.15</charge_damage>
 			</modifyHitbox>
-			<modifyHitbox name="leftHbox2">
-				<center>(-34,26)</center>
+			<modifyHitbox name="leftHbox">
+				<damage>12</damage>
+				<knockback_growth>0.09</knockback_growth>
+				<trajectory>150</trajectory>
+				<charge_damage>0.15</charge_damage>
 			</modifyHitbox>
 			<changeSubimage>9</changeSubimage>
 		</frame>
-		<frame number="20">
-			<changeSubimage>10</changeSubimage>
-		</frame>
-		<frame number="24">
-			<changeSubimage>11</changeSubimage>
-		</frame>
-		<frame number="28">
-			<changeSubimage>12</changeSubimage>
+		<frame number="20,24,28,33,38,44">
+			<changeSubimage relative="true">1</changeSubimage>
 		</frame>
 		<frame number="33">
-			<changeSubimage>13</changeSubimage>
-			<deactivateHitbox>rightHbox2</deactivateHitbox>
-			<deactivateHitbox>leftHbox2</deactivateHitbox>
-		</frame>
-		<frame number="38">
-			<changeSubimage>14</changeSubimage>
-		</frame>
-		<frame number="44">
-			<changeSubimage>15</changeSubimage>
+			<deactivateHitbox>rightHbox</deactivateHitbox>
+			<deactivateHitbox>leftHbox</deactivateHitbox>
 		</frame>
 	</DownSmash>
 	

@@ -207,9 +207,19 @@ class ShieldArticle(Article):
                                                           'priority':float('inf'),
                                                           'hp':float('inf'),
                                                           'velocity_multiplier': 1,
-                                                          'damage_multiplier': 1
+                                                          'damage_multiplier': 0.5
                                                          })
         self.reflect_hitbox.article = self
+        self.parry_reflect_hitbox = hitbox.ReflectorHitbox(_owner, hitbox.HitboxLock(),
+                                                         {'center':[0,0],
+                                                          'size':[_owner.shield_integrity*_owner.var['shield_size'], _owner.shield_integrity*_owner.var['shield_size']],
+                                                          'transcendence':6,
+                                                          'priority':float('inf'),
+                                                          'hp':float('inf'),
+                                                          'velocity_multiplier': 1,
+                                                          'damage_multiplier': 1.5
+                                                         })
+        self.parry_reflect_hitbox.article = self
         self.main_hitbox = hitbox.ShieldHitbox(_owner, hitbox.HitboxLock(), 
                                                {'center':[0,0],
                                                 'size':[_owner.shield_integrity*_owner.var['shield_size'], _owner.shield_integrity*_owner.var['shield_size']],
@@ -238,9 +248,8 @@ class ShieldArticle(Article):
             print("Successful parry!")
             _actor.doAction('NeutralAction')
             _other.owner.doAction('SlowGetup')
-        elif _hitbox == self.reflect_hitbox and (isinstance(_other, hitbox.DamageHitbox) and not _other.ignore_shields):
-            if isinstance(self.owner.current_action, baseActions.Parry):
-                _actor.doAction('NeutralAction')
+        elif _hitbox == self.parry_reflect_hitbox and (isinstance(_other, hitbox.DamageHitbox) and not _other.ignore_shields):
+            _actor.doAction('NeutralAction')
 
     def onClank(self, _actor, _hitbox, _other):
         self.owner.change_y = -15
@@ -252,20 +261,23 @@ class ShieldArticle(Article):
                             self.owner.rect.center[1]+50*self.owner.var['shield_size']*self.owner.getSmoothedInput(int(self.owner.key_bindings.timing_window['smoothing_window']), 0.5)[1]]
         self.scale = (self.owner.shield_integrity*self.owner.var['shield_size']/100.0)
         if self.frame == 0:
-            self.owner.active_hitboxes.add(self.reflect_hitbox)
             import engine.baseActions as baseActions
             if isinstance(self.owner.current_action, baseActions.Parry):
                 self.owner.active_hitboxes.add(self.parry_hitbox)
+                self.owner.active_hitboxes.add(self.parry_reflect_hitbox)
             else:
                 self.owner.active_hitboxes.add(self.main_hitbox)
+                self.owner.active_hitboxes.add(self.reflect_hitbox)
         if self.frame == 1:
             self.parry_hitbox.kill()
+            self.parry_reflect_hitbox.kill()
         if self.frame == 2:
             self.reflect_hitbox.kill()
         if not self.owner.shield:
             self.reflect_hitbox.kill()
             self.main_hitbox.kill()
             self.parry_hitbox.kill()
+            self.parry_reflect_hitbox.kill()
             self.kill()     
 
         self.reflect_hitbox.rect.size = [self.owner.shield_integrity*self.owner.var['shield_size'], self.owner.shield_integrity*self.owner.var['shield_size']]
@@ -273,9 +285,11 @@ class ShieldArticle(Article):
         self.main_hitbox.hp = self.owner.shield_integrity
         self.main_hitbox.rect.size = [self.owner.shield_integrity*self.owner.var['shield_size'], self.owner.shield_integrity*self.owner.var['shield_size']]
         self.parry_hitbox.rect.size = [self.owner.shield_integrity*self.owner.var['shield_size'], self.owner.shield_integrity*self.owner.var['shield_size']]
+        self.parry_reflect_hitbox.rect.size = [self.owner.shield_integrity*self.owner.var['shield_size'], self.owner.shield_integrity*self.owner.var['shield_size']]
         self.reflect_hitbox.update()
         self.main_hitbox.update()
         self.parry_hitbox.update() 
+        self.parry_reflect_hitbox.update()
         self.owner.shield_integrity -= 1
         self.frame += 1       
    
