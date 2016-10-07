@@ -5,7 +5,7 @@ import sys
 # fine tuning.
 build_options = dict(packages = ['numpy', 'pygame', 'requests', 'xml', 'Tkinter'], 
                     excludes = [], 
-                    include_files = ['leaguespartan-bold.ttf', 'full Pack 2025.ttf', 'settingsManager.py',
+                    include_files = ['Orbitron Medium.ttf', 'full Pack 2025.ttf', 'settingsManager.py',
                                      'battle.py', 'main.py', 'musicManager.py', 'spriteManager.py',
                                      'engine/', 'fighters/', 'menu/', 'music/', 'settings/', 'sfx/',
                                      'builder/', 'sprites/', 'stages/', 'cacert.pem'])
