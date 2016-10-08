@@ -38,7 +38,7 @@ class Hitbox(spriteManager.RectSprite):
                        'y_bias': 0,
                        'x_draw': 0.1,
                        'y_draw': 0.1,
-                       'hp': 0,
+                       'hp': 50,
                        'ignore_shields': False,
                        'ignore_armor': False, 
                        'trail_color': None,
