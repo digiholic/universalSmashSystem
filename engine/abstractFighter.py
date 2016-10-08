@@ -849,7 +849,7 @@ class AbstractFighter():
         if self.current_action.name in ('Crouch', 'CrouchCancel'):
             _kb *= 0.5
             _kbg *= 0.9
-            _baseHitstun //= 0.5
+            _baseHitstun *= 0.5
             _hitstunMultiplier *= 0.8
         
         p = float(self.damage)
@@ -938,12 +938,12 @@ class AbstractFighter():
                 color = settingsManager.getSetting('playerColor' + str(self.player_num))
                 
             self.initialize()
-            for i in range(0, 19):
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18, 30, 1.5, color)
+            for i in range(0, 11):
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30, 30, 1.5, color)
                 self.articles.add(next_hit_article)
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18+6, 60, 1.5, color)
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30+10, 60, 1.5, color)
                 self.articles.add(next_hit_article)
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*18+12, 90, 1.5, color)
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30+20, 90, 1.5, color)
                 self.articles.add(next_hit_article)
             self.rect.midbottom = self.game_state.spawn_locations[self.player_num]
             self.rect.bottom -= 200

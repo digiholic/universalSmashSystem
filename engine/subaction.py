@@ -1854,6 +1854,7 @@ subaction_dict = {
                  'removeMask': removeMask,
                  'setInvulnerability': setInvulnerability,
                  'changeGravity': changeGravity,
+                 'setGrabbing': setGrabbing,
                  
                  #Hitbox Manipulation
                  'createHitbox': createHitbox,
