@@ -677,7 +677,7 @@ class Tumble(action.Action):
         if self.tech_cooldown > 0: self.tech_cooldown -= 1
         
 class Prone(action.Action):
-    def __init__(self,_length=40):
+    def __init__(self,_length=30):
         action.Action.__init__(self, _length)
         
     def setUp(self, _actor):
@@ -694,7 +694,7 @@ class Prone(action.Action):
 
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        if isinstance(_nextAction, HitStun) and self.frame < 15:
+        if isinstance(_nextAction, HitStun):
             _nextAction.do_slow_getup = True
         
     def update(self, _actor):
@@ -702,7 +702,7 @@ class Prone(action.Action):
         if not _actor.grounded:
             _actor.doAction('Tumble')
         if self.frame == self.last_frame:
-            _actor.doAction('Getup')
+            self.frame = self.last_frame - 1
         self.frame += 1
         
     def stateTransitions(self, _actor):
@@ -727,13 +727,13 @@ class Getup(action.Action):
 
 class SlowGetup(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 40)
+        action.Action.__init__(self, 50)
         
     def setUp(self, _actor):
         if self.sprite_name == "": self.sprite_name = "prone"
         action.Action.setUp(self, _actor)
         
-        if self.last_frame < 40: self.last_frame = 40 #slow getups must be this long
+        if self.last_frame < 50: self.last_frame = 50 #slow getups must be this long
         
         ground_blocks = _actor.checkGround()
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)

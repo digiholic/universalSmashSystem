@@ -206,8 +206,8 @@ class ShieldArticle(Article):
                                                           'transcendence':6,
                                                           'priority':float('inf'),
                                                           'hp':float('inf'),
-                                                          'velocity_multiplier': 1,
-                                                          'damage_multiplier': 0.5
+                                                          'velocity_multiplier': 0.75,
+                                                          'damage_multiplier': 0.75
                                                          })
         self.reflect_hitbox.article = self
         self.parry_reflect_hitbox = hitbox.ReflectorHitbox(_owner, hitbox.HitboxLock(),
@@ -216,7 +216,7 @@ class ShieldArticle(Article):
                                                           'transcendence':6,
                                                           'priority':float('inf'),
                                                           'hp':float('inf'),
-                                                          'velocity_multiplier': 1,
+                                                          'velocity_multiplier': 1.5,
                                                           'damage_multiplier': 1.5
                                                          })
         self.parry_reflect_hitbox.article = self

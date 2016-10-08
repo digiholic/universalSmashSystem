@@ -316,7 +316,7 @@ class MaskSprite(ImageSprite):
             return None
 
 class TextSprite(ImageSprite):
-    def __init__(self,_text,_font="leaguespartan-bold",_size=12,_color=[0,0,0]):
+    def __init__(self,_text,_font="Orbitron Medium",_size=12,_color=[0,0,0]):
         Sprite.__init__(self)
         self.font = pygame.font.Font(settingsManager.createPath(_font+".ttf"),_size)
             

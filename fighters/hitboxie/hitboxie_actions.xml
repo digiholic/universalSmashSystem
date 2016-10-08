@@ -182,7 +182,7 @@
 	</Shield>
 
 	<Parry>
-		<length>30</length>
+		<length>20</length>
 		<sprite>jump</sprite>
 		<sprite_rate>0</sprite_rate>
 	</Parry>
@@ -276,7 +276,7 @@
 	</Tumble>
 	
 	<Prone>
-		<length>40</length>
+		<length>25</length>
 		<sprite>land</sprite>
 		<sprite_rate>2</sprite_rate>
 		<setUp>
@@ -291,7 +291,7 @@
 	</Prone>
 	
 	<SlowGetup>
-		<length>40</length>
+		<length>50</length>
 		<sprite>land</sprite>
 		<sprite_rate>2</sprite_rate>
 		
