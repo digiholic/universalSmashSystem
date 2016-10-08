@@ -857,7 +857,7 @@ class AbstractFighter():
         w = float(self.var['weight']) * settingsManager.getSetting('weight')
         s = float(_kbg)
         b = float(_kb)
-
+        print('weight influence',_weightInfluence)
         # Thank you, ssbwiki!
         total_kb = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*_weightInfluence+100))*1.4) + 5) * s) + b
 
