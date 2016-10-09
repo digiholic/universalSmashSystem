@@ -336,8 +336,9 @@ class GrabHitbox(Hitbox):
     def onCollision(self,_other):
         if 'AbstractFighter' in list(map(lambda x:x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if self.article is None:
-                self.owner.setGrabbing(_other)
+                self.owner.grabbing = _other
                 Hitbox.onCollision(self, _other)
+                _other.grabbed_by = self.owner
             #TODO: Add functionality for article command grabs
                 
     def compareTo(self, _other):
@@ -442,7 +443,7 @@ class ShieldHitbox(Hitbox):
     def compareTo(self, _other):
         clank_state = Hitbox.compareTo(self, _other)
         if clank_state == 1 and self.hp >= 0:
-            if not isinstance(_other, InertHitbox) and isinstance(_other, DamageHitbox) and not _other.ignore_shields and self.owner.lockHitbox(_other):
+            if not isinstance(_other, InertHitbox) and (isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox)) and not _other.ignore_shields and self.owner.lockHitbox(_other):
                 if hasattr(_other, 'damage') and hasattr(_other, 'shield_multiplier'):
                     self.priority -= _other.damage*_other.shield_multiplier
                     self.hp -= _other.damage*_other.shield_multiplier

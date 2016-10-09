@@ -436,13 +436,13 @@ class GrabReeling(BaseGrab):
             _actor.doAction('Release')
             
     def update(self, _actor):
+        BaseGrab.update(self, _actor)
+        if self.frame >= self.last_frame:
+            _actor.doAction('Grabbing')
         if dist > 0:
             self.hold_point -= self.reel_speed
         else:
             self.hold_point += self.reel_speed
-        BaseGrab.update(self, _actor)
-        if self.frame >= self.last_frame:
-            _actor.doAction('Grabbing')
         
 class Grabbing(BaseGrab):
     def __init__(self,_length=1):
@@ -1586,12 +1586,9 @@ class DashGrab(BaseAttack):
         from engine import subaction
         for hitbox in self.hitboxes.values():
             if not hitbox.owner_on_hit_actions: 
-                if _actor.hasAction('GrabReeling'):
-                    hitbox.owner_on_hit_actions.append(subaction.doAction('GrabReeling'))
-                else:
-                    hitbox.owner_on_hit_actions.append(subaction.doAction('Grabbing'))
-            if not hitbox.other_on_hit_actions: 
-                hitbox.other_on_hit_actions.append(subaction.doAction('Grabbed'))
+                if _actor.hasAction('GrabReeling'): hitbox.owner_on_hit_actions.append(subaction.doAction('GrabReeling'))
+                else: hitbox.owner_on_hit_actions.append(subaction.doAction('Grabbing'))
+            if not hitbox.other_on_hit_actions:  hitbox.other_on_hit_actions.append(subaction.doAction('Grabbed'))
 
 class AirGrab(AirAttack):
     def __init__(self, _length=0):
