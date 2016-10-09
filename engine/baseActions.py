@@ -1573,13 +1573,9 @@ class GroundGrab(BaseAttack):
         from engine import subaction
         for hitbox in self.hitboxes.values():
             if not hitbox.owner_on_hit_actions: 
-                if _actor.hasAction('GrabReeling'):
-                    hitbox.owner_on_hit_actions.append(subaction.doAction('GrabReeling'))
-                else:
-                    hitbox.owner_on_hit_actions.append(subaction.doAction('Grabbing'))
-            if not hitbox.other_on_hit_actions: 
-                hitbox.other_on_hit_actions.append(subaction.doAction('Grabbed'))
-            hitbox.other_on_hit_actions.insert(0, subaction.modifyFighterVar('grabbed_by', _actor))
+                if _actor.hasAction('GrabReeling'): hitbox.owner_on_hit_actions.append(subaction.doAction('GrabReeling'))
+                else: hitbox.owner_on_hit_actions.append(subaction.doAction('Grabbing'))
+            if not hitbox.other_on_hit_actions: hitbox.other_on_hit_actions.append(subaction.doAction('Grabbed'))
 
 class DashGrab(BaseAttack):
     def __init__(self,_length=0):
@@ -1596,7 +1592,6 @@ class DashGrab(BaseAttack):
                     hitbox.owner_on_hit_actions.append(subaction.doAction('Grabbing'))
             if not hitbox.other_on_hit_actions: 
                 hitbox.other_on_hit_actions.append(subaction.doAction('Grabbed'))
-            hitbox.other_on_hit_actions.insert(0, subaction.modifyFighterVar('grabbed_by', _actor))
 
 class AirGrab(AirAttack):
     def __init__(self, _length=0):

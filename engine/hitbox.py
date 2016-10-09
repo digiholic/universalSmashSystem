@@ -334,19 +334,20 @@ class GrabHitbox(Hitbox):
         self.hitbox_type = 'grab'
 
     def onCollision(self,_other):
-        from engine import subaction
-        self.owner_on_hit_actions.insert(0, subaction.modifyFighterVar('grabbing', _other))
         if 'AbstractFighter' in list(map(lambda x:x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if self.article is None:
+                self.owner.setGrabbing(_other)
                 Hitbox.onCollision(self, _other)
             #TODO: Add functionality for article command grabs
                 
     def compareTo(self, _other):
         clank_state = Hitbox.compareTo(self, _other)
-        if clank_state == 1 or clank_state == 0:
-            if not isinstance(_other, InertHitbox) and not isinstance(_other, InvulnerableHitbox) and not self.ignore_shields:
+        if clank_state == 1:
+            return 1
+        elif clank_state == 0:
+            if not isinstance(_other, DamageHitbox) and not isinstance(_other, GrabHitbox) and not isinstance(_other, InertHitbox) and not isinstance(_other, InvulnerableHitbox) and not self.ignore_shields:
                 self.onCollision(_other.owner)
-            return clank_state
+            return 0
         else: 
             if self.article is None:
                 self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier + (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
@@ -441,7 +442,7 @@ class ShieldHitbox(Hitbox):
     def compareTo(self, _other):
         clank_state = Hitbox.compareTo(self, _other)
         if clank_state == 1 and self.hp >= 0:
-            if not isinstance(_other, InertHitbox) and (isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox)) and not _other.ignore_shields and self.owner.lockHitbox(_other):
+            if not isinstance(_other, InertHitbox) and isinstance(_other, DamageHitbox) and not _other.ignore_shields and self.owner.lockHitbox(_other):
                 if hasattr(_other, 'damage') and hasattr(_other, 'shield_multiplier'):
                     self.priority -= _other.damage*_other.shield_multiplier
                     self.hp -= _other.damage*_other.shield_multiplier
@@ -468,7 +469,7 @@ class InvulnerableHitbox(Hitbox):
         Hitbox.update(self)
    
     def compareTo(self, _other):
-        if not isinstance(_other, InertHitbox) and (isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox)) and not _other.ignore_shields and self.owner.lockHitbox(_other):
+        if not isinstance(_other, InertHitbox) and isinstance(_other, DamageHitbox) and not _other.ignore_shields and self.owner.lockHitbox(_other):
             if self.article is None:
                 self.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory(), (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
             if _other.article is None:
