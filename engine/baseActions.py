@@ -388,6 +388,7 @@ class BaseGrab(action.Action):
     def __init__(self,_length=1):
         action.Action.__init__(self, _length)
         self.escapable = False
+        self.escape_pause = False
         self.hold_point = (0,0)
         
     def setUp(self, _actor):
@@ -405,6 +406,43 @@ class BaseGrab(action.Action):
         if self.frame == self.last_frame:
             _actor.doAction('Release')
         self.frame += 1
+
+class GrabReeling(BaseGrab):
+    def __init__(self,_length=1):
+        BaseGrab.__init__(self, _length)
+        self.escape_pause = True
+
+    def setUp(self, _actor):
+        BaseGrab.setUp(self, _actor)
+        self.target_point = (16, -16)
+        self.reel_speed = 10
+        self.dist = _actor.rect.centerx + (hold_x * _actor.facing) + (_actor.grabbing.grab_point[0] * -_actor.grabbing.facing) - _actor.grabbing.rect.centerx
+        self.last_frame = abs(self.dist - self.reel_speed)
+        self.hold_point = (self.dist + self.target_point[0], self.target_point[1])
+        if self.sprite_name=="": self.sprite_name ="grabreeling"
+        #If they're both facing the same way, flip the foe so they are facing you
+        if _actor.grabbing.facing == _actor.facing:
+            _actor.grabbing.flip()
+            print(_actor.facing,_actor.grabbing.facing)
+
+    def tearDown(self, _actor, _nextAction):
+        print(_nextAction.__class__.__name__)
+        BaseGrab.tearDown(self, _actor, _nextAction)
+    
+    def stateTransitions(self, _actor):
+        BaseGrab.stateTransitions(self, _actor)
+        grabbingState(_actor)
+        if _actor.grabbing is None or not isinstance(_actor.grabbing.current_action, Grabbed):
+            _actor.doAction('Release')
+            
+    def update(self, _actor):
+        BaseGrab.update(self, _actor)
+        if self.frame >= self.last_frame:
+            _actor.doAction('Grabbing')
+        if dist > 0:
+            self.hold_point -= self.reel_speed
+        else:
+            self.hold_point += self.reel_speed
         
 class Grabbing(BaseGrab):
     def __init__(self,_length=1):
@@ -451,6 +489,7 @@ class Grabbed(Trapped):
         _actor.grabbed_by = None
         
     def update(self, _actor):
+        hold_frame = self.frame
         Trapped.update(self, _actor)
         grabber = _actor.grabbed_by
         
@@ -469,6 +508,8 @@ class Grabbed(Trapped):
             (hold_x,hold_y) = (0,0)
         _actor.rect.centerx = grabber.rect.centerx + (hold_x * grabber.facing) + (_actor.grab_point[0] * -_actor.facing)
         _actor.rect.centery = grabber.rect.centery + (hold_y) + (_actor.grab_point[1])
+        if hasattr(grabber.current_action, 'escape_pause') and grabber.current_action.escape_pause:
+            self.frame = hold_frame
         
         if self.frame >= self.last_frame:
             #If the grabber's action doesn't have "escapable" set or if it is set to True, break out on last frame
@@ -596,8 +637,7 @@ class HitStun(action.Action):
         
     def update(self,_actor):
         action.Action.update(self, _actor)
-        if not _actor.grounded:
-            self.feet_planted = False
+        self.feet_planted = _actor.grounded
         if self.tech_cooldown > 0: self.tech_cooldown -= 1
         if self.last_frame <= 15:
             print(self.do_slow_getup)
@@ -1528,9 +1568,27 @@ class GroundGrab(BaseAttack):
     def __init__(self,_length=0):
         BaseAttack.__init__(self, _length)
 
+    def setUp(self, _actor):
+        BaseAttack.setUp(self, _actor)
+        from engine import subaction
+        for hitbox in self.hitboxes.values():
+            if not hitbox.owner_on_hit_actions: 
+                if _actor.hasAction('GrabReeling'): hitbox.owner_on_hit_actions.append(subaction.doAction('GrabReeling'))
+                else: hitbox.owner_on_hit_actions.append(subaction.doAction('Grabbing'))
+            if not hitbox.other_on_hit_actions: hitbox.other_on_hit_actions.append(subaction.doAction('Grabbed'))
+
 class DashGrab(BaseAttack):
     def __init__(self,_length=0):
         BaseAttack.__init__(self, _length)
+
+    def setUp(self, _actor):
+        BaseAttack.setUp(self, _actor)
+        from engine import subaction
+        for hitbox in self.hitboxes.values():
+            if not hitbox.owner_on_hit_actions: 
+                if _actor.hasAction('GrabReeling'): hitbox.owner_on_hit_actions.append(subaction.doAction('GrabReeling'))
+                else: hitbox.owner_on_hit_actions.append(subaction.doAction('Grabbing'))
+            if not hitbox.other_on_hit_actions:  hitbox.other_on_hit_actions.append(subaction.doAction('Grabbed'))
 
 class AirGrab(AirAttack):
     def __init__(self, _length=0):

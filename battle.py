@@ -212,47 +212,10 @@ class Battle():
             if hasattr(obj,'active_hitboxes'):
                 self.active_hitboxes.add(obj.active_hitboxes)
             if hasattr(obj, 'active_hurtboxes'):
-                self.active_hurtboxes.add(obj.active_hurtboxes)
-
-        hitbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hitboxes, False, False)
-        hurtbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hurtboxes, False, False)
-        platform_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.stage.platform_list, False, False)
-        for hbox in hitbox_hits:
-            #first, check for clanks
-            hitbox_clank = hitbox_hits[hbox]
-            hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner)]
-            if hitbox_clank: print(hitbox_clank)
-            for other in hitbox_clank:
-                hbox_clank = hbox.compareTo(other)
-                other_clank = other.compareTo(hbox)
-                if hbox_clank == -1: 
-                    other.owner.lockHitbox(hbox)
-                    if hbox.article == None: hbox.owner.current_action.onClank(hbox.owner, hbox, other)
-                    else: hbox.article.onClank(hbox.owner, hbox, other)
-                elif hbox_clank == 1:
-                    if hbox.article == None: hbox.owner.current_action.onPrevail(hbox.owner, hbox, other)
-                    else: hbox.article.onPrevail(hbox.owner, hbox, other)
-                if other_clank == -1: 
-                    hbox.owner.lockHitbox(other)
-                    if other.article == None: other.owner.current_action.onClank(other.owner, other, hbox)
-                    else: other.article.onClank(other.owner, other, hbox)
-                elif other_clank == 1:
-                    if other.article == None: other.owner.current_action.onPrevail(other.owner, other, hbox)
-                    else: other.article.onPrevail(other.owner, other, hbox)
-                        
-        for hbox in hurtbox_hits:
-            #then, hurtbox collisions
-            hitbox_collisions = hurtbox_hits[hbox]
-            for hurtbox in hitbox_collisions:
-                if hbox.owner != hurtbox.owner:
-                    hbox.onCollision(hurtbox.owner)
-                    hurtbox.onHit(hbox)
-                    
-        for hbox in platform_hits:
-            #then platform collisions
-            platform_collisions = platform_hits[hbox]
-            for wall in platform_collisions:
-                hbox.onCollision(wall)            
+                self.active_hurtboxes.add(obj.active_hurtboxes)      
+        self.checkHitboxClanks()
+        self.checkHitboxHits()
+        self.checkHitboxBumps()
         
         for fight in self.current_fighters:
             if fight.rect.right < self.stage.blast_line.left or fight.rect.left > self.stage.blast_line.right or fight.rect.top > self.stage.blast_line.bottom or fight.rect.bottom < self.stage.blast_line.top:
@@ -280,6 +243,48 @@ class Battle():
             self.zoomVal = 0
             while self.debug_mode:
                 self.debugLoop()
+
+    def checkHitboxClanks(self):
+        hitbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hitboxes, False, False)
+        for hbox in hitbox_hits:
+            #first, check for clanks
+            hitbox_clank = hitbox_hits[hbox]
+            hitbox_clank = [x for x in hitbox_clank if (x is not hbox) and (x.owner is not hbox.owner)]
+            for other in hitbox_clank:
+                hbox_clank = hbox.compareTo(other)
+                other_clank = other.compareTo(hbox)
+                if hbox_clank == -1: 
+                    if hbox.article == None: hbox.owner.current_action.onClank(hbox.owner, hbox, other)
+                    else: hbox.article.onClank(hbox.owner, hbox, other)
+                elif hbox_clank == 1:
+                    if hbox.article == None: hbox.owner.current_action.onPrevail(hbox.owner, hbox, other)
+                    else: hbox.article.onPrevail(hbox.owner, hbox, other)
+                if other_clank == -1: 
+                    if other.article == None: other.owner.current_action.onClank(other.owner, other, hbox)
+                    else: other.article.onClank(other.owner, other, hbox)
+                elif other_clank == 1:
+                    if other.article == None: other.owner.current_action.onPrevail(other.owner, other, hbox)
+                    else: other.article.onPrevail(other.owner, other, hbox)
+                if hbox_clank == -1: other.owner.lockHitbox(hbox)
+                if other_clank == -1: hbox.owner.blockHitbox(other)
+
+    def checkHitboxHits(self):
+        hurtbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hurtboxes, False, False)
+        for hbox in hurtbox_hits:
+            #then, hurtbox collisions
+            hitbox_collisions = hurtbox_hits[hbox]
+            for hurtbox in hitbox_collisions:
+                if hbox.owner != hurtbox.owner:
+                    hbox.onCollision(hurtbox.owner)
+                    hurtbox.onHit(hbox)
+
+    def checkHitboxBumps(self):        
+        platform_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.stage.platform_list, False, False)
+        for hbox in platform_hits:
+            #then platform collisions
+            platform_collisions = platform_hits[hbox]
+            for wall in platform_collisions:
+                hbox.onCollision(wall)      
 
     def draw(self):
         self.screen.fill(self.stage.background_color)
