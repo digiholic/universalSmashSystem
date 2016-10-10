@@ -3,6 +3,12 @@ import OpenGL.GL.shaders
 import ctypes
 import pygame
 import numpy
+from OpenGL.raw.GL.VERSION.GL_1_0 import glTexParameteri, glPixelStorei
+from OpenGL.GL.VERSION.GL_1_0 import glTexParameterfv
+from OpenGL.GL.VERSION.GL_1_1 import glGenTextures
+from OpenGL.raw.GL.VERSION.GL_1_1 import glBindTexture
+from OpenGL.GL.images import glTexImage2D
+from OpenGL.arrays._arrayconstants import GL_UNSIGNED_BYTE
 
 vertex_shader = """
 #version 330
@@ -27,7 +33,12 @@ vertices = [ 0.6,  0.6, 0.0, 1.0,
             -0.6,  0.6, 0.0, 1.0,
              0.0, -0.6, 0.0, 1.0]
 
+#cast the array as floats
 vertices = numpy.array(vertices, dtype=numpy.float32)
+
+texCoords = [ 1.0, 1.0,
+              0.0, 1.0,
+              0.5, 0.0]
 
 def create_object(shader):
     # Create a new VAO (Vertex Array Object) and bind it
@@ -45,6 +56,11 @@ def create_object(shader):
     # Describe the position data layout in the buffer
     GL.glVertexAttribPointer(position, 4, GL.GL_FLOAT, False, 0, ctypes.c_void_p(0))
     
+    tex = GL.glGetAttribLocation(shader, 'texCoord')
+    GL.glEnableVertexAttribArray(tex)
+    
+    GL.glVertexAttribPointer(tex, 4, GL.GL_FLOAT, False, 0, ctypes.c_void_p(0))
+    
     # Send the data over to the buffer
     GL.glBufferData(GL.GL_ARRAY_BUFFER, 48, vertices, GL.GL_STATIC_DRAW)
     
@@ -54,6 +70,34 @@ def create_object(shader):
     # Unbind other stuff
     GL.glDisableVertexAttribArray(position)
     GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+    
+    """Texture Info"""
+    #S and T are X and Y for textures. Set the repeat mode
+    GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_MIRRORED_REPEAT) #i - integer
+    GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_MIRRORED_REPEAT)
+    
+    #Set the border color as an array of floats
+    borderColor = [1.0, 1.0, 0.0, 1.0]
+    borderColor = numpy.array(borderColor, dtype=numpy.float32)
+    GL.glTexParameterfv(GL.GL_TEXTURE_2D,GL.GL_TEXTURE_BORDER_COLOR,borderColor) #fv - float vector
+    
+    GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
+    GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
+    
+    texSurface = pygame.image.load('wall.jpg')
+    texData = pygame.image.tostring(texSurface,"RGBA",1)
+    width, height = (texSurface.get_width(), texSurface.get_height())
+    
+    texID = glGenTextures(1)
+    GL.glBindTexture(GL.GL_TEXTURE_2D,texID)
+    #glPixelStorei(GL.GL_UNPACK_ALIGNMENT,1) #not asked for in learnopengl, but might be python-specific
+    
+    GL.glTexImage2D(GL.GL_TEXTURE_2D,0,GL.GL_RGBA,
+                 width,height, 0, GL.GL_RGBA,GL_UNSIGNED_BYTE,texData)
+    
+    #unbind the texture
+    GL.glBindTexture(GL.GL_TEXTURE_2D,0)
+    
     
     return vertex_array_object
     

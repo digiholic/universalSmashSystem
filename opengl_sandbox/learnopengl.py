@@ -9,6 +9,9 @@ from OpenGL.arrays import vbo
 from OpenGLContext.arrays import *
 from OpenGL.GL import shaders
 
+import logging
+logging.basicConfig()
+
 class TestContext( BaseContext ):
     def OnInit( self ):
         #Just load the GLSL shaders in here
@@ -49,6 +52,7 @@ class TestContext( BaseContext ):
     def Render( self, mode):
         shaders.glUseProgram(self.shader)
         try:
+            #This sends the VBO to the graphics card
             self.vbo.bind()
             try:
                 glEnableClientState(GL_VERTEX_ARRAY);
