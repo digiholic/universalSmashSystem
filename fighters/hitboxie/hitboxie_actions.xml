@@ -239,6 +239,59 @@
 			<changeSubimage>0</changeSubimage>
 		</frame>
 	</SpotDodge>
+
+	<ForwardTech>
+		<length>32</length>
+		<sprite>land</sprite>
+		<sprite_rate>0</sprite_rate>
+		
+		<setUp>
+			<changeSubimage>1</changeSubimage>
+		</setUp>
+		
+		<frame number="2">
+			<playSound>dashroll</playSound>
+		</frame>
+		<frame number="22">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</ForwardTech>
+	
+	<BackwardTech>
+		<length>32</length>
+		<sprite>land</sprite>
+		<sprite_rate>0</sprite_rate>
+		
+		<setUp>
+			<changeSubimage>1</changeSubimage>
+		</setUp>
+		
+		<frame number="2">
+			<playSound>dashroll</playSound>
+		</frame>
+		<frame number="22">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</BackwardTech>
+	
+	<DodgeTech>
+		<length>24</length>
+		<sprite>land</sprite>
+		<sprite_rate>1</sprite_rate>
+		
+		<frame number="3">
+			<changeSubimage>3</changeSubimage>
+		</frame>
+		<frame number="18">
+			<changeSubimage>2</changeSubimage>
+		</frame>
+		<frame number="20">
+			<changeSubimage>1</changeSubimage>
+		</frame>
+		<frame number="22">
+			<changeSubimage>0</changeSubimage>
+		</frame>
+	</DodgeTech>
 	
 	<AirDodge>
 		<length>30</length>

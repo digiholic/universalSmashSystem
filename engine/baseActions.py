@@ -382,7 +382,7 @@ class Trapped(action.Action):
         # Also, the grabber should always check to see if the grabbee is still under grab
         self.frame += 1
         self.time += 1
-        print("In grab: " + str((self.frame, self.time)))
+        print("In trapped: " + str((self.frame, self.time)))
 
 class BaseGrab(action.Action):
     def __init__(self,_length=1):
@@ -597,7 +597,7 @@ class HitStun(action.Action):
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
         (direct,_) = _actor.getDirectionMagnitude()
-        if _actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not _actor.grounded:
+        if self.last_frame > 15 and _actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not _actor.grounded:
             print('Try tech')
             _actor.tech_window = 7
             self.tech_cooldown = 40
@@ -606,26 +606,31 @@ class HitStun(action.Action):
         else:
             _actor.elasticity = _actor.var['hitstun_elasticity']
         
-        if self.last_frame > 15 and self.frame > 2:
-            if _actor.change_y >= _actor.var['max_fall_speed']: 
-                _actor.ground_elasticity = _actor.var['hitstun_elasticity']
-            elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
-                _actor.ground_elasticity = 0
-                if _actor.grounded and not self.feet_planted:
-                    _actor.doAction('Prone')
-            elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
-                _actor.ground_elasticity = 0
-                if _actor.grounded and not self.feet_planted: 
-                    _actor.doAction('Prone')
-            else: 
-                _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
-        elif self.last_frame <= 15:
+        if _actor.tech_window > 0:
             _actor.ground_elasticity = 0
-            if _actor.grounded and self.do_slow_getup:
-                print("Successful jab reset")
-                _actor.doAction('SlowGetup')
+            if _actor.grounded and not self.feet_planted:
+                _actor.doTech()
         else:
-            _actor.ground_elasticity = _actor.var['hitstun_elasticity']
+            if self.last_frame > 15 and self.frame > 2:
+                if _actor.change_y >= _actor.var['max_fall_speed']: 
+                    _actor.ground_elasticity = _actor.var['hitstun_elasticity']
+                elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
+                    _actor.ground_elasticity = 0
+                    if _actor.grounded and not self.feet_planted:
+                        _actor.doAction('Prone')
+                elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
+                    _actor.ground_elasticity = 0
+                    if _actor.grounded and not self.feet_planted: 
+                        _actor.doAction('Prone')
+                else: 
+                    _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
+            elif self.last_frame <= 15:
+                _actor.ground_elasticity = 0
+                if _actor.grounded and self.do_slow_getup:
+                    print("Successful jab reset")
+                    _actor.doAction('SlowGetup')
+            else:
+                _actor.ground_elasticity = _actor.var['hitstun_elasticity']
         
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
@@ -639,8 +644,6 @@ class HitStun(action.Action):
         action.Action.update(self, _actor)
         self.feet_planted = _actor.grounded
         if self.tech_cooldown > 0: self.tech_cooldown -= 1
-        if self.last_frame <= 15:
-            print(self.do_slow_getup)
         if self.frame == 0:
             (direct,mag) = _actor.getDirectionMagnitude()
             print("direction:", direct)
@@ -680,28 +683,32 @@ class Tumble(action.Action):
         action.Action.stateTransitions(self, _actor)
         tumbleState(_actor)
         
-        (direct,_) = _actor.getDirectionMagnitude()
+        if _actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not _actor.grounded:
+            print('Try tech')
+            _actor.tech_window = 20
+            self.tech_cooldown = 40
 
         if _actor.tech_window > 0:
             _actor.elasticity = 0
         else:
             _actor.elasticity = _actor.var['hitstun_elasticity']/2
         
-        if _actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not _actor.grounded:
-            print('Try tech')
-            _actor.tech_window = 20
-            self.tech_cooldown = 40
             
-        if _actor.change_y >= _actor.var['max_fall_speed']:#Hard landing during tumble
-            _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
-        elif _actor.change_y < _actor.var['max_fall_speed']/2.0: #Soft landing during tumble
+        if _actor.tech_window > 0:
             _actor.ground_elasticity = 0
-            if _actor.grounded: 
-                _actor.doAction('Prone')
-        else: #Firm landing during tumble
-            _actor.ground_elasticity = 0
-            if _actor.grounded: 
-                _actor.doAction('Prone')
+            if _actor.grounded:
+                _actor.doTech()
+        else:
+            if _actor.change_y >= _actor.var['max_fall_speed']:#Hard landing during tumble
+                _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
+            elif _actor.change_y < _actor.var['max_fall_speed']/2.0: #Soft landing during tumble
+                _actor.ground_elasticity = 0
+                if _actor.grounded: 
+                    _actor.doAction('Prone')
+            else: #Firm landing during tumble
+                _actor.ground_elasticity = 0
+                if _actor.grounded: 
+                    _actor.doAction('Prone')
     
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
@@ -723,17 +730,18 @@ class Prone(action.Action):
     def setUp(self, _actor):
         if self.sprite_name == "": self.sprite_name = "prone"
         action.Action.setUp(self, _actor)
+        _actor.tech_window = 10
 
         ground_blocks = _actor.checkGround()
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
             _actor.rect.bottom = block.rect.top
-
         _actor.unRotate()
 
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
+        _actor.tech_window = 0
         if isinstance(_nextAction, HitStun):
             _nextAction.do_slow_getup = True
         
@@ -756,7 +764,12 @@ class Getup(action.Action):
         
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="getup"
-        action.Action.setUp(self, _actor)
+        action.Action.setUp(self, _actor)  
+        _actor.tech_window = 10
+
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        _actor.tech_window = 0
         
     def update(self, _actor):
         action.Action.update(self, _actor)
@@ -804,6 +817,8 @@ class Jump(action.Action):
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
+        if _actor.keyHeld('shield'):
+            _actor.doAction('AirDodge')
         if _actor.keyHeld('attack') and _actor.checkSmash('up') and self.frame < self.jump_frame:
             print("Jump cancelled into up smash")
             _actor.doAction('UpSmash')
@@ -1029,7 +1044,6 @@ class PlatformDrop(action.Action):
             _actor.doAction('Fall')
         self.frame += 1
 
-
 class Shield(action.Action):
     def __init__(self, _newShield=True):
         action.Action.__init__(self, 12)
@@ -1147,7 +1161,7 @@ class Stunned(action.Action):
         
 class ForwardRoll(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 46)
+        action.Action.__init__(self, 32)
         
     def setUp(self, _actor):
         self.start_invuln_frame = 5
@@ -1185,7 +1199,7 @@ class ForwardRoll(action.Action):
 
 class BackwardRoll(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 50)
+        action.Action.__init__(self, 32)
         
     def setUp(self,_actor):
         self.start_invuln_frame = 5
@@ -1308,18 +1322,17 @@ class AirDodge(action.Action):
             if self.frame == 0:
                 _actor.preferred_xspeed = _actor.change_x
                 _actor.preferred_yspeed = _actor.change_y
-            elif self.frame >= self.end_invuln_frame:
+            #elif self.frame >= self.end_invuln_frame:
+            elif self.frame == self.last_frame:
                 _actor.change_x = 0
                 _actor.change_y = 0
                 _actor.preferred_xspeed = 0
-                _actor.preferred_yspeed = 0
-            elif self.frame == self.last_frame:
                 _actor.preferred_yspeed = _actor.var['max_fall_speed']
         if _actor.keyHeld('attack') and self.frame < 8:
-            _actor.doAction('AirGrab')
-        if self.frame == 6:
-            _actor.updateLandingLag(settingsManager.getSetting('airDodgeLag'))
+            if _actor.hasAction('AirGrab'):
+                _actor.doAction('AirGrab')
         if self.frame == self.start_invuln_frame:
+            _actor.updateLandingLag(settingsManager.getSetting('airDodgeLag'))
             (key, invkey) = _actor.getForwardBackwardKeys()
             if _actor.keysContain(invkey, 1):
                 _actor.flip()
@@ -1333,6 +1346,111 @@ class AirDodge(action.Action):
             else:
                 _actor.doAction('Fall')
         self.frame += 1
+
+class BaseTech(action.Action):
+    def __init__(self, _length):
+        action.Action.__init__(self, _length)
+
+    def setUp(self, _actor):
+        action.Action.setUp(self, _actor)
+        ground_blocks = _actor.checkGround()
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        if not block is None:
+            _actor.change_y = block.change_y
+            _actor.rect.bottom = block.rect.top
+        _actor.unRotate()
+
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        if _actor.invulnerable > 0:
+            _actor.invulnerable = 0
+        if _actor.grounded is False:
+            _actor.doAction('Fall')
+        _actor.mask = None
+        _actor.preferred_xspeed = 0
+        _actor.tech_window = 0
+
+class ForwardTech(BaseTech):
+    def __init__(self):
+        BaseTech.__init__(self, 32)
+        
+    def setUp(self, _actor):
+        self.start_invuln_frame = 5
+        self.end_invuln_frame = 22
+        if self.sprite_name=="": self.sprite_name ="forwardRoll"
+        
+    def update(self, _actor):
+        BaseTech.update(self,_actor)
+        if _actor.grounded is False:
+            _actor.doAction('Fall')
+        if self.frame == 1:
+            _actor.change_x = _actor.facing * _actor.var['dodge_speed']
+        elif self.frame == self.start_invuln_frame:
+            _actor.createMask([255,255,255], 22, True, 24)
+            _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
+        elif self.frame == self.end_invuln_frame:
+            _actor.flip()
+            _actor.change_x = 0
+        elif self.frame == self.last_frame:
+            _actor.doAction('NeutralAction')
+        self.frame += 1
+
+class BackwardTech(BaseTech):
+    def __init__(self):
+        BaseTech.__init__(self, 32)
+        
+    def setUp(self,_actor):
+        self.start_invuln_frame = 5
+        self.end_invuln_frame = 22
+        if self.sprite_name=="": self.sprite_name ="backwardRoll"
+        BaseTech.setUp(self, _actor)
+        
+    def update(self, _actor):
+        BaseTech.update(self, _actor)
+        if _actor.grounded is False:
+            _actor.doAction('Fall')
+        if self.frame == 1:
+            _actor.change_x = _actor.facing * -_actor.var['dodge_speed']
+        elif self.frame == self.start_invuln_frame:
+            _actor.createMask([255,255,255], 22, True, 24)
+            _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
+        elif self.frame == self.end_invuln_frame:
+            _actor.change_x = 0
+        elif self.frame == self.last_frame:
+            _actor.doAction('NeutralAction')
+        self.frame += 1
+
+class DodgeTech(BaseTech):
+    def __init__(self):
+        BaseTech.__init__(self, 24)
+        
+    def setUp(self,_actor):
+        self.start_invuln_frame = 4
+        self.end_invuln_frame = 18
+        if self.sprite_name=="": self.sprite_name ="spotDodge"
+        BaseTech.setUp(self, _actor)
+        
+    def update(self,_actor):
+        BaseTech.update(self, _actor)
+        if self.frame == 1:
+            _actor.change_x = 0
+        elif self.frame == self.start_invuln_frame:
+            _actor.createMask([255,255,255],16,True,24)
+            _actor.invulnerable = self.end_invuln_frame - self.start_invuln_frame
+        elif self.frame == self.end_invuln_frame:
+            pass
+        elif self.frame == self.last_frame:
+            _actor.doAction('NeutralAction')
+        self.frame += 1
+
+class NormalTech(BaseTech):
+    def __init__(self):
+        BaseTech.__init__(self, 12)
+
+    def setUp(self, _actor):
+        if self.sprite_name=="": self.sprite_name="getup"
+        BaseTech.setUp(self, _actor)
+        _actor.tech_window = 10
         
 class BaseLedge(action.Action):
     def __init__(self, _ledge=None,_length=1):
@@ -1946,11 +2064,11 @@ def jumpState(_actor):
             
 def shieldState(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
-    if _actor.checkTap(key, _cap=False) and not _actor.keyBuffered(invkey, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
+    if _actor.checkTap(key) and not _actor.keyBuffered(invkey, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
         _actor.doAction('ForwardRoll')
-    elif _actor.checkTap(invkey, _cap=False) and not _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
+    elif _actor.checkTap(invkey) and not _actor.keyBuffered(key, int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
         _actor.doAction('BackwardRoll')
-    elif _actor.checkTap('down', _cap=False) and not _actor.keyBuffered('up', int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
+    elif _actor.checkTap('down') and not _actor.keyBuffered('up', int(_actor.key_bindings.timing_window['repeat_window'])+1, 0.6):
         _actor.doAction('SpotDodge')
     elif _actor.keyHeld('attack'):
         _actor.doAction('GroundGrab')
@@ -1986,6 +2104,7 @@ def ledgeState(_actor):
 
 def grabbingState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
+    direct = _actor.netDirection([key, invkey, 'up', 'down'])
     # Check to see if they broke out
     # If they did, release them
     if _actor.grabbing is None:
@@ -1994,30 +2113,31 @@ def grabbingState(_actor):
         _actor.doAction('Release')
     elif _actor.keyHeld('attack'):
         _actor.doAction('Pummel')
-    elif _actor.keyHeld(key):
+    elif direct == key:
         _actor.doAction('ForwardThrow')
-    elif _actor.keyHeld(invkey):
+    elif direct == invkey:
         _actor.doAction('BackThrow')
-    elif _actor.keyHeld('up'):
+    elif direct == 'up':
         _actor.doAction('UpThrow')
-    elif _actor.keyHeld('down'):
+    elif direct == 'down':
         _actor.doAction('DownThrow')
 
 def proneState(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
+    direct = _actor.netDirection(['up', key, invkey, 'down'])
     if _actor.keysContain('attack'):
         print("Selecting getup attack")
         _actor.doAction('GetupAttack')
-    elif _actor.keysContain('up'):
+    elif direct == 'up':
         print("Selecting normal getup")
         _actor.doAction('Getup')
-    elif _actor.keysContain(key):
+    elif direct == key:
         print("Selecting forward getup")
         _actor.doAction('ForwardRoll')
-    elif _actor.keysContain(invkey):
+    elif direct == invkey:
         print("Selecting backward getup")
         _actor.doAction('BackwardRoll')
-    elif _actor.keysContain('down'):
+    elif direct == 'down':
         print("Selecting spotdodge getup")
         _actor.doAction('SpotDodge')
 

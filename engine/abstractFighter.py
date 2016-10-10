@@ -69,7 +69,7 @@ class AbstractFighter():
                 'short_hop_height': 8.5,
                 'air_jump_height': 15.0,
                 'heavy_land_lag': 4,
-                'wavedash_lag': 8,
+                'wavedash_lag': 12,
                 'fastfall_multiplier': 2.0,
                 'hitstun_elasticity': .8,
                 'shield_size': 1.0
@@ -431,12 +431,6 @@ class AbstractFighter():
         
         # Count down the tech window
         if self.tech_window > 0:
-            if self.grounded:
-                (direct,_) = self.getDirectionMagnitude()
-                print('Ground tech!')
-                self.unRotate()
-                self.doAction('Prone')
-                self.current_action.frame = self.current_action.last_frame
             self.tech_window -= 1
 
         #Step three, change state and update
@@ -745,6 +739,21 @@ class AbstractFighter():
                 self.doAction('NeutralSpecial')
             else:
                 self.doAction('NeutralAirSpecial')
+
+    def doTech(self):
+        (forward, backward) = self.getForwardBackwardKeys()
+        direct = self.netDirection([forward, backward, 'down', 'up'])
+        if direct == forward:
+            self.doAction('ForwardTech')
+        elif direct == backward:
+            self.doAction('BackwardTech')
+        elif direct == 'down':
+            self.doAction('DodgeTech')
+        else:
+            if self.hasAction('NormalTech'):
+                self.doAction('NormalTech')
+            else:
+                self.doAction('Getup')
     
     def doHitStun(self,_hitstun,_trajectory):
         self.doAction('HitStun')
@@ -1249,12 +1258,9 @@ class AbstractFighter():
         #TODO different for buttons than joysticks
         return self.keyBuffered(_direction, int(self.key_bindings.timing_window['smash_window']), 0.85)
 
-    def checkTap(self, _direction, _firstThreshold=0.6, _cap = True):
+    def checkTap(self, _direction, _firstThreshold=0.6):
         if self.key_bindings.type == "Keyboard":
-            if _cap:
-                return self.keyBuffered(_direction, _state=1) and self.keyBuffered(_direction, min(int(self.key_bindings.timing_window['repeat_window'])+1, self.last_input_frame), _firstThreshold, 1)
-            else:
-                return self.keyBuffered(_direction, _state=1) and self.keyBuffered(_direction, int(self.key_bindings.timing_window['repeat_window'])+1, _firstThreshold, 1)
+            return self.keyBuffered(_direction, _state=1) and self.keyBuffered(_direction, int(self.key_bindings.timing_window['repeat_window'])+1, _firstThreshold, 1)
         else:
             return self.checkSmash(_direction)
 
@@ -1308,8 +1314,8 @@ class AbstractFighter():
         
         if self.mask: self.mask.draw(_screen,_offset,_scale)
         if settingsManager.getSetting('showECB'): 
-        for ecb in self.active_hurtboxes:
-            ecb.draw(_screen,_offset,_scale)
+            for ecb in self.active_hurtboxes:
+                ecb.draw(_screen,_offset,_scale)
         return rect
         
     """

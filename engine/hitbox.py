@@ -352,10 +352,12 @@ class GrabHitbox(Hitbox):
 
     def onCollision(self,_other):
         if 'AbstractFighter' in list(map(lambda x:x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
-            if self.article is None:
-                self.owner.grabbing = _other
-                Hitbox.onCollision(self, _other)
-                _other.grabbed_by = self.owner
+            from engine import baseActions
+            if (not isinstance(_other.current_action, baseActions.Trapped) and _other.tech_window == 0) or self.ignore_armor:
+                if self.article is None:
+                    self.owner.grabbing = _other
+                    Hitbox.onCollision(self, _other)
+                    _other.grabbed_by = self.owner
             #TODO: Add functionality for article command grabs
                 
     def compareTo(self, _other):
