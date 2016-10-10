@@ -1247,7 +1247,7 @@ class AbstractFighter():
     """
     def checkSmash(self,_direction):
         #TODO different for buttons than joysticks
-        return self.keyBuffered(_direction, int(self.key_bindings.timing_window['smash_window']), 1.0)
+        return self.keyBuffered(_direction, int(self.key_bindings.timing_window['smash_window']), 0.85)
 
     def checkTap(self, _direction, _firstThreshold=0.6, _cap = True):
         if self.key_bindings.type == "Keyboard":
@@ -1307,7 +1307,9 @@ class AbstractFighter():
         rect = self.sprite.draw(_screen,_offset,_scale)
         
         if self.mask: self.mask.draw(_screen,_offset,_scale)
-        if settingsManager.getSetting('showECB'): self.ecb.draw(_screen,_offset,_scale)
+        if settingsManager.getSetting('showECB'): 
+        for ecb in self.active_hurtboxes:
+            ecb.draw(_screen,_offset,_scale)
         return rect
         
     """
