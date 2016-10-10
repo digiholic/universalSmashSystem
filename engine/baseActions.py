@@ -1150,8 +1150,8 @@ class ForwardRoll(action.Action):
         action.Action.__init__(self, 46)
         
     def setUp(self, _actor):
-        self.start_invuln_frame = 6
-        self.end_invuln_frame = 34
+        self.start_invuln_frame = 5
+        self.end_invuln_frame = 22
         if self.sprite_name=="": self.sprite_name ="forwardRoll"
         action.Action.setUp(self, _actor)
 
@@ -1188,8 +1188,8 @@ class BackwardRoll(action.Action):
         action.Action.__init__(self, 50)
         
     def setUp(self,_actor):
-        self.start_invuln_frame = 6
-        self.end_invuln_frame = 34
+        self.start_invuln_frame = 5
+        self.end_invuln_frame = 22
         if self.sprite_name=="": self.sprite_name ="backwardRoll"
         action.Action.setUp(self, _actor)
 
@@ -1226,7 +1226,7 @@ class SpotDodge(action.Action):
         
     def setUp(self,_actor):
         self.start_invuln_frame = 4
-        self.end_invuln_frame = 20
+        self.end_invuln_frame = 18
         if self.sprite_name=="": self.sprite_name ="spotDodge"
         action.Action.setUp(self, _actor)
 
@@ -1263,7 +1263,7 @@ class SpotDodge(action.Action):
         
 class AirDodge(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 24)
+        action.Action.__init__(self, 30)
         
     def setUp(self,_actor):
         if self.sprite_name=="": self.sprite_name ="airDodge"
@@ -1295,6 +1295,8 @@ class AirDodge(action.Action):
     
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
+        if self.frame >= self.end_invuln_frame:
+            grabLedges(_actor)
         if _actor.grounded:
             if not settingsManager.getSetting('enableWavedash'):
                 _actor.change_x = 0
@@ -2101,18 +2103,17 @@ def tapReversible(_actor):
 def shieldCancellable(_actor):
     if _actor.keyBuffered('shield') and _actor.grounded:
         _actor.doAction('Shield')
-    elif _actor.keyBuffered('shield') and not (_actor.keysContain('left', 0.2) or _actor.keysContain('right', 0.2) or _actor.keysContain('up', 0.2) or _actor.keysContain('down', 0.2)) and not _actor.grounded:
+    elif _actor.keyBuffered('shield') and _actor.netDirection(['up', forward, backward, 'down']) == 'neutral' and not _actor.grounded:
         _actor.doAction('Fall')
 
 def dodgeCancellable(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
-    if _actor.keyBuffered('shield') and _actor.keysContain(key, 0.6) and _actor.grounded:
-        _actor.changeAction('ForwardRoll')
-    elif _actor.keyBuffered('shield') and _actor.keysContain(invkey, 0.6) and _actor.grounded:
-        _actor.changeAction('BackwardRoll')
-    elif _actor.keyBuffered('shield') and _actor.keysContain('down', 0.6) and _actor.grounded:
-        _actor.changeAction('SpotDodge')
-    elif numpy.linalg.norm(_actor.getSmoothedInput()) >= 0.2 and not _actor.grounded and _actor.airdodges == 1:
+    direct = self.netDirection([key, invkey, 'down'])
+    if _actor.keyBuffered('shield'):
+        if _actor.keysContain(key, 0.6) and _actor.grounded: _actor.changeAction('ForwardRoll')
+        elif _actor.keysContain(invkey, 0.6) and _actor.grounded: _actor.changeAction('BackwardRoll')
+        elif _actor.keysContain('down', 0.6) and _actor.grounded: _actor.changeAction('SpotDodge')
+    elif _actor.netDirection(['up', forward, backward, 'down']) != 'neutral' and not _actor.grounded and _actor.airdodges == 1:
         _actor.changeAction('AirDodge')
         
 def autoDodgeCancellable(_actor):

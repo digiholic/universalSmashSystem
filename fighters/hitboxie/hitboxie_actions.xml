@@ -188,7 +188,7 @@
 	</Parry>
 	
 	<ForwardRoll>
-		<length>46</length>
+		<length>32</length>
 		<sprite>land</sprite>
 		<sprite_rate>0</sprite_rate>
 		
@@ -199,13 +199,13 @@
 		<frame number="2">
 			<playSound>dashroll</playSound>
 		</frame>
-		<frame number="34">
+		<frame number="22">
 			<changeSubimage>0</changeSubimage>
 		</frame>
 	</ForwardRoll>
 	
 	<BackwardRoll>
-		<length>50</length>
+		<length>32</length>
 		<sprite>land</sprite>
 		<sprite_rate>0</sprite_rate>
 		
@@ -216,7 +216,7 @@
 		<frame number="2">
 			<playSound>dashroll</playSound>
 		</frame>
-		<frame number="34">
+		<frame number="22">
 			<changeSubimage>0</changeSubimage>
 		</frame>
 	</BackwardRoll>
@@ -229,19 +229,19 @@
 		<frame number="3">
 			<changeSubimage>3</changeSubimage>
 		</frame>
-		<frame number="21">
+		<frame number="18">
 			<changeSubimage>2</changeSubimage>
 		</frame>
-		<frame number="22">
+		<frame number="20">
 			<changeSubimage>1</changeSubimage>
 		</frame>
-		<frame number="23">
+		<frame number="22">
 			<changeSubimage>0</changeSubimage>
 		</frame>
 	</SpotDodge>
 	
 	<AirDodge>
-		<length>24</length>
+		<length>30</length>
 		<sprite>nair</sprite>
 		<sprite_rate>0</sprite_rate>
 		
@@ -1563,6 +1563,7 @@
 		
 		<transitions>
 			<transitionState>checkGrounded</transitionState>
+			<transitionState>tiltReversible</transitionState>
 		</transitions>
 		
 		<frame number="6">
@@ -1578,7 +1579,7 @@
 		<frame number="20">
 			<changeSubimage>8</changeSubimage>
 		</frame>
-		<frame number="21">
+		<frame number="22-36">
 			<ifButton>
 				<button check="keysContain">special</button>
 				<pass>repeatAttack</pass>
@@ -1609,6 +1610,10 @@
 			<loadArticle name="projectile">SplatArticle</loadArticle>
 		</setUp>
 		
+		<transitions>
+			<transitionState>tiltReversible</transitionState>
+		</transitions>
+		
 		<frame number="0">
 			<updateLandingLag>18</updateLandingLag>
 		</frame>
@@ -1622,7 +1627,7 @@
 			<changeSubimage>7</changeSubimage>
 		</frame>
 
-		<frame number="15">
+		<frame number="15-36">
 			<ifButton>
 				<button check="keysContain">special</button>
 				<pass>repeatAttack</pass>

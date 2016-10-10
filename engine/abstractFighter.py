@@ -660,49 +660,52 @@ class AbstractFighter():
         
     def doGroundAttack(self):
         (key, invkey) = self.getForwardBackwardKeys()
-        if self.keysContain(key):
+        direct = self.netDirection([key, invkey, 'down', 'up'])
+        if direct == key:
             self.doAction('ForwardSmash') if self.checkSmash(key) else self.doAction('ForwardAttack') 
-        elif self.keysContain(invkey):
+        elif direct == invkey:
             self.flip()
             self.doAction('ForwardSmash') if self.checkSmash(invkey) else self.doAction('ForwardAttack')
-        elif self.keysContain('down'):
+        elif direct == 'down':
             self.doAction('DownSmash') if self.checkSmash('down') else self.doAction('DownAttack')
-        elif self.keysContain('up'):
+        elif direct == 'up':
             self.doAction('UpSmash') if self.checkSmash('up') else self.doAction('UpAttack')
         else:
             self.doAction('NeutralAttack')
     
     def doAirAttack(self):
         (forward, backward) = self.getForwardBackwardKeys()
-        if (self.keysContain(forward)):
+        direct = self.netDirection([forward, backward, 'down', 'up'])
+        if direct == forward:
             self.doAction('ForwardAir')
-        elif (self.keysContain(backward)):
+        elif direct == backward:
             self.doAction('BackAir')
-        elif (self.keysContain('down')):
+        elif direct == 'down':
             self.doAction('DownAir')
-        elif(self.keysContain('up')):
+        elif direct == 'up':
             self.doAction('UpAir')
         else: self.doAction('NeutralAir')
     
     def doGroundSpecial(self):
         (forward, backward) = self.getForwardBackwardKeys()
-        if (self.keysContain('up')):
+        direct = self.netDirection(['up', forward, backward, 'down'])
+        if direct == 'up':
             if self.hasAction('UpSpecial'):
                 self.doAction('UpSpecial')
             else:
                 self.doAction('UpGroundSpecial')
-        elif self.keysContain(forward):
+        elif direct == forward:
             if self.hasAction('ForwardSpecial'): #If there's a ground/air version, do it
                 self.doAction('ForwardSpecial')
             else: #If there is not a universal one, do a ground one
                 self.doAction('ForwardGroundSpecial')
-        elif self.keysContain(backward):
+        elif direct == backward:
             self.flip()
             if self.hasAction('ForwardSpecial'):
                 self.doAction('ForwardSpecial')
             else:
                 self.doAction('ForwardGroundSpecial')
-        elif (self.keysContain('down')):
+        elif direct == 'down':
             if self.hasAction('DownSpecial'):
                 self.doAction('DownSpecial')
             else:
@@ -715,23 +718,24 @@ class AbstractFighter():
                 
     def doAirSpecial(self):
         (forward, backward) = self.getForwardBackwardKeys()
-        if (self.keysContain('up')):
+        direct = self.netDirection(['up', forward, backward, 'down'])
+        if direct == 'up':
             if self.hasAction('UpSpecial'):
                 self.doAction('UpSpecial')
             else:
                 self.doAction('UpAirSpecial')
-        elif self.keysContain(forward):
+        elif direct == forward:
             if self.hasAction('ForwardSpecial'): #If there's a ground/air version, do it
                 self.doAction('ForwardSpecial')
             else: #If there is not a universal one, do an air one
                 self.doAction('ForwardAirSpecial')
-        elif self.keysContain(backward):
+        elif direct == backward:
             self.flip()
             if self.hasAction('ForwardSpecial'):
                 self.doAction('ForwardSpecial')
             else:
                 self.doAction('ForwardAirSpecial')
-        elif (self.keysContain('down')):
+        elif direct == 'down':
             if self.hasAction('DownSpecial'):
                 self.doAction('DownSpecial')
             else:
@@ -1253,6 +1257,24 @@ class AbstractFighter():
                 return self.keyBuffered(_direction, _state=1) and self.keyBuffered(_direction, int(self.key_bindings.timing_window['repeat_window'])+1, _firstThreshold, 1)
         else:
             return self.checkSmash(_direction)
+
+    def netDirection(self, _checkDirectionList):
+        coords = self.getSmoothedInput()
+        if not filter(lambda a: a in ['left', 'right', 'up', 'down'], _checkDirectionList):
+            return 'neutral'
+        left_check = -coords[0] if 'left' in _checkDirectionList and 'left' in self.keys_held else -2
+        right_check = coords[0] if 'right' in _checkDirectionList and 'right' in self.keys_held else -2
+        up_check = -coords[1] if 'up' in _checkDirectionList and 'up' in self.keys_held else -2
+        down_check = coords[1] if 'down' in _checkDirectionList and 'down' in self.keys_held else -2
+        if left_check == -2 and right_check == -2 and up_check == -2 and down_check == -2:
+            if 'left' in self.keys_held: left_check = self.keys_held['left']
+            if 'right' in self.keys_held: right_check = self.keys_held['right']
+            if 'up' in self.keys_held: up_check = self.keys_held['up']
+            if 'down' in self.keys_held: down_check = self.keys_held['down']
+            if left_check == -2 and right_check == -2 and up_check == -2 and down_check == -2:
+                return 'neutral'
+        check_dict = {'left': left_check, 'right': right_check, 'up': up_check, 'down': down_check}
+        return max(_checkDirectionList, key=lambda k: check_dict[k])
     
     """
     This checks for keys that are currently being held, whether or not they've actually been pressed recently.

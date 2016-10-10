@@ -156,7 +156,7 @@ class Hurtbox(spriteManager.RectSprite):
             return self.owner.sprite.bounding_rect
         
 
-    def update(self)
+    def update(self):
         fix_rect = self.getFixRect()
         if self.size[0] == 0: self.rect.width = fix_rect.width
         else: self.rect.width = self.size[0]
