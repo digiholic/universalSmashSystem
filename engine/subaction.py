@@ -472,6 +472,10 @@ class ifButton(SubAction):
             cond = _actor.keyReinput(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyIdle':
             cond = _actor.keyIdle(self.button, working_from, self.threshold, self.buffer_to)
+        elif self.check == 'smash':
+            cond = _actor.checkSmash(self.button)
+        elif self.check == 'tap':
+            cond = _actor.checkTap(self.button)
         else:
             return
 
@@ -502,6 +506,10 @@ class ifButton(SubAction):
             pressed_text = 'was released and reinput from a depth of at least ' + str(self.threshold) + ' within frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from)
         elif self.check == 'keyIdle':
             pressed_text = 'was released from a depth of at least ' + str(self.threshold) + ' through frames ' + str(self.buffer_to) + ' and ' + str(self.buffer_from)
+        elif self.check == 'smash':
+            pressed_text = 'was smashed'
+        elif self.check == 'tap':
+            pressed_text = 'was tapped'
         else:
             return 'Unknown check type: ' + self.check
 
@@ -510,7 +518,6 @@ class ifButton(SubAction):
         else:
             pressed_text += ' during this action:'
             
-
         return 'If '+self.button+' '+pressed_text+self.if_actions
     
     def getXmlElement(self):
@@ -553,43 +560,9 @@ class ifButton(SubAction):
             check = button.attrib['check']
         else: check = 'keyBuffered'
         button = button.text
-        
-        if check == 'keysContain':
-            buffer_from = 1
-            buffer_to = 0
-            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
-        elif check == 'keyBuffered':
-            buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
-            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
-            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
-        elif check == 'keyTapped':
-            buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
-            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
-            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
-        elif check == 'keyHeld':
-            buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
-            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
-            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
-        elif check == 'keyUnreleased':
-            buffer_from = 1
-            buffer_to = 0
-            threshold = 0.1
-        elif check == 'keyUp':
-            buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
-            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
-            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
-        elif check == 'keyReinput':
-            buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
-            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
-            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
-        elif check == 'keyIdle':
-            buffer_from = int(loadNodeWithDefault(_node, 'from', 8))
-            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
-            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
-        else:
-            buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
-            buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
-            threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
+        buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
+        buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
+        threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
         
         if_actions = loadNodeWithDefault(_node, 'pass', None)
         else_actions = loadNodeWithDefault(_node, 'fail', None)

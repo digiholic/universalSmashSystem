@@ -1174,46 +1174,49 @@ class AbstractFighter():
         hold_buffer = reversed(self.input_buffer.getLastNFrames(_distanceBack))
         smoothed_x = 0.0
         smoothed_y = 0.0
-        for frame_input in hold_buffer:
-            working_x = 0.0
-            working_y = 0.0
-            x_decay = float(1.5)/smooth_distance
-            y_decay = float(1.5)/smooth_distance
-            if 'left' in frame_input: working_x -= frame_input['left']
-            if 'right' in frame_input: working_x += frame_input['right']
-            if 'up' in frame_input: working_y -= frame_input['up']
-            if 'down' in frame_input: working_y += frame_input['down']
-            if (working_x > 0 and smoothed_x > 0) or (working_x < 0 and smoothed_x < 0):
-                x_decay = float(1)/smooth_distance
-            elif (working_x < 0 and smoothed_x > 0) or (working_x > 0 and smoothed_x < 0):
-                x_decay = float(4)/smooth_distance
-            if (working_y < 0 and smoothed_y < 0) or (working_y > 0 and smoothed_y > 0):
-                y_decay = float(1)/smooth_distance
-            elif (working_y < 0 and smoothed_y > 0) or (working_y > 0 and smoothed_y < 0):
-                ySmooth = float(4)/smooth_distance
-            magnitude = numpy.linalg.norm([working_x, working_y])
-            if magnitude > _maxMagnitude:
-                working_x /= magnitude/_maxMagnitude
-                working_y /= magnitude/_maxMagnitude
-            if smoothed_x > 0:
-                smoothed_x -= x_decay
-                if smoothed_x < 0:
-                    smoothed_x = 0
-            elif smoothed_x < 0:
-                smoothed_x += x_decay
+        if self.key_bindings.type == "Keyboard":
+            for frame_input in hold_buffer:
+                working_x = 0.0
+                working_y = 0.0
+                x_decay = float(1.5)/smooth_distance
+                y_decay = float(1.5)/smooth_distance
+                if 'left' in frame_input: working_x -= frame_input['left']
+                if 'right' in frame_input: working_x += frame_input['right']
+                if 'up' in frame_input: working_y -= frame_input['up']
+                if 'down' in frame_input: working_y += frame_input['down']
+                if (working_x > 0 and smoothed_x > 0) or (working_x < 0 and smoothed_x < 0):
+                    x_decay = float(1)/smooth_distance
+                elif (working_x < 0 and smoothed_x > 0) or (working_x > 0 and smoothed_x < 0):
+                    x_decay = float(4)/smooth_distance
+                if (working_y < 0 and smoothed_y < 0) or (working_y > 0 and smoothed_y > 0):
+                    y_decay = float(1)/smooth_distance
+                elif (working_y < 0 and smoothed_y > 0) or (working_y > 0 and smoothed_y < 0):
+                    ySmooth = float(4)/smooth_distance
+                magnitude = numpy.linalg.norm([working_x, working_y])
+                if magnitude > _maxMagnitude:
+                    working_x /= magnitude/_maxMagnitude
+                    working_y /= magnitude/_maxMagnitude
                 if smoothed_x > 0:
-                    smoothed_x = 0
-            if smoothed_y > 0:
-                smoothed_y -= y_decay
-                if smoothed_y < 0:
-                    smoothed_y = 0
-            elif smoothed_y < 0:
-                smoothed_y += y_decay
+                    smoothed_x -= x_decay
+                    if smoothed_x < 0:
+                        smoothed_x = 0
+                elif smoothed_x < 0:
+                    smoothed_x += x_decay
+                    if smoothed_x > 0:
+                        smoothed_x = 0
                 if smoothed_y > 0:
-                    smoothed_y = 0
-            smoothed_x += working_x
-            smoothed_y += working_y
-
+                    smoothed_y -= y_decay
+                    if smoothed_y < 0:
+                        smoothed_y = 0
+                elif smoothed_y < 0:
+                    smoothed_y += y_decay
+                    if smoothed_y > 0:
+                        smoothed_y = 0
+                smoothed_x += working_x
+                smoothed_y += working_y
+        else:
+            smoothed_x = -self.keys_held['left']+self.keys_held['right']
+            smoothed_y = -self.keys_held['up']+self.keys_held['down']
         final_magnitude = numpy.linalg.norm([smoothed_x, smoothed_y])
         if final_magnitude > _maxMagnitude:
             smoothed_x /= final_magnitude/_maxMagnitude
@@ -1241,6 +1244,15 @@ class AbstractFighter():
     def checkSmash(self,_direction):
         #TODO different for buttons than joysticks
         return self.keyBuffered(_direction, int(self.key_bindings.timing_window['smash_window']), 1.0)
+
+    def checkTap(self, _direction, _firstThreshold=0.6, _cap = True):
+        if self.key_bindings.type == "Keyboard":
+            if _cap:
+                return self.keyBuffered(_direction, _state=1) and self.keyBuffered(_direction, min(int(self.key_bindings.timing_window['repeat_window'])+1, self.last_input_frame), _firstThreshold, 1)
+            else:
+                return self.keyBuffered(_direction, _state=1) and self.keyBuffered(_direction, int(self.key_bindings.timing_window['repeat_window'])+1, _firstThreshold, 1)
+        else:
+            return self.checkSmash(_direction)
     
     """
     This checks for keys that are currently being held, whether or not they've actually been pressed recently.
