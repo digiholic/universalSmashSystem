@@ -15,18 +15,21 @@ logging.basicConfig()
 class TestContext( BaseContext ):
     def OnInit( self ):
         #Just load the GLSL shaders in here
-        VERTEX_SHADER = shaders.compileShader("""#version 330 core
-        layout (location = 0) in vec3 position;
-        void main() {
-            gl_Position = vec4(position.x, position.y, position.z, 1.0);
-        }""", GL_VERTEX_SHADER)
-        
+        VERTEX_SHADER = shaders.compileShader(
+            """
+            varying vec4 vertex_color;
+            void main() {
+                gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+                vertex_color = gl_Color;
+            }""",GL_VERTEX_SHADER)
         #Fragment Shader
-        FRAGMENT_SHADER = shaders.compileShader("""#version 330 core
-        out vec4 color;
-        void main() {
-            color = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-        } """, GL_FRAGMENT_SHADER)
+        FRAGMENT_SHADER = shaders.compileShader("""
+            varying vec4 vertex_color;
+            void main() {
+                gl_FragColor = vertex_color;
+            }""",GL_FRAGMENT_SHADER)
+        
+        
         self.shader = shaders.compileProgram(VERTEX_SHADER,FRAGMENT_SHADER)
         
         """
@@ -39,29 +42,35 @@ class TestContext( BaseContext ):
         
         self.vbo = vbo.VBO(
             array( [
-                [-0.5,-0.5, 0.0], #bottom left
-                [ 0.5,-0.5, 0.0], #bottom right
-                [-0.5, 0.5, 0.0], #top left
+                [-1.0,-1.0, 0.0,  0,1,1], #bottom left
+                [ 1.0,-1.0, 0.0,  0,1,0], #bottom right
+                [-1.0, 1.0, 0.0,  1,0,0], #top left
                 
-                [-0.5, 0.5, 0.0], #top left
-                [ 0.5,-0.5, 0.0], #bottom right
-                [ 0.5, 0.5, 0.0]  #top right
+                [-1.0, 1.0, 0.0,  1,0,0], #top left
+                [ 1.0,-1.0, 0.0,  0,1,0], #bottom right
+                [ 1.0, 1.0, 0.0,  0,0,1]  #top right
             ],'f')
         )
         
     def Render( self, mode):
+        colorLocation = glGetUniformLocation(self.shader,"ourColor")
         shaders.glUseProgram(self.shader)
+        glUniform4f(colorLocation,0.0,1.0,0.0,1.0)
+        
         try:
             #This sends the VBO to the graphics card
             self.vbo.bind()
             try:
-                glEnableClientState(GL_VERTEX_ARRAY);
-                glVertexPointerf( self.vbo )
+                glEnableClientState(GL_VERTEX_ARRAY)
+                glEnableClientState(GL_COLOR_ARRAY)
+                glVertexPointer(3, GL_FLOAT, 24, self.vbo )
+                glColorPointer(3, GL_FLOAT, 24, self.vbo+12)
                 glDrawArrays(GL_TRIANGLES, 0, 6)
                 
             finally:
                 self.vbo.unbind()
-                glDisableClientState(GL_VERTEX_ARRAY);
+                glDisableClientState(GL_VERTEX_ARRAY)
+                glDisableClientState(GL_COLOR_ARRAY)
         finally:
             shaders.glUseProgram(0)
             
