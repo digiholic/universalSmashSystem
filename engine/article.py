@@ -212,7 +212,7 @@ class ShieldArticle(Article):
         self.reflect_hitbox.article = self
         self.parry_reflect_hitbox = hitbox.ReflectorHitbox(_owner, hitbox.HitboxLock(),
                                                          {'center':[0,0],
-                                                          'size':[_owner.shield_integrity*_owner.var['shield_size'], _owner.shield_integrity*_owner.var['shield_size']],
+                                                          'size':[_owner.shield_integrity*_owner.var['shield_size']/2.0, _owner.shield_integrity*_owner.var['shield_size']/2.0],
                                                           'transcendence':6,
                                                           'priority':float('inf'),
                                                           'hp':float('inf'),
@@ -230,7 +230,7 @@ class ShieldArticle(Article):
         self.main_hitbox.article = self
         self.parry_hitbox = hitbox.InvulnerableHitbox(_owner, hitbox.HitboxLock(),
                                                       {'center':[0,0],
-                                                       'size':[_owner.shield_integrity*_owner.var['shield_size'], _owner.shield_integrity*_owner.var['shield_size']],
+                                                       'size':[_owner.shield_integrity*_owner.var['shield_size']/2.0, _owner.shield_integrity*_owner.var['shield_size']/2.0],
                                                        'transcendence':-5,
                                                        'priority':float('inf')
                                                       })
@@ -262,17 +262,23 @@ class ShieldArticle(Article):
         self.scale = (self.owner.shield_integrity*self.owner.var['shield_size']/100.0)
         if self.frame == 0:
             import engine.baseActions as baseActions
+            self.owner.active_hitboxes.add(self.main_hitbox)
+            self.owner.active_hitboxes.add(self.reflect_hitbox)
             if isinstance(self.owner.current_action, baseActions.Parry):
                 self.owner.active_hitboxes.add(self.parry_hitbox)
                 self.owner.active_hitboxes.add(self.parry_reflect_hitbox)
+                self.parrying = True
             else:
-                self.owner.active_hitboxes.add(self.main_hitbox)
-                self.owner.active_hitboxes.add(self.reflect_hitbox)
+                self.parrying = False
         if self.frame == 1:
             self.parry_hitbox.kill()
             self.parry_reflect_hitbox.kill()
+            if self.parrying:
+                self.main_hitbox.kill()
+                self.reflect_hitbox.kill()
         if self.frame == 2:
-            self.reflect_hitbox.kill()
+            if not self.parrying:
+                self.reflect_hitbox.kill()
         if not self.owner.shield:
             self.reflect_hitbox.kill()
             self.main_hitbox.kill()
@@ -284,8 +290,8 @@ class ShieldArticle(Article):
         self.main_hitbox.priority = self.owner.shield_integrity-8
         self.main_hitbox.hp = self.owner.shield_integrity
         self.main_hitbox.rect.size = [self.owner.shield_integrity*self.owner.var['shield_size'], self.owner.shield_integrity*self.owner.var['shield_size']]
-        self.parry_hitbox.rect.size = [self.owner.shield_integrity*self.owner.var['shield_size'], self.owner.shield_integrity*self.owner.var['shield_size']]
-        self.parry_reflect_hitbox.rect.size = [self.owner.shield_integrity*self.owner.var['shield_size'], self.owner.shield_integrity*self.owner.var['shield_size']]
+        self.parry_hitbox.rect.size = [self.owner.shield_integrity*self.owner.var['shield_size']/2.0, self.owner.shield_integrity*self.owner.var['shield_size']/2.0]
+        self.parry_reflect_hitbox.rect.size = [self.owner.shield_integrity*self.owner.var['shield_size']/2.0, self.owner.shield_integrity*self.owner.var['shield_size']/2.0]
         self.reflect_hitbox.update()
         self.main_hitbox.update()
         self.parry_hitbox.update() 
