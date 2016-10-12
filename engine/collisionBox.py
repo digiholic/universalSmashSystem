@@ -94,7 +94,7 @@ def getMovementCollisionsWith(_object,_spriteGroup):
     return filter(lambda r: pathRectIntersects(_object.ecb.current_ecb.rect, future_rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collide_sprite, _spriteGroup, False), key = lambda q: pathRectIntersects(_object.ecb.current_ecb.rect, future_rect, q.rect)))
 
 def getSizeCollisionsWith(_object,_spriteGroup):
-    return sorted(filter(lambda r: numpy.linalg.norm(intersectPoint(_object.ecb.current_ecb.rect, r.rect)[1], intersectPoint(_object.ecb.current_ecb.rect, r.rect)[0]), pygame.sprite.spritecollide(_object.ecb.current_ecb, _spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(_object.ecb.current_ecb.rect, q.rect)[0]))
+    return sorted(filter(lambda r: numpy.dot(intersectPoint(_object.ecb.current_ecb.rect, r.rect)[1], intersectPoint(_object.ecb.current_ecb.rect, r.rect)[0]), pygame.sprite.spritecollide(_object.ecb.current_ecb, _spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(_object.ecb.current_ecb.rect, q.rect)[0]))
 
 def catchMovement(_object, _other, _platformPhase=False):
     _object.updatePosition(_object.rect)
