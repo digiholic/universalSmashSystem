@@ -52,7 +52,7 @@ def loadTexture(path):
     # the image, with following values going left-to-right and lines going
     # top-to-bottom.  So, we need to flip the vertical coordinate (y). 
     texture = GL.glGenTextures(1)
-    GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
+    #GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
     GL.glBindTexture(GL.GL_TEXTURE_2D, texture)
     
     GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
@@ -62,7 +62,7 @@ def loadTexture(path):
     
     GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, width, height, 0,
         GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, img_data)
-    GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
+    #GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
     return texture
 
 
@@ -106,7 +106,7 @@ void main()
     shaderProgram = shaders.compileProgram(vertexShader, fragmentShader)
 
     vertexData = numpy.array([
-         # X,    Y,   Z     U,   V
+        # X,    Y,   Z     U,   V
         -0.8,  0.8, 0.0,  0.0, 1.0, #top left
         -0.8, -0.8, 0.0,  0.0, 0.0, #bottom left
          0.8, -0.8, 0.0,  1.0, 0.0, #bottom right
