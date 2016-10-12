@@ -194,7 +194,7 @@ def intersectPoint(_firstRect, _secondRect):
 #Prepare for article usage
 def checkPlatform(_current, _previous, _platform, _yvel):
     intersect = intersectPoint(_current, _platform)
-    if _platform.top >= _previous.bottom-4-_yvel and numpy.linalg.norm(intersect[0], intersect[1]) and intersect[1][1] < 0 and _current.bottom >= _platform.top:
+    if _platform.top >= _previous.bottom-4-_yvel and numpy.dot(intersect[0], intersect[1]) and intersect[1][1] < 0 and _current.bottom >= _platform.top:
         return True
     return False
     
