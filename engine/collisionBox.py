@@ -94,7 +94,7 @@ def getMovementCollisionsWith(_object,_spriteGroup):
     return filter(lambda r: pathRectIntersects(_object.ecb.current_ecb.rect, future_rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collide_sprite, _spriteGroup, False), key = lambda q: pathRectIntersects(_object.ecb.current_ecb.rect, future_rect, q.rect)))
 
 def getSizeCollisionsWith(_object,_spriteGroup):
-    return sorted(filter(lambda r: intersectPoint(_object.ecb.current_ecb.rect, r.rect) != None, pygame.sprite.spritecollide(_object.ecb.current_ecb, _spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(_object.ecb.current_ecb.rect, q.rect)[0]))
+    return sorted(filter(lambda r: numpy.linalg.norm(intersectPoint(_object.ecb.current_ecb.rect, r.rect)[1], intersectPoint(_object.ecb.current_ecb.rect, r.rect)[0]), pygame.sprite.spritecollide(_object.ecb.current_ecb, _spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(_object.ecb.current_ecb.rect, q.rect)[0]))
 
 def catchMovement(_object, _other, _platformPhase=False):
     _object.updatePosition(_object.rect)
@@ -112,7 +112,7 @@ def catchMovement(_object, _other, _platformPhase=False):
 
     if _other.solid:
         contact = intersectPoint(my_rect, check_rect)
-        if contact is None:
+        if numpy.dot(contact[0], contact[1]) < 0:
             return False
         v_vel = [_object.change_x-_other.change_x, _object.change_y-_other.change_y]
         return numpy.dot(contact[1], v_vel) < 0
@@ -129,7 +129,7 @@ def eject(_object, _other, _platformPhase=False):
     contact = intersectPoint(_object.ecb.current_ecb.rect, check_rect)
     
     if _other.solid:
-        if contact is not None:
+        if numpy.dot(contact[0], contact[1]) >= 0:
             _object.rect.x += contact[0][0]
             _object.rect.y += contact[0][1]
             return reflect(_object, _other)
@@ -137,7 +137,7 @@ def eject(_object, _other, _platformPhase=False):
         new_prev = _object.ecb.current_ecb.rect.copy()
         new_prev.center = _object.ecb.previous_ecb.rect.center
         if not _platformPhase and checkPlatform(_object.ecb.current_ecb.rect, _object.ecb.previous_ecb.rect, check_rect, _object.change_y):
-            if contact is not None:
+            if numpy.dot(contact[0], contact[1]) >= 0:
                 _object.rect.x += contact[0][0]
                 _object.rect.y += contact[0][1]
                 return reflect(_object, _other)
@@ -154,7 +154,7 @@ def reflect(_object, _other):
     check_rect = _other.rect.copy()
     contact = intersectPoint(_object.ecb.current_ecb.rect, check_rect)
 
-    if contact is not None:
+    if numpy.dot(contact[0], contact[1]) >= 0:
         #The contact vector is perpendicular to the axis over which the reflection should happen
         v_vel = [_object.change_x-_other.change_x, _object.change_y-_other.change_y]
         if numpy.dot(v_vel, contact[1]) < 0:
@@ -189,16 +189,12 @@ def intersectPoint(_firstRect, _secondRect):
     down_left_dist = [directionalDisplacement(first_points, second_points, [float(-_firstRect.height), float(_firstRect.width)]), [float(-_firstRect.height)/norm, float(_firstRect.width)/norm]]
     down_right_dist = [directionalDisplacement(first_points, second_points, [float(_firstRect.height), float(_firstRect.width)]), [float(_firstRect.height)/norm, float(_firstRect.width)/norm]]
 
-    min_direction = min(left_dist, right_dist, up_dist, down_dist, up_left_dist, up_right_dist, down_left_dist, down_right_dist, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
-    if directionalDisplacement(first_points, second_points, min_direction[1]) < 0:
-        return None
-    else:
-        return min_direction
+    return min(left_dist, right_dist, up_dist, down_dist, up_left_dist, up_right_dist, down_left_dist, down_right_dist, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
 
 #Prepare for article usage
 def checkPlatform(_current, _previous, _platform, _yvel):
     intersect = intersectPoint(_current, _platform)
-    if _platform.top >= _previous.bottom-4-_yvel and intersect is not None and intersect[1][1] < 0 and _current.bottom >= _platform.top:
+    if _platform.top >= _previous.bottom-4-_yvel and numpy.linalg.norm(intersect[0], intersect[1]) and intersect[1][1] < 0 and _current.bottom >= _platform.top:
         return True
     return False
     
