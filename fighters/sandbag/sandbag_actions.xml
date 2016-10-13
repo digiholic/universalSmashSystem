@@ -364,6 +364,9 @@
 	<Prone>
 		<length>1</length>
 		<sprite>idle</sprite>
+		<frame number="last">
+			<doAction>NeutralAction</doAction>
+		</frame>
 	</Prone>
 	
 	<SlowGetup>

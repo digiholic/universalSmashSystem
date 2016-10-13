@@ -170,9 +170,9 @@
 	</Grabbing>
 	
 	<Getup>
-		<length>12</length>
+		<length>20</length>
 		<sprite>land</sprite>
-		<sprite_rate>-3</sprite_rate>
+		<sprite_rate>-5</sprite_rate>
 	</Getup>
 	
 	<Shield>

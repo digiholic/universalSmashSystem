@@ -539,10 +539,10 @@ class AbstractFighter():
     
     # Change ySpeed according to gravity.        
     def calcGrav(self, _multiplier=1):
-        if self.change_y > self.preferred_yspeed:
+        if self.change_y > self.preferred_yspeed and _multiplier*self.var['gravity']<0:
             diff = self.change_y - self.preferred_yspeed
             self.change_y -= min(diff, _multiplier*self.var['gravity'] * settingsManager.getSetting('gravity')) 
-        elif self.change_y < self.preferred_yspeed:
+        elif self.change_y < self.preferred_yspeed and _multiplier*self.var['gravity']>0:
             diff = self.preferred_yspeed - self.change_y
             self.change_y += min(diff, _multiplier*self.var['gravity'] * settingsManager.getSetting('gravity'))
         if self.grounded: 

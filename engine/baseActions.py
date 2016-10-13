@@ -563,17 +563,8 @@ class Released(action.Action):
         elif (_actor.change_x > 0) and not _actor.keysContain('right'):
             _actor.preferred_xspeed = 0
 
-        if _actor.change_y >= _actor.var['max_fall_speed'] and _actor.landing_lag < _actor.var['heavy_land_lag']:
-            _actor.landing_lag = _actor.var['heavy_land_lag']
+        _actor.landing_lag = 0
 
-        if _actor.grounded and _actor.ground_elasticity == 0:
-            _actor.preferred_xspeed = 0
-            _actor.preferred_yspeed = _actor.var['max_fall_speed']
-            _actor.doAction('Prone')
-            _actor.current_action.last_frame = self.last_frame - self.frame
-
-        grabLedges(_actor)
-        
     def update(self,_actor):
         action.Action.update(self, _actor)
         if self.frame >= self.last_frame:
@@ -1445,7 +1436,7 @@ class DodgeTech(BaseTech):
 
 class NormalTech(BaseTech):
     def __init__(self):
-        BaseTech.__init__(self, 12)
+        BaseTech.__init__(self, 20)
 
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name="getup"
