@@ -3,7 +3,7 @@ import pygame
 import xml.etree.ElementTree as ElementTree
 import xml.dom.minidom
 import os
-import baseActions
+import engine.baseActions as baseActions
 import engine.collisionBox as collisionBox
 import weakref
 import engine.hitbox as hitbox
@@ -11,7 +11,7 @@ import math
 import numpy
 
 class AbstractFighter():
-    """ The Abstract Fighter is an individual fighter in the battle. It holds all of the data
+    """The Abstract Fighter is an individual fighter in the battle. It holds all of the data
     needed to create, control, and clear a fighter. It is created initially by the Character Select Screen,
     as a container for things like icons and costume selections. It becomes a 'real' fighter when Initialize()
     is called, creating an object that can interact with the world.
@@ -81,7 +81,7 @@ class AbstractFighter():
     active_hurtboxes = pygame.sprite.Group()
     auto_hurtbox = None
     
-    input_buffer = InputBuffer()
+    #input_buffer = InputBuffer()
     keys_held = dict()
     
     hitbox_lock = weakref.WeakSet()
@@ -148,8 +148,7 @@ class AbstractFighter():
             if self.xml_data:
                 if self.xml_data.find(_tag) is not None:
                     return self.xml_data.find(_tag)
-                else: return _default
-        
+            return _default
         
         self.base_dir = _baseDir
         self.player_num = _playerNum
@@ -184,21 +183,22 @@ class AbstractFighter():
         #TODO color palettes
         #TODO costumes
         
-        if self.xml_data.find('stats') is not None:
-            for stat in self.xml_data.find('stats'):
-                vartype = type(self.default_stats[stat.tag]).__name__
-                if vartype == 'int': self.default_stats[stat.tag] = int(stat.text)
-                if vartype == 'float': self.default_stats[stat.tag] = float(stat.text)
-        
-        if self.xml_data.find('variables') is not None:
-            for variable in self.xml_data.find('variables'):
-                vartype = 'string'
-                if variable.attrib.has_key('type'): vartype = variable.attrib['type']
-                val = variable.text
-                if vartype == 'int': val = int(val)
-                elif vartype == 'float': val = float(val)
-                elif vartype == 'bool': val = bool(val)
-                self.default_vars[variable.tag] = val   
+        if self.xml_data:
+            if self.xml_data.find('stats') is not None:
+                for stat in self.xml_data.find('stats'):
+                    vartype = type(self.default_stats[stat.tag]).__name__
+                    if vartype == 'int': self.default_stats[stat.tag] = int(stat.text)
+                    if vartype == 'float': self.default_stats[stat.tag] = float(stat.text)
+            
+            if self.xml_data.find('variables') is not None:
+                for variable in self.xml_data.find('variables'):
+                    vartype = 'string'
+                    if variable.attrib.has_key('type'): vartype = variable.attrib['type']
+                    val = variable.text
+                    if vartype == 'int': val = int(val)
+                    elif vartype == 'float': val = float(val)
+                    elif vartype == 'bool': val = bool(val)
+                    self.default_vars[variable.tag] = val   
         
     def saveFighter(self,_path=None):
         """ Save the fighter's data to XML. Basically the inverse of __init__.
@@ -587,5 +587,5 @@ class AbstractFighter():
     
 def test():
     fight = AbstractFighter('',0)
-
+    print(fight.__init__.__doc__)
 if __name__ == '__main__': test()
