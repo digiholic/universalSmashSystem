@@ -1068,25 +1068,6 @@ class AbstractFighter():
             return True
         else: return False
     
-    def joyButtonPressed(self,_pad,_button):
-        # TODO: Check gamepad first
-        self.keyPressed(_button)
-                
-    def joyButtonReleased(self,_pad,_button):
-        # TODO: Check gamepad first
-        self.keyReleased(_button)
-        
-    def joyAxisMotion(self,_pad,_axis):
-        #TODO - Actually check if this the right gamePad
-        value = round(_pad.get_axis(_axis),3) # We really only need three decimals of precision
-        if abs(value) < 0.05: value = 0
-        if value < 0: sign = '-'
-        else: sign = '+'
-        
-        k = self.key_bindings.get('axis ' + str(_axis) + sign)
-        self.input_buffer.append((k,value)) # This should hopefully append something along the line of ('left',0.8)
-        self.keys_held[k] = value
-
     """
     Various wrappers for the InputBuffer function, each one corresponding to a kind of input. 
     """
@@ -1318,6 +1299,10 @@ class AbstractFighter():
                 ecb.draw(_screen,_offset,_scale)
         return rect
         
+    def createMask(self,_color,_duration,_pulse = False,_pulse_size = 16):
+        self.mask = spriteManager.MaskSprite(self.sprite,_color,_duration,_pulse, _pulse_size)
+    
+    
     """
     Use this function to get a direction that is angled from the direction the fighter
     is facing, rather than angled from right. For example, sending the opponent 30 degrees
@@ -1333,9 +1318,7 @@ class AbstractFighter():
         else:
             return 180 - _offSet
 
-    def createMask(self,_color,_duration,_pulse = False,_pulse_size = 16):
-        self.mask = spriteManager.MaskSprite(self.sprite,_color,_duration,_pulse, _pulse_size)
-        
+    
     def getDirectionMagnitude(self):
         if self.change_x == 0:
             magnitude = self.change_y
@@ -1389,7 +1372,6 @@ but can also be used to re-create the entire battle (once a replay manager
 is set up)
 """
 class InputBuffer():
-    
     def __init__(self):
         self.buffer = [[]]
         self.working_buff = []

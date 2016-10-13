@@ -1,8 +1,6 @@
 import settingsManager
 import pygame
 
-
-
 class BaseController():
     def __init__(self,_bindings):
         self.keys_to_pass = []
@@ -12,6 +10,10 @@ class BaseController():
         self.type = 'Keyboard'
         self.target = None
         
+        self.buffer = [[]]
+        self.last_index = 0
+      
+      
     def linkObject(self,_object):
         self.target = _object
     
@@ -20,8 +22,24 @@ class BaseController():
         self.keys_to_release = []
         self.keys_held = []
         
+        self.buffer = [[]]
+        self.last_index = 0
+        
     def getInputs(self,_event,_push=True, _outputOnRelease=True):
-        pass
+        if _event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
+            return None
+        output = True
+        k = self.key_bindings.get(_event.key)
+        if k:
+            if _event.type == pygame.KEYDOWN:
+                if _push: self.keys_to_pass.append(k)
+                if k not in self.keys_held: self.keys_held.append(k)
+            elif _event.type == pygame.KEYUP:
+                output = _outputOnRelease and output
+                if _push: self.keys_to_release.append(k)
+                if k in self.keys_held: self.keys_held.remove(k)
+        if output: return k
+        return None
     
     def get(self,_key):
         return self.key_bindings.get(_key)
@@ -41,6 +59,7 @@ class BaseController():
             if name == _action:
                 list_of_bindings.append(settingsManager.getSetting().key_id_map[binding])
         return list_of_bindings
+    
     
 class Controller(BaseController):
     def __init__(self,_bindings,_timing_window = dict()):
@@ -68,7 +87,6 @@ class GamepadController(BaseController):
     def __init__(self,_padBindings):
         BaseController.__init__(self, _padBindings)
         self.type = 'Gamepad'
-    
     
     def getInputs(self,_event,_push = True, _outputOnRelease = True):
         if _event.type not in [pygame.JOYAXISMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
