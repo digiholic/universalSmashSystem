@@ -112,6 +112,10 @@ class AbstractFighter():
     #facing right = 1, left = -1
     facing = 1
     
+    #Adding a move to the disabled moves list prevents it from activating.
+    #If told to switch to it, the fighter will ignore the request.
+    disabled_moves = []
+    
     def __init__(self,_baseDir,_playerNum):
         """ Create a fighter. To start, all that's needed is the directory it is in, and the player number.
         It uses the directory to find its fighter.xml file and begin storing data.
@@ -308,6 +312,182 @@ class AbstractFighter():
         """ 
         pass
     
+    ########################################################
+    #                 ACTION MANAGEMENT                    #
+    ########################################################
+    
+    def doAction(self,_actionName):
+        """ Load up the given action. If it's executable, change to it.
+        If it's not, still execute the setUp (this allows for certain code
+        to happen, even if the action is not executed.)
+        
+        If the move is disabled, it won't even bother to
+        load it, since we shouldn't be doing anything with it.
+        
+        Parameters
+        -----------
+        _actionName : String
+            The Action to load and switch to
+        """
+        if not _actionName in self.disabled_moves:
+            # If our action is an ActionLoader, we need to pull it from XML
+            if hasattr(self.actions,'loadAction'):
+                action = self.actions.loadAction(_actionName)
+                if action.last_frame > 0: self.changeAction(action)
+                else: action.setUp(self)
+            # If it has an object of the given name, get that object
+            elif hasattr(self.actions, _actionName):
+                class_ = getattr(self.actions,_actionName)
+                action = class_()
+                if action.last_frame > 0: self.changeAction(action)
+                else: action.setUp(self)
+    
+    def changeAction(self,_newAction):
+        """ Switches from the current action to the given action. Calls tearDown on the
+        current action, before setting up the new one. If we get this far, the new action
+        is valid and ready to be executed
+        
+        Parameters
+        -----------
+        _newAction : Action
+            The Action to switch to
+        """
+        self.current_action.tearDown(self,_newAction)
+        _newAction.setUp(self)
+        self.current_action = _newAction
+    
+    def getAction(self,_actionName):
+        """ Loads an action, without changing to it or executing it.
+        Since this is just to read, it will load an action that is
+        disabled, or unexecutable. If you need to change to it, please
+        use doAction instead, which will make sure the action is valid
+        before executing.
+        
+        Parameters
+        -----------
+        _actionName : String
+            The name of the action to load
+        
+        Return
+        -----------
+        Action : The loaded action with the given name. Returns None
+                 if there is no action with that name.
+        """
+        action = None
+        if hasattr(self.actions,'loadAction'):
+            action = self.actions.loadAction(_actionName)
+        elif hasattr(self.actions, _actionName):
+            class_ = getattr(self.actions,_actionName)
+            action = class_()
+        return action
+            
+    def hasAction(self,_actionName):
+        """ Returns True if the fighter has an action of the given name.
+        Does not load the action, change to it, or do anything other than
+        check if it exists. You do not need to run this before getAction or
+        doAction, as they check for the action themselves.
+        
+        Parameters
+        -----------
+        _actionName : String
+            The name of the action to check for
+        """
+        if hasattr(self.actions,'hasAction'):
+            return self.actions.hasAction(_actionName)
+        else: return hasattr(self.actions, _actionName)
+            
+    def loadArticle(self,_articleName):
+        """ Loads and returns an article. Checks if the articles are loading
+        from XML or Python, and loads the appropriate one.
+        
+        Parameters
+        -----------
+        _articleName : String
+            The name of the article to load
+            
+        Return
+        -----------
+        Article : The article of the given name. Returns None if no Article with that name exists.
+        """        
+        if hasattr(self.article_loader, 'loadArticle'):
+            return self.article_loader.loadArticle(_articleName)
+        elif hasattr(self.article_loader, _articleName):
+            class_ = getattr(self.article_loader, _articleName)
+            return(class_(self))
+        
+     
+    ########################################################
+    #              COLLISIONS AND MOVEMENT                 #
+    ########################################################
+    def accel(self,_xFactor):
+        """ Change speed to get closer to the preferred speed without going over.
+        
+        Parameters
+        -----------
+        _xFactor : float
+            The factor by which to change xSpeed. Usually self.var['friction'] or self.var['air_resistance']
+        """
+        #TODO: I feel like there's a better way to do this but I can't think of one
+        if self.change_x > self.preferred_xspeed: #if we're going too fast
+            diff = self.change_x - self.preferred_xspeed
+            self.change_x -= min(diff,_xFactor*(settingsManager.getSetting('friction') if self.grounded else settingsManager.getSetting('airControl')))
+        elif self.change_x < self.preferred_xspeed: #if we're going too slow
+            diff = self.preferred_xspeed - self.change_x
+            self.change_x += min(diff,_xFactor*(settingsManager.getSetting('friction') if self.grounded else settingsManager.getSetting('airControl')))
+           
+    # Change ySpeed according to gravity.        
+    def calcGrav(self, _multiplier=1):
+        """ Changes the ySpeed according to gravity
+        
+        Parameters
+        -----------
+        _multiplier : float
+            A multiple of gravity to adjust by, in case gravity is changed temporarily
+        """
+        if self.change_y > self.preferred_yspeed:
+            diff = self.change_y - self.preferred_yspeed
+            self.change_y -= min(diff, _multiplier*self.var['gravity'] * settingsManager.getSetting('gravity')) 
+        elif self.change_y < self.preferred_yspeed:
+            diff = self.preferred_yspeed - self.change_y
+            self.change_y += min(diff, _multiplier*self.var['gravity'] * settingsManager.getSetting('gravity'))
+        
+    def checkGround(self):
+        self.sprite.updatePosition(self.rect)
+        return collisionBox.checkGround(self, self.game_state.platform_list, self.tech_window <= 0)
+
+    def checkLeftWall(self):
+        self.sprite.updatePosition(self.rect)
+        return collisionBox.checkLeftWall(self, self.game_state.platform_list, True)
+
+    def checkRightWall(self):
+        self.sprite.updatePosition(self.rect)
+        return collisionBox.checkRightWall(self, self.game_state.platform_list, True)
+
+    def checkBackWall(self):
+        return collisionBox.checkBackWall(self, self.game_state.platform_list, True)
+
+    def checkFrontWall(self):
+        return collisionBox.checkFrontWall(self, self.game_state.platform_list, True)
+
+    def checkCeiling(self):
+        self.sprite.updatePosition(self.rect)
+        return collisionBox.checkCeiling(self, self.game_state.platform_list, True)
+    
+    def setSpeed(self,_speed,_direction):
+        """ Set the actor's speed. Instead of modifying the change_x and change_y values manually,
+        this will calculate what they should be set at if you want to give a direction and
+        magnitude instead.
+        
+        Parameters
+        -----------
+        _speed : float
+            The total speed you want the fighter to move
+        _direction : int
+            The angle of the speed vector in degrees, 0 being right, 90 being up, 180 being left.
+        """
+        (x,y) = getXYFromDM(_direction,_speed)
+        self.change_x = x
+        self.change_y = y
     
     ########################################################
     #                  INPUT FUNCTIONS                     #
@@ -368,7 +548,43 @@ class AbstractFighter():
         
         return (direction,magnitude)
     
+    
+    def getFacingDirection(self):
+        """ A simple function that converts the facing variable into a direction in degrees.
+        
+        Return
+        -----------
+        The direction the fighter is facing in degrees, zero being right, 90 being up
+        """
+        if self.facing == 1: return 0
+        else: return 180
+        
+    def setGrabbing(self, _other):
+        """ Sets a grabbing state. Tells this fighter that it's grabbing something else,
+        and tells that thing what's grabbing it.
+        
+        Parameters
+        -----------
+        _other : GameObject
+            The object to be grabbing
+        """
+        self.grabbing = _other
+        _other.grabbed_by = self
 
+    def isGrabbing(self):
+        """ Check whether the fighter is current holding something. If this object says that it's
+        holding something, but the other object doesn't agree, assume that there is no grab.
+        
+        Return
+        -----------
+        bool : Whether the fighter is currently holding something
+        """
+        if self.grabbing is None:
+            return False
+        if self.grabbing and self.grabbing.grabbed_by == self:
+            return True
+        return False
+    
 def test():
     fight = AbstractFighter('',0)
 

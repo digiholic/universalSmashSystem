@@ -530,6 +530,7 @@ class AbstractFighter():
     xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['air_resistance']
     """
     def accel(self,_xFactor):
+        print('accel',_xFactor*(settingsManager.getSetting('friction') if self.grounded else settingsManager.getSetting('airControl')))
         if self.change_x > self.preferred_xspeed: #if we're going too fast
             diff = self.change_x - self.preferred_xspeed
             self.change_x -= min(diff,_xFactor*(settingsManager.getSetting('friction') if self.grounded else settingsManager.getSetting('airControl')))
@@ -802,7 +803,7 @@ class AbstractFighter():
     """
     
     """
-    Flip the fighter so he is now facint the other way.
+    Flip the fighter so he is now facing the other way.
     Also flips the sprite for you.
     """
     def flip(self):
