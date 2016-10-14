@@ -178,6 +178,9 @@ class AbstractFighter():
         
         # data_log holds information for the post-game results screen
         self.data_log = None
+
+        if self.sound_path:
+            settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
         
     def saveFighter(self,_path=None):
         if not _path: _path = os.path.join(self.base_dir,'fighter.xml')
@@ -283,8 +286,6 @@ class AbstractFighter():
         
         self.active_hitboxes = pygame.sprite.Group()
         self.articles = pygame.sprite.Group()
-        if self.sound_path:
-            settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
         
         self.shield = False
         self.shield_integrity = 100
@@ -488,8 +489,8 @@ class AbstractFighter():
         self.ecb.normalize()
         block_hit_list = collisionBox.getMovementCollisionsWith(self, self.game_state.platform_list)
         for block in block_hit_list:
-            if collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) > 0 and collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) < t and collisionBox.catchMovement(self, block, self.platform_phase > 0): 
-                t = collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect)
+            if self.ecb.pathRectIntersects(block.rect, self.change_x, self.change_y) > 0 and self.ecb.pathRectIntersects(block.rect, self.change_x, self.change_y) < t and collisionBox.catchMovement(self, block, self.platform_phase > 0): 
+                t = self.ecb.pathRectIntersects(block.rect, self.change_x, self.change_y)
                 to_bounce_block = block
                 
         self.rect.y += self.change_y*t

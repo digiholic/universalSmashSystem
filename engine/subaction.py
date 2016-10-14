@@ -1204,7 +1204,6 @@ class createHitbox(SubAction):
             elif tag in int_type:
                 variables[tag] = int(val)
             else:
-                print('string variable',tag,val)
                 variables[tag] = val
             
         

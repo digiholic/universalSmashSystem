@@ -336,10 +336,8 @@ class HitArticle(Article):
         if _colorBase is None:
             base_color = [127, 127, 127]
         else:
-            print(_colorBase)
             base_color = pygame.Color(_colorBase)
-        print(base_color)
-        for i in range(0, 1):
+        for i in range(0, 31):
             random_displacement = random.choice(self.color_change_array)
             if base_color[0] + random_displacement[0] < 0:
                 base_color[0] = 0
