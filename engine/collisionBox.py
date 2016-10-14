@@ -92,14 +92,14 @@ def getMovementCollisionsWith(_object,_spriteGroup):
     future_rect.x += _object.change_x
     future_rect.y += _object.change_y
     collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(future_rect))
-    return filter(lambda r: _object.ecb.pathRectIntersects(r.rect, _object.change_x, _object.change_y) <= 1, sorted(pygame.sprite.spritecollide(collide_sprite, _spriteGroup, False), key = lambda q: -_object.ecb.pathRectIntersects(q.rect, _object.change_x, _object.change_y)))
+    check_dict = {k: _object.ecb.pathRectIntersects(k.rect, _object.change_x, _object.change_y) for k in pygame.sprite.spritecollide(collide_sprite, _spriteGroup, False)}
+    return sorted(filter(lambda k: check_dict[k] <= 1, check_dict), key=lambda q: check_dict[q])
 
 def getSizeCollisionsWith(_object,_spriteGroup):
-    return sorted(filter(lambda r: _object.ecb.doesIntersect(r.rect), pygame.sprite.spritecollide(_object.ecb.current_ecb, _spriteGroup, False)), key = lambda q: numpy.linalg.norm(_object.ecb.primaryEjection(q.rect)[0]))
+    check_dict = filter(lambda r: _object.ecb.doesIntersect(r.rect), pygame.sprite.spritecollide(_object.ecb.current_ecb, _spriteGroup, False))
+    return sorted(check_dict, key = lambda q: numpy.linalg.norm(_object.ecb.primaryEjection(q.rect)[0]))
 
 def catchMovement(_object, _other, _platformPhase=False):
-    _object.updatePosition(_object.rect)
-    _object.ecb.normalize()
     check_rect = _other.rect.copy()
     t = _object.ecb.pathRectIntersects(check_rect, _object.change_x, _object.change_y)
 
@@ -149,7 +149,7 @@ def reflect(_object, _other):
         contact = _object.ecb.primaryEjection(check_rect)
         #The contact vector is perpendicular to the axis over which the reflection should happen
         v_vel = [_object.change_x-_other.change_x, _object.change_y-_other.change_y]
-        if numpy.dot(v_vel, contact[1]) < 0 or True:
+        if numpy.dot(v_vel, contact[1]) < 0:
             v_norm = [contact[1][1], -contact[1][0]]
             dot = numpy.dot(v_norm, v_vel)
             projection = [v_norm[0]*dot, v_norm[1]*dot] #Projection of v_vel onto v_norm
@@ -157,12 +157,11 @@ def reflect(_object, _other):
             _object.change_x = projection[0]+elasticity*(projection[0]-v_vel[0])+_other.change_x
             _object.change_y = projection[1]+elasticity*(projection[1]-v_vel[1])+_other.change_y
             return True
-        else:
-            print("Not reflecting!")
     return False
 
 ########################################################
 
+#Not used anymore, but kept around
 def directionalDisplacement(_firstPoints, _secondPoints, _direction):
     #Given a direction to displace in, determine the displacement needed to get it out
     first_dots = numpy.inner(_firstPoints, _direction)
@@ -170,6 +169,16 @@ def directionalDisplacement(_firstPoints, _secondPoints, _direction):
     projected_displacement = max(second_dots)-min(first_dots)
     norm_sqr = 1.0 if _direction == [0, 0] else _direction[0]*_direction[0]+_direction[1]*_direction[1]
     return [projected_displacement/norm_sqr*_direction[0], projected_displacement/norm_sqr*_direction[1]]
+
+def directionalDisplacements(_firstRect, _secondRect):
+    norm = numpy.linalg.norm([_firstRect.width, _firstRect.height])
+    directions = numpy.array([[float(-1), float(0)], [float(1), float(0)], [float(0), float(-1)], [float(0), float(1)], [-_firstRect.height/norm, -_firstRect.width/norm], [_firstRect.height/norm, -_firstRect.width/norm], [-_firstRect.height/norm, _firstRect.width/norm], [_firstRect.height/norm, _firstRect.width/norm]])
+    first_points = numpy.array([_firstRect.midtop, _firstRect.midbottom, _firstRect.midleft, _firstRect.midright])
+    second_points = numpy.array([_secondRect.topleft, _secondRect.topright, _secondRect.bottomleft, _secondRect.bottomright])
+    first_dots = numpy.inner(first_points, directions)
+    second_dots = numpy.inner(second_points, directions)
+    projected_displacements = numpy.amax(second_dots, 0) - numpy.amin(first_dots, 0)
+    return numpy.stack((directions*projected_displacements.reshape((8, 1)), directions.reshape((8, 2))), axis=1)
 
 # Returns a 2-entry array representing a range of time when the points and the rect intersect
 # If the range's min is greater than its max, it represents an empty interval
@@ -290,78 +299,43 @@ class ECB():
         self.previous_ecb.draw(_screen,self.actor.game_state.stageToScreen(self.previous_ecb.rect),_scale)
 
     def doesIntersect(self, _other, _dx=0, _dy=0):
-        first_points = [[self.current_ecb.rect.centerx+_dx, self.current_ecb.rect.top+_dy], 
-                        [self.current_ecb.rect.centerx+_dx, self.current_ecb.rect.bottom+_dy],
-                        [self.current_ecb.rect.left+_dx, self.current_ecb.rect.centery+_dy], 
-                        [self.current_ecb.rect.right+_dx, self.current_ecb.rect.centery+_dy]]
-        second_points = [_other.topleft, _other.topright, _other.bottomleft, _other.bottomright]
+        test_rect = self.current_ecb.rect.copy()
+        test_rect.x += _dx
+        test_rect.y += _dy
 
-        return numpy.dot(directionalDisplacement(first_points, second_points, [float(-1), float(0)]), [float(-1), float(0)]) >= 0 and \
-               numpy.dot(directionalDisplacement(first_points, second_points, [float(1), float(0)]), [float(1), float(0)]) >= 0 and \
-               numpy.dot(directionalDisplacement(first_points, second_points, [float(0), float(-1)]), [float(0), float(-1)]) >= 0 and \
-               numpy.dot(directionalDisplacement(first_points, second_points, [float(0), float(1)]), [float(0), float(1)]) >= 0 and \
-               numpy.dot(directionalDisplacement(first_points, second_points, [float(-self.current_ecb.rect.height), float(-self.current_ecb.rect.width)]), [float(-self.current_ecb.rect.height), float(-self.current_ecb.rect.width)]) >= 0 and \
-               numpy.dot(directionalDisplacement(first_points, second_points, [float(self.current_ecb.rect.height), float(-self.current_ecb.rect.width)]), [float(self.current_ecb.rect.height), float(-self.current_ecb.rect.width)]) >= 0 and \
-               numpy.dot(directionalDisplacement(first_points, second_points, [float(-self.current_ecb.rect.height), float(self.current_ecb.rect.width)]), [float(-self.current_ecb.rect.height), float(self.current_ecb.rect.width)]) >= 0 and \
-               numpy.dot(directionalDisplacement(first_points, second_points, [float(self.current_ecb.rect.height), float(self.current_ecb.rect.width)]), [float(self.current_ecb.rect.height), float(self.current_ecb.rect.width)]) >= 0
+        displacements = directionalDisplacements(test_rect, _other)
+        return all(map(lambda k: numpy.dot(k[0], k[1]) >= 0, displacements))
 
     def intersectPoint(self, _other, _dx=0, _dy=0):
-        first_points = [[self.current_ecb.rect.centerx+_dx, self.current_ecb.rect.top+_dy], 
-                        [self.current_ecb.rect.centerx+_dx, self.current_ecb.rect.bottom+_dy],
-                        [self.current_ecb.rect.left+_dx, self.current_ecb.rect.centery+_dy], 
-                        [self.current_ecb.rect.right+_dx, self.current_ecb.rect.centery+_dy]]
-        second_points = [_other.topleft, _other.topright, _other.bottomleft, _other.bottomright]
+        test_rect = self.current_ecb.rect.copy()
+        test_rect.x += _dx
+        test_rect.y += _dy
 
-        norm = numpy.linalg.norm([self.current_ecb.rect.height, self.current_ecb.rect.width])
-        if norm == 0:
-            norm = 1
-
-        distances = map(lambda k: [directionalDisplacement(first_points, second_points, k), k], [[float(-1), float(0)], [float(1), float(0)], [float(0), float(-1)], [float(0), float(1)], [float(-self.current_ecb.rect.height)/norm, float(-self.current_ecb.rect.width)/norm], [float(self.current_ecb.rect.height)/norm, float(-self.current_ecb.rect.width)/norm], [float(-self.current_ecb.rect.height)/norm, float(self.current_ecb.rect.width)/norm], [float(self.current_ecb.rect.height)/norm, float(self.current_ecb.rect.width)/norm]])
+        distances = directionalDisplacements(test_rect, _other)
         return min(distances, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
 
     def ejectionDirections(self, _other, _dx=0, _dy=0):
-        first_points = [[self.current_ecb.rect.centerx+_dx, self.current_ecb.rect.top+_dy], 
-                        [self.current_ecb.rect.centerx+_dx, self.current_ecb.rect.bottom+_dy],
-                        [self.current_ecb.rect.left+_dx, self.current_ecb.rect.centery+_dy], 
-                        [self.current_ecb.rect.right+_dx, self.current_ecb.rect.centery+_dy]]
-        second_points = [_other.topleft, _other.topright, _other.bottomleft, _other.bottomright]
+        test_rect = self.current_ecb.rect.copy()
+        test_rect.x += _dx
+        test_rect.y += _dy
 
-        norm = numpy.linalg.norm([self.current_ecb.rect.height, self.current_ecb.rect.width])
-        if norm == 0:
-            norm = 1
-
-        distances = map(lambda k: [directionalDisplacement(first_points, second_points, k), k], [[float(-1), float(0)], [float(1), float(0)], [float(0), float(-1)], [float(0), float(1)], [float(-self.current_ecb.rect.height)/norm, float(-self.current_ecb.rect.width)/norm], [float(self.current_ecb.rect.height)/norm, float(-self.current_ecb.rect.width)/norm], [float(-self.current_ecb.rect.height)/norm, float(self.current_ecb.rect.width)/norm], [float(self.current_ecb.rect.height)/norm, float(self.current_ecb.rect.width)/norm]])
+        distances = directionalDisplacements(test_rect, _other)
 
         working_list = filter(lambda e: numpy.dot(e[0], e[1]) >= 0, distances)
         reference_list = copy.deepcopy(working_list)
         for element in reference_list:
-            working_list = filter(lambda k: numpy.dot(k[0], element[1]) != numpy.dot(element[0], element[1]) or k[0] == element[0], working_list)
+            working_list = filter(lambda k: numpy.dot(k[0], element[1]) != numpy.dot(element[0], element[1]) or numpy.allclose(k[0], element[0]), working_list)
         return working_list
 
     def primaryEjection(self, _other, _dx=0, _dy=0):
         good_directions = self.ejectionDirections(_other, _dx, _dy)
-
-        first_points = [self.previous_ecb.rect.midtop, self.previous_ecb.rect.midbottom, self.previous_ecb.rect.midleft, self.previous_ecb.rect.midright]
-        second_points = [_other.topleft, _other.topright, _other.bottomleft, _other.bottomright]
-
-        norm = numpy.linalg.norm([self.previous_ecb.rect.height, self.previous_ecb.rect.width])
-        if norm == 0:
-            norm = 1
-
-        distances = map(lambda k: [directionalDisplacement(first_points, second_points, k), k], [[float(-1), float(0)], [float(1), float(0)], [float(0), float(-1)], [float(0), float(1)], [float(-self.previous_ecb.rect.height)/norm, float(-self.previous_ecb.rect.width)/norm], [float(self.previous_ecb.rect.height)/norm, float(-self.previous_ecb.rect.width)/norm], [float(-self.previous_ecb.rect.height)/norm, float(self.previous_ecb.rect.width)/norm], [float(self.previous_ecb.rect.height)/norm, float(self.previous_ecb.rect.width)/norm]])
+        distances = directionalDisplacements(self.previous_ecb.rect, _other)
         previous_dir = min(distances, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
         return min(good_directions, key=lambda y: -numpy.dot(previous_dir[1], y[0])+numpy.linalg.norm(y[0]))
         #return min(good_directions, key=lambda y: numpy.linalg.norm(y[0]))
 
     def checkPlatform(self, _platform, _yvel):
-        first_points = [self.previous_ecb.rect.midtop, self.previous_ecb.rect.midbottom, self.previous_ecb.rect.midleft, self.previous_ecb.rect.midright]
-        second_points = [_platform.topleft, _platform.topright, _platform.bottomleft, _platform.bottomright]
-
-        norm = numpy.linalg.norm([self.previous_ecb.rect.height, self.previous_ecb.rect.width])
-        if norm == 0:
-            norm = 1
-
-        distances = map(lambda k: [directionalDisplacement(first_points, second_points, k), k], [[float(-1), float(0)], [float(1), float(0)], [float(0), float(-1)], [float(0), float(1)], [float(-self.previous_ecb.rect.height)/norm, float(-self.previous_ecb.rect.width)/norm], [float(self.previous_ecb.rect.height)/norm, float(-self.previous_ecb.rect.width)/norm], [float(-self.previous_ecb.rect.height)/norm, float(self.previous_ecb.rect.width)/norm], [float(self.previous_ecb.rect.height)/norm, float(self.previous_ecb.rect.width)/norm]])
+        distances = directionalDisplacements(self.previous_ecb.rect, _platform)
 
         intersect = min(distances, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
 
