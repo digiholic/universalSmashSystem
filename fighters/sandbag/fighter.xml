@@ -35,7 +35,7 @@
 		<max_air_speed>5.5</max_air_speed>
 		<aerial_transition_speed>9.0</aerial_transition_speed>
 		<crawl_speed>2.5</crawl_speed>
-		<dodge_speed>10</dodge_speed>
+		<dodge_speed>8.5</dodge_speed>
 		<friction>0.3</friction>
 		<static_grip>1.5</static_grip>
 		<pivot_grip>2.5</pivot_grip>

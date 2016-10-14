@@ -3,6 +3,7 @@ import math
 import settingsManager
 import spriteManager
 import numpy
+import copy
 
 def checkGround(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
@@ -94,7 +95,7 @@ def getMovementCollisionsWith(_object,_spriteGroup):
     return filter(lambda r: pathRectIntersects(_object.ecb.current_ecb.rect, future_rect, r.rect) <= 1, sorted(pygame.sprite.spritecollide(collide_sprite, _spriteGroup, False), key = lambda q: pathRectIntersects(_object.ecb.current_ecb.rect, future_rect, q.rect)))
 
 def getSizeCollisionsWith(_object,_spriteGroup):
-    return sorted(filter(lambda r: numpy.dot(intersectPoint(_object.ecb.current_ecb.rect, r.rect)[1], intersectPoint(_object.ecb.current_ecb.rect, r.rect)[0]), pygame.sprite.spritecollide(_object.ecb.current_ecb, _spriteGroup, False)), key = lambda q: -numpy.linalg.norm(intersectPoint(_object.ecb.current_ecb.rect, q.rect)[0]))
+    return sorted(filter(lambda r: numpy.dot(_object.ecb.intersectPoint(r.rect)[1], _object.ecb.intersectPoint(r.rect)[0])>=0, pygame.sprite.spritecollide(_object.ecb.current_ecb, _spriteGroup, False)), key = lambda q: -numpy.linalg.norm(_object.ecb.intersectPoint(q.rect)[0]))
 
 def catchMovement(_object, _other, _platformPhase=False):
     _object.updatePosition(_object.rect)
@@ -106,18 +107,14 @@ def catchMovement(_object, _other, _platformPhase=False):
     future_rect.y += _object.change_y
     t = pathRectIntersects(_object.ecb.current_ecb.rect, future_rect, check_rect)
 
-    my_rect = _object.ecb.current_ecb.rect.copy()
-    my_rect.x += t*(future_rect.x-_object.ecb.current_ecb.rect.x)
-    my_rect.y += t*(future_rect.y-_object.ecb.current_ecb.rect.y)
-
     if _other.solid:
-        contact = intersectPoint(my_rect, check_rect)
+        contact = _object.ecb.intersectPoint(check_rect, _dx=t*(future_rect.x-_object.ecb.current_ecb.rect.x), _dy=t*(future_rect.y-_object.ecb.current_ecb.rect.y))
         if numpy.dot(contact[0], contact[1]) < 0:
             return False
         v_vel = [_object.change_x-_other.change_x, _object.change_y-_other.change_y]
         return numpy.dot(contact[1], v_vel) < 0
     elif not _platformPhase:
-        return checkPlatform(my_rect, _object.ecb.current_ecb.rect, check_rect, _object.change_y)
+        return _object.ecb.interceptPlatform(check_rect, _dx=t*(future_rect.x-_object.ecb.current_ecb.rect.x), _dy=t*(future_rect.y-_object.ecb.current_ecb.rect.y), _yvel=_object.change_y)
     else:
         return False
         
@@ -126,7 +123,7 @@ def eject(_object, _other, _platformPhase=False):
     _object.updatePosition(_object.rect)
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
-    contact = intersectPoint(_object.ecb.current_ecb.rect, check_rect)
+    contact = _object.ecb.intersectPoint(check_rect)
     
     if _other.solid:
         if numpy.dot(contact[0], contact[1]) >= 0:
@@ -136,7 +133,7 @@ def eject(_object, _other, _platformPhase=False):
     else:
         new_prev = _object.ecb.current_ecb.rect.copy()
         new_prev.center = _object.ecb.previous_ecb.rect.center
-        if not _platformPhase and checkPlatform(_object.ecb.current_ecb.rect, _object.ecb.previous_ecb.rect, check_rect, _object.change_y):
+        if not _platformPhase and _object.ecb.checkPlatform(check_rect, _object.change_y):
             if numpy.dot(contact[0], contact[1]) >= 0:
                 _object.rect.x += contact[0][0]
                 _object.rect.y += contact[0][1]
@@ -152,7 +149,7 @@ def reflect(_object, _other):
     _object.updatePosition(_object.rect)
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
-    contact = intersectPoint(_object.ecb.current_ecb.rect, check_rect)
+    contact = _object.ecb.intersectPoint(check_rect)
 
     if numpy.dot(contact[0], contact[1]) >= 0:
         #The contact vector is perpendicular to the axis over which the reflection should happen
@@ -171,8 +168,9 @@ def reflect(_object, _other):
 
 ########################################################
 
-#Prepare for article usage
-def intersectPoint(_firstRect, _secondRect): 
+def ejectionDirections(_firstRect, _secondRect):
+    #Returns a list of all locally optimal ejection directions
+    #firstRect is already assumed to overlap secondRect
     first_points = [_firstRect.midtop, _firstRect.midbottom, _firstRect.midleft, _firstRect.midright]
     second_points = [_secondRect.topleft, _secondRect.topright, _secondRect.bottomleft, _secondRect.bottomright]
 
@@ -188,15 +186,12 @@ def intersectPoint(_firstRect, _secondRect):
     up_right_dist = [directionalDisplacement(first_points, second_points, [float(_firstRect.height), float(-_firstRect.width)]), [float(_firstRect.height)/norm, float(-_firstRect.width)/norm]]
     down_left_dist = [directionalDisplacement(first_points, second_points, [float(-_firstRect.height), float(_firstRect.width)]), [float(-_firstRect.height)/norm, float(_firstRect.width)/norm]]
     down_right_dist = [directionalDisplacement(first_points, second_points, [float(_firstRect.height), float(_firstRect.width)]), [float(_firstRect.height)/norm, float(_firstRect.width)/norm]]
-
-    return min(left_dist, right_dist, up_dist, down_dist, up_left_dist, up_right_dist, down_left_dist, down_right_dist, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
-
-#Prepare for article usage
-def checkPlatform(_current, _previous, _platform, _yvel):
-    intersect = intersectPoint(_current, _platform)
-    if _platform.top >= _previous.bottom-4-_yvel and numpy.dot(intersect[0], intersect[1]) and intersect[1][1] < 0 and _current.bottom >= _platform.top:
-        return True
-    return False
+    
+    working_list = [left_dist, right_dist, up_dist, down_dist, up_left_dist, up_right_dist, down_left_dist, down_right_dist]
+    reference_list = copy.deepcopy(working_list)
+    for element in reference_list:
+        working_list = filter(lambda k: numpy.dot(k[0], element[1]) == numpy.dot(element[0], element[1]) and k[0] != element[0], initial_list)
+    return working_list
     
 #Prepare for article usage
 def directionalDisplacement(_firstPoints, _secondPoints, _direction):
@@ -343,3 +338,49 @@ class ECB():
     def draw(self,_screen,_offset,_scale):
         self.current_ecb.draw(_screen,self.actor.game_state.stageToScreen(self.current_ecb.rect),_scale)
         self.previous_ecb.draw(_screen,self.actor.game_state.stageToScreen(self.previous_ecb.rect),_scale)
+
+    def intersectPoint(self, _other, _dx=0, _dy=0):
+        first_points = [[self.current_ecb.rect.centerx+_dx, self.current_ecb.rect.top+_dy], 
+                        [self.current_ecb.rect.centerx+_dx, self.current_ecb.rect.bottom+_dy],
+                        [self.current_ecb.rect.left+_dx, self.current_ecb.rect.centery+_dy], 
+                        [self.current_ecb.rect.right+_dx, self.current_ecb.rect.centery+_dy]]
+        second_points = [_other.topleft, _other.topright, _other.bottomleft, _other.bottomright]
+
+        norm = numpy.linalg.norm([self.current_ecb.rect.height, self.current_ecb.rect.width])
+        if norm == 0:
+            norm = 1
+
+        left_dist = [directionalDisplacement(first_points, second_points, [float(-1), float(0)]), [float(-1), float(0)]]
+        right_dist = [directionalDisplacement(first_points, second_points, [float(1), float(0)]), [float(1), float(0)]]
+        up_dist = [directionalDisplacement(first_points, second_points, [float(0), float(-1)]), [float(0), float(-1)]]
+        down_dist = [directionalDisplacement(first_points, second_points, [float(0), float(1)]), [float(0), float(1)]]
+        up_left_dist = [directionalDisplacement(first_points, second_points, [float(-self.current_ecb.rect.height), float(-self.current_ecb.rect.width)]), [float(-self.current_ecb.rect.height)/norm, float(-self.current_ecb.rect.width)/norm]]
+        up_right_dist = [directionalDisplacement(first_points, second_points, [float(self.current_ecb.rect.height), float(-self.current_ecb.rect.width)]), [float(self.current_ecb.rect.height)/norm, float(-self.current_ecb.rect.width)/norm]]
+        down_left_dist = [directionalDisplacement(first_points, second_points, [float(-self.current_ecb.rect.height), float(self.current_ecb.rect.width)]), [float(-self.current_ecb.rect.height)/norm, float(self.current_ecb.rect.width)/norm]]
+        down_right_dist = [directionalDisplacement(first_points, second_points, [float(self.current_ecb.rect.height), float(self.current_ecb.rect.width)]), [float(self.current_ecb.rect.height)/norm, float(self.current_ecb.rect.width)/norm]]
+        return min(left_dist, right_dist, up_dist, down_dist, up_left_dist, up_right_dist, down_left_dist, down_right_dist, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
+
+    def checkPlatform(self, _platform, _yvel):
+        first_points = [self.previous_ecb.rect.midtop, self.previous_ecb.rect.midbottom, self.previous_ecb.rect.midleft, self.previous_ecb.rect.midright]
+        second_points = [_platform.topleft, _platform.topright, _platform.bottomleft, _platform.bottomright]
+
+        left_dist = [directionalDisplacement(first_points, second_points, [float(-1), float(0)]), [float(-1), float(0)]]
+        right_dist = [directionalDisplacement(first_points, second_points, [float(1), float(0)]), [float(1), float(0)]]
+        up_dist = [directionalDisplacement(first_points, second_points, [float(0), float(-1)]), [float(0), float(-1)]]
+        down_dist = [directionalDisplacement(first_points, second_points, [float(0), float(1)]), [float(0), float(1)]]
+        up_left_dist = [directionalDisplacement(first_points, second_points, [float(-self.previous_ecb.rect.height), float(-self.previous_ecb.rect.width)]), [float(-self.previous_ecb.rect.height)/norm, float(-self.previous_ecb.rect.width)/norm]]
+        up_right_dist = [directionalDisplacement(first_points, second_points, [float(self.previous_ecb.rect.height), float(-self.previous_ecb.rect.width)]), [float(self.previous_ecb.rect.height)/norm, float(-self.previous_ecb.rect.width)/norm]]
+        down_left_dist = [directionalDisplacement(first_points, second_points, [float(-self.previous_ecb.rect.height), float(self.previous_ecb.rect.width)]), [float(-self.previous_ecb.rect.height)/norm, float(self.previous_ecb.rect.width)/norm]]
+        down_right_dist = [directionalDisplacement(first_points, second_points, [float(self.previous_ecb.rect.height), float(self.previous_ecb.rect.width)]), [float(self.previous_ecb.rect.height)/norm, float(self.previous_ecb.rect.width)/norm]]
+
+        intersect = min(left_dist, right_dist, up_dist, down_dist, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
+
+        if _platform.top >= self.previous_ecb.rect.bottom-4-_yvel and numpy.dot(intersect[0], intersect[1]) and intersect[1][1] < 0 and self.current_ecb.rect.bottom >= _platform.top:
+            return True
+        return False
+
+    def interceptPlatform(self, _platform, _dx, _dy, _yvel):
+        intersect = self.intersectPoint(_platform, _dx, _dy)
+        if _platform.top >= self.current_ecb.rect.bottom-4-_yvel and numpy.dot(intersect[0], intersect[1]) and intersect[1][1] < 0 and self.current_ecb.rect.bottom+_dy >= _platform.top:
+            return True
+        return False
