@@ -24,7 +24,7 @@ class ForwardSpecial(action.Action):
                      'y_bias': 0,
                      'hitlag_multiplier': 0,
                      'transcendence': -1,
-                     'priority': -6
+                     'priority': 0
                      }
         variables = {'center': [0,0],
                      'size': [80,80],
@@ -35,7 +35,7 @@ class ForwardSpecial(action.Action):
                      'shield_multiplier': 1,
                      'velocity_multiplier': 1,
                      'transcendence': -1,
-                     'priority': -7,
+                     'priority': 1,
                      }
         self.ambient_hitbox = hitbox.Hitbox(_actor, hitbox.HitboxLock(), ambience)
         self.chain_hitbox = hitbox.AutolinkHitbox(_actor, hitbox.HitboxLock(), variables)
@@ -94,6 +94,7 @@ class ForwardSpecial(action.Action):
         self.chain_hitbox.kill()
         self.fling_hitbox.kill()
         _actor.preferred_xspeed = 0
+        _actor.flinch_knockback_threshold = 0
 
     def update(self, _actor):
         if not self.should_continue:
@@ -106,6 +107,7 @@ class ForwardSpecial(action.Action):
         if self.frame <= self.last_frame-2:
             self.sprite_image += 1
             if self.frame <= 16:
+                _actor.flinch_knockback_threshold = 3
                 _actor.preferred_xspeed = 0
                 _actor.change_x = 0
                 if _actor.change_y > 2:

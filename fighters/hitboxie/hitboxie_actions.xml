@@ -182,7 +182,7 @@
 	</Shield>
 
 	<Parry>
-		<length>20</length>
+		<length>16</length>
 		<sprite>jump</sprite>
 		<sprite_rate>0</sprite_rate>
 	</Parry>
@@ -1021,7 +1021,7 @@
 				<size>24,52</size>
 				<damage>8</damage>
 				<base_knockback>8</base_knockback>
-				<knockback_growth>0.07</knockback_growth>
+				<knockback_growth>0.09</knockback_growth>
 				<trajectory>45</trajectory>
 				<charge_damage>0.1</charge_damage>
 				<hitboxLock>main</hitboxLock>
@@ -1033,7 +1033,7 @@
 				<size>24,52</size>
 				<damage>8</damage>
 				<base_knockback>8</base_knockback>
-				<knockback_growth>0.07</knockback_growth>
+				<knockback_growth>0.09</knockback_growth>
 				<trajectory>135</trajectory>
 				<charge_damage>0.1</charge_damage>
 				<hitboxLock>main</hitboxLock>
@@ -1060,14 +1060,14 @@
 			<modifyHitbox name="rightHbox">
 				<center>24,13</center>
 				<damage>12</damage>
-				<knockback_growth>0.11</knockback_growth>
+				<knockback_growth>0.12</knockback_growth>
 				<trajectory>30</trajectory>
 				<charge_damage>0.15</charge_damage>
 			</modifyHitbox>
 			<modifyHitbox name="leftHbox">
 				<center>-24,13</center>
 				<damage>12</damage>
-				<knockback_growth>0.11</knockback_growth>
+				<knockback_growth>0.12</knockback_growth>
 				<trajectory>150</trajectory>
 				<charge_damage>0.15</charge_damage>
 			</modifyHitbox>
@@ -1097,13 +1097,13 @@
 		<frame number="16">
 			<modifyHitbox name="rightHbox">
 				<damage>12</damage>
-				<knockback_growth>0.09</knockback_growth>
+				<knockback_growth>0.11</knockback_growth>
 				<trajectory>30</trajectory>
 				<charge_damage>0.15</charge_damage>
 			</modifyHitbox>
 			<modifyHitbox name="leftHbox">
 				<damage>12</damage>
-				<knockback_growth>0.09</knockback_growth>
+				<knockback_growth>0.11</knockback_growth>
 				<trajectory>150</trajectory>
 				<charge_damage>0.15</charge_damage>
 			</modifyHitbox>

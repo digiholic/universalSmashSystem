@@ -197,7 +197,7 @@ class DamageHitbox(Hitbox):
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if _other.lockHitbox(self):
                 if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+                    self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier)
                 self.owner.data_log.addToData('Damage Dealt',self.damage)
                 _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                 _other.trail_color = self.trail_color
@@ -218,7 +218,7 @@ class DamageHitbox(Hitbox):
         clank_state = Hitbox.compareTo(self, _other)
         if clank_state == -1:
             if self.article is None:
-                self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier + (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
+                self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier + (_other.damage / 3.0 + 3.0)*_other.hitlag_multiplier)
             return -1
         else: return clank_state
         
@@ -231,7 +231,7 @@ class SakuraiAngleHitbox(DamageHitbox):
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if _other.lockHitbox(self):
                 if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+                    self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier)
                 p = float(_other.damage)
                 d = float(self.damage)
                 w = float(_other.var['weight']) * settingsManager.getSetting('weight')
@@ -252,7 +252,7 @@ class SakuraiAngleHitbox(DamageHitbox):
                 _other.trail_color = self.trail_color
                 offset = random.randrange(0, 359)
                 hit_intersection = self.rect.clip(_other.sprite.rect).center
-                hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
+                hitlag = (self.damage/3.0+3.0)*self.hitlag_multiplier
                 from article import HitArticle
                 for i in range(int(hitlag)):
                     art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
@@ -277,7 +277,7 @@ class AutolinkHitbox(DamageHitbox):
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if _other.lockHitbox(self):
                 if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+                    self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier)
                     velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
                     angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
                     self.owner.data_log.addToData('Damage Dealt',self.damage)
@@ -291,7 +291,7 @@ class AutolinkHitbox(DamageHitbox):
                 _other.trail_color = self.trail_color
                 offset = random.randrange(0, 359)
                 hit_intersection = self.rect.clip(_other.sprite.rect).center
-                hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
+                hitlag = (self.damage/3.0+3.0)*self.hitlag_multiplier
                 from article import HitArticle
                 for i in range(int(hitlag)):
                     art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
@@ -317,7 +317,7 @@ class FunnelHitbox(DamageHitbox):
         if 'AbstractFighter' in list(map(lambda x:x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if _other.lockHitbox(self):
                 if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+                    self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier)
                     x_diff = self.rect.centerx - _other.rect.centerx
                     y_diff = self.rect.centery - _other.rect.centery
                     x_vel = self.x_bias+self.x_draw*x_diff
@@ -335,7 +335,7 @@ class FunnelHitbox(DamageHitbox):
                 _other.trail_color = self.trail_color
                 offset = random.randrange(0, 359)
                 hit_intersection = self.rect.clip(_other.sprite.rect).center
-                hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
+                hitlag = (self.damage/3.0+3.0)*self.hitlag_multiplier
                 from article import HitArticle
                 for i in range(int(hitlag)):
                     art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
@@ -370,7 +370,7 @@ class GrabHitbox(Hitbox):
             return 0
         else: 
             if self.article is None:
-                self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier + (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
+                self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier + (_other.damage / 3.0 + 3.0)*_other.hitlag_multiplier)
             return -1
 
 class ThrowHitbox(Hitbox):
@@ -470,7 +470,7 @@ class ShieldHitbox(Hitbox):
                     self.priority -= _other.damage
                     self.hp -= _other.damage
                 if _other.article is None:
-                    _other.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory()+180, (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
+                    _other.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory()+180, (_other.damage / 3.0 + 3.0)*_other.hitlag_multiplier)
             return 1
         elif clank_state == -1 or self.hp < 0:
             self.owner.change_y = -15
@@ -491,9 +491,9 @@ class InvulnerableHitbox(Hitbox):
     def compareTo(self, _other):
         if not isinstance(_other, InertHitbox) and isinstance(_other, DamageHitbox) and not _other.ignore_shields and self.owner.lockHitbox(_other):
             if self.article is None:
-                self.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory(), (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
+                self.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory(), (_other.damage / 3.0 + 3.0)*_other.hitlag_multiplier)
             if _other.article is None:
-                _other.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory()+180, (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
+                _other.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory()+180, (_other.damage / 3.0 + 3.0)*_other.hitlag_multiplier)
             return 1
         return 0
 
