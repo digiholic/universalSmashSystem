@@ -6,6 +6,13 @@ import xml.etree.ElementTree as ElementTree
 from ast import literal_eval as make_tuple
 import settingsManager
 
+"""
+TODO -
+    EnableAction
+    DisableAction
+    SetTimer
+"""
+
 ########################################################
 #               ABSTRACT ACTIONS                       #
 ########################################################

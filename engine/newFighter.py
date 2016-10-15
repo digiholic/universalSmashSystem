@@ -9,6 +9,7 @@ import weakref
 import engine.hitbox as hitbox
 import math
 import numpy
+from global_functions import *
 
 class AbstractFighter():
     """The Abstract Fighter is an individual fighter in the battle. It holds all of the data
@@ -115,6 +116,11 @@ class AbstractFighter():
     #Adding a move to the disabled moves list prevents it from activating.
     #If told to switch to it, the fighter will ignore the request.
     disabled_moves = []
+    
+    invulnerable = 0
+    respawn_invulnerable = 0
+    
+    custom_timers = list()
     
     def __init__(self,_baseDir,_playerNum):
         """ Create a fighter. To start, all that's needed is the directory it is in, and the player number.
@@ -302,16 +308,212 @@ class AbstractFighter():
     
         
     ########################################################
-    #            INITIALIZED FIGHTER METHODS               #
+    #                   UPDATE METHODS                     #
     ########################################################
     
     def update(self):
-        """
-        This method will step the fighter forward one frame. It will resolve movement,
+        """ This method will step the fighter forward one frame. It will resolve movement,
         collisions, animations, and all sorts of things. It should be called every frame.
         """ 
-        pass
+        if self.hitstop > 0:
+            #We're in hitstop, let's take care of that and ignore a normal update
+            self.hitstopUpdate()
+            return
+        elif self.hitstop == 0 and not self.hitstop_vibration == (0,0):
+            #self.hitstop_vibration = False #Lolwut?
+            self.rect.center = self.hitstop_pos
+            self.hitstop_vibration = (0,0)
+            self.sprite.updatePosition(self.rect)
+            self.ecb.normalize()
+        
+        # Allow ledge re-grabs if we've vacated a ledge
+        if self.ledge_lock:
+            ledges = pygame.sprite.spritecollide(self, self.game_state.platform_ledges, False)
+            if len(ledges) == 0: # If we've cleared out of all of the ledges
+                self.ledge_lock = False
+        
+        # Prepare for movement by setting change_x and change_y from acceleration
+        if self.grounded: self.accel(self.var['friction'])
+        else: self.accel(self.var['air_resistance'])
+        self.calcGrav()
+        
+        # Check for transitions, then execute actions
+        self.current_action.stateTransitions(self)
+        self.current_action.update(self) #update our action
+
+        self.collisionUpdate()            
+        self.childUpdate()
+        self.timerUpdate()
+        
+    def collisionUpdate(self):
+        """ Execute movement and resolve collisions.
+        This function is due for a huge overhaul.
+        """
+        
+        loop_count = 0
+        while loop_count < 2:
+            self.sprite.updatePosition(self.rect)
+            self.ecb.normalize()
+            bumped = False
+            block_hit_list = collisionBox.getSizeCollisionsWith(self, self.game_state.platform_list)
+            if not block_hit_list:
+                break
+            for block in block_hit_list:
+                if block.solid or (self.platform_phase <= 0):
+                    self.platform_phase = 0
+                    if collisionBox.eject(self, block, self.platform_phase > 0):
+                        bumped = True
+                        break
+            if not bumped:
+                break
+            loop_count += 1
+        # TODO: Crush death if loopcount reaches the 10 resolution attempt ceiling
+
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
+
+        future_rect = self.ecb.current_ecb.rect.copy()
+        future_rect.x += self.change_x
+        future_rect.y += self.change_y
+
+        t = 1
+
+        to_bounce_block = None
+
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
+        block_hit_list = collisionBox.getMovementCollisionsWith(self, self.game_state.platform_list)
+        for block in block_hit_list:
+            if collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) > 0 and collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) < t and collisionBox.catchMovement(self, block, self.platform_phase > 0): 
+                t = collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect)
+                to_bounce_block = block
+                
+        self.rect.y += self.change_y*t
+        self.rect.x += self.change_x*t
+
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
+        
+        ground_blocks = self.checkGround()
+        self.checkLeftWall()
+        self.checkRightWall()
+        self.checkCeiling()
+
+        # Move with the platform
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        if not block is None:
+            self.rect.x += block.change_x
+            self.change_y -= self.var['gravity'] * settingsManager.getSetting('gravity')
+
+        if to_bounce_block is not None:
+            collisionBox.reflect(self, to_bounce_block)
+
+    def childUpdate(self):
+        """ The fighter contains many child objects, that all need to be updated.
+        This function calls those updates.
+        """
+        if self.mask:self.mask = self.mask.update()
+        
+        #reset the flash if you're still invulnerable
+        if not self.mask and (self.respawn_invulnerable > 0 or self.invulnerable > 0):
+            self.createMask([255,255,255], max(self.respawn_invulnerable,self.invulnerable), True, 12)
+        
+        for art in self.articles:
+            art.update()
+        
+        
+    def timerUpdate(self):
+        """ There are several frame counters that determine things like teching, invulnerability,
+        platform phasing, etc. as well as possible custom timers.
+        """
+        #These max calls will decrement the window, but not below 0
+        self.tech_window = max(0,self.tech_window-1)
+        self.shield_integrity = min(100,self.shield_integrity+0.15)
+        self.platform_phase = max(0,self.platform_phase-1)
+        
+        #QUESTION: Why -1000?
+        self.invulnerable = max(-1000,self.invulnerable-1)
+        self.respawn_invulnerable = max(-1000,self.invulnerable-1)
+        
+        finished_timers = []
+        for timer in self.custom_timers:
+            time,event = timer
+            time -= 1
+            if time <= 0:
+                for subact in event:
+                    subact.execute(self,self.current_action)
+                #In order to avoid mucking up the iterative loop, we store finished timers to remove later
+                finished_timers.append(timer)
+                
+        for timer in finished_timers:
+            self.custom_timers.remove(timer)
+        
+    def hitstopUpdate(self):
+        """ Handles what to do if the fighter is in hitstop (that freeze frame state when you
+        get hit). Vibrates the fighter's sprite, and handles SDI
+        """
+        self.hitstop -= 1
+
+        loop_count = 0
+        
+        #QUESTION: Why is this a loop?
+        while loop_count < 2:
+            self.sprite.updatePosition(self.rect)
+            self.ecb.normalize()
+            bumped = False
+            block_hit_list = collisionBox.getSizeCollisionsWith(self, self.game_state.platform_list)
+            if not block_hit_list:
+                break
+            for block in block_hit_list:
+                if block.solid or (self.platform_phase <= 0):
+                    self.platform_phase = 0
+                    if collisionBox.eject(self, block, self.platform_phase > 0):
+                        bumped = True
+                        break
+            if not bumped:
+                break
+            loop_count += 1
+        
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
+
+        # Vibrate the sprite
+        if not self.hitstop_vibration == (0,0):
+            (x,y) = self.hitstop_vibration
+            self.rect.x += x
+            if not self.grounded: 
+                self.rect.y += y
+            self.hitstop_vibration = (-x,-y)
+
+        #Smash directional influence AKA hitstun shuffling
+        di_vec = self.getSmoothedInput(int(self.key_bindings.timing_window['smoothing_window']))
+        self.rect.x += di_vec[0]*5
+        if not self.grounded or self.keysContain('jump', _threshold=1):
+            self.rect.y += di_vec[1]*5
+
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
     
+        ground_blocks = self.checkGround()
+        self.checkLeftWall()
+        self.checkRightWall()
+        self.checkCeiling()
+
+        # Move with the platform
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        if not block is None:
+            self.rect.x += block.change_x
+
+        self.sprite.updatePosition(self.rect)
+
+        self.hitbox_contact.clear()
+        if self.invulnerable > -1000:
+            self.invulnerable -= 1
+
+        if self.platform_phase > 0:
+            self.platform_phase -= 1
+        self.ecb.normalize()
+
     ########################################################
     #                 ACTION MANAGEMENT                    #
     ########################################################
@@ -585,6 +787,119 @@ class AbstractFighter():
             return True
         return False
     
+    def flip(self):
+        """ Flip the fighter so he is now facing the other way.
+        Also flips the sprite for you.
+        """
+        self.facing = -self.facing
+        self.sprite.flipX()
+    
+        
+    def dealDamage(self, _damage):
+        """ Deal damage to the fighter.
+        Checks to make sure the damage caps at 999.
+        If you want to have higher damage, override this function and remove it.
+        This function is called in the applyKnockback function, so you shouldn't
+        need to call this function directly for normal attacks, although you can
+        for things like poison, non-knockback attacks, etc.
+        
+        Parameters
+        -----------
+        _damage : float
+            The amount of damage to deal
+        """ 
+        self.damage += float(math.floor(_damage))
+        self.damage = min(999,max(self.damage,0))
+            
+        if self.data_log:
+            self.data_log.addToData('Damage Taken',float(math.floor(_damage)))
+            
+    def applyKnockback(self, _damage, _kb, _kbg, _trajectory, _weightInfluence=1, _hitstunMultiplier=1, _baseHitstun=1, _hitlagMultiplier=1, _ignoreArmor = False):
+        """Do Knockback to the fighter. The knockback calculation is derived from the SSBWiki, and a bit of information from
+        ColinJF and Amazing Ampharos on Smashboards, it is based off of Super Smash Bros. Brawl's knockback calculation, which
+        is the one with the most information available
+        
+        Parameters
+        -----------
+        _damage : float
+            The damage dealt by the attack. This is used in some calculations, so it is applied here.
+        _kb : float
+            The base knockback of the attack.
+        _kbg : float
+            The knockback growth ratio of the attack.
+        _trajectory : int
+            The direction the attack sends the fighter, in degrees, with 0 being right, 90 being upward, 180 being left.
+            This is an absolute direction, irrelevant of either character's facing direction. Those tend to be taken
+            into consideration in the hitbox collision event itself, to allow the hitbox to also take in the attacker's
+            current state as well as the fighter receiving knockback.
+        _weightInfluence : float
+            The degree to which weight influences knockback. Default value is 1, set to 0 to make knockback 
+            weight-independent, or to whatever other value you want to change the effect of weight on knockback. 
+        _hitstunMultiplier : float
+            The ratio of the knockback to the additional hitstun that the hit should inflict. Default value is 
+            2 for normal levels of hitstun. To disable flinching, set to 0. 
+        _baseHitstun : int
+            The minimum hitstun that the hit should inflict regardless of knockback. This also influences how much gravity and 
+            air resistance affect base knockback. 
+        _hitlagMultiplier : float
+            The ratio of normal calculated hitlag to the amount of hitlag the hit should inflict. This affects both 
+            attacker and target. 
+        
+        """
+        self.hitstop = math.floor((_damage / 4.0 + 2)*_hitlagMultiplier)
+        if self.grounded:
+            self.hitstop_vibration = (3,0)
+        else:
+            self.hitstop_vibration = (0,3)
+        self.hitstop_pos = self.rect.center
+
+        #Crouch cancelling
+        if self.current_action.name in ('Crouch', 'CrouchCancel'):
+            _kb *= 0.5
+            _kbg *= 0.9
+            _baseHitstun *= 0.5
+            _hitstunMultiplier *= 0.8
+        
+        p = float(self.damage)
+        d = float(_damage)
+        w = float(self.var['weight']) * settingsManager.getSetting('weight')
+        s = float(_kbg)
+        b = float(_kb)
+        print('weight influence',_weightInfluence)
+        # Thank you, ssbwiki!
+        total_kb = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*_weightInfluence+100))*1.4) + 5) * s) + b
+
+        if not _ignoreArmor and (_damage < self.flinch_damage_threshold or total_kb < self.flinch_knockback_threshold):
+            self.dealDamage(_damage*self.armor_damage_multiplier)
+            return 0
+
+        di_vec = self.getSmoothedInput(int(self.key_bindings.timing_window['smoothing_window']))
+
+        trajectory_vec = [math.cos(_trajectory/180*math.pi), math.sin(_trajectory/180*math.pi)]
+
+        additional_kb = .5*_baseHitstun*math.sqrt(abs(trajectory_vec[0])*(self.var['air_resistance']*settingsManager.getSetting('airControl'))**2+abs(trajectory_vec[1])*(self.var['gravity']*settingsManager.getSetting('gravity'))**2)
+
+        di_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
+        _trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
+
+        hitstun_frames = math.floor((total_kb+additional_kb)*_hitstunMultiplier+_baseHitstun)
+        
+        if not _ignoreArmor and self.no_flinch_hits > 0:
+            if hitstun_frames > 0.5:
+                self.no_flinch_hits -= 1
+            self.dealDamage(_damage*self.armor_damage_multiplier)
+            return 0
+        
+        if hitstun_frames > 0.5:
+            #If the current action is not hitstun or you're in hitstun, but there's not much of it left
+            if not isinstance(self.current_action, baseActions.HitStun) or (self.current_action.last_frame-self.current_action.frame)/float(settingsManager.getSetting('hitstun')) <= hitstun_frames+15:
+                self.setSpeed((total_kb+additional_kb)*di_multiplier, _trajectory)
+                self.doHitStun(hitstun_frames*settingsManager.getSetting('hitstun'), _trajectory)
+        
+        self.dealDamage(_damage)
+        return math.floor((total_kb+additional_kb)*di_multiplier)
+
+            
 def test():
     fight = AbstractFighter('',0)
     print(fight.__init__.__doc__)

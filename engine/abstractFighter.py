@@ -261,7 +261,8 @@ class AbstractFighter():
         # There are ways of bypassing invulnerability, but please avoid doing so
         self.invulnerable = 0
         self.respawn_invulnerable = 0
-
+        self.custom_timers = list()
+        
         self.elasticity = 0
         self.ground_elasticity = 0
         
@@ -354,65 +355,8 @@ class AbstractFighter():
         self.last_input_frame += 1
         
         if self.hitstop > 0:
-
-            self.hitstop -= 1 #Don't do anything this frame except reduce the hitstop time
-
-            loop_count = 0
-            while loop_count < 2:
-                self.sprite.updatePosition(self.rect)
-                self.ecb.normalize()
-                bumped = False
-                block_hit_list = collisionBox.getSizeCollisionsWith(self, self.game_state.platform_list)
-                if not block_hit_list:
-                    break
-                for block in block_hit_list:
-                    if block.solid or (self.platform_phase <= 0):
-                        self.platform_phase = 0
-                        if collisionBox.eject(self, block, self.platform_phase > 0):
-                            bumped = True
-                            break
-                if not bumped:
-                    break
-                loop_count += 1
-
-            self.sprite.updatePosition(self.rect)
-            self.ecb.normalize()
-
-            if not self.hitstop_vibration == (0,0):
-                (x,y) = self.hitstop_vibration
-                self.rect.x += x
-                if not self.grounded: 
-                    self.rect.y += y
-                self.hitstop_vibration = (-x,-y)
-
-            #Smash directional influence AKA hitstun shuffling
-            di_vec = self.getSmoothedInput(int(self.key_bindings.timing_window['smoothing_window']))
-            self.rect.x += di_vec[0]*5
-            if not self.grounded or self.keysContain('jump', _threshold=1):
-                self.rect.y += di_vec[1]*5
-
-            self.sprite.updatePosition(self.rect)
-            self.ecb.normalize()
-        
-            ground_blocks = self.checkGround()
-            self.checkLeftWall()
-            self.checkRightWall()
-            self.checkCeiling()
-
-            # Move with the platform
-            block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
-            if not block is None:
-                self.rect.x += block.change_x
-
-            self.sprite.updatePosition(self.rect)
-
-            self.hitbox_contact.clear()
-            if self.invulnerable > -1000:
-                self.invulnerable -= 1
-
-            if self.platform_phase > 0:
-                self.platform_phase -= 1
-            self.ecb.normalize()
+            #We're in hitstop, let's take care of that and ignore a normal update
+            self.hitstopUpdate()
             return
         elif self.hitstop == 0 and not self.hitstop_vibration == (0,0):
             #self.hitstop_vibration = False #Lolwut?
@@ -420,41 +364,59 @@ class AbstractFighter():
             self.hitstop_vibration = (0,0)
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
-        #Step two, accelerate/decelerate
-        if self.grounded: self.accel(self.var['friction'])
-        else: self.accel(self.var['air_resistance'])
         
-        if self.ledge_lock:
-            ledges = pygame.sprite.spritecollide(self, self.game_state.platform_ledges, False)
-            if len(ledges) == 0: # If we've cleared out of all of the ledges
-                self.ledge_lock = False
         
-        # Count down the tech window
-        if self.tech_window > 0:
-            self.tech_window -= 1
-
-        #Step three, change state and update
-        self.current_action.stateTransitions(self)
-        self.current_action.update(self) #update our action
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
         
+        self.sprite.updatePosition(self.rect)
+        self.hitbox_contact.clear()
+        self.ecb.normalize()
+      
+        self.childUpdate()
+        self.timerUpdate()
+        
+    def childUpdate(self):
+        """ The fighter contains many child objects, that all need to be updated.
+        This function calls those updates.
+        """
         if self.mask:self.mask = self.mask.update()
-        self.shield_integrity += 0.15
-        if self.shield_integrity > 100: self.shield_integrity = 100
+        
         #reset the flash if you're still invulnerable
         if not self.mask and (self.respawn_invulnerable > 0 or self.invulnerable > 0):
             self.createMask([255,255,255], max(self.respawn_invulnerable,self.invulnerable), True, 12)
         
         for art in self.articles:
             art.update()
-            
-            
-        self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
-
-        # Gravity
-        self.calcGrav()
+    
+    
+    def timerUpdate(self):
+        """ There are several frame counters that determine things like teching, invulnerability,
+        platform phasing, etc. as well as possible custom timers.
+        
+        """
+        #These max calls will decrement the window, but not below 0
+        self.tech_window = max(0,self.tech_window-1)
+        self.shield_integrity = min(100,self.shield_integrity+0.15)
+        self.platform_phase = max(0,self.platform_phase-1)
+        
+        #QUESTION: Why -1000?
+        self.invulnerable = max(-1000,self.invulnerable-1)
+        self.respawn_invulnerable = max(-1000,self.invulnerable-1)
+        
+        for timer,event in self.custom_timers.iteritems():
+            pass
+    
+      
+    def hitstopUpdate(self):
+        """ Handles what to do if the fighter is in hitstop (that freeze frame state when you
+        get hit). Vibrates the fighter's sprite, and handles SDI
+        """
+        
+        self.hitstop -= 1
 
         loop_count = 0
+        #QUESTION: Why is this looping twice?
         while loop_count < 2:
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
@@ -471,33 +433,27 @@ class AbstractFighter():
             if not bumped:
                 break
             loop_count += 1
-        # TODO: Crush death if loopcount reaches the 10 resolution attempt ceiling
-
-        self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
-
-        future_rect = self.ecb.current_ecb.rect.copy()
-        future_rect.x += self.change_x
-        future_rect.y += self.change_y
-
-        t = 1
-
-        to_bounce_block = None
-
-        self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
-        block_hit_list = collisionBox.getMovementCollisionsWith(self, self.game_state.platform_list)
-        for block in block_hit_list:
-            if collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) > 0 and collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect) < t and collisionBox.catchMovement(self, block, self.platform_phase > 0): 
-                t = collisionBox.pathRectIntersects(self.ecb.current_ecb.rect, future_rect, block.rect)
-                to_bounce_block = block
-                
-        self.rect.y += self.change_y*t
-        self.rect.x += self.change_x*t
-
-        self.sprite.updatePosition(self.rect)
-        self.ecb.normalize()
         
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
+
+        # Vibrate the sprite
+        if not self.hitstop_vibration == (0,0):
+            (x,y) = self.hitstop_vibration
+            self.rect.x += x
+            if not self.grounded: 
+                self.rect.y += y
+            self.hitstop_vibration = (-x,-y)
+
+        #Smash directional influence AKA hitstun shuffling
+        di_vec = self.getSmoothedInput(int(self.key_bindings.timing_window['smoothing_window']))
+        self.rect.x += di_vec[0]*5
+        if not self.grounded or self.keysContain('jump', _threshold=1):
+            self.rect.y += di_vec[1]*5
+
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
+    
         ground_blocks = self.checkGround()
         self.checkLeftWall()
         self.checkRightWall()
@@ -507,24 +463,14 @@ class AbstractFighter():
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             self.rect.x += block.change_x
-            self.change_y -= self.var['gravity'] * settingsManager.getSetting('gravity')
-
-        if to_bounce_block is not None:
-            collisionBox.reflect(self, to_bounce_block)
 
         self.sprite.updatePosition(self.rect)
 
         self.hitbox_contact.clear()
-        if self.invulnerable > -1000:
-            self.invulnerable -= 1
-        if self.respawn_invulnerable > -1000:
-            self.respawn_invulnerable -= 1
-
-        if self.platform_phase > 0:
-            self.platform_phase -= 1
-
-        self.ecb.normalize()
         
+        self.ecb.normalize()
+
+    
     """
     Change speed to get closer to the preferred speed without going over.
     xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['air_resistance']
