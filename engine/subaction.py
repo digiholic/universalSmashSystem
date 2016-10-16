@@ -84,6 +84,8 @@ class VarData():
         if self.source == 'actor':
             if _actor.stats.has_key(self.var):
                 return _actor.stats[self.var]
+            elif _actor.vars.has_key(self.var):
+                return _actor.vars[self.var]
             elif hasattr(_actor, self.var):
                 return getattr(_actor, self.var)
             else: return None
@@ -379,8 +381,10 @@ class If(SubAction):
                 actor = _actor.owner
             else: actor = _actor
             
-            if actor.var.has_key(self.variable):
-                variable = actor.var[self.variable]
+            if actor.stats.has_key(self.variable):
+                variable = actor.stats[self.variable]
+            elif actor.vars.has_key(self.variable):
+                variable = actor.vars[self.variable]
             else: variable = getattr(actor, self.variable)
         else:
             variable = getattr(_action, self.variable)
@@ -981,6 +985,9 @@ class modifyFighterVar(SubAction):
             if _actor.stats.has_key(self.attr):
                 if self.relative: _actor.stats[self.attr] += self.val
                 else: _actor.stats[self.attr] = self.val
+            elif _actor.vars.has_key(self.attr):
+                if self.relative: _actor.vars[self.attr] += self.val
+                else: _actor.vars[self.attr] = self.val
             else:
                 if self.relative:
                     setattr(_actor, self.attr, getattr(_actor, self.attr)+1)
@@ -1013,14 +1020,17 @@ class setVar(SubAction):
         SubAction.execute(self, _action, _actor)
         if self.source == 'action': source = _action
         elif self.source == 'fighter': source = _actor
-        
         if not self.attr =='': #If there's a variable to set
-            if hasattr(source, 'var') and source.var.has_key(self.attr): #if it has a var dict, let's check it first
-                if self.relative: source.var[self.attr] += self.val
-                else: source.var[self.attr] = self.val
+            if hasattr(source, 'stats') and source.stats.has_key(self.attr): #if it has a var dict, let's check it first
+                if self.relative: source.stats[self.attr] += self.val
+                else: source.stats[self.attr] = self.val
+            elif hasattr(source, 'vars') and source.varss.has_key(self.attr):
+                if self.relative: source.vars[self.attr] += self.val
+                else: source.vars[self.attr] = self.val
             else:
+                print(source,self.attr,self.val)
                 if self.relative:
-                    setattr(source, self.attr, getattr(source, self.attr)+1)
+                    setattr(source, self.attr, getattr(source, self.attr)+self.val)
                 else: setattr(source,self.attr,self.val)
     
     def getPropertiesPanel(self, _root):

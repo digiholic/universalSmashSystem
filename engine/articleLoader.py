@@ -137,16 +137,17 @@ class ArticleLoader():
                          
             subactions_at_frame.append(sublist) #Put the list in, whether it's empty or not
         
-        conditional_actions = dict()
+        events = dict()
         conds = article_xml.findall('conditional')
+        conds.extend(article_xml.findall('event'))
         for cond in conds:
-            conditional_list = []
+            event_list = []
             for subact in cond:
                 if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
-                    conditional_list.append(subaction.SubAction.buildFromXml(subact.tag,subact))
-            conditional_actions[cond.attrib['name']] = conditional_list
-         
-         
+                    event_list.append(subaction.SubAction.buildFromXml(subact.tag,subact))
+            events[cond.attrib['name']] = event_list
+        print(events)
+        
         collision_actions = dict()
         collisions = article_xml.findall('collision')
         for col in collisions:
@@ -169,7 +170,7 @@ class ArticleLoader():
         dyn_article.tear_down_actions = tear_down_actions
         dyn_article.actions_on_clank = actions_on_clank
         dyn_article.actions_on_prevail = actions_on_prevail
-        dyn_article.conditional_actions = conditional_actions
+        dyn_article.conditional_actions = events
         dyn_article.collision_actions = collision_actions
         if sprite_name: dyn_article.sprite_name = sprite_name
         if sprite_rate: dyn_article.base_sprite_rate = sprite_rate

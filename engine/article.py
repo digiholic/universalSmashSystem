@@ -41,7 +41,7 @@ class DynamicArticle(spriteManager.SheetSprite):
         self.actions_at_last_frame = []
         self.actions_on_prevail = []
         self.actions_on_clank = []
-        self.conditional_actions = dict()
+        self.events = dict()
         self.set_up_actions = []
         self.tear_down_actions = []
         self.collision_actions = dict()
