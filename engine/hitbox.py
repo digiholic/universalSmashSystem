@@ -268,23 +268,23 @@ class AutolinkHitbox(DamageHitbox):
         self.hitbox_type = 'autolink'
 
     def getTrajectory(self):
-        if self.owner.change_y+self.y_bias == 0 and self.owner.change_x + self.x_bias == 0:
+        if self.owner.change_y+self.y_bias == 0 and self.owner.change_x + self.x_bias*self.owner.facing == 0:
             return self.trajectory + 90
         else: 
-            return self.trajectory-math.atan2(self.y_bias, self.x_bias)*180/math.pi
+            return self.trajectory-math.atan2(self.y_bias, self.x_bias*self.owner.facing)*180/math.pi
         
     def onCollision(self, _other):
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if _other.lockHitbox(self):
                 if self.article is None:
                     self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier)
-                    velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
-                    angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
+                    velocity = math.sqrt((self.owner.change_x+self.x_bias*self.owner.facing) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
+                    angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias*self.owner.facing))*180/math.pi
                     self.owner.data_log.addToData('Damage Dealt',self.damage)
                     _other.applyKnockback(self.damage, velocity*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                 elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
-                    velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
-                    angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
+                    velocity = math.sqrt((self.article.change_x+self.x_bias*self.article.facing)**2 + (self.article.change_y+self.y_bias)**2)
+                    angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias*self.article.facing))*180/math.pi
                     self.owner.data_log.addToData('Damage Dealt',self.damage)
                     _other.applyKnockback(self.damage,velocity*self.velocity_multiplier+self.base_knockback,self.knockback_growth,getForwardWithOffset(self.article.facing*(angle+self.trajectory), self.article),self.weight_influence,self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
 
@@ -307,10 +307,10 @@ class FunnelHitbox(DamageHitbox):
         self.hitbox_type = 'funnel'
 
     def getTrajectory(self):
-        if self.owner.change_y+self.y_bias == 0 and self.owner.change_x + self.x_bias == 0:
+        if self.owner.change_y+self.y_bias == 0 and self.owner.change_x + self.x_bias*self.owner.facing == 0:
             return self.trajectory + 90
         else: 
-            return self.trajectory-math.atan2(self.y_bias, self.x_bias)*180/math.pi
+            return self.trajectory-math.atan2(self.y_bias, self.x_bias*self.owner.facing)*180/math.pi
         
     def onCollision(self,_other):
         Hitbox.onCollision(self, _other)
@@ -320,14 +320,14 @@ class FunnelHitbox(DamageHitbox):
                     self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier)
                     x_diff = self.rect.centerx - _other.rect.centerx
                     y_diff = self.rect.centery - _other.rect.centery
-                    x_vel = self.x_bias+self.x_draw*x_diff
+                    x_vel = self.x_bias*self.owner.facing+self.x_draw*x_diff
                     y_vel = self.y_bias+self.y_draw*y_diff
                     self.owner.data_log.addToData('Damage Dealt',self.damage)
                     _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory)), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                 else:
                     x_diff = self.article.rect.centerx - _other.rect.centerx
                     y_diff = self.article.rect.centery - _other.rect.centery
-                    x_vel = self.x_bias+self.x_draw*x_diff
+                    x_vel = self.x_bias*self.article.facing+self.x_draw*x_diff
                     y_vel = self.y_bias+self.y_draw*y_diff
                     self.owner.data_log.addToData('Damage Dealt',self.damage)
                     _other.applyKnockback(self.damage, math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback, self.knockback_growth, getForwardWithOffset(self.article.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory), self.article), self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)

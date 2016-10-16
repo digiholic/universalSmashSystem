@@ -524,8 +524,8 @@
 				<center>0,0</center>
 				<size>70,70</size>
 				<damage>2</damage>
-				<xBias>0</xBias>
-				<yBias>-1</yBias>
+				<x_bias>1</x_bias>
+				<y_bias>-1</y_bias>
 			</createHitbox>
 			
 			<setFighterVar var="invulnerable">
@@ -786,8 +786,8 @@
 			
 			<createHitbox>
 				<name>tangy</name>
-				<center>27,-29</center>
-				<size>12,28</size>
+				<center>27,-25</center>
+				<size>12,35</size>
 				<damage>5</damage>
 				<base_knockback>7</base_knockback>
 				<knockback_growth>0.08</knockback_growth>
@@ -797,8 +797,8 @@
 			
 			<createHitbox>
 				<name>sour</name>
-				<center>21,-32</center>
-				<size>24,36</size>
+				<center>21,-15</center>
+				<size>24,60</size>
 				<damage>3</damage>
 				<base_knockback>6</base_knockback>
 				<knockback_growth>0.08</knockback_growth>
@@ -1609,8 +1609,8 @@
 				<center>0,0</center>
 				<size>70,70</size>
 				<damage>2</damage>
-				<xBias>0</xBias>
-				<yBias>-1</yBias>
+				<x_bias>1</x_bias>
+				<y_bias>-1</y_bias>
 			</createHitbox>
 		</setUp>
 		
@@ -1848,7 +1848,7 @@
 				<size>70,70</size>
 				<damage>2</damage>
 				<trajectory>90</trajectory>
-				<base_knockback>.5</base_knockback>
+				<base_knockback>2</base_knockback>
 			</createHitbox>
 		</setUp>
 		
