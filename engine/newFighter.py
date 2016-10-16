@@ -9,6 +9,8 @@ import weakref
 import engine.hitbox as hitbox
 import math
 import numpy
+import spriteManager
+import engine.article as article
 from global_functions import *
 
 class AbstractFighter():
@@ -122,6 +124,9 @@ class AbstractFighter():
     
     custom_timers = list()
     
+    current_color = 0
+    current_costume = 0
+        
     def __init__(self,_baseDir,_playerNum):
         """ Create a fighter. To start, all that's needed is the directory it is in, and the player number.
         It uses the directory to find its fighter.xml file and begin storing data.
@@ -204,7 +209,10 @@ class AbstractFighter():
                     if vartype == 'int': val = int(val)
                     elif vartype == 'float': val = float(val)
                     elif vartype == 'bool': val = bool(val)
-                    self.default_vars[variable.tag] = val   
+                    self.default_vars[variable.tag] = val
+        
+        self.current_color = self.player_num
+          
         
     def saveFighter(self,_path=None):
         """ Save the fighter's data to XML. Basically the inverse of __init__.
@@ -267,6 +275,32 @@ class AbstractFighter():
         outputFile = open(_path,'w')
         outputFile.write(xmlfile.toprettyxml())
     
+    def loadSpriteLibrary(self,_color=None):
+        """ Loads the sprite library for the fighter, with the current
+        costume and color.
+        
+        Parameters
+        -----------
+        _color : int
+            The index of the color to use. By default, will use the stored current_color variable,
+            which is set while selecting. This optional argument should be used when you're overriding
+            the game's color choice to load up a different palette.
+        """
+        directory = os.path.join(self.base_dir,self.sprite_directory)
+        try:
+            scale = float(self.xml_data.find('scale').text)
+        except:
+            scale = 1.0
+        
+        if _color == None: _color = self.current_color
+        
+        self.sprite = spriteManager.SpriteHandler(str(directory),
+                                                  self.costumes[self.current_costume % len(self.costumes)],
+                                                  self.default_sprite,
+                                                  self.sprite_width,
+                                                  self.color_palettes[_color % len(self.color_palettes)],
+                                                  scale)
+        self.rect = self.sprite.rect
     
     def initialize(self):
         """ This method is called when shit gets real. It creates the collision box, sprite library,
@@ -315,6 +349,12 @@ class AbstractFighter():
         """ This method will step the fighter forward one frame. It will resolve movement,
         collisions, animations, and all sorts of things. It should be called every frame.
         """ 
+        self.ecb.normalize()
+        self.ecb.store()
+        
+        self.input_buffer.push()
+        self.last_input_frame += 1
+        
         if self.hitstop > 0:
             #We're in hitstop, let's take care of that and ignore a normal update
             self.hitstopUpdate()
@@ -340,7 +380,11 @@ class AbstractFighter():
         # Check for transitions, then execute actions
         self.current_action.stateTransitions(self)
         self.current_action.update(self) #update our action
-
+        
+        self.sprite.updatePosition(self.rect)
+        self.ecb.normalize()
+        self.ecb.normalize()
+        
         self.collisionUpdate()            
         self.childUpdate()
         self.timerUpdate()
@@ -617,7 +661,50 @@ class AbstractFighter():
             class_ = getattr(self.article_loader, _articleName)
             return(class_(self))
         
-     
+    def die(self,_respawn = True):
+        """ This function is called when a fighter dies. It spawns the
+        death particles and resets some variables.
+        
+        Parameters
+        -----------
+        _respawn : Boolean
+            Whether or not to respawn the fighter after death
+        """
+        sfxlib = settingsManager.getSfx()
+        if sfxlib.hasSound('death', self.name):
+            self.playSound('death')
+        
+        self.damage = 0
+        self.change_x = 0
+        self.change_y = 0
+        self.jumps = self.var['jumps']
+        self.data_log.addToData('Falls',1)
+        if self.hit_tagged != None:
+            if hasattr(self.hit_tagged, 'data_log'):
+                self.hit_tagged.data_log.addToData('KOs',1)
+        if _respawn:
+            if self.hit_tagged is not None:
+                color = settingsManager.getSetting('playerColor' + str(self.hit_tagged.player_num))
+            else:
+                color = settingsManager.getSetting('playerColor' + str(self.player_num))
+                
+            self.initialize()
+            for i in range(0, 11):
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30, 30, 1.5, color)
+                self.articles.add(next_hit_article)
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30+10, 60, 1.5, color)
+                self.articles.add(next_hit_article)
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30+20, 90, 1.5, color)
+                self.articles.add(next_hit_article)
+            self.rect.midbottom = self.game_state.spawn_locations[self.player_num]
+            self.rect.bottom -= 200
+            self.sprite.updatePosition(self.rect)
+            self.ecb.normalize()
+            self.ecb.store()
+            self.createMask([255,255,255], 480, True, 12)
+            self.respawn_invulnerable = 480
+            self.doAction('Respawn')
+            
     ########################################################
     #              COLLISIONS AND MOVEMENT                 #
     ########################################################
@@ -696,105 +783,347 @@ class AbstractFighter():
     ########################################################
     
     
-    ########################################################
-    #                 HELPER FUNCTIONS                     #
-    ########################################################
-    """ These are ways of getting properly formatted data, accessing specific things,
-    converting data, etc. """
-    
-    def getForwardWithOffset(self,_offSet = 0):
-        """ Get a direction that is angled from the direction the fighter is facing, 
-        rather than angled from right. For example, sending the opponent 30 degrees is
-        fine when facing right, but if you're facing left, you'd still be sending them to the right!
-        
-        Hitboxes use this calculation a lot. It'll return the proper angle that is the given offset
-        from "forward". Defaults to 0, which will give either 0 or 180, depending on the direction
-        of the fighter.
+    def keyPressed(self,_key):
+        """ Add a key to the buffer. This function should be adding
+        to the buffer, and ONLY adding to the buffer. Any sort
+        of calculations and state changes should probably be done
+        in the stateTransitions function of the current action.
         
         Parameters
         -----------
-        _offSet : int
-            The angle to convert
-        
-        Return
-        -----------
-        The adjusted angle for the proper facing angle
+        _key : String
+            The key to append to the buffer
         """
-        if self.facing == 1:
-            return _offSet
-        else:
-            return 180 - _offSet
-
-    
-    def getDirectionMagnitude(self):
-        """ Converts the fighter's current speed from XY components into
-        a Direction and Magnitude. Angles are in degrees, with 0 being forward
+        self.input_buffer.append((_key,1.0))
+        self.keys_held[_key] = 1.0
         
-        Return
-        -----------
-        (direction,magnitude) : Tuple (int,float)
-            The direction in degrees, and the magnitude in map uints
-        """
-        if self.change_x == 0:
-            magnitude = self.change_y
-            direction = 90 if self.change_y < 0 else 270
-            return (direction,magnitude)
-        if self.change_y == 0:
-            magnitude = self.change_x
-            direction = 0 if self.change_x > 0 else 180
-            return(direction,magnitude)
-        
-        direction = math.degrees(math.atan2(-self.change_y, self.change_x))
-        direction = round(direction)
-        magnitude = numpy.linalg.norm([self.change_x, self.change_y])
-        
-        return (direction,magnitude)
-    
-    
-    def getFacingDirection(self):
-        """ A simple function that converts the facing variable into a direction in degrees.
-        
-        Return
-        -----------
-        The direction the fighter is facing in degrees, zero being right, 90 being up
-        """
-        if self.facing == 1: return 0
-        else: return 180
-        
-    def setGrabbing(self, _other):
-        """ Sets a grabbing state. Tells this fighter that it's grabbing something else,
-        and tells that thing what's grabbing it.
+    def keyReleased(self,_key):
+        """ Removes a key from the buffer. That is to day, it appends
+        a release to the buffer. It is safe to call this function if the key
+        is not in the buffer, and it will return False if the key was not in there
+        to begin with.
         
         Parameters
         -----------
-        _other : GameObject
-            The object to be grabbing
-        """
-        self.grabbing = _other
-        _other.grabbed_by = self
-
-    def isGrabbing(self):
-        """ Check whether the fighter is current holding something. If this object says that it's
-        holding something, but the other object doesn't agree, assume that there is no grab.
-        
+        _key : String
+            The key to remove
+            
         Return
         -----------
-        bool : Whether the fighter is currently holding something
+        If the key was successfully removed, True. False if the key was not present to be removed.
         """
-        if self.grabbing is None:
-            return False
-        if self.grabbing and self.grabbing.grabbed_by == self:
+        if _key in self.keys_held:
+            self.input_buffer.append((_key,0))    
+            del self.keys_held[_key]
+            return True
+        else: return False
+    
+
+    def keyBuffered(self, _key, _from = 1, _state = 0.1, _to = 0):
+        """ Checks if a key was pressed within a certain amount of frames.
+        
+        Parameters
+        -----------
+        _key : String
+            The key to search fore
+        _from : int : 1
+            The furthest back frame to look to.
+        _state : float : 0.1
+            A value from 0 to 1 for a threshold on value before a button registers as a press.
+            Usually only applies to sticks, since buttons are always 0.0 or 1.0
+        _to : int : 0
+            The furthest forward frame to look to.
+        """
+        if any(map(lambda k: _key in k and k[_key] >= _state,self.input_buffer.getLastNFrames(_from, _to))):
+            self.last_input_frame = 0
             return True
         return False
-    
-    def flip(self):
-        """ Flip the fighter so he is now facing the other way.
-        Also flips the sprite for you.
-        """
-        self.facing = -self.facing
-        self.sprite.flipX()
-    
+
+    def keyTapped(self, _key, _from = None, _state = 0.1, _to = 0):
+        """ Checks if a key was pressed and released within a certain amount of frames.
         
+        Parameters
+        -----------
+        _key : String
+            The key to search fore
+        _from : int : None
+            The furthest back frame to look to. If set to None, it will look at the default Buffer
+            Window in the player's control settings
+        _state : float : 0.1
+            A value from 0 to 1 for a threshold on value before a button registers as a press.
+            Usually only applies to sticks, since buttons are always 0.0 or 1.0
+        _to : int : 0
+            The furthest forward frame to look to.
+        """
+        if _from is None:
+            _from = max(min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame), 1)
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
+        if not any(down_frames) or not any(up_frames):
+            return False
+        first_down_frame = reduce(lambda j, k: j if j != None else (k if down_frames[k] else None), range(len(down_frames)), None)
+        last_up_frame = reduce(lambda j, k: k if up_frames[k] else j, range(len(up_frames)), None)
+        if first_down_frame >= last_up_frame:
+            self.last_input_frame = 0
+            return True
+        return False
+
+    #A key press which hasn't been released yet
+    def keyHeld(self, _key, _from = None, _state = 0.1, _to = 0):
+        """ Checks if a key was pressed within a certain amount of frames and is still being held.
+        
+        Parameters
+        -----------
+        _key : String
+            The key to search fore
+        _from : int : None
+            The furthest back frame to look to. If set to None, it will look at the default Buffer
+            Window in the player's control settings
+        _state : float : 0.1
+            A value from 0 to 1 for a threshold on value before a button registers as a press.
+            Usually only applies to sticks, since buttons are always 0.0 or 1.0
+        _to : int : 0
+            The furthest forward frame to look to.
+        """
+        if _from is None:
+            _from = max(min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame), 1)
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
+        if not any(down_frames):
+            return False
+        if any(down_frames) and not any(up_frames):
+            self.last_input_frame = 0
+            return True
+        first_down_frame = reduce(lambda j, k: j if j != None else (k if down_frames[k] else None), range(len(down_frames)), None)
+        last_up_frame = reduce(lambda j, k: k if up_frames[k] else j, range(len(up_frames)), None)
+        if first_down_frame < last_up_frame:
+            self.last_input_frame = 0
+            return True
+        return False
+
+    def keyUnreleased(self,_key):
+        return _key in self.keys_held
+    
+    def keyUp(self, _key, _from = 1, _state = 0.1, _to = 0):
+        """ Checks if a key was released within a certain amount of frames.
+        
+        Parameters
+        -----------
+        _key : String
+            The key to search fore
+        _from : int : 1
+            The furthest back frame to look to.
+        _state : float : 0.1
+            A value from 0 to 1 for a threshold on value before a button registers as a press.
+            Usually only applies to sticks, since buttons are always 0.0 or 1.0
+        _to : int : 0
+            The furthest forward frame to look to.
+        """
+        if any(map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))):
+            self.last_input_frame = 0
+            return True
+        return False
+
+    #A key reinput (release, then press)
+    def keyReinput(self, _key, _from = None, _state = 0.1, _to = 0):
+        """ Checks if a key was pressed twice within a certain amount of time
+        
+        Parameters
+        -----------
+        _key : String
+            The key to search fore
+        _from : int : 1
+            The furthest back frame to look to. If set to None, it will look at the default Buffer
+            Window in the player's control settings
+        _state : float : 0.1
+            A value from 0 to 1 for a threshold on value before a button registers as a press.
+            Usually only applies to sticks, since buttons are always 0.0 or 1.0
+        _to : int : 0
+            The furthest forward frame to look to.
+        """
+        if _from is None:
+            _from = max(min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame), 1)
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
+        if not any(down_frames) or not any(down_frames):
+            return False
+        first_up_frame = reduce(lambda j, k: j if j != None else (k if up_frames[k] else None), range(len(up_frames)), None)
+        last_down_frame = reduce(lambda j, k: k if down_frames[k] else j, range(len(down_frames)), None)
+        if first_up_frame < last_down_frame:
+            self.last_input_frame = 0
+            return True
+        return False
+
+    #A key release which hasn't been pressed yet
+    def keyIdle(self, _key, _from = None, _state = 0.1, _to = 0):
+        """ Checks if a key was released and not pressed again within a certain amount of time.
+        
+        Parameters
+        -----------
+        _key : String
+            The key to search fore
+        _from : int : 1
+            The furthest back frame to look to. If set to None, it will look at the default Buffer
+            Window in the player's control settings
+        _state : float : 0.1
+            A value from 0 to 1 for a threshold on value before a button registers as a press.
+            Usually only applies to sticks, since buttons are always 0.0 or 1.0
+        _to : int : 0
+            The furthest forward frame to look to.
+        """
+        if _from is None:
+            _from = max(min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame), 1)
+        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
+        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
+        if not any(up_frames):
+            return False
+        if any(up_frames) and not any(down_frames):
+            self.last_input_frame = 0
+            return True
+        first_up_frame = reduce(lambda j, k: j if j != None else (k if up_frames[k] else None), range(len(up_frames)), None)
+        last_down_frame = reduce(lambda j, k: k if down_frames[k] else j, range(len(down_frames)), None)
+        if first_up_frame >= last_down_frame:
+            self.last_input_frame = 0
+            return True
+        return False
+
+    #Analog directional input
+    def getSmoothedInput(self, _distanceBack = None, _maxMagnitude = 1.0):
+        #TODO If this is a gamepad, simply return its analog input
+        if _distanceBack is None:
+            smooth_distance = int(self.key_bindings.timing_window['smoothing_window'])
+            _distanceBack = smooth_distance
+        else:
+            smooth_distance = _distanceBack
+        
+        hold_buffer = reversed(self.input_buffer.getLastNFrames(_distanceBack))
+        smoothed_x = 0.0
+        smoothed_y = 0.0
+        if self.key_bindings.type == "Keyboard":
+            for frame_input in hold_buffer:
+                working_x = 0.0
+                working_y = 0.0
+                x_decay = float(1.5)/smooth_distance
+                y_decay = float(1.5)/smooth_distance
+                if 'left' in frame_input: working_x -= frame_input['left']
+                if 'right' in frame_input: working_x += frame_input['right']
+                if 'up' in frame_input: working_y -= frame_input['up']
+                if 'down' in frame_input: working_y += frame_input['down']
+                if (working_x > 0 and smoothed_x > 0) or (working_x < 0 and smoothed_x < 0):
+                    x_decay = float(1)/smooth_distance
+                elif (working_x < 0 and smoothed_x > 0) or (working_x > 0 and smoothed_x < 0):
+                    x_decay = float(4)/smooth_distance
+                if (working_y < 0 and smoothed_y < 0) or (working_y > 0 and smoothed_y > 0):
+                    y_decay = float(1)/smooth_distance
+                elif (working_y < 0 and smoothed_y > 0) or (working_y > 0 and smoothed_y < 0):
+                    ySmooth = float(4)/smooth_distance
+                magnitude = numpy.linalg.norm([working_x, working_y])
+                if magnitude > _maxMagnitude:
+                    working_x /= magnitude/_maxMagnitude
+                    working_y /= magnitude/_maxMagnitude
+                if smoothed_x > 0:
+                    smoothed_x -= x_decay
+                    if smoothed_x < 0:
+                        smoothed_x = 0
+                elif smoothed_x < 0:
+                    smoothed_x += x_decay
+                    if smoothed_x > 0:
+                        smoothed_x = 0
+                if smoothed_y > 0:
+                    smoothed_y -= y_decay
+                    if smoothed_y < 0:
+                        smoothed_y = 0
+                elif smoothed_y < 0:
+                    smoothed_y += y_decay
+                    if smoothed_y > 0:
+                        smoothed_y = 0
+                smoothed_x += working_x
+                smoothed_y += working_y
+        else:
+            smoothed_x = -self.keys_held['left']+self.keys_held['right']
+            smoothed_y = -self.keys_held['up']+self.keys_held['down']
+        final_magnitude = numpy.linalg.norm([smoothed_x, smoothed_y])
+        if final_magnitude > _maxMagnitude:
+            smoothed_x /= final_magnitude/_maxMagnitude
+            smoothed_y /= final_magnitude/_maxMagnitude
+        return [smoothed_x, smoothed_y]
+    
+    """
+    Returns the angle that the smoothedInput currently points to. 0 being forward, 90 being up
+    @_default: What to return if input is [0,0]
+    """    
+    def getSmoothedAngle(self,_default=90):
+        inputValue = self.getSmoothedInput()
+        print(inputValue)
+        if (inputValue == [0, 0]):
+            angle =  _default
+        else:
+            angle = math.atan2(-inputValue[1], inputValue[0])*180.0/math.pi
+        print('ANGLE:',angle)
+        return angle
+    
+    """
+    This function checks if the player has Smashed in a direction. It does this by noting if the direction was
+    pressed recently and is now above a threshold
+    """
+    def checkSmash(self,_direction):
+        #TODO different for buttons than joysticks
+        return self.keyBuffered(_direction, int(self.key_bindings.timing_window['smash_window']), 0.85)
+
+    def checkTap(self, _direction, _firstThreshold=0.6):
+        if self.key_bindings.type == "Keyboard":
+            return self.keyBuffered(_direction, _state=1) and self.keyBuffered(_direction, int(self.key_bindings.timing_window['repeat_window'])+1, _firstThreshold, 1)
+        else:
+            return self.checkSmash(_direction)
+
+    def netDirection(self, _checkDirectionList):
+        coords = self.getSmoothedInput()
+        if not filter(lambda a: a in ['left', 'right', 'up', 'down'], _checkDirectionList):
+            return 'neutral'
+        left_check = -coords[0] if 'left' in _checkDirectionList and 'left' in self.keys_held else -2
+        right_check = coords[0] if 'right' in _checkDirectionList and 'right' in self.keys_held else -2
+        up_check = -coords[1] if 'up' in _checkDirectionList and 'up' in self.keys_held else -2
+        down_check = coords[1] if 'down' in _checkDirectionList and 'down' in self.keys_held else -2
+        if left_check == -2 and right_check == -2 and up_check == -2 and down_check == -2:
+            if 'left' in self.keys_held: left_check = self.keys_held['left']
+            if 'right' in self.keys_held: right_check = self.keys_held['right']
+            if 'up' in self.keys_held: up_check = self.keys_held['up']
+            if 'down' in self.keys_held: down_check = self.keys_held['down']
+            if left_check == -2 and right_check == -2 and up_check == -2 and down_check == -2:
+                return 'neutral'
+        check_dict = {'left': left_check, 'right': right_check, 'up': up_check, 'down': down_check}
+        return max(_checkDirectionList, key=lambda k: check_dict[k])
+    
+    """
+    This checks for keys that are currently being held, whether or not they've actually been pressed recently.
+    This is used, for example, to transition from a landing state into a running one. Using the InputBuffer
+    would mean that you'd either need to iterate over the WHOLE buffer and look for one less release than press,
+    or limit yourself to having to press the button before landing, whether you were moving in the air or not.
+    If you are looking for a button PRESS, use one of the input methods provided. If you are looking for IF A KEY 
+    IS STILL BEING HELD, this is your function.
+    """
+    def keysContain(self,_key,_threshold=0.1):
+        if _key in self.keys_held:
+            return self.keys_held[_key] >= _threshold
+        return False
+    
+    """
+    This returns a tuple of the key for forward, then backward
+    Useful for checking if the fighter is pivoting, or doing a back air, or getting the
+    proper key to dash-dance, etc.
+    
+    The best way to use this is something like
+    (key,invkey) = actor.getForwardBackwardKeys()
+    which will assign the variable "key" to the forward key, and "invkey" to the backward key.
+    """
+    def getForwardBackwardKeys(self):
+        if self.facing == 1: return ('right','left')
+        else: return ('left','right')
+    
+    ########################################################
+    #                 COMBAT FUNCTIONS                     #
+    ########################################################
+    
     def dealDamage(self, _damage):
         """ Deal damage to the fighter.
         Checks to make sure the damage caps at 999.
@@ -899,7 +1228,174 @@ class AbstractFighter():
         self.dealDamage(_damage)
         return math.floor((total_kb+additional_kb)*di_multiplier)
 
+    def applyPushback(self, _kb, _trajectory, _hitlag):
+        """ Pushes back the fighter when they hit a foe. This is the corollary to applyKnockback,
+        except this one is called on the fighter who lands the hit. It applies the hitlag to the fighter,
+        and pushes them back slightly from the opponent.
+        
+        Parameters
+        -----------
+        _kb : 
+        _trajectory : int
+            The direction to push the attacker back. In degrees, zero being forward, 90 being up
+        _hitlag : int
+            The hitlag from the attack        
+        """
+        self.hitstop = math.floor(_hitlag*settingsManager.getSetting('hitlag'))
+        print(self.hitstop)
+        (x, y) = getXYFromDM(_trajectory, _kb)
+        self.change_x += x
+        if not self.grounded:
+            self.change_y += y
+    
+    ########################################################
+    #                 HELPER FUNCTIONS                     #
+    ########################################################
+    """ These are ways of getting properly formatted data, accessing specific things,
+    converting data, etc. """
+    
+    def getForwardWithOffset(self,_offSet = 0):
+        """ Get a direction that is angled from the direction the fighter is facing, 
+        rather than angled from right. For example, sending the opponent 30 degrees is
+        fine when facing right, but if you're facing left, you'd still be sending them to the right!
+        
+        Hitboxes use this calculation a lot. It'll return the proper angle that is the given offset
+        from "forward". Defaults to 0, which will give either 0 or 180, depending on the direction
+        of the fighter.
+        
+        Parameters
+        -----------
+        _offSet : int
+            The angle to convert
+        
+        Return
+        -----------
+        The adjusted angle for the proper facing angle
+        """
+        if self.facing == 1:
+            return _offSet
+        else:
+            return 180 - _offSet
+
+    
+    def getDirectionMagnitude(self):
+        """ Converts the fighter's current speed from XY components into
+        a Direction and Magnitude. Angles are in degrees, with 0 being forward
+        
+        Return
+        -----------
+        (direction,magnitude) : Tuple (int,float)
+            The direction in degrees, and the magnitude in map uints
+        """
+        if self.change_x == 0:
+            magnitude = self.change_y
+            direction = 90 if self.change_y < 0 else 270
+            return (direction,magnitude)
+        if self.change_y == 0:
+            magnitude = self.change_x
+            direction = 0 if self.change_x > 0 else 180
+            return(direction,magnitude)
+        
+        direction = math.degrees(math.atan2(-self.change_y, self.change_x))
+        direction = round(direction)
+        magnitude = numpy.linalg.norm([self.change_x, self.change_y])
+        
+        return (direction,magnitude)
+    
+    
+    def getFacingDirection(self):
+        """ A simple function that converts the facing variable into a direction in degrees.
+        
+        Return
+        -----------
+        The direction the fighter is facing in degrees, zero being right, 90 being up
+        """
+        if self.facing == 1: return 0
+        else: return 180
+        
+    def setGrabbing(self, _other):
+        """ Sets a grabbing state. Tells this fighter that it's grabbing something else,
+        and tells that thing what's grabbing it.
+        
+        Parameters
+        -----------
+        _other : GameObject
+            The object to be grabbing
+        """
+        self.grabbing = _other
+        _other.grabbed_by = self
+
+    def isGrabbing(self):
+        """ Check whether the fighter is current holding something. If this object says that it's
+        holding something, but the other object doesn't agree, assume that there is no grab.
+        
+        Return
+        -----------
+        bool : Whether the fighter is currently holding something
+        """
+        if self.grabbing is None:
+            return False
+        if self.grabbing and self.grabbing.grabbed_by == self:
+            return True
+        return False
+    
+    def flip(self):
+        """ Flip the fighter so he is now facing the other way.
+        Also flips the sprite for you.
+        """
+        self.facing = -self.facing
+        self.sprite.flipX()
             
+    def changeSprite(self,_newSprite,_frame=0):
+        """ Changes the fighter's sprite to the one with the given name.
+        Optionally can change into a frame other than zero.
+        
+        Parameters
+        -----------
+        _newSprite : string
+            The name of the sprite in the SpriteLibrary to change to
+        _frame : int : default 0
+            The frame to switch to in the new sprite. Leave off to start the new animation at zero
+        """
+        self.sprite.changeImage(_newSprite)
+        self.current_action.sprite_name = _newSprite
+        if _frame != 0: self.sprite.changeSubImage(_frame)
+        
+    def changeSpriteImage(self,_frame,_loop=False):
+        """ Change the subimage of the current sprite.
+        
+        Parameters
+        -----------
+        _frame : int
+            The frame number to change to.
+        _loop : bool
+            If True, any subimage value larger than maximum will loop back into a new value.
+            For example, if _loop is set, accessing the 6th subimage of an animation 4 frames long will get you the second.
+        """
+        self.sprite.changeSubImage(_frame,_loop)
+
+    def updatePosition(self, _updateRect):
+        """ Passes the updatePosition call to the sprite.
+        See documentation in SpriteLibrary.updatePosition
+        """
+        return self.sprite.updatePosition(_updateRect)
+          
+    def updateLandingLag(self,_lag,_reset=False):
+        """ Updates landing lag, but doesn't overwrite a longer lag with a short one.
+        Useful for things like fast aerials that have short endlag, but you don't want to be
+        able to override something like an airdodge lag with it.
+        
+        Parameters
+        -----------
+        _lag : int
+            The number of frames of endlag to set
+        _reset : bool : False
+            When True, will always set the landing lag to the given value, regardless of current lag.
+        """
+        if _reset: self.landing_lag = _lag
+        else:
+            if _lag > self.landing_lag: self.landing_lag = _lag
+                
 def test():
     fight = AbstractFighter('',0)
     print(fight.__init__.__doc__)

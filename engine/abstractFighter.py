@@ -350,7 +350,7 @@ class AbstractFighter():
     def update(self):
         self.ecb.normalize()
         self.ecb.store()
-        #Step one, push the input buffer
+        
         self.input_buffer.push()
         self.last_input_frame += 1
         
@@ -365,12 +365,8 @@ class AbstractFighter():
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
         
-        
         self.sprite.updatePosition(self.rect)
         self.ecb.normalize()
-        
-        self.sprite.updatePosition(self.rect)
-        self.hitbox_contact.clear()
         self.ecb.normalize()
       
         self.childUpdate()
@@ -403,10 +399,6 @@ class AbstractFighter():
         #QUESTION: Why -1000?
         self.invulnerable = max(-1000,self.invulnerable-1)
         self.respawn_invulnerable = max(-1000,self.invulnerable-1)
-        
-        for timer,event in self.custom_timers.iteritems():
-            pass
-    
       
     def hitstopUpdate(self):
         """ Handles what to do if the fighter is in hitstop (that freeze frame state when you
