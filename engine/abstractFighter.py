@@ -389,7 +389,7 @@ class AbstractFighter():
             #Smash directional influence AKA hitstun shuffling
             di_vec = self.getSmoothedInput(int(self.key_bindings.timing_window['smoothing_window']))
             self.rect.x += di_vec[0]*5
-            if not self.grounded or self.keysContain('jump', _threshold=1):
+            if not self.grounded or isinstance(self.current_action, baseActions.HitStun):
                 self.rect.y += di_vec[1]*5
 
             self.sprite.updatePosition(self.rect)
@@ -883,7 +883,7 @@ class AbstractFighter():
 
         trajectory_vec = [math.cos(_trajectory/180*math.pi), math.sin(_trajectory/180*math.pi)]
 
-        additional_kb = .5*_baseHitstun*math.sqrt(abs(trajectory_vec[0])*(self.var['air_resistance']*settingsManager.getSetting('airControl'))**2+abs(trajectory_vec[1])*(self.var['gravity']*settingsManager.getSetting('gravity'))**2)
+        additional_kb = .5*(_baseHitstun/2.0)*math.sqrt(abs(trajectory_vec[0])*(self.var['air_resistance']*settingsManager.getSetting('airControl'))**2+abs(trajectory_vec[1])*(self.var['gravity']*settingsManager.getSetting('gravity'))**2)
 
         di_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
         _trajectory += numpy.cross(di_vec, trajectory_vec)*13.5

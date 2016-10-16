@@ -514,7 +514,7 @@
 				<center>0,0</center>
 				<size>70,70</size>
 				<damage>2</damage>
-				<base_knockback>8</base_knockback>
+				<base_knockback>10</base_knockback>
 				<knockback_growth>0.1</knockback_growth>
 				<trajectory>20</trajectory>
 			</createHitbox>
@@ -604,6 +604,8 @@
 				<base_knockback>2</base_knockback>
 				<knockback_growth>0</knockback_growth>
 				<velocity_multiplier>0</velocity_multiplier>
+				<base_hitstun>20</base_hitstun>
+				<hitstun_growth>4</hitstun_growth>
 				<y_bias>-4</y_bias>
 				<x_draw>-.1</x_draw>
 				<y_draw>-.1</y_draw>
@@ -616,7 +618,7 @@
 		
 		<frame number="4">
 			<setVar source="action">
-				<name>doRepeat</name>
+				<variable>doRepeat</variable>
 				<value>False</value>
 			</setVar>
 			<ifButton>
@@ -626,6 +628,7 @@
 			</ifButton>
 			<playSound>jab</playSound>
 			<activateHitbox>jab</activateHitbox>
+			<unlockHitbox>jab</unlockHitbox>
 		</frame>
 		<frame number="5">
 			<changeSubimage>9</changeSubimage>
@@ -640,6 +643,7 @@
 		<frame number="14">
 			<if function="==">
 				<variable source="action">doRepeat</variable>
+				<value>True</value>
 				<pass>repeatAttack</pass>
 			</if>
 		</frame>
@@ -649,7 +653,7 @@
 		</conditional>
 		<conditional name="setRepeat">
 			<setVar source="action">
-				<name>doRepeat</name>
+				<variable>doRepeat</variable>
 				<value>True</value>
 			</setVar>
 		</conditional>
@@ -672,9 +676,9 @@
 				<center>20,0</center>
 				<size>120,40</size>
 				<damage>10</damage>
-				<base_knockback>2</base_knockback>
+				<base_knockback>1.5</base_knockback>
 				<knockback_growth>0.2</knockback_growth>
-				<trajectory>40</trajectory>
+				<trajectory>50</trajectory>
 				<trail_color>#bfbf00</trail_color>
 			</createHitbox>
 		</setUp>
@@ -810,6 +814,7 @@
 		<transitions>
 			<transitionState>checkGrounded</transitionState>
 		</transitions>
+
 		<frame number="0-4">
 			<modifyHurtbox>
 				<center>0,16</center>
@@ -865,7 +870,7 @@
 				<base_knockback>10</base_knockback>
 				<knockback_growth>0</knockback_growth>
 				<trajectory>90</trajectory>
-				<base_hitstun>4</base_hitstun>
+				<base_hitstun>8</base_hitstun>
 			</createHitbox>
 			
 			<createHitbox>
@@ -877,7 +882,7 @@
 				<knockback_growth>0</knockback_growth>
 				<trajectory>150</trajectory>
 				<charge_damage>.027</charge_damage>
-				<base_hitstun>3</base_hitstun>
+				<base_hitstun>6</base_hitstun>
 			</createHitbox>
 			
 			<createHitbox>
@@ -889,7 +894,7 @@
 				<knockback_growth>0</knockback_growth>
 				<trajectory>30</trajectory>
 				<charge_damage>.027</charge_damage>
-				<base_hitstun>3</base_hitstun>
+				<base_hitstun>2</base_hitstun>
 			</createHitbox>
 			
 			<createHitbox>
@@ -960,6 +965,14 @@
 		<sprite>dtilt</sprite>
 		<sprite_rate>2</sprite_rate>
 		<loop>True</loop>
+
+		<transitions>
+			<if function="&lt;">
+				<variable source="action">frame</variable>
+				<value type="int">8</value>
+				<pass>transition</pass>
+			</if>
+		</transitions>
 		
 		<setUp>
 			<createHitbox type="funnel">
@@ -970,8 +983,8 @@
                                 <y_bias>-2</y_bias>
 				<hitstun_multiplier>4</hitstun_multiplier>
 				<x_draw>0.05</x_draw>
-				<y_draw>-0.02</y_draw>
-				<base_hitstun>4</base_hitstun>
+				<y_draw>0</y_draw>
+				<base_hitstun>8</base_hitstun>
 			</createHitbox>
 			
 			<createHitbox>
@@ -979,7 +992,7 @@
 				<center>23,26</center>
 				<size>46,40</size>
 				<damage>6</damage>
-				<base_knockback>8</base_knockback>
+				<base_knockback>6</base_knockback>
 				<knockback_growth>0.12</knockback_growth>
 				<trajectory>45</trajectory>
 				<hitboxLock>main</hitboxLock>
@@ -990,7 +1003,7 @@
 				<center>-23,26</center>
 				<size>46,40</size>
 				<damage>6</damage>
-				<base_knockback>8</base_knockback>
+				<base_knockback>6</base_knockback>
 				<knockback_growth>0.12</knockback_growth>
 				<trajectory>135</trajectory>
 				<hitboxLock>main</hitboxLock>
@@ -1042,7 +1055,7 @@
 				<size>24,52</size>
 				<damage>8</damage>
 				<base_knockback>8</base_knockback>
-				<knockback_growth>0.09</knockback_growth>
+				<knockback_growth>0.11</knockback_growth>
 				<trajectory>45</trajectory>
 				<charge_damage>0.1</charge_damage>
 				<hitboxLock>main</hitboxLock>
@@ -1054,7 +1067,7 @@
 				<size>24,52</size>
 				<damage>8</damage>
 				<base_knockback>8</base_knockback>
-				<knockback_growth>0.09</knockback_growth>
+				<knockback_growth>0.11</knockback_growth>
 				<trajectory>135</trajectory>
 				<charge_damage>0.1</charge_damage>
 				<hitboxLock>main</hitboxLock>
@@ -1081,14 +1094,14 @@
 			<modifyHitbox name="rightHbox">
 				<center>24,13</center>
 				<damage>12</damage>
-				<knockback_growth>0.12</knockback_growth>
+				<knockback_growth>0.13</knockback_growth>
 				<trajectory>30</trajectory>
 				<charge_damage>0.15</charge_damage>
 			</modifyHitbox>
 			<modifyHitbox name="leftHbox">
 				<center>-24,13</center>
 				<damage>12</damage>
-				<knockback_growth>0.12</knockback_growth>
+				<knockback_growth>0.13</knockback_growth>
 				<trajectory>150</trajectory>
 				<charge_damage>0.15</charge_damage>
 			</modifyHitbox>
@@ -1118,13 +1131,13 @@
 		<frame number="16">
 			<modifyHitbox name="rightHbox">
 				<damage>12</damage>
-				<knockback_growth>0.11</knockback_growth>
+				<knockback_growth>0.12</knockback_growth>
 				<trajectory>30</trajectory>
 				<charge_damage>0.15</charge_damage>
 			</modifyHitbox>
 			<modifyHitbox name="leftHbox">
 				<damage>12</damage>
-				<knockback_growth>0.11</knockback_growth>
+				<knockback_growth>0.12</knockback_growth>
 				<trajectory>150</trajectory>
 				<charge_damage>0.15</charge_damage>
 			</modifyHitbox>
@@ -1299,7 +1312,7 @@
 				<damage>10</damage>
 				<base_knockback>8</base_knockback>
 				<knockback_growth>0.2</knockback_growth>
-				<trajectory>50</trajectory>
+				<trajectory>30</trajectory>
 				<hitboxLock>sharedLock</hitboxLock>
 			</createHitbox>
 			
@@ -1383,7 +1396,7 @@
 				<center>0,-27</center>
 				<size>30,46</size>
 				<damage>8</damage>
-				<base_knockback>6</base_knockback>
+				<base_knockback>8</base_knockback>
 				<knockback_growth>0.1</knockback_growth>
 				<trajectory>75</trajectory>
 				<hitboxLock>shared</hitboxLock>
@@ -1395,7 +1408,7 @@
 				<center>0,-25</center>
 				<size>20,42</size>
 				<damage>12</damage>
-				<base_knockback>6</base_knockback>
+				<base_knockback>8</base_knockback>
 				<knockback_growth>0.2</knockback_growth>
 				<trajectory>90</trajectory>
 				<hitboxLock>shared</hitboxLock>
@@ -1581,13 +1594,13 @@
 				<offset>0,7</offset>
 				<size>64,78</size>
 			</changeECB>
-			<createHitbox>
+			<createHitbox type="sakurai">
 				<name>dashHitbox</name>
 				<center>0,0</center>
 				<size>70,70</size>
 				<damage>2</damage>
-				<base_knockback>8</base_knockback>
-				<knockback_growth>0.2</knockback_growth>
+				<base_knockback>5</base_knockback>
+				<knockback_growth>0.15</knockback_growth>
 				<trajectory>20</trajectory>
 			</createHitbox>
 			
@@ -1653,7 +1666,7 @@
 		<frame number="20">
 			<changeSubimage>8</changeSubimage>
 		</frame>
-		<frame number="22-36">
+		<frame number="22">
 			<ifButton>
 				<button check="keysContain">special</button>
 				<pass>repeatAttack</pass>
@@ -1701,7 +1714,7 @@
 			<changeSubimage>7</changeSubimage>
 		</frame>
 
-		<frame number="15-36">
+		<frame number="15">
 			<ifButton>
 				<button check="keysContain">special</button>
 				<pass>repeatAttack</pass>
@@ -1726,7 +1739,7 @@
 	</NeutralAirSpecial>
 	
 	<DownSpecial>
-		<length>15</length>
+		<length>13</length>
 		<sprite>getup</sprite>
 		<sprite_rate>0</sprite_rate>
 		
@@ -1741,7 +1754,8 @@
 				<knockback_growth>0</knockback_growth>
 				<trajectory>330</trajectory>
 				<base_hitstun>0</base_hitstun>
-				<hitstun_multiplier type="float">3</hitstun_multiplier>
+				<hitstun_multiplier type="float">7</hitstun_multiplier>
+				<hitlag_multiplier>2</hitlag_multiplier>
 				<transcendence>5</transcendence>
 				<trail_color>#00ffff</trail_color>
 			</createHitbox>
@@ -1794,7 +1808,7 @@
 				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
 			</changeFighterPreferredSpeed>
 		</frame>
-		<frame number="13">
+		<frame number="12">
 			<deactivateArticle>shine</deactivateArticle>
 			<deactivateHitbox>reflect</deactivateHitbox>
 			<removeMask></removeMask>
@@ -1834,13 +1848,9 @@
 				<size>70,70</size>
 				<damage>2</damage>
 				<trajectory>90</trajectory>
-				<base_knockback>1</base_knockback>
+				<base_knockback>.5</base_knockback>
 			</createHitbox>
 		</setUp>
-		
-		<transitions>
-			<transitionState>checkGrounded</transitionState>
-		</transitions>
 		
 		<frame number="12">
 			<activateHitbox>chainHitbox</activateHitbox>
@@ -1993,20 +2003,20 @@
 		<sprite>bthrow</sprite>
 		<sprite_rate>2</sprite_rate>
 		
-		<transitions>
-			<transitionState>checkGrounded</transitionState>
-		</transitions>
-		
 		<setUp>
 			<createHitbox type="throw">
 				<name>ThrowBox</name>
 				<damage>7</damage>
-				<base_knockback>15</base_knockback>
+				<base_knockback>10</base_knockback>
 				<knockback_growth>0.05</knockback_growth>
 				<trajectory>170</trajectory>
 				<weight_influence>0.5</weight_influence>
 			</createHitbox>
 		</setUp>
+		
+		<transitions>
+			<transitionState>checkGrounded</transitionState>
+		</transitions>
 		
 		<frame number="1">
 			<activateHitbox>ThrowBox</activateHitbox>
@@ -2119,8 +2129,9 @@
 				<size>64,64</size>
 				<damage>8</damage>
 				<base_knockback>10</base_knockback>
+				<base_hitstun>20</base_hitstun>
 				<knockback_growth>0.05</knockback_growth>
-				<trajectory>90</trajectory>
+				<trajectory>70</trajectory>
 				<hitstun_multiplier>2</hitstun_multiplier>
 			</createHitbox>
 			

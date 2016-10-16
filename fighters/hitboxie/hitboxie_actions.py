@@ -30,6 +30,7 @@ class ForwardSpecial(action.Action):
                      'size': [80,80],
                      'damage': 1,
                      'hitstun_multiplier': 2,
+                     'base_hitstun': 15,
                      'x_bias': 0,
                      'y_bias': .25,
                      'shield_multiplier': 1,
@@ -67,7 +68,8 @@ class ForwardSpecial(action.Action):
                          'shield_multiplier':10,
                          'hitlag_multiplier':2,
                          'charge_damage':0.08333,
-                         'charge_base_knockback':0.04167
+                         'charge_base_knockback':0.04167,
+                         'charge_knockback_growth':0.001667
                          }
             hitbox.DamageHitbox.__init__(self, _actor, hitbox.HitboxLock(), variables)
             
