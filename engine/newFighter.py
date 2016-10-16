@@ -11,6 +11,9 @@ import math
 import numpy
 import spriteManager
 import engine.article as article
+import engine.controller as controller
+import engine.actionLoader as actionLoader
+import engine.articleLoader
 from global_functions import *
 
 class AbstractFighter():
@@ -28,13 +31,14 @@ class AbstractFighter():
     # Data loaded from XML #
     name = 'Null'
     franchise_icon_path = 'sprites/default_franchise_icon.png'
-    css_icon_path = 'sprites/icon_unknown.png'
+    css_icon_path = './sprites/icon_unknown.png'
     css_portrait_path =''
     
     sprite_directory = 'sprites/'
     sprite_prefix = ''
-    sprite_width = '64'
+    sprite_width = 64
     default_sprite = 'sandbag_idle'
+    sprite = None
     
     article_sprite_path = ''
     article_file = ''
@@ -84,12 +88,18 @@ class AbstractFighter():
     active_hurtboxes = pygame.sprite.Group()
     auto_hurtbox = None
     
-    #input_buffer = InputBuffer()
+    shield = False
+    shield_integrity = 100    
+        
+    input_buffer = controller.InputBuffer()
+    last_input_frame = 0
     keys_held = dict()
     
     hitbox_lock = weakref.WeakSet()
     hitbox_contact = set()
     
+    ledge_lock = False
+        
     mask = None
     
     hit_tagged = None
@@ -122,11 +132,20 @@ class AbstractFighter():
     invulnerable = 0
     respawn_invulnerable = 0
     
+    hitstop = 0
+    hitstop_vibration = (0,0)
+    hitstop_pos = (0,0)
+        
     custom_timers = list()
     
     current_color = 0
     current_costume = 0
-        
+    
+    css_icon = spriteManager.ImageSprite(settingsManager.createPath('sprites/icon_unknown.png'))
+    
+    color_palettes = []
+    palette_display = []
+    
     def __init__(self,_baseDir,_playerNum):
         """ Create a fighter. To start, all that's needed is the directory it is in, and the player number.
         It uses the directory to find its fighter.xml file and begin storing data.
@@ -158,7 +177,7 @@ class AbstractFighter():
             
             if self.xml_data:
                 if self.xml_data.find(_tag) is not None:
-                    return self.xml_data.find(_tag)
+                    return self.xml_data.find(_tag).text
             return _default
         
         self.base_dir = _baseDir
@@ -191,9 +210,34 @@ class AbstractFighter():
         #Load actions
         self.actions_file = loadNodeWithDefault('actions', self.actions_file)
         
-        #TODO color palettes
-        #TODO costumes
+        #Load the article loader
+        self.article_path = loadNodeWithDefault('article_path', '')            
+        self.article_loader_path = loadNodeWithDefault('articles', None)
         
+        if self.article_loader_path == '':
+            self.article_loader = None
+        else:
+            self.article_loader = engine.articleLoader.ArticleLoader(self)
+        
+        
+        #TODO color palettes
+        for color_palette in self.xml_data.findall('color_palette'):
+            color_dict = {}
+            for color_map in color_palette.findall('color_map'):
+                from_color = pygame.Color(color_map.attrib['from_color'])
+                to_color = pygame.Color(color_map.attrib['to_color'])
+                color_dict[(from_color.r, from_color.g, from_color.b)] = (to_color.r, to_color.g, to_color.b)
+            
+            self.color_palettes.append(color_dict)
+            self.palette_display.append(pygame.Color(color_palette.attrib['displayColor']))
+        
+        while len(self.color_palettes) < 4:
+            self.color_palettes.append({})
+        
+        self.costumes = [self.sprite_prefix]
+        for costume in self.xml_data.findall('costume'):
+            self.costumes.append(costume.text)
+         
         if self.xml_data:
             if self.xml_data.find('stats') is not None:
                 for stat in self.xml_data.find('stats'):
@@ -213,6 +257,33 @@ class AbstractFighter():
         
         self.current_color = self.player_num
           
+        # Now that we've got all the paths, need to actually load the files
+        if self.css_icon_path[0] == '.': #If the path starts with a period, start from the top of the game directory instead
+            self.css_icon = spriteManager.ImageSprite(settingsManager.createPath(self.css_icon_path))
+        else:
+            self.css_icon = spriteManager.ImageSprite(os.path.join(self.base_dir,self.css_icon_path))
+        
+        if self.franchise_icon_path[0] == '.': #If the path starts with a period, start from the top of the game directory instead
+            self.franchise_icon = spriteManager.ImageSprite(settingsManager.createPath(self.franchise_icon_path))
+        else:
+            self.franchise_icon = spriteManager.ImageSprite(os.path.join(self.base_dir,self.franchise_icon_path))
+        
+        #TODO: The ECB crashes unless there is a sprite to pull from, so we load this one even though it'll never actually be drawn
+        spriteName = self.sprite_prefix + self.default_sprite + '.png'
+        self.sprite = spriteManager.SheetSprite(os.path.join(self.base_dir,self.sprite_directory,spriteName), self.sprite_width)
+        self.rect = self.sprite.rect
+        
+        try:
+            if self.actions_file.endswith('.py'):
+                self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),self.actions_file,_suffix=str(self.player_num))
+            else:
+                self.actions = actionLoader.ActionLoader(_baseDir,self.actions_file)
+        except:
+            self.actions = baseActions
+            self.action_file = baseActions.__file__
+        
+        if self.sound_path:
+            settingsManager.getSfx().addSoundsFromDirectory(os.path.join(self.base_dir,self.sound_path), self.name)
         
     def saveFighter(self,_path=None):
         """ Save the fighter's data to XML. Basically the inverse of __init__.
@@ -267,7 +338,7 @@ class AbstractFighter():
             if not costume == self.sprite_prefix:
                 tree.append(self.createElement('costume', costume))
             
-        for tag,val in self.var.iteritems():
+        for tag,val in self.stats.iteritems():
             stats_elem.append(self.createElement(tag, val))
         tree.append(stats_elem)
         
@@ -373,8 +444,8 @@ class AbstractFighter():
                 self.ledge_lock = False
         
         # Prepare for movement by setting change_x and change_y from acceleration
-        if self.grounded: self.accel(self.var['friction'])
-        else: self.accel(self.var['air_resistance'])
+        if self.grounded: self.accel(self.stats['friction'])
+        else: self.accel(self.stats['air_resistance'])
         self.calcGrav()
         
         # Check for transitions, then execute actions
@@ -447,7 +518,7 @@ class AbstractFighter():
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             self.rect.x += block.change_x
-            self.change_y -= self.var['gravity'] * settingsManager.getSetting('gravity')
+            self.change_y -= self.stats['gravity'] * settingsManager.getSetting('gravity')
 
         if to_bounce_block is not None:
             collisionBox.reflect(self, to_bounce_block)
@@ -558,6 +629,15 @@ class AbstractFighter():
             self.platform_phase -= 1
         self.ecb.normalize()
 
+    def draw(self,_screen,_offset,_scale):
+        if (settingsManager.getSetting('showSpriteArea')): spriteManager.RectSprite(self.rect).draw(_screen, _offset, _scale)
+        rect = self.sprite.draw(_screen,_offset,_scale)
+        
+        if self.mask: self.mask.draw(_screen,_offset,_scale)
+        if settingsManager.getSetting('showECB'): 
+            for ecb in self.active_hurtboxes:
+                ecb.draw(_screen,_offset,_scale)
+        return rect
     ########################################################
     #                 ACTION MANAGEMENT                    #
     ########################################################
@@ -660,51 +740,155 @@ class AbstractFighter():
         elif hasattr(self.article_loader, _articleName):
             class_ = getattr(self.article_loader, _articleName)
             return(class_(self))
+    
+    
+    """ All of this stuff below should probably be rewritten or find a way to be removed """
+    
+    def doGroundMove(self,_direction):
+        if (self.facing == 1 and _direction == 180) or (self.facing == -1 and _direction == 0):
+            self.flip()
+        self.doAction('Move')
         
-    def die(self,_respawn = True):
-        """ This function is called when a fighter dies. It spawns the
-        death particles and resets some variables.
+    def doDash(self,_direction):
+        if (self.facing == 1 and _direction == 180) or (self.facing == -1 and _direction == 0):
+            self.flip()
+        self.doAction('Dash')
         
-        Parameters
-        -----------
-        _respawn : Boolean
-            Whether or not to respawn the fighter after death
-        """
-        sfxlib = settingsManager.getSfx()
-        if sfxlib.hasSound('death', self.name):
-            self.playSound('death')
-        
-        self.damage = 0
-        self.change_x = 0
-        self.change_y = 0
-        self.jumps = self.var['jumps']
-        self.data_log.addToData('Falls',1)
-        if self.hit_tagged != None:
-            if hasattr(self.hit_tagged, 'data_log'):
-                self.hit_tagged.data_log.addToData('KOs',1)
-        if _respawn:
-            if self.hit_tagged is not None:
-                color = settingsManager.getSetting('playerColor' + str(self.hit_tagged.player_num))
+    def doGroundAttack(self):
+        (key, invkey) = self.getForwardBackwardKeys()
+        direct = self.netDirection([key, invkey, 'down', 'up'])
+        if direct == key:
+            self.doAction('ForwardSmash') if self.checkSmash(key) else self.doAction('ForwardAttack') 
+        elif direct == invkey:
+            self.flip()
+            self.doAction('ForwardSmash') if self.checkSmash(invkey) else self.doAction('ForwardAttack')
+        elif direct == 'down':
+            self.doAction('DownSmash') if self.checkSmash('down') else self.doAction('DownAttack')
+        elif direct == 'up':
+            self.doAction('UpSmash') if self.checkSmash('up') else self.doAction('UpAttack')
+        else:
+            self.doAction('NeutralAttack')
+    
+    def doAirAttack(self):
+        (forward, backward) = self.getForwardBackwardKeys()
+        direct = self.netDirection([forward, backward, 'down', 'up'])
+        if direct == forward:
+            self.doAction('ForwardAir')
+        elif direct == backward:
+            self.doAction('BackAir')
+        elif direct == 'down':
+            self.doAction('DownAir')
+        elif direct == 'up':
+            self.doAction('UpAir')
+        else: self.doAction('NeutralAir')
+    
+    def doGroundSpecial(self):
+        (forward, backward) = self.getForwardBackwardKeys()
+        direct = self.netDirection(['up', forward, backward, 'down'])
+        if direct == 'up':
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
             else:
-                color = settingsManager.getSetting('playerColor' + str(self.player_num))
+                self.doAction('UpGroundSpecial')
+        elif direct == forward:
+            if self.hasAction('ForwardSpecial'): #If there's a ground/air version, do it
+                self.doAction('ForwardSpecial')
+            else: #If there is not a universal one, do a ground one
+                self.doAction('ForwardGroundSpecial')
+        elif direct == backward:
+            self.flip()
+            if self.hasAction('ForwardSpecial'):
+                self.doAction('ForwardSpecial')
+            else:
+                self.doAction('ForwardGroundSpecial')
+        elif direct == 'down':
+            if self.hasAction('DownSpecial'):
+                self.doAction('DownSpecial')
+            else:
+                self.doAction('DownGroundSpecial')
+        else: 
+            if self.hasAction('NeutralSpecial'):
+                self.doAction('NeutralSpecial')
+            else:
+                self.doAction('NeutralGroundSpecial')
                 
-            self.initialize()
-            for i in range(0, 11):
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30, 30, 1.5, color)
-                self.articles.add(next_hit_article)
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30+10, 60, 1.5, color)
-                self.articles.add(next_hit_article)
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30+20, 90, 1.5, color)
-                self.articles.add(next_hit_article)
-            self.rect.midbottom = self.game_state.spawn_locations[self.player_num]
-            self.rect.bottom -= 200
-            self.sprite.updatePosition(self.rect)
-            self.ecb.normalize()
-            self.ecb.store()
-            self.createMask([255,255,255], 480, True, 12)
-            self.respawn_invulnerable = 480
-            self.doAction('Respawn')
-            
+    def doAirSpecial(self):
+        (forward, backward) = self.getForwardBackwardKeys()
+        direct = self.netDirection(['up', forward, backward, 'down'])
+        if direct == 'up':
+            if self.hasAction('UpSpecial'):
+                self.doAction('UpSpecial')
+            else:
+                self.doAction('UpAirSpecial')
+        elif direct == forward:
+            if self.hasAction('ForwardSpecial'): #If there's a ground/air version, do it
+                self.doAction('ForwardSpecial')
+            else: #If there is not a universal one, do an air one
+                self.doAction('ForwardAirSpecial')
+        elif direct == backward:
+            self.flip()
+            if self.hasAction('ForwardSpecial'):
+                self.doAction('ForwardSpecial')
+            else:
+                self.doAction('ForwardAirSpecial')
+        elif direct == 'down':
+            if self.hasAction('DownSpecial'):
+                self.doAction('DownSpecial')
+            else:
+                self.doAction('DownAirSpecial')
+        else: 
+            if self.hasAction('NeutralSpecial'):
+                self.doAction('NeutralSpecial')
+            else:
+                self.doAction('NeutralAirSpecial')
+
+    def doTech(self):
+        (forward, backward) = self.getForwardBackwardKeys()
+        direct = self.netDirection([forward, backward, 'down', 'up'])
+        if direct == forward:
+            self.doAction('ForwardTech')
+        elif direct == backward:
+            self.doAction('BackwardTech')
+        elif direct == 'down':
+            self.doAction('DodgeTech')
+        else:
+            if self.hasAction('NormalTech'):
+                self.doAction('NormalTech')
+            else:
+                self.doAction('Getup')
+    
+    def doHitStun(self,_hitstun,_trajectory):
+        self.doAction('HitStun')
+        self.current_action.direction = _trajectory
+        self.current_action.last_frame = _hitstun
+        
+    def doProne(self, _length):
+        self.doAction('Prone')
+        self.current_action.last_frame = _length
+
+    def doShield(self, _newShield=True):
+        self.doAction('Shield')
+        self.current_action.new_shield = _newShield
+
+    def doShieldStun(self, _length):
+        self.doAction('ShieldStun')
+        self.current_action.last_frame = _length
+             
+    def doLedgeGrab(self,_ledge):
+        self.doAction('LedgeGrab')
+        self.current_action.ledge = _ledge
+
+    def doTrapped(self, _length):
+        self.doAction('Trapped')
+        self.current_action.last_frame = _length
+
+    def doStunned(self, _length):
+        self.doAction('Stunned')
+        self.current_action.last_frame = _length
+
+    def doGrabbed(self, _height):
+        self.doAction('Grabbed')
+        self.current_action.height = _height
     ########################################################
     #              COLLISIONS AND MOVEMENT                 #
     ########################################################
@@ -714,7 +898,7 @@ class AbstractFighter():
         Parameters
         -----------
         _xFactor : float
-            The factor by which to change xSpeed. Usually self.var['friction'] or self.var['air_resistance']
+            The factor by which to change xSpeed. Usually self.stats['friction'] or self.stats['air_resistance']
         """
         #TODO: I feel like there's a better way to do this but I can't think of one
         if self.change_x > self.preferred_xspeed: #if we're going too fast
@@ -735,10 +919,10 @@ class AbstractFighter():
         """
         if self.change_y > self.preferred_yspeed:
             diff = self.change_y - self.preferred_yspeed
-            self.change_y -= min(diff, _multiplier*self.var['gravity'] * settingsManager.getSetting('gravity')) 
+            self.change_y -= min(diff, _multiplier*self.stats['gravity'] * settingsManager.getSetting('gravity')) 
         elif self.change_y < self.preferred_yspeed:
             diff = self.preferred_yspeed - self.change_y
-            self.change_y += min(diff, _multiplier*self.var['gravity'] * settingsManager.getSetting('gravity'))
+            self.change_y += min(diff, _multiplier*self.stats['gravity'] * settingsManager.getSetting('gravity'))
         
     def checkGround(self):
         self.sprite.updatePosition(self.rect)
@@ -777,6 +961,58 @@ class AbstractFighter():
         (x,y) = getXYFromDM(_direction,_speed)
         self.change_x = x
         self.change_y = y
+    
+    ########################################################
+    #              ANIMATION FUNCTIONS                     #
+    ########################################################
+    
+    def rotateSprite(self,_direction):
+        """ Rotate's the fighter's sprite a given number of degrees
+        
+        Parameters
+        -----------
+        _direction : int
+            The degrees to rotate towards. 0 being forward, 90 being up
+        """
+        self.sprite.rotate(-1 * (90 - _direction)) 
+        
+    def unRotate(self):
+        """ Resets rotation to it's proper, straight upwards value """
+        self.sprite.rotate()
+        
+    def changeSprite(self,_newSprite,_frame=0):
+        """ Changes the fighter's sprite to the one with the given name.
+        Optionally can change into a frame other than zero.
+        
+        Parameters
+        -----------
+        _newSprite : string
+            The name of the sprite in the SpriteLibrary to change to
+        _frame : int : default 0
+            The frame to switch to in the new sprite. Leave off to start the new animation at zero
+        """
+        self.sprite.changeImage(_newSprite)
+        self.current_action.sprite_name = _newSprite
+        if _frame != 0: self.sprite.changeSubImage(_frame)
+        
+    def changeSpriteImage(self,_frame,_loop=False):
+        """ Change the subimage of the current sprite.
+        
+        Parameters
+        -----------
+        _frame : int
+            The frame number to change to.
+        _loop : bool
+            If True, any subimage value larger than maximum will loop back into a new value.
+            For example, if _loop is set, accessing the 6th subimage of an animation 4 frames long will get you the second.
+        """
+        self.sprite.changeSubImage(_frame,_loop)
+
+    def updatePosition(self, _updateRect):
+        """ Passes the updatePosition call to the sprite.
+        See documentation in SpriteLibrary.updatePosition
+        """
+        return self.sprite.updatePosition(_updateRect)
     
     ########################################################
     #                  INPUT FUNCTIONS                     #
@@ -900,9 +1136,6 @@ class AbstractFighter():
             self.last_input_frame = 0
             return True
         return False
-
-    def keyUnreleased(self,_key):
-        return _key in self.keys_held
     
     def keyUp(self, _key, _from = 1, _state = 0.1, _to = 0):
         """ Checks if a key was released within a certain amount of frames.
@@ -924,7 +1157,6 @@ class AbstractFighter():
             return True
         return False
 
-    #A key reinput (release, then press)
     def keyReinput(self, _key, _from = None, _state = 0.1, _to = 0):
         """ Checks if a key was pressed twice within a certain amount of time
         
@@ -954,7 +1186,6 @@ class AbstractFighter():
             return True
         return False
 
-    #A key release which hasn't been pressed yet
     def keyIdle(self, _key, _from = None, _state = 0.1, _to = 0):
         """ Checks if a key was released and not pressed again within a certain amount of time.
         
@@ -987,8 +1218,18 @@ class AbstractFighter():
             return True
         return False
 
-    #Analog directional input
     def getSmoothedInput(self, _distanceBack = None, _maxMagnitude = 1.0):
+        """ Converts buttons into an analog direction. It checks back for a set amount of frames
+        and averages the inputs into a direction.
+        
+        Parameters
+        -----------
+        _distanceBack : int : None
+            How many frames to look back to get direction inputs from
+        _maxMagnitude:
+        
+        """
+        #QUESTION - explain this algorithm a little better
         #TODO If this is a gamepad, simply return its analog input
         if _distanceBack is None:
             smooth_distance = int(self.key_bindings.timing_window['smoothing_window'])
@@ -1048,11 +1289,15 @@ class AbstractFighter():
             smoothed_y /= final_magnitude/_maxMagnitude
         return [smoothed_x, smoothed_y]
     
-    """
-    Returns the angle that the smoothedInput currently points to. 0 being forward, 90 being up
-    @_default: What to return if input is [0,0]
-    """    
+
     def getSmoothedAngle(self,_default=90):
+        """ Returns the angle that the smoothedInput currently points to. 0 being forward, 90 being up
+        
+        Parameters
+        -----------
+        _default : int : 90
+            What to return if input is [0,0]
+        """    
         inputValue = self.getSmoothedInput()
         print(inputValue)
         if (inputValue == [0, 0]):
@@ -1062,21 +1307,42 @@ class AbstractFighter():
         print('ANGLE:',angle)
         return angle
     
-    """
-    This function checks if the player has Smashed in a direction. It does this by noting if the direction was
-    pressed recently and is now above a threshold
-    """
     def checkSmash(self,_direction):
+        """ This function checks if the player has Smashed in a direction. It does this by noting if the direction was
+        pressed recently and is now above a threshold
+        
+        Parameters
+        -----------
+        _direction : String
+            The joystick direction to check for a smash in
+        """
         #TODO different for buttons than joysticks
         return self.keyBuffered(_direction, int(self.key_bindings.timing_window['smash_window']), 0.85)
 
     def checkTap(self, _direction, _firstThreshold=0.6):
+        """ Checks if the player has tapped a button, but not smashed it. If a joystick is used, the checkSmash function should
+        cover this.
+        
+        Parameters
+        -----------
+        _direction : String
+            The joystick direction to check for a smash in
+        _firstThreshold : float : 0.6
+            
+        """
         if self.key_bindings.type == "Keyboard":
             return self.keyBuffered(_direction, _state=1) and self.keyBuffered(_direction, int(self.key_bindings.timing_window['repeat_window'])+1, _firstThreshold, 1)
         else:
             return self.checkSmash(_direction)
 
     def netDirection(self, _checkDirectionList):
+        """ Gets the net total direction of all of the directions currently being held.
+        
+        Parameters
+        -----------
+        _checkDirectionList : 
+        
+        """
         coords = self.getSmoothedInput()
         if not filter(lambda a: a in ['left', 'right', 'up', 'down'], _checkDirectionList):
             return 'neutral'
@@ -1094,29 +1360,29 @@ class AbstractFighter():
         check_dict = {'left': left_check, 'right': right_check, 'up': up_check, 'down': down_check}
         return max(_checkDirectionList, key=lambda k: check_dict[k])
     
-    """
-    This checks for keys that are currently being held, whether or not they've actually been pressed recently.
-    This is used, for example, to transition from a landing state into a running one. Using the InputBuffer
-    would mean that you'd either need to iterate over the WHOLE buffer and look for one less release than press,
-    or limit yourself to having to press the button before landing, whether you were moving in the air or not.
-    If you are looking for a button PRESS, use one of the input methods provided. If you are looking for IF A KEY 
-    IS STILL BEING HELD, this is your function.
-    """
     def keysContain(self,_key,_threshold=0.1):
+        """ Checks for keys that are currently being held, regardless of when they were pressed.
+        
+        Parameters
+        -----------
+        _key : String
+            The key to check for.
+        _threshold : float : 0.1
+            The value that represents a "press", will check for values lower than the threshold
+        """
         if _key in self.keys_held:
             return self.keys_held[_key] >= _threshold
         return False
     
-    """
-    This returns a tuple of the key for forward, then backward
-    Useful for checking if the fighter is pivoting, or doing a back air, or getting the
-    proper key to dash-dance, etc.
-    
-    The best way to use this is something like
-    (key,invkey) = actor.getForwardBackwardKeys()
-    which will assign the variable "key" to the forward key, and "invkey" to the backward key.
-    """
     def getForwardBackwardKeys(self):
+        """ This returns a tuple of the key for forward, then backward
+        Useful for checking if the fighter is pivoting, or doing a back air, or getting the
+        proper key to dash-dance, etc.
+        
+        The best way to use this is something like
+        (key,invkey) = actor.getForwardBackwardKeys()
+        which will assign the variable "key" to the forward key, and "invkey" to the backward key.
+        """
         if self.facing == 1: return ('right','left')
         else: return ('left','right')
     
@@ -1191,7 +1457,7 @@ class AbstractFighter():
         
         p = float(self.damage)
         d = float(_damage)
-        w = float(self.var['weight']) * settingsManager.getSetting('weight')
+        w = float(self.stats['weight']) * settingsManager.getSetting('weight')
         s = float(_kbg)
         b = float(_kb)
         print('weight influence',_weightInfluence)
@@ -1206,7 +1472,7 @@ class AbstractFighter():
 
         trajectory_vec = [math.cos(_trajectory/180*math.pi), math.sin(_trajectory/180*math.pi)]
 
-        additional_kb = .5*_baseHitstun*math.sqrt(abs(trajectory_vec[0])*(self.var['air_resistance']*settingsManager.getSetting('airControl'))**2+abs(trajectory_vec[1])*(self.var['gravity']*settingsManager.getSetting('gravity'))**2)
+        additional_kb = .5*_baseHitstun*math.sqrt(abs(trajectory_vec[0])*(self.stats['air_resistance']*settingsManager.getSetting('airControl'))**2+abs(trajectory_vec[1])*(self.stats['gravity']*settingsManager.getSetting('gravity'))**2)
 
         di_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
         _trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
@@ -1247,6 +1513,50 @@ class AbstractFighter():
         self.change_x += x
         if not self.grounded:
             self.change_y += y
+    
+    def die(self,_respawn = True):
+        """ This function is called when a fighter dies. It spawns the
+        death particles and resets some variables.
+        
+        Parameters
+        -----------
+        _respawn : Boolean
+            Whether or not to respawn the fighter after death
+        """
+        sfxlib = settingsManager.getSfx()
+        if sfxlib.hasSound('death', self.name):
+            self.playSound('death')
+        
+        self.damage = 0
+        self.change_x = 0
+        self.change_y = 0
+        self.jumps = self.stats['jumps']
+        self.data_log.addToData('Falls',1)
+        if self.hit_tagged != None:
+            if hasattr(self.hit_tagged, 'data_log'):
+                self.hit_tagged.data_log.addToData('KOs',1)
+        if _respawn:
+            if self.hit_tagged is not None:
+                color = settingsManager.getSetting('playerColor' + str(self.hit_tagged.player_num))
+            else:
+                color = settingsManager.getSetting('playerColor' + str(self.player_num))
+                
+            self.initialize()
+            for i in range(0, 11):
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30, 30, 1.5, color)
+                self.articles.add(next_hit_article)
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30+10, 60, 1.5, color)
+                self.articles.add(next_hit_article)
+                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30+20, 90, 1.5, color)
+                self.articles.add(next_hit_article)
+            self.rect.midbottom = self.game_state.spawn_locations[self.player_num]
+            self.rect.bottom -= 200
+            self.sprite.updatePosition(self.rect)
+            self.ecb.normalize()
+            self.ecb.store()
+            self.createMask([255,255,255], 480, True, 12)
+            self.respawn_invulnerable = 480
+            self.doAction('Respawn')
     
     ########################################################
     #                 HELPER FUNCTIONS                     #
@@ -1345,40 +1655,6 @@ class AbstractFighter():
         """
         self.facing = -self.facing
         self.sprite.flipX()
-            
-    def changeSprite(self,_newSprite,_frame=0):
-        """ Changes the fighter's sprite to the one with the given name.
-        Optionally can change into a frame other than zero.
-        
-        Parameters
-        -----------
-        _newSprite : string
-            The name of the sprite in the SpriteLibrary to change to
-        _frame : int : default 0
-            The frame to switch to in the new sprite. Leave off to start the new animation at zero
-        """
-        self.sprite.changeImage(_newSprite)
-        self.current_action.sprite_name = _newSprite
-        if _frame != 0: self.sprite.changeSubImage(_frame)
-        
-    def changeSpriteImage(self,_frame,_loop=False):
-        """ Change the subimage of the current sprite.
-        
-        Parameters
-        -----------
-        _frame : int
-            The frame number to change to.
-        _loop : bool
-            If True, any subimage value larger than maximum will loop back into a new value.
-            For example, if _loop is set, accessing the 6th subimage of an animation 4 frames long will get you the second.
-        """
-        self.sprite.changeSubImage(_frame,_loop)
-
-    def updatePosition(self, _updateRect):
-        """ Passes the updatePosition call to the sprite.
-        See documentation in SpriteLibrary.updatePosition
-        """
-        return self.sprite.updatePosition(_updateRect)
           
     def updateLandingLag(self,_lag,_reset=False):
         """ Updates landing lag, but doesn't overwrite a longer lag with a short one.
@@ -1395,7 +1671,85 @@ class AbstractFighter():
         if _reset: self.landing_lag = _lag
         else:
             if _lag > self.landing_lag: self.landing_lag = _lag
-                
+    
+    def createMask(self,_color,_duration,_pulse = False,_pulse_size = 16):
+        """ Creates a color mask sprite over the fighter
+        
+        Parameters
+        -----------
+        _color : String
+            The color of the mask in RGB of the format #RRGGBB
+        _duration : int
+            How many frames should the mask stay active
+        _pulse : bool
+            Should the mask "flash" in transparency, or just stay solid?
+        _pulse_size : int
+            If pulse is true, this is how long it takes for one full rotation of transparency
+        """
+        self.mask = spriteManager.MaskSprite(self.sprite,_color,_duration,_pulse, _pulse_size)
+        
+    def playSound(self,_sound):
+        """ Play a sound effect. If the sound is not in the fighter's SFX library, it will play the base sound.
+        
+        Parameters
+        -----------
+        _sound : String
+            The name of the sound to be played 
+        """
+        sfxlib = settingsManager.getSfx()
+        if sfxlib.hasSound(_sound, self.name):
+            sfxlib.playSound(_sound, self.name)
+        else:
+            sfxlib.playSound(_sound,'base')
+    
+    def activateHitbox(self,_hitbox):
+        """ Activates a hitbox, adding it to your active_hitboxes list.
+        Parameters
+        -----------
+        _hitbox : Hitbox
+            The hitbox to activate
+        """
+        self.active_hitboxes.add(_hitbox)
+        _hitbox.activate()
+
+    def activateHurtbox(self,_hurtbox):
+        """ Activates a hurtbox, adding it to your active_hurtboxes list.
+        _hurtbox : Hurtbox
+            The hitbox to activate
+        """
+        self.active_hurtboxes.add(_hurtbox)
+        
+    def lockHitbox(self,_hbox):
+        """ This will "lock" the hitbox so that another hitbox with the same ID from the same fighter won't hit again.
+        Returns true if it was successful, false if it already exists in the lock.
+        
+        Parameters
+        -----------
+        _hbox : Hitbox
+            The hitbox we are checking for
+        """
+        
+        #Check for invulnerability first
+        if self.invulnerable > 0 or self.respawn_invulnerable > 0:
+            return False
+
+        #If the hitbox belongs to something, get tagged by it
+        if not _hbox.owner is None:
+            self.hit_tagged = _hbox.owner
+
+        if _hbox.hitbox_lock is None:
+            return False
+
+        if _hbox.hitbox_lock in self.hitbox_lock:
+            return False
+
+        self.hitbox_lock.add(_hbox.hitbox_lock)
+        return True
+    
+    def startShield(self):
+        """ Creates a shield particle and adds it to your active articles list """
+        self.articles.add(article.ShieldArticle(settingsManager.createPath("sprites/melee_shield.png"),self))
+                    
 def test():
     fight = AbstractFighter('',0)
     print(fight.__init__.__doc__)

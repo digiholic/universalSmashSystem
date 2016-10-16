@@ -13,6 +13,8 @@ import os
 import actionLoader
 import numpy
 import engine.articleLoader
+import engine.controller as controller
+from global_functions import *
 
 class AbstractFighter():
     def __init__(self,_baseDir,_playerNum):
@@ -276,7 +278,7 @@ class AbstractFighter():
         self.key_bindings.linkObject(self)
         self.key_bindings.flushInputs()
         
-        self.input_buffer = InputBuffer()
+        self.input_buffer = controller.InputBuffer()
         self.keys_held = dict()
         
         self.mask = None
@@ -573,8 +575,6 @@ class AbstractFighter():
         else: return hasattr(self.actions, _actionName)
             
     def loadArticle(self,_articleName):
-        print(self.article_loader,_articleName)
-        
         if hasattr(self.article_loader, 'loadArticle'):
             return self.article_loader.loadArticle(_articleName)
         elif hasattr(self.article_loader, _articleName):
@@ -1052,8 +1052,6 @@ class AbstractFighter():
         return False
 
     #If the button is still being held
-    def keyUnreleased(self,_key):
-        return _key in self.keys_held
     
     #A key release
     def keyUp(self, _key, _from = 1, _state = 0.1, _to = 0):
@@ -1279,66 +1277,3 @@ class AbstractFighter():
 ########################################################
 # Functions that don't require a fighter instance to use
         
-"""
-A helper function to get the X and Y magnitudes from the Direction and Magnitude of a trajectory
-"""
-def getXYFromDM(_direction,_magnitude):
-    rad = math.radians(_direction)
-    x = round(math.cos(rad) * _magnitude,5)
-    y = -round(math.sin(rad) * _magnitude,5)
-    return (x,y)
-
-"""
-Get the direction between two points. 0 means the second point is to the right of the first,
-90 is straight above, 180 is straight left. Used in some knockback calculations.
-"""
-
-def getDirectionBetweenPoints(_p1, _p2):
-    (x1, y1) = _p1
-    (x2, y2) = _p2
-    dx = x2 - x1
-    dy = y1 - y2
-    return (180 * math.atan2(dy, dx)) / math.pi 
-        
-########################################################
-#                  INPUT BUFFER                        #
-########################################################        
-"""
-The input buffer is a list of all of the buttons pressed and released,
-and the frames they're put in on. It's used to check for buttons that
-were pressed in the past, such as for a wall tech, or a buffered jump,
-but can also be used to re-create the entire battle (once a replay manager
-is set up)
-"""
-class InputBuffer():
-    def __init__(self):
-        self.buffer = [[]]
-        self.working_buff = []
-        self.last_index = 0
-      
-    """
-    Pushes the buttons for the frame into the buffer, then extends the index by one.
-    """
-    def push(self):
-        self.buffer.append(dict(self.working_buff))
-        self.working_buff = []
-        self.last_index += 1
-                
-    """
-    Get a sub-buffer of N frames
-    """
-    def getLastNFrames(self,_from,_to=0):
-        ret_buffer = []
-        if _from > self.last_index: _from = self.last_index
-        if _to > self.last_index: _to = self.last_index
-        for i in range(self.last_index - _to,self.last_index - _from,-1):
-            ret_buffer.append(self.buffer[i - _to])
-        return ret_buffer
-    
-    """
-    put a key into the current working buffer. The working buffer is all of the inputs for
-    one frame, before the frame is actually executed.
-    """
-    def append(self,_key):
-        self.working_buff.append(_key)
-

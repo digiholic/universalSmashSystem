@@ -169,3 +169,44 @@ class PadBindings():
             if neg == _action:
                 list_of_bindings.append('Axis ' + str(axis) + ' Negative')
         return list_of_bindings
+    
+    
+"""
+The input buffer is a list of all of the buttons pressed and released,
+and the frames they're put in on. It's used to check for buttons that
+were pressed in the past, such as for a wall tech, or a buffered jump,
+but can also be used to re-create the entire battle (once a replay manager
+is set up)
+"""
+class InputBuffer():
+    def __init__(self):
+        self.buffer = [[]]
+        self.working_buff = []
+        self.last_index = 0
+      
+    """
+    Pushes the buttons for the frame into the buffer, then extends the index by one.
+    """
+    def push(self):
+        self.buffer.append(dict(self.working_buff))
+        self.working_buff = []
+        self.last_index += 1
+                
+    """
+    Get a sub-buffer of N frames
+    """
+    def getLastNFrames(self,_from,_to=0):
+        ret_buffer = []
+        if _from > self.last_index: _from = self.last_index
+        if _to > self.last_index: _to = self.last_index
+        for i in range(self.last_index - _to,self.last_index - _from,-1):
+            ret_buffer.append(self.buffer[i - _to])
+        return ret_buffer
+    
+    """
+    put a key into the current working buffer. The working buffer is all of the inputs for
+    one frame, before the frame is actually executed.
+    """
+    def append(self,_key):
+        self.working_buff.append(_key)
+

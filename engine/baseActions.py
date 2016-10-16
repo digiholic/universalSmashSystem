@@ -24,8 +24,8 @@ class Move(action.Action):
     def update(self, _actor):
         action.Action.update(self, _actor)
         checkGrounded(_actor)
-        _actor.preferred_xspeed = _actor.var['max_ground_speed']*self.direction
-        _actor.accel(_actor.var['static_grip'])
+        _actor.preferred_xspeed = _actor.stats['max_ground_speed']*self.direction
+        _actor.accel(_actor.stats['static_grip'])
 
         (key,invkey) = _actor.getForwardBackwardKeys()
         if self.direction == _actor.facing:
@@ -67,14 +67,14 @@ class Dash(action.Action):
     def update(self, _actor):
         action.Action.update(self, _actor)
         if self.frame == 0:
-            _actor.preferred_xspeed = _actor.var['run_speed']*self.direction
+            _actor.preferred_xspeed = _actor.stats['run_speed']*self.direction
         (key,invkey) = _actor.getForwardBackwardKeys()
         checkGrounded(_actor)
         if not self.pivoted:
-            if _actor.keysContain(invkey) and _actor.change_x != _actor.var['run_speed']*self.direction:
+            if _actor.keysContain(invkey) and _actor.change_x != _actor.stats['run_speed']*self.direction:
                 _actor.flip() #Do the moonwalk!
                 self.pivoted = True
-        _actor.accel(_actor.var['static_grip'])
+        _actor.accel(_actor.stats['static_grip'])
 
         self.frame += 1
         
@@ -92,7 +92,7 @@ class Pivot(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name = "pivot"
         action.Action.setUp(self, _actor)
-        num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['pivot_grip']))
+        num_frames = int(_actor.change_x*_actor.facing/float(_actor.stats['pivot_grip']))
         if num_frames < self.last_frame:
             self.frame = min(self.last_frame-num_frames, self.last_frame-1)
         else:
@@ -109,7 +109,7 @@ class Pivot(action.Action):
         
     def update(self,_actor):
         action.Action.update(self, _actor)
-        _actor.accel(_actor.var['pivot_grip'])
+        _actor.accel(_actor.stats['pivot_grip'])
         if self.frame == 0:
             _actor.flip()
         checkGrounded(_actor)
@@ -139,7 +139,7 @@ class Stop(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name = "stop"
         action.Action.setUp(self, _actor)
-        num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['pivot_grip']))
+        num_frames = int(_actor.change_x*_actor.facing/float(_actor.stats['pivot_grip']))
         if num_frames < self.last_frame:
             self.frame = min(self.last_frame-num_frames, self.last_frame-1)
         else:
@@ -160,7 +160,7 @@ class Stop(action.Action):
 
     def tearDown(self, _actor, nextAction):
         action.Action.tearDown(self, _actor, nextAction)
-        _actor.accel(_actor.var['static_grip'])
+        _actor.accel(_actor.stats['static_grip'])
             
 class RunPivot(action.Action):
     def __init__(self,length=1):
@@ -169,7 +169,7 @@ class RunPivot(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="runPivot" 
         action.Action.setUp(self, _actor)
-        num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['static_grip']))
+        num_frames = int(_actor.change_x*_actor.facing/float(_actor.stats['static_grip']))
         if num_frames < self.last_frame:
             self.frame = min(self.last_frame-num_frames, self.last_frame-1)
         else:
@@ -187,13 +187,13 @@ class RunPivot(action.Action):
         
     def update(self,_actor):
         action.Action.update(self, _actor)
-        _actor.accel(_actor.var['static_grip'])
+        _actor.accel(_actor.stats['static_grip'])
         checkGrounded(_actor)
         if self.frame == 0:
             _actor.flip()
         if self.frame != self.last_frame:
             self.frame += 1
-            _actor.preferred_xspeed = _actor.var['run_speed']*_actor.facing
+            _actor.preferred_xspeed = _actor.stats['run_speed']*_actor.facing
         if self.frame == self.last_frame:
             (key, _) = _actor.getForwardBackwardKeys()
             if _actor.keysContain(key):
@@ -211,7 +211,7 @@ class RunStop(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="runStop"
         action.Action.setUp(self, _actor)
-        num_frames = int(_actor.change_x*_actor.facing/float(_actor.var['static_grip']))
+        num_frames = int(_actor.change_x*_actor.facing/float(_actor.stats['static_grip']))
         if num_frames < self.last_frame:
             self.frame = min(self.last_frame-num_frames, self.last_frame-1)
         else:
@@ -221,7 +221,7 @@ class RunStop(action.Action):
         action.Action.update(self, _actor)
         _actor.preferred_xspeed = 0
         checkGrounded(_actor)
-        _actor.accel(_actor.var['static_grip'])
+        _actor.accel(_actor.stats['static_grip'])
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
         self.frame += 1
@@ -310,13 +310,13 @@ class Crouch(action.Action):
 
     def update(self, _actor):
         action.Action.update(self, _actor)
-        _actor.accel(_actor.var['pivot_grip'])
+        _actor.accel(_actor.stats['pivot_grip'])
         (key, invkey) = _actor.getForwardBackwardKeys()
         checkGrounded(_actor)
         if _actor.keysContain(key):
-            _actor.preferred_xspeed = _actor.var['crawl_speed']*_actor.facing
+            _actor.preferred_xspeed = _actor.stats['crawl_speed']*_actor.facing
         elif _actor.keysContain(invkey):
-            _actor.preferred_xspeed = -_actor.var['crawl_speed']*_actor.facing
+            _actor.preferred_xspeed = -_actor.stats['crawl_speed']*_actor.facing
         else:
             _actor.preferred_xspeed = 0
         
@@ -545,7 +545,7 @@ class Released(action.Action):
         action.Action.setUp(self, _actor)
         _actor.preferred_xspeed = 0
         _actor.change_x = -10 * _actor.facing
-        #_actor.preferred_yspeed = _actor.var['max_fall_speed']
+        #_actor.preferred_yspeed = _actor.stats['max_fall_speed']
         _actor.grabbed_by = None
     
     def stateTransitions(self,_actor):
@@ -554,21 +554,21 @@ class Released(action.Action):
 
         (key, invkey) = _actor.getForwardBackwardKeys()
         if _actor.keysContain(key):
-            _actor.preferred_xspeed = _actor.facing * _actor.var['max_air_speed']
+            _actor.preferred_xspeed = _actor.facing * _actor.stats['max_air_speed']
         elif _actor.keysContain(invkey):
-            _actor.preferred_xspeed = -_actor.facing * _actor.var['max_air_speed']
+            _actor.preferred_xspeed = -_actor.facing * _actor.stats['max_air_speed']
     
         if (_actor.change_x < 0) and not _actor.keysContain('left'):
             _actor.preferred_xspeed = 0
         elif (_actor.change_x > 0) and not _actor.keysContain('right'):
             _actor.preferred_xspeed = 0
 
-        if _actor.change_y >= _actor.var['max_fall_speed'] and _actor.landing_lag < _actor.var['heavy_land_lag']:
-            _actor.landing_lag = _actor.var['heavy_land_lag']
+        if _actor.change_y >= _actor.stats['max_fall_speed'] and _actor.landing_lag < _actor.stats['heavy_land_lag']:
+            _actor.landing_lag = _actor.stats['heavy_land_lag']
 
         if _actor.grounded and _actor.ground_elasticity == 0:
             _actor.preferred_xspeed = 0
-            _actor.preferred_yspeed = _actor.var['max_fall_speed']
+            _actor.preferred_yspeed = _actor.stats['max_fall_speed']
             _actor.doAction('Prone')
             _actor.current_action.last_frame = self.last_frame - self.frame
 
@@ -604,7 +604,7 @@ class HitStun(action.Action):
         if _actor.tech_window > 0:
             _actor.elasticity = 0
         else:
-            _actor.elasticity = _actor.var['hitstun_elasticity']
+            _actor.elasticity = _actor.stats['hitstun_elasticity']
         
         if _actor.tech_window > 0:
             _actor.ground_elasticity = 0
@@ -612,25 +612,25 @@ class HitStun(action.Action):
                 _actor.doTech()
         else:
             if self.last_frame > 15 and self.frame > 2:
-                if _actor.change_y >= _actor.var['max_fall_speed']: 
-                    _actor.ground_elasticity = _actor.var['hitstun_elasticity']
-                elif abs(_actor.change_x) > _actor.var['run_speed']: #Skid trip
+                if _actor.change_y >= _actor.stats['max_fall_speed']: 
+                    _actor.ground_elasticity = _actor.stats['hitstun_elasticity']
+                elif abs(_actor.change_x) > _actor.stats['run_speed']: #Skid trip
                     _actor.ground_elasticity = 0
                     if _actor.grounded and not self.feet_planted:
                         _actor.doAction('Prone')
-                elif _actor.change_y < _actor.var['max_fall_speed']/2.0: 
+                elif _actor.change_y < _actor.stats['max_fall_speed']/2.0: 
                     _actor.ground_elasticity = 0
                     if _actor.grounded and not self.feet_planted: 
                         _actor.doAction('Prone')
                 else: 
-                    _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
+                    _actor.ground_elasticity = _actor.stats['hitstun_elasticity']/2
             elif self.last_frame <= 15:
                 _actor.ground_elasticity = 0
                 if _actor.grounded and self.do_slow_getup:
                     print("Successful jab reset")
                     _actor.doAction('SlowGetup')
             else:
-                _actor.ground_elasticity = _actor.var['hitstun_elasticity']
+                _actor.ground_elasticity = _actor.stats['hitstun_elasticity']
         
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
@@ -665,7 +665,7 @@ class HitStun(action.Action):
                 if _actor.grounded:
                     _actor.doAction('NeutralAction')
                 else:
-                    _actor.landing_lag = _actor.var['heavy_land_lag']
+                    _actor.landing_lag = _actor.stats['heavy_land_lag']
                     _actor.doAction('Fall')
 
         self.frame += 1
@@ -691,7 +691,7 @@ class Tumble(action.Action):
         if _actor.tech_window > 0:
             _actor.elasticity = 0
         else:
-            _actor.elasticity = _actor.var['hitstun_elasticity']/2
+            _actor.elasticity = _actor.stats['hitstun_elasticity']/2
         
             
         if _actor.tech_window > 0:
@@ -699,9 +699,9 @@ class Tumble(action.Action):
             if _actor.grounded:
                 _actor.doTech()
         else:
-            if _actor.change_y >= _actor.var['max_fall_speed']:#Hard landing during tumble
-                _actor.ground_elasticity = _actor.var['hitstun_elasticity']/2
-            elif _actor.change_y < _actor.var['max_fall_speed']/2.0: #Soft landing during tumble
+            if _actor.change_y >= _actor.stats['max_fall_speed']:#Hard landing during tumble
+                _actor.ground_elasticity = _actor.stats['hitstun_elasticity']/2
+            elif _actor.change_y < _actor.stats['max_fall_speed']/2.0: #Soft landing during tumble
                 _actor.ground_elasticity = 0
                 if _actor.grounded: 
                     _actor.doAction('Prone')
@@ -836,12 +836,12 @@ class Jump(action.Action):
         if self.frame == self.jump_frame:
             _actor.grounded = False
             if _actor.keysContain('jump'):
-                _actor.change_y = -_actor.var['jump_height']
-            else: _actor.change_y = -_actor.var['short_hop_height']
-            if _actor.change_x > _actor.var['aerial_transition_speed']:
-                _actor.change_x = _actor.var['aerial_transition_speed']
-            elif _actor.change_x < -_actor.var['aerial_transition_speed']:
-                _actor.change_x = -_actor.var['aerial_transition_speed']
+                _actor.change_y = -_actor.stats['jump_height']
+            else: _actor.change_y = -_actor.stats['short_hop_height']
+            if _actor.change_x > _actor.stats['aerial_transition_speed']:
+                _actor.change_x = _actor.stats['aerial_transition_speed']
+            elif _actor.change_x < -_actor.stats['aerial_transition_speed']:
+                _actor.change_x = -_actor.stats['aerial_transition_speed']
         if self.frame < self.last_frame:
             self.frame += 1
         if self.frame == self.last_frame and not _actor.keysContain('jump'):
@@ -873,7 +873,7 @@ class AirJump(action.Action):
 
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        _actor.preferred_yspeed = _actor.var['max_fall_speed']
+        _actor.preferred_yspeed = _actor.stats['max_fall_speed']
         
     def update(self,_actor):
         action.Action.update(self, _actor)
@@ -882,14 +882,14 @@ class AirJump(action.Action):
             _actor.preferred_yspeed = 0
         if self.frame == self.jump_frame:
             _actor.grounded = False
-            _actor.change_y = -_actor.var['air_jump_height']
+            _actor.change_y = -_actor.stats['air_jump_height']
             _actor.jumps -= 1
             if _actor.keysContain('left') and _actor.facing == 1:
                 _actor.flip()
-                _actor.change_x = _actor.facing * _actor.var['max_air_speed']
+                _actor.change_x = _actor.facing * _actor.stats['max_air_speed']
             elif _actor.keysContain('right') and _actor.facing == -1:
                 _actor.flip()
-                _actor.change_x = _actor.facing * _actor.var['max_air_speed']
+                _actor.change_x = _actor.facing * _actor.stats['max_air_speed']
         if self.frame < self.last_frame:
             self.frame += 1
         if self.frame == self.last_frame:
@@ -903,7 +903,7 @@ class Fall(action.Action):
         if self.sprite_name=="": self.sprite_name ="fall"
         action.Action.setUp(self, _actor)
         _actor.preferred_xspeed = 0
-        _actor.preferred_yspeed = _actor.var['max_fall_speed']
+        _actor.preferred_yspeed = _actor.stats['max_fall_speed']
     
     def stateTransitions(self,_actor):
         action.Action.stateTransitions(self, _actor)
@@ -963,7 +963,7 @@ class Land(action.Action):
         action.Action.update(self, _actor)
         #_actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
         if self.frame == 0:
-            _actor.preferred_yspeed = _actor.var['max_fall_speed']
+            _actor.preferred_yspeed = _actor.stats['max_fall_speed']
             self.last_frame = _actor.landing_lag
             lcancel = settingsManager.getSetting('lagCancel')
             if lcancel == 'normal':
@@ -1002,7 +1002,7 @@ class HelplessLand(action.Action):
         #_actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
         if self.frame == 0:
             _actor.change_y = 0
-            _actor.preferred_yspeed = _actor.var['max_fall_speed']
+            _actor.preferred_yspeed = _actor.stats['max_fall_speed']
             self.last_frame = _actor.landing_lag
         if self.frame >= self.last_frame:
             _actor.landing_lag = 0
@@ -1183,7 +1183,7 @@ class ForwardRoll(action.Action):
         if _actor.grounded is False:
             _actor.doAction('Fall')
         if self.frame == 1:
-            _actor.change_x = _actor.facing * _actor.var['dodge_speed']
+            _actor.change_x = _actor.facing * _actor.stats['dodge_speed']
         elif self.frame == self.start_invuln_frame:
             _actor.createMask([255,255,255], 22, True, 24)
             _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
@@ -1221,7 +1221,7 @@ class BackwardRoll(action.Action):
         if _actor.grounded is False:
             _actor.doAction('Fall')
         if self.frame == 1:
-            _actor.change_x = _actor.facing * -_actor.var['dodge_speed']
+            _actor.change_x = _actor.facing * -_actor.stats['dodge_speed']
         elif self.frame == self.start_invuln_frame:
             _actor.createMask([255,255,255], 22, True, 24)
             _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
@@ -1288,20 +1288,20 @@ class AirDodge(action.Action):
         
         if settingsManager.getSetting('airDodgeType') == 'directional':
             self.move_vec = _actor.getSmoothedInput(int(_actor.key_bindings.timing_window['smoothing_window']))
-            _actor.change_x = self.move_vec[0]*_actor.var['dodge_speed']
-            _actor.change_y = self.move_vec[1]*_actor.var['dodge_speed']
+            _actor.change_x = self.move_vec[0]*_actor.stats['dodge_speed']
+            _actor.change_y = self.move_vec[1]*_actor.stats['dodge_speed']
         if not settingsManager.getSetting('freeDodgeSpecialFall') and settingsManager.getSetting('airDodgeType') == 'directional':
             _actor.airdodges = 0
 
         if settingsManager.getSetting('enableWavedash'):
-            _actor.updateLandingLag(_actor.var['wavedash_lag'])
+            _actor.updateLandingLag(_actor.stats['wavedash_lag'])
         else:
             _actor.updateLandingLag(int(settingsManager.getSetting('airDodgeLag')))
         
     def tearDown(self,_actor,_nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
         if settingsManager.getSetting('airDodgeType') == 'directional' and not isinstance(_nextAction, AirGrab):
-            _actor.preferred_yspeed = _actor.var['max_fall_speed']
+            _actor.preferred_yspeed = _actor.stats['max_fall_speed']
             _actor.preferred_xspeed = 0
         if _actor.mask: _actor.mask = None
         if _actor.invulnerable > 0:
@@ -1327,7 +1327,7 @@ class AirDodge(action.Action):
                 _actor.change_x = 0
                 _actor.change_y = 0
                 _actor.preferred_xspeed = 0
-                _actor.preferred_yspeed = _actor.var['max_fall_speed']
+                _actor.preferred_yspeed = _actor.stats['max_fall_speed']
         if _actor.keyHeld('attack') and self.frame < 8:
             if _actor.hasAction('AirGrab'):
                 _actor.doAction('AirGrab')
@@ -1384,7 +1384,7 @@ class ForwardTech(BaseTech):
         if _actor.grounded is False:
             _actor.doAction('Fall')
         if self.frame == 1:
-            _actor.change_x = _actor.facing * _actor.var['dodge_speed']
+            _actor.change_x = _actor.facing * _actor.stats['dodge_speed']
         elif self.frame == self.start_invuln_frame:
             _actor.createMask([255,255,255], 22, True, 24)
             _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
@@ -1410,7 +1410,7 @@ class BackwardTech(BaseTech):
         if _actor.grounded is False:
             _actor.doAction('Fall')
         if self.frame == 1:
-            _actor.change_x = _actor.facing * -_actor.var['dodge_speed']
+            _actor.change_x = _actor.facing * -_actor.stats['dodge_speed']
         elif self.frame == self.start_invuln_frame:
             _actor.createMask([255,255,255], 22, True, 24)
             _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
@@ -1501,7 +1501,7 @@ class LedgeGrab(BaseLedge):
         
     def update(self, _actor):
         BaseLedge.update(self, _actor)
-        _actor.jumps = _actor.var['jumps']
+        _actor.jumps = _actor.stats['jumps']
         _actor.airdodges = 1
         if self.ledge.side == 'left':
             if _actor.facing == -1:
@@ -1541,7 +1541,7 @@ class BaseLedgeGetup(BaseLedge):
         _actor.invulnerable = 0
         _actor.mask = None
         _actor.preferred_xspeed = 0
-        _actor.preferred_yspeed = _actor.var['max_fall_speed']
+        _actor.preferred_yspeed = _actor.stats['max_fall_speed']
         if _actor.grounded:
             _actor.change_x = 0
             _actor.change_y = 0
@@ -1621,10 +1621,10 @@ class AirAttack(BaseAttack):
             if _actor.keysContain('down'):
                 _actor.platform_phase = 1
                 if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
-                    _actor.calcGrav(_actor.var['fastfall_multiplier'])
+                    _actor.calcGrav(_actor.stats['fastfall_multiplier'])
         if _actor.grounded and _actor.ground_elasticity == 0:
             _actor.preferred_xspeed = 0
-            _actor.preferred_yspeed = _actor.var['max_fall_speed']
+            _actor.preferred_yspeed = _actor.stats['max_fall_speed']
             _actor.doAction('Land')
                 
     def update(self, _actor):
@@ -1718,14 +1718,14 @@ class AirGrab(AirAttack):
             _actor.airdodges = 0
 
         if settingsManager.getSetting('enableWavedash'):
-            _actor.updateLandingLag(_actor.var['wavedash_lag'])
+            _actor.updateLandingLag(_actor.stats['wavedash_lag'])
         else:
             _actor.updateLandingLag(int(settingsManager.getSetting('airDodgeLag')))
         
     def tearDown(self,_actor,_nextAction):
         AirAttack.tearDown(self, _actor, _nextAction)
         if settingsManager.getSetting('airDodgeType') == 'directional':
-            _actor.preferred_yspeed = _actor.var['max_fall_speed']
+            _actor.preferred_yspeed = _actor.stats['max_fall_speed']
             _actor.preferred_xspeed = 0
     
     def stateTransitions(self, _actor):
@@ -1926,25 +1926,25 @@ def airState(_actor):
         _actor.platform_phase = 1
         if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
             print("Trying to fastfall")
-            _actor.calcGrav(_actor.var['fastfall_multiplier'])
+            _actor.calcGrav(_actor.stats['fastfall_multiplier'])
 
 def tumbleState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
     if _actor.keysContain(key):
-        _actor.preferred_xspeed = _actor.facing * _actor.var['max_air_speed']
+        _actor.preferred_xspeed = _actor.facing * _actor.stats['max_air_speed']
     elif _actor.keysContain(invkey):
-        _actor.preferred_xspeed = -_actor.facing * _actor.var['max_air_speed']
+        _actor.preferred_xspeed = -_actor.facing * _actor.stats['max_air_speed']
     
     if (_actor.change_x < 0) and not _actor.keysContain('left'):
         _actor.preferred_xspeed = 0
     if (_actor.change_x > 0) and not _actor.keysContain('right'):
         _actor.preferred_xspeed = 0
 
-    if not (_actor.change_x < -_actor.var['max_air_speed'] and _actor.keysContain('left')) or not (_actor.change_x > _actor.var['max_air_speed'] and _actor.keysContain('right')):
-        _actor.accel(_actor.var['air_control'])
+    if not (_actor.change_x < -_actor.stats['max_air_speed'] and _actor.keysContain('left')) or not (_actor.change_x > _actor.stats['max_air_speed'] and _actor.keysContain('right')):
+        _actor.accel(_actor.stats['air_control'])
 
-    if _actor.change_y >= _actor.var['max_fall_speed'] and _actor.landing_lag < _actor.var['heavy_land_lag']:
-        _actor.landing_lag = _actor.var['heavy_land_lag']
+    if _actor.change_y >= _actor.stats['max_fall_speed'] and _actor.landing_lag < _actor.stats['heavy_land_lag']:
+        _actor.landing_lag = _actor.stats['heavy_land_lag']
 
     if _actor.tech_window == 0:
         tapReversible(_actor)
@@ -1960,7 +1960,7 @@ def tumbleState(_actor):
     elif _actor.keysContain('down'):
         _actor.platform_phase = 1
         if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
-            _actor.calcGrav(_actor.var['fastfall_multiplier'])
+            _actor.calcGrav(_actor.stats['fastfall_multiplier'])
             
 def moveState(_actor):
     (key,invkey) = _actor.getForwardBackwardKeys()
@@ -2060,7 +2060,7 @@ def jumpState(_actor):
     elif _actor.keysContain('down'):
         _actor.platform_phase = 1
         if not _actor.keyHeld('down', _actor.key_bindings.timing_window['smash_window'], _to=1):
-            _actor.calcGrav(_actor.var['fastfall_multiplier'])
+            _actor.calcGrav(_actor.stats['fastfall_multiplier'])
             
 def shieldState(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
@@ -2148,47 +2148,47 @@ def proneState(_actor):
 def airControl(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
     if _actor.keysContain(key):
-        _actor.preferred_xspeed = _actor.facing * _actor.var['max_air_speed']
+        _actor.preferred_xspeed = _actor.facing * _actor.stats['max_air_speed']
     elif _actor.keysContain(invkey):
-        _actor.preferred_xspeed = -_actor.facing * _actor.var['max_air_speed']
+        _actor.preferred_xspeed = -_actor.facing * _actor.stats['max_air_speed']
     
     if (_actor.change_x < 0) and not _actor.keysContain('left'):
         _actor.preferred_xspeed = 0
     if (_actor.change_x > 0) and not _actor.keysContain('right'):
         _actor.preferred_xspeed = 0
 
-    if not (_actor.change_x < -_actor.var['max_air_speed'] and _actor.keysContain('left')) or not (_actor.change_x > _actor.var['max_air_speed'] and _actor.keysContain('right')):
-        _actor.accel(_actor.var['air_control'])
+    if not (_actor.change_x < -_actor.stats['max_air_speed'] and _actor.keysContain('left')) or not (_actor.change_x > _actor.stats['max_air_speed'] and _actor.keysContain('right')):
+        _actor.accel(_actor.stats['air_control'])
 
-    if _actor.change_y >= _actor.var['max_fall_speed'] and _actor.landing_lag < _actor.var['heavy_land_lag']:
-        _actor.landing_lag = _actor.var['heavy_land_lag']
+    if _actor.change_y >= _actor.stats['max_fall_speed'] and _actor.landing_lag < _actor.stats['heavy_land_lag']:
+        _actor.landing_lag = _actor.stats['heavy_land_lag']
 
     if _actor.grounded and _actor.ground_elasticity == 0 and _actor.tech_window == 0:
         _actor.preferred_xspeed = 0
-        _actor.preferred_yspeed = _actor.var['max_fall_speed']
+        _actor.preferred_yspeed = _actor.stats['max_fall_speed']
         _actor.doAction('Land')
 
 def helplessControl(_actor):
     (key, invkey) = _actor.getForwardBackwardKeys()
     if _actor.keysContain(key):
-        _actor.preferred_xspeed = _actor.facing * _actor.var['max_air_speed']
+        _actor.preferred_xspeed = _actor.facing * _actor.stats['max_air_speed']
     elif _actor.keysContain(invkey):
-        _actor.preferred_xspeed = -_actor.facing * _actor.var['max_air_speed']
+        _actor.preferred_xspeed = -_actor.facing * _actor.stats['max_air_speed']
     
     if (_actor.change_x < 0) and not _actor.keysContain('left'):
         _actor.preferred_xspeed = 0
     elif (_actor.change_x > 0) and not _actor.keysContain('right'):
         _actor.preferred_xspeed = 0
 
-    if not (_actor.change_x < -_actor.var['max_air_speed'] and _actor.keysContain('left')) or not (_actor.change_x > _actor.var['max_air_speed'] and _actor.keysContain('right')):
-        _actor.accel(_actor.var['air_control'])
+    if not (_actor.change_x < -_actor.stats['max_air_speed'] and _actor.keysContain('left')) or not (_actor.change_x > _actor.stats['max_air_speed'] and _actor.keysContain('right')):
+        _actor.accel(_actor.stats['air_control'])
 
-    if _actor.change_y >= _actor.var['max_fall_speed'] and _actor.landing_lag < _actor.var['heavy_land_lag']:
-        _actor.landing_lag = _actor.var['heavy_land_lag']
+    if _actor.change_y >= _actor.stats['max_fall_speed'] and _actor.landing_lag < _actor.stats['heavy_land_lag']:
+        _actor.landing_lag = _actor.stats['heavy_land_lag']
 
     if _actor.grounded and _actor.ground_elasticity == 0 and _actor.tech_window == 0:
         _actor.preferred_xspeed = 0
-        _actor.preferred_yspeed = _actor.var['max_fall_speed']
+        _actor.preferred_yspeed = _actor.stats['max_fall_speed']
         _actor.doAction('HelplessLand')
 
 def grabLedges(_actor):

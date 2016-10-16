@@ -82,8 +82,8 @@ class VarData():
         
     def unpack(self,_action,_actor):
         if self.source == 'actor':
-            if _actor.var.has_key(self.var):
-                return _actor.var[self.var]
+            if _actor.stats.has_key(self.var):
+                return _actor.stats[self.var]
             elif hasattr(_actor, self.var):
                 return getattr(_actor, self.var)
             else: return None
@@ -471,8 +471,6 @@ class ifButton(SubAction):
             cond = _actor.keyTapped(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyHeld':
             cond = _actor.keyHeld(self.button, working_from, self.threshold, self.buffer_to)
-        elif self.check == 'keyUnreleased':
-            cond = _actor.keyUnreleased(self.button)
         elif self.check == 'keyUp':
             cond = _actor.keyUp(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyReinput':
@@ -671,7 +669,7 @@ class changeFighterPreferredSpeed(SubAction):
             if type(self.speed_x) is tuple:
                 owner,value = self.speed_x
                 if owner == 'actor':
-                    self.speed_x = _actor.var[value]
+                    self.speed_x = _actor.stats[value]
                 elif owner == 'action':
                     self.speed_x = getattr(self, value)
             if self.x_relative: _actor.preferred_xspeed = self.speed_x*_actor.facing
@@ -681,7 +679,7 @@ class changeFighterPreferredSpeed(SubAction):
             if type(self.speed_y) is tuple:
                 owner,value = self.speed_y
                 if owner == 'actor':
-                    self.speed_y = _actor.var[value]
+                    self.speed_y = _actor.stats[value]
                 elif owner == 'action':
                     self.speed_y = getattr(self, value)
             _actor.preferred_yspeed = self.speed_y
@@ -741,7 +739,7 @@ class changeFighterSpeed(SubAction):
                 if type(self.speed_x) is tuple:
                     owner,value = self.speed_x
                     if owner == 'actor':
-                        self.speed_x = _actor.var[value]
+                        self.speed_x = _actor.stats[value]
                     elif owner == 'action':
                         self.speed_x = getattr(self, value)
                 if self.x_relative: _actor.change_x = self.speed_x*_actor.facing
@@ -751,7 +749,7 @@ class changeFighterSpeed(SubAction):
                 if type(self.speed_y) is tuple:
                     owner,value = self.speed_y
                     if owner == 'actor':
-                        self.speed_y = _actor.var[value]
+                        self.speed_y = _actor.stats[value]
                     elif owner == 'action':
                         self.speed_y = getattr(self, value)
                 if self.y_relative:_actor.change_y += self.speed_y
@@ -980,9 +978,9 @@ class modifyFighterVar(SubAction):
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
         if not self.attr =='':
-            if _actor.var.has_key(self.attr):
-                if self.relative: _actor.var[self.attr] += self.val
-                else: _actor.var[self.attr] = self.val
+            if _actor.stats.has_key(self.attr):
+                if self.relative: _actor.stats[self.attr] += self.val
+                else: _actor.stats[self.attr] = self.val
             else:
                 if self.relative:
                     setattr(_actor, self.attr, getattr(_actor, self.attr)+1)
@@ -1708,8 +1706,8 @@ class debugAction(SubAction):
             if source == 'action':
                 print('action.'+name+': '+str(getattr(_action, name)))
             else:
-                if _actor.var.has_key(name):
-                    print('fighter['+name+']: '+str(_actor.var[name]))
+                if _actor.stats.has_key(name):
+                    print('fighter['+name+']: '+str(_actor.stats[name]))
                 else:
                     print('fighter.'+name+': '+str(getattr(_actor, name)))
         else:
