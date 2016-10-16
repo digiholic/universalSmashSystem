@@ -170,9 +170,9 @@
 	</Grabbing>
 	
 	<Getup>
-		<length>20</length>
+		<length>16</length>
 		<sprite>land</sprite>
-		<sprite_rate>-5</sprite_rate>
+		<sprite_rate>-4</sprite_rate>
 	</Getup>
 	
 	<Shield>
@@ -601,8 +601,8 @@
 				<center>0,0</center>
 				<size>80,80</size>
 				<damage>3</damage>
-				<base_knockback>8</base_knockback>
-				<knockback_growth>0.02</knockback_growth>
+				<base_knockback>2</base_knockback>
+				<knockback_growth>0</knockback_growth>
 				<velocity_multiplier>0</velocity_multiplier>
 				<y_bias>-4</y_bias>
 				<x_draw>-.1</x_draw>
@@ -615,6 +615,15 @@
 		</transitions>
 		
 		<frame number="4">
+			<setVar source="action">
+				<name>doRepeat</name>
+				<value>False</value>
+			</setVar>
+			<ifButton>
+				<button check="keysContain">attack</button>
+				<pass>setRepeat</pass>
+				<fail>doFinisher</fail>
+			</ifButton>
 			<playSound>jab</playSound>
 			<activateHitbox>jab</activateHitbox>
 		</frame>
@@ -629,14 +638,26 @@
 			<changeSubimage relative="True">1</changeSubimage>
 		</frame>
 		<frame number="14">
-			<ifButton>
-				<button check="keysContain">attack</button>
+			<if function="==">
+				<variable source="action">doRepeat</variable>
 				<pass>repeatAttack</pass>
-			</ifButton>
+			</if>
 		</frame>
 
 		<conditional name="repeatAttack">
-			<doAction>NeutralAttack</doAction>
+			<setFrame>0</setFrame>
+		</conditional>
+		<conditional name="setRepeat">
+			<setVar source="action">
+				<name>doRepeat</name>
+				<value>True</value>
+			</setVar>
+		</conditional>
+		<conditional name="doFinisher">
+			<modifyHitbox name="jab">
+				<base_knockback>8</base_knockback>
+				<knockback_growth>0.06</knockback_growth>
+			</modifyHitbox>
 		</conditional>
 	</NeutralAttack>
 	

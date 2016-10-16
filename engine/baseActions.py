@@ -590,7 +590,7 @@ class HitStun(action.Action):
         (direct,_) = _actor.getDirectionMagnitude()
         if self.last_frame > 15 and _actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not _actor.grounded:
             print('Try tech')
-            _actor.tech_window = 7
+            _actor.tech_window = 12
             self.tech_cooldown = 40
         if _actor.tech_window > 0:
             _actor.elasticity = 0
@@ -715,7 +715,7 @@ class Tumble(action.Action):
         if self.tech_cooldown > 0: self.tech_cooldown -= 1
         
 class Prone(action.Action):
-    def __init__(self,_length=30):
+    def __init__(self,_length=25):
         action.Action.__init__(self, _length)
         
     def setUp(self, _actor):
@@ -1436,7 +1436,7 @@ class DodgeTech(BaseTech):
 
 class NormalTech(BaseTech):
     def __init__(self):
-        BaseTech.__init__(self, 20)
+        BaseTech.__init__(self, 16)
 
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name="getup"
