@@ -533,12 +533,12 @@ class AbstractFighter():
     xFactor - The factor by which to change xSpeed. Usually self.var['friction'] or self.var['air_resistance']
     """
     def accel(self,_xFactor):
-        if self.change_x > self.preferred_xspeed: #if we're going too fast
-            diff = self.change_x - self.preferred_xspeed
-            self.change_x -= min(diff,_xFactor*(settingsManager.getSetting('friction') if self.grounded else settingsManager.getSetting('airControl')))
-        elif self.change_x < self.preferred_xspeed: #if we're going too slow
+        if self.change_x < self.preferred_xspeed: #if we're going too slow
             diff = self.preferred_xspeed - self.change_x
             self.change_x += min(diff,_xFactor*(settingsManager.getSetting('friction') if self.grounded else settingsManager.getSetting('airControl')))
+        elif self.change_x > self.preferred_xspeed: #if we're going too fast
+            diff = self.change_x - self.preferred_xspeed
+            self.change_x -= min(diff,_xFactor*(settingsManager.getSetting('friction') if self.grounded else settingsManager.getSetting('airControl')))
     
     # Change ySpeed according to gravity.        
     def calcGrav(self, _multiplier=1):
@@ -909,6 +909,7 @@ class AbstractFighter():
 
     def applyPushback(self, _kb, _trajectory, _hitlag):
         self.hitstop = math.floor(_hitlag*settingsManager.getSetting('hitlag'))
+        self.hitstop_pos = list(self.rect.center)
         print(self.hitstop)
         (x, y) = getXYFromDM(_trajectory, _kb)
         self.change_x += x

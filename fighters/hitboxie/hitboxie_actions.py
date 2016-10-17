@@ -24,7 +24,8 @@ class ForwardSpecial(action.Action):
                      'y_bias': 0,
                      'hitlag_multiplier': 0,
                      'transcendence': -1,
-                     'priority': 0
+                     'priority': 0,
+                     'trajectory': 90
                      }
         variables = {'center': [0,0],
                      'size': [80,80],
