@@ -106,7 +106,10 @@ class Hitbox(spriteManager.RectSprite):
         self.knockback_growth = self.variable_dict['knockback_growth']+self.charge*self.variable_dict['charge_knockback_growth']
         
     def getTrajectory(self):
-        return self.trajectory
+        if self.article is None:
+            return self.owner.getForwardWithOffset(self.trajectory)
+        else:
+            return getForwardWithOffset(self.trajectory, self.article)
 
     def compareTo(self, _other):
         if not isinstance(_other, InertHitbox) and (isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox)) and self.owner != _other.owner and _other.hitbox_lock not in self.owner.hitbox_lock:
@@ -197,7 +200,7 @@ class DamageHitbox(Hitbox):
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if _other.lockHitbox(self):
                 if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier)
+                    self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier)
                 self.owner.data_log.addToData('Damage Dealt',self.damage)
                 _other.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
                 _other.trail_color = self.trail_color
@@ -231,7 +234,7 @@ class SakuraiAngleHitbox(DamageHitbox):
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
             if _other.lockHitbox(self):
                 if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier)
+                    self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 3.0 + 3.0)*self.hitlag_multiplier)
                 p = float(_other.damage)
                 d = float(self.damage)
                 w = float(_other.var['weight']) * settingsManager.getSetting('weight')
@@ -268,10 +271,18 @@ class AutolinkHitbox(DamageHitbox):
         self.hitbox_type = 'autolink'
 
     def getTrajectory(self):
-        if self.owner.change_y+self.y_bias == 0 and self.owner.change_x + self.x_bias*self.owner.facing == 0:
-            return self.trajectory + 90
-        else: 
-            return self.trajectory-math.atan2(self.y_bias, self.x_bias*self.owner.facing)*180/math.pi
+        if self.article == None:
+            if self.owner.change_y+self.y_bias == 0 and self.owner.change_x+self.x_bias*self.owner.facing == 0:
+                return self.owner.getForwardWithOffset(self.owner.facing*(90+self.trajectory))
+            else:
+                angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias*self.owner.facing))*180/math.pi
+                return self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory))
+        else:
+            if self.article.change_y+self.y_bias == 0 and self.article.change_x+self.x_bias*self.owner.facing == 0:
+                return getForwardWithOffset(self.article.facing*(90+self.trajectory), self.article)
+            else:
+                angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias*self.article.facing))*180/math.pi
+                return getForwardWithOffset(self.article.facing*(angle+self.trajectory), self.article)
         
     def onCollision(self, _other):
         if 'AbstractFighter' in list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]:
@@ -307,10 +318,18 @@ class FunnelHitbox(DamageHitbox):
         self.hitbox_type = 'funnel'
 
     def getTrajectory(self):
-        if self.owner.change_y+self.y_bias == 0 and self.owner.change_x + self.x_bias*self.owner.facing == 0:
-            return self.trajectory + 90
-        else: 
-            return self.trajectory-math.atan2(self.y_bias, self.x_bias*self.owner.facing)*180/math.pi
+        if self.article == None:
+            if self.y_bias == 0 and self.x_bias == 0:
+                return self.owner.getForwardWithOffset(self.owner.facing*(90+self.trajectory))
+            else:
+                angle = -math.atan2(self.y_bias, self.x_bias*self.owner.facing)*180/math.pi
+                return self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory))
+        else:
+            if self.y_bias == 0 and self.x_bias == 0:
+                return getForwardWithOffset(self.article.facing*(90+self.trajectory), self.article)
+            else:
+                angle = -math.atan2(self.y_bias, self.x_bias*self.article.facing)*180/math.pi
+                return getForwardWithOffset(self.article.facing*(angle+self.trajectory), self.article)
         
     def onCollision(self,_other):
         Hitbox.onCollision(self, _other)

@@ -298,7 +298,7 @@ class AbstractFighter():
         # Hitstop freezes the character for a few frames when hitting or being hit.
         self.hitstop = 0
         self.hitstop_vibration = (0,0)
-        self.hitstop_pos = (0,0)
+        self.hitstop_pos = [0,0]
         
         # HitboxLock is a list of hitboxes that will not hit the fighter again for a given amount of time.
         # Each entry in the list is a hitboxLock object
@@ -389,8 +389,10 @@ class AbstractFighter():
             #Smash directional influence AKA hitstun shuffling
             di_vec = self.getSmoothedInput(int(self.key_bindings.timing_window['smoothing_window']))
             self.rect.x += di_vec[0]*5
+            self.hitstop_pos[0] += di_vec[0]*5
             if not self.grounded or isinstance(self.current_action, baseActions.HitStun):
                 self.rect.y += di_vec[1]*5
+                self.hitstop_pos[1] += di_vec[1]*5
 
             self.sprite.updatePosition(self.rect)
             self.ecb.normalize()
@@ -857,7 +859,7 @@ class AbstractFighter():
             self.hitstop_vibration = (3,0)
         else:
             self.hitstop_vibration = (0,3)
-        self.hitstop_pos = self.rect.center
+        self.hitstop_pos = list(self.rect.center)
 
         #Crouch cancelling
         if self.current_action.name in ('Crouch', 'CrouchCancel'):
