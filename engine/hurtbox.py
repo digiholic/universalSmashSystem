@@ -1,5 +1,7 @@
 import spriteManager
+import settingsManager
 import pygame
+import math
 
 class Hurtbox(spriteManager.RectSprite):
     def __init__(self,_owner,_variables = dict()):
@@ -30,7 +32,7 @@ class Hurtbox(spriteManager.RectSprite):
         spriteManager.RectSprite.__init__(self,pygame.Rect([0,0],[working_width, working_height]),[255,255,0])
         self.rect.center = [_owner.rect.center[0] + self.center[0], _owner.rect.center[1] + self.center[1]]
         self.article = None
-        self.armor = DefaultArmor()
+        self.armor = Armor()
         
     #Add to later
     def getFixRect(self):
@@ -61,68 +63,73 @@ class Hurtbox(spriteManager.RectSprite):
     
     @_other: The hitbox that hit this hurtbox
     """
-    def onHit(self,_other):
-        pass
-    
+    def onHit(self,_hitbox):
+        percent = float(self.owner.damage)
+        damage = float(_hitbox.damage)
+        weight = float(self.owner.stats['weight']) * settingsManager.getSetting('weight')
+        knockback_growth = float(_hitbox.knockback_growth)
+        base_knockback = float(_hitbox.base_knockback)
+        
+        base_hitstun = _hitbox.base_hitstun
+        hitstun_multiplier = _hitbox.hitstun_multiplier
+        
+        hitlag_multiplier = _hitbox.hitlag_multiplier
+        
+        trajectory = _hitbox.trajectory
+        
+        # Thank you, ssbwiki!
+        percent_portion = (percent/10.0) + (percent*damage)/20.0
+        weight_portion = 200.0/(weight*_hitbox.weightInfluence+100)
+        
+        scaled_kb = (((percent_portion * weight_portion *1.4) + 5) * knockback_growth) 
+        
+        if self.owner.current_action.name in ('Crouch', 'CrouchCancel'):
+            base_hitstun *= 0.5
+            scaled_kb *= 0.9
+            base_hitstun *= 0.5
+            hitstun_multiplier *= 0.8
+        
+        # Get trajectory as a vector
+        trajectory_vec = [math.cos(trajectory/180*math.pi), math.sin(trajectory/180*math.pi)] 
+        
+        # This is applying some hella math magic to compensate for air resistance and gravity.
+        # This makes linking hitboxes actually work
+        additional_kb = .5 * base_hitstun * math.sqrt(abs(trajectory_vec[0])*(self.stats['air_resistance']*settingsManager.getSetting('airControl'))**2+abs(trajectory_vec[1])*(self.stats['gravity']*settingsManager.getSetting('gravity'))**2)
+
+        total_kb = scaled_kb + base_knockback + additional_kb
+        
+        # Filter all of the values on the current Armor
+        damage, total_kb, hitstun_multiplier,base_hitstun = self.armor.filterValues(damage,total_kb,hitstun_multiplier)
+        self.owner.dealDamage(damage)
+        self.owner.applyHitstop(damage,hitlag_multiplier)
+        self.owner.applyKnockback(total_kb, trajectory)
+        self.owner.applyHitstun(total_kb,hitstun_multiplier,base_hitstun,trajectory)
     
 class Armor():
     """ Armor is how a fighter manages their damage, hitstun, and knockback. It
-    has a filterHitbox function that returns a dict of values that the fighter
-    will need to launch itself.
+    has a function that filters these values.
     """
-    
-    def __init__(self):
-        pass
-    
-    def identity_dict(self,_hitbox):
-        """ The identity dict just takes fields from the hitbox and returns them.
-        It is usually modified and returned by the filter.
+    def filterValues(self,_damage,_total_kb,_hitstun_multiplier,_base_hitstun):
+        """ Applies the Armor's filter to the Hitbox. Default Armor
+        simply returns the values as given.
         
         Parameters
         -----------
-        _hitbox : Hitbox
-            The Hitbox to pull data through
+        _damage : int
+            The damage the attack dealt
+        _total_kb : float
+            The total knockback dealt
+        _hitstun_multiplier : float
+            The hitstun multiplier of the attack
+        _base_hitstun : float
+            The base hitstun of the attack
         """
-        return {
-            'damage' : _hitbox.damage,
-            'knockback' : _hitbox.base_knockback,
-            'knockback_growth': _hitbox.knockback_growth,
-            'trajectory' : _hitbox.trajectory,
-            'wieght_influence' : _hitbox.weight_influence,
-            'hitstun' : _hitbox.histstun_multiplier,
-            'base_hitstun' : _hitbox.base_hitstun,
-            'hitlag' : _hitbox.hitlag_multiplier,
-            }
-    
-    def filterHitbox(self,_hitbox):
-        """ Applies the Armor's filter to the Hitbox. If the hitbox is set to ignore armor,
-        returns the identity_dict instead. 
+        return (_damage, _total_kb, _hitstun_multiplier,_base_hitstun)
         
-        Parameters
-        -----------
-        _hitbox : Hitbox
-            The hitbox to filter
-        """
-        return self.identity_dict(_hitbox)
-        
-class DefaultArmor(Armor):
-    """ Default Armor just passes the hitbox variables straight through, no modification required"""
-    def filterHitbox(self, _hitbox):
-        Armor.filterHitbox(_hitbox)
-        return self.identity_dict(_hitbox)
-    
 class HyperArmor(Armor):
     """ Hyper Armor means damage, but no knockback, no matter what. """
-    def filterHitbox(self, _hitbox):
-        if _hitbox.ignore_armor:
-            return self.identity_dict(_hitbox)
-        armor_dict = self.identity_dict(_hitbox)
-        armor_dict['hitstun'] = 0
-        armor_dict['base_hitstun'] = 0
-        armor_dict['knockback'] = 0
-        armor_dict['knockback_growth'] = 0
-        armor_dict['hitlag'] = 0
-        return armor_dict
+    def filterValues(self, _damage, _total_kb, _hitstun_multiplier, _base_hitstun):
+        return (_damage, 0, 0, 0)
     
 class SuperArmor(Armor):
     """ Super Armor means damage, but no knockback for a certain number of hits.
@@ -130,20 +137,11 @@ class SuperArmor(Armor):
     def __init__(self,_armoredHits = 1):
         self.armored_hits = _armoredHits
         
-    def filterHitbox(self, _hitbox):
-        if _hitbox.ignore_armor:
-            return self.identity_dict(_hitbox)
+    def filterValues(self, _damage, _total_kb, _hitstun_multiplier, _base_hitstun):
         if self.armored_hits > 0: #If there's any armor left
-            armor_dict = self.identity_dict(_hitbox)
-            armor_dict['hitstun'] = 0
-            armor_dict['base_hitstun'] = 0
-            armor_dict['knockback'] = 0
-            armor_dict['knockback_growth'] = 0
-            armor_dict['hitlag'] = 0
-            self.armored_hits -= 1
-            return armor_dict
+            return _damage, 0, 0, 0
         else:
-            return self.identity_dict(_hitbox)
+            return Armor.filterValues(self, _damage, _total_kb, _hitstun_multiplier, _base_hitstun)
         
 class HeavyArmor(Armor):
     """ Heavy Armor ignores knockback below a certain threshold """

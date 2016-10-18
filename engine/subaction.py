@@ -1,4 +1,5 @@
 import engine.hitbox
+import engine.hurtbox
 import baseActions
 import pygame.color
 import builder.subactionSelector as subactionSelector
@@ -1389,6 +1390,7 @@ class charge(SubAction):
         else:
             #We're moving on. Turn off the flashing
             _actor.mask = None
+
 # Create a new hurtbox
 class createHurtbox(SubAction):
     subact_group = 'Hurtbox'
@@ -1404,7 +1406,7 @@ class createHurtbox(SubAction):
             _actor = _actor.owner
         if self.hurtbox_name == '': return 
         
-        hurtbox = engine.hitbox.Hurtbox(_actor,self.hurtbox_vars)
+        hurtbox = engine.hurtbox.Hurtbox(_actor,self.hurtbox_vars)
         _action.hurtboxes[self.hurtbox_name] = hurtbox
         _actor.activateHurtbox(_action.hurtboxes[self.hurtbox_name])
     

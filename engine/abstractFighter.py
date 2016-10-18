@@ -6,7 +6,7 @@ import os
 import engine.baseActions as baseActions
 import engine.collisionBox as collisionBox
 import weakref
-import engine.hitbox as hitbox
+import engine.hurtbox as hurtbox
 import math
 import numpy
 import spriteManager
@@ -392,7 +392,7 @@ class AbstractFighter():
         self.ecb = collisionBox.ECB(self)
         
         # Hitboxes and Hurtboxes
-        self.auto_hurtbox = hitbox.Hurtbox(self)
+        self.auto_hurtbox = hurtbox.Hurtbox(self)
         
         if self.sound_path:
             settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
@@ -1411,38 +1411,17 @@ class AbstractFighter():
             
         if self.data_log:
             self.data_log.addToData('Damage Taken',float(math.floor(_damage)))
-            
-    def applyKnockback(self, _damage, _kb, _kbg, _trajectory, _weightInfluence=1, _hitstunMultiplier=1, _baseHitstun=1, _hitlagMultiplier=1, _ignoreArmor = False):
-        """Do Knockback to the fighter. The knockback calculation is derived from the SSBWiki, and a bit of information from
-        ColinJF and Amazing Ampharos on Smashboards, it is based off of Super Smash Bros. Brawl's knockback calculation, which
-        is the one with the most information available
+    
+    def applyHitstop(self,_damage,_hitlagMultiplier):
+        """ Applies hitstop to the fighter when hit. Also sets the hitstun
+        vibration.
         
         Parameters
         -----------
-        _damage : float
-            The damage dealt by the attack. This is used in some calculations, so it is applied here.
-        _kb : float
-            The base knockback of the attack.
-        _kbg : float
-            The knockback growth ratio of the attack.
-        _trajectory : int
-            The direction the attack sends the fighter, in degrees, with 0 being right, 90 being upward, 180 being left.
-            This is an absolute direction, irrelevant of either character's facing direction. Those tend to be taken
-            into consideration in the hitbox collision event itself, to allow the hitbox to also take in the attacker's
-            current state as well as the fighter receiving knockback.
-        _weightInfluence : float
-            The degree to which weight influences knockback. Default value is 1, set to 0 to make knockback 
-            weight-independent, or to whatever other value you want to change the effect of weight on knockback. 
-        _hitstunMultiplier : float
-            The ratio of the knockback to the additional hitstun that the hit should inflict. Default value is 
-            2 for normal levels of hitstun. To disable flinching, set to 0. 
-        _baseHitstun : int
-            The minimum hitstun that the hit should inflict regardless of knockback. This also influences how much gravity and 
-            air resistance affect base knockback. 
+        _damage : int
+            The amount of damage the attack does
         _hitlagMultiplier : float
-            The ratio of normal calculated hitlag to the amount of hitlag the hit should inflict. This affects both 
-            attacker and target. 
-        
+            An amount to multiply the calculated hitstop with
         """
         self.hitstop = math.floor((_damage / 4.0 + 2)*_hitlagMultiplier)
         if self.grounded:
@@ -1450,53 +1429,35 @@ class AbstractFighter():
         else:
             self.hitstop_vibration = (0,3)
         self.hitstop_pos = self.rect.center
-
-        #Crouch cancelling
-        if self.current_action.name in ('Crouch', 'CrouchCancel'):
-            _kb *= 0.5
-            _kbg *= 0.9
-            _baseHitstun *= 0.5
-            _hitstunMultiplier *= 0.8
         
-        p = float(self.damage)
-        d = float(_damage)
-        w = float(self.stats['weight']) * settingsManager.getSetting('weight')
-        s = float(_kbg)
-        b = float(_kb)
-        print('weight influence',_weightInfluence)
-        # Thank you, ssbwiki!
-        total_kb = (((((p/10.0) + (p*d)/20.0) * (200.0/(w*_weightInfluence+100))*1.4) + 5) * s) + b
-
-        if not _ignoreArmor and (_damage < self.flinch_damage_threshold or total_kb < self.flinch_knockback_threshold):
-            self.dealDamage(_damage*self.armor_damage_multiplier)
-            return 0
-
+    def applyKnockback(self, _total_kb,_trajectory):
+        """Do Knockback to the fighter. The knockback calculation is derived from the SSBWiki, and a bit of information from
+        ColinJF and Amazing Ampharos on Smashboards, it is based off of Super Smash Bros. Brawl's knockback calculation, which
+        is the one with the most information available
+        
+        Parameters
+        -----------
+        
+        """
+        # Get the trajectory as a vector
+        trajectory_vec = [math.cos(_trajectory/180*math.pi), math.sin(_trajectory/180*math.pi)] 
+        
         di_vec = self.getSmoothedInput(int(self.key_bindings.timing_window['smoothing_window']))
-
-        trajectory_vec = [math.cos(_trajectory/180*math.pi), math.sin(_trajectory/180*math.pi)]
-
-        additional_kb = .5*_baseHitstun*math.sqrt(abs(trajectory_vec[0])*(self.stats['air_resistance']*settingsManager.getSetting('airControl'))**2+abs(trajectory_vec[1])*(self.stats['gravity']*settingsManager.getSetting('gravity'))**2)
-
         di_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
+        
         _trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
 
-        hitstun_frames = math.floor((total_kb+additional_kb)*_hitstunMultiplier+_baseHitstun)
-        
-        if not _ignoreArmor and self.no_flinch_hits > 0:
-            if hitstun_frames > 0.5:
-                self.no_flinch_hits -= 1
-            self.dealDamage(_damage*self.armor_damage_multiplier)
-            return 0
+        self.setSpeed((_total_kb)*di_multiplier, _trajectory)
+    
+    def applyHitstun(self,_total_kb,_hitstunMultiplier,_baseHitstun,_trajectory):
+        """TODO document this"""
+        hitstun_frames = math.floor((_total_kb)*_hitstunMultiplier+_baseHitstun)
         
         if hitstun_frames > 0.5:
             #If the current action is not hitstun or you're in hitstun, but there's not much of it left
             if not isinstance(self.current_action, baseActions.HitStun) or (self.current_action.last_frame-self.current_action.frame)/float(settingsManager.getSetting('hitstun')) <= hitstun_frames+15:
-                self.setSpeed((total_kb+additional_kb)*di_multiplier, _trajectory)
                 self.doHitStun(hitstun_frames*settingsManager.getSetting('hitstun'), _trajectory)
         
-        self.dealDamage(_damage)
-        return math.floor((total_kb+additional_kb)*di_multiplier)
-
     def applyPushback(self, _kb, _trajectory, _hitlag):
         """ Pushes back the fighter when they hit a foe. This is the corollary to applyKnockback,
         except this one is called on the fighter who lands the hit. It applies the hitlag to the fighter,
