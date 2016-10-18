@@ -2007,7 +2007,7 @@ class PygcurseInput():
                 self.eraseBufferSize = None
             numToPrint = self._width - self.startx - 1
             # TODO - implement prompt colors, but keep in mind that this all has to be on one line.
-            pygsurfObj.putchars((self.prompt + ''.join(self.buffer))[:numToPrint], self.startx, self.starty, fgcolor=self._fgcolor, bgcolor=self._bgcolor)
+            pygsurfObj.putchars((self.prompt + ''.join(self.buffer))[-numToPrint:], self.startx, self.starty, fgcolor=self._fgcolor, bgcolor=self._bgcolor)
             pygsurfObj.inputcursor = pygsurfObj.getnthcellfrom(self.startx, self.starty, self.cursor)
             pygsurfObj._drawinputcursor()
 
