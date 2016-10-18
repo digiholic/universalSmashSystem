@@ -118,68 +118,6 @@ class Hitbox(spriteManager.RectSprite):
     def activate(self):
         pass
         
-class Hurtbox(spriteManager.RectSprite):
-    def __init__(self,_owner,_variables = dict()):
-        self.owner = _owner
-        
-        self.variable_dict = {
-                       'center': (0,0),
-                       'size': (0,0),
-                       'fix_rect': 'bounding_rect',
-                       # Soon:
-                       #'fix_size_multiplier': (0,0),
-                       #'self_size_multiplier': (0,0)
-                       }
-        self.newVariables = _variables
-        self.variable_dict.update(self.newVariables)
-        
-        #set the variables from the dict, so that we don't lose the initial value of the dict when modifying them
-        #also lets us not have to go update all the old references. Score!
-        for key,value in self.variable_dict.iteritems():
-            setattr(self, key, value)
-
-        fix_rect = self.getFixRect()
-        if self.size[0] == 0: working_width = fix_rect.width
-        else: working_width = self.size[0]
-        if self.size[1] == 0: working_height = fix_rect.height
-        else: working_height = self.size[1]
-
-        spriteManager.RectSprite.__init__(self,pygame.Rect([0,0],[working_width, working_height]),[255,255,0])
-        self.rect.center = [_owner.rect.center[0] + self.center[0], _owner.rect.center[1] + self.center[1]]
-        self.article = None
-
-    #Add to later
-    def getFixRect(self):
-        if self.fix_rect == 'rect':
-            return self.owner.sprite.rect
-        else:
-            return self.owner.sprite.bounding_rect
-        
-
-    def update(self):
-        fix_rect = self.getFixRect()
-        if self.size[0] == 0: self.rect.width = fix_rect.width
-        else: self.rect.width = self.size[0]
-        if self.size[1] == 0: self.rect.height = fix_rect.height
-        else: self.rect.height = self.size[1]
-
-        if self.article is None:
-            self.rect.center = [fix_rect.center[0] + self.center[0]*self.owner.facing, fix_rect.center[1] + self.center[1]]
-        elif hasattr(self.article, "facing"):
-            self.rect.center = [fix_rect.center[0] + self.center[0]*self.article.facing, fix_rect.center[1] + self.center[1]]
-        else:
-            self.rect.center = [fix_rect.center[0] + self.center[0], fix_rect.center[1] + self.center[1]]
-
-    
-    """
-    This function is called when a hurtbox is hit by a hitbox. Does nothing by default,
-    but can be overridden for a custom Hurtbox class.
-    
-    @_other: The hitbox that hit this hurtbox
-    """
-    def onHit(self,_other):
-        pass
-    
 class InertHitbox(Hitbox):
     def __init__(self, _owner, _hitboxLock, _hitboxVars):
         Hitbox.__init__(self, _owner, _hitboxLock, _hitboxVars)
