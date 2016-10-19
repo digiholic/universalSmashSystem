@@ -16,6 +16,7 @@ import menu
 import inspect
 import bdb
 from cgi import log
+from PIL.SpiderImagePlugin import isInt
 
 """
 The battle object actually creates the fight and plays it out on screen.
@@ -275,8 +276,9 @@ class Battle():
             hitbox_collisions = hurtbox_hits[hbox]
             for hurtbox in hitbox_collisions:
                 if hbox.owner != hurtbox.owner:
-                    hbox.onCollision(hurtbox.owner)
-                    hurtbox.onHit(hbox)
+                    data = hbox.onCollision(hurtbox.owner)
+                    if not isinstance(data, dict): data = dict() #In case a custom hitbox doesn't return the right data
+                    hurtbox.onHit(hbox,data)
 
     def checkHitboxBumps(self):        
         platform_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.stage.platform_list, False, False)

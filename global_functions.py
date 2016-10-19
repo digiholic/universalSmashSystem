@@ -31,13 +31,15 @@ def getDirectionBetweenPoints(_p1, _p2):
     dy = y1 - y2
     return (180 * math.atan2(dy, dx)) / math.pi 
 
-class GameObject(object):
-    """ The GameObject is basically anything that exists in a battle and has an update method.
-    Fighters, moving platforms, interactable stage hitboxes, etc.
+def hasClass(_object, _class):
+    """ Determines if an object has a class of the given name, whether or not that object is imported.
+    Functionally similar to isinstance, but can be done without causing circular import issues.
     
-    The GameObject handles hitstop and other signals to stop updating.
-    Global functionality should be added here.
+    Parameters
+    -----------
+    _object : Object
+        The object we are checking classes from
+    _class : String
+        The name of the class we are checking for
     """
-    def update(self):
-        pass
-    
+    return _class in list(map(lambda x :x.__name__,_object.__class__.__bases__)) + [_object.__class__.__name__]

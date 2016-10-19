@@ -1859,6 +1859,7 @@ def neutralState(_actor):
     elif _actor.keyHeld('jump'):
         _actor.doAction('Jump')
     elif _actor.keysContain('down', 0.5):
+        print(_actor.player_num,_actor.keys_held)
         if _actor.checkTap('down', 0.5):
             blocks = _actor.checkGround()
             if blocks:

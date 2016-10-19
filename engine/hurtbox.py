@@ -63,23 +63,48 @@ class Hurtbox(spriteManager.RectSprite):
     
     @_other: The hitbox that hit this hurtbox
     """
-    def onHit(self,_hitbox):
-        percent = float(self.owner.damage)
-        damage = float(_hitbox.damage)
-        weight = float(self.owner.stats['weight']) * settingsManager.getSetting('weight')
-        knockback_growth = float(_hitbox.knockback_growth)
-        base_knockback = float(_hitbox.base_knockback)
+    def onHit(self,_hitbox,_data=dict()):
+        # Owner Variables
+        if hasattr(self.owner,'damage'):
+            percent = float(self.owner.damage)
+        else: percent = 0
         
-        base_hitstun = _hitbox.base_hitstun
-        hitstun_multiplier = _hitbox.hitstun_multiplier
+        if hasattr(self.owner, 'weight'):
+            weight = float(self.owner.stats['weight']) * settingsManager.getSetting('weight')
+        else: weight = 100 * settingsManager.getSetting('weight')
         
-        hitlag_multiplier = _hitbox.hitlag_multiplier
+        if _data.has_key('damage'):
+            damage = _data['damage']
+        else: damage = float(_hitbox.damage)
         
-        trajectory = _hitbox.trajectory
+        # Data Variables
+        if _data.has_key('knockback_growth'):
+            knockback_growth = _data['knockback_growth']
+        else: knockback_growth = float(_hitbox.knockback_growth)
+        
+        if _data.has_key('base_knockback'):
+            base_knockback = _data['base_knockback']
+        else: base_knockback = float(_hitbox.base_knockback)
+        
+        if _data.has_key('base_hitstun'):
+            base_hitstun = _data['base_hitstun']
+        else: base_hitstun = _hitbox.base_hitstun
+        
+        if _data.has_key('hitstun_multiplier'):
+            hitstun_multiplier = _data['hitstun_multiplier']
+        else: hitstun_multiplier = _hitbox.hitstun_multiplier
+        
+        if _data.has_key('hitlag_multiplier'):
+            hitlag_multiplier = _data['hitlag_multiplier']
+        else: hitlag_multiplier = _hitbox.hitlag_multiplier
+        
+        if _data.has_key('trajectory'):
+            trajectory = _data['trajectory']
+        else: trajectory = _hitbox.trajectory
         
         # Thank you, ssbwiki!
         percent_portion = (percent/10.0) + (percent*damage)/20.0
-        weight_portion = 200.0/(weight*_hitbox.weightInfluence+100)
+        weight_portion = 200.0/(weight*_hitbox.weight_influence+100)
         
         scaled_kb = (((percent_portion * weight_portion *1.4) + 5) * knockback_growth) 
         
@@ -94,16 +119,20 @@ class Hurtbox(spriteManager.RectSprite):
         
         # This is applying some hella math magic to compensate for air resistance and gravity.
         # This makes linking hitboxes actually work
-        additional_kb = .5 * base_hitstun * math.sqrt(abs(trajectory_vec[0])*(self.stats['air_resistance']*settingsManager.getSetting('airControl'))**2+abs(trajectory_vec[1])*(self.stats['gravity']*settingsManager.getSetting('gravity'))**2)
+        additional_kb = .5 * base_hitstun * math.sqrt(abs(trajectory_vec[0])*(self.owner.stats['air_resistance']*settingsManager.getSetting('airControl'))**2+abs(trajectory_vec[1])*(self.owner.stats['gravity']*settingsManager.getSetting('gravity'))**2)
 
         total_kb = scaled_kb + base_knockback + additional_kb
         
         # Filter all of the values on the current Armor
-        damage, total_kb, hitstun_multiplier,base_hitstun = self.armor.filterValues(damage,total_kb,hitstun_multiplier)
-        self.owner.dealDamage(damage)
-        self.owner.applyHitstop(damage,hitlag_multiplier)
-        self.owner.applyKnockback(total_kb, trajectory)
-        self.owner.applyHitstun(total_kb,hitstun_multiplier,base_hitstun,trajectory)
+        damage, total_kb, hitstun_multiplier,base_hitstun = self.armor.filterValues(damage,total_kb,hitstun_multiplier,base_hitstun)
+        if hasattr(self.owner, 'dealDamage'):
+            self.owner.dealDamage(damage)
+        if hasattr(self.owner, 'applyHitstop'):
+            self.owner.applyHitstop(damage,hitlag_multiplier)
+        if hasattr(self.owner, 'applyKnockback'):
+            self.owner.applyKnockback(total_kb, trajectory)
+        if hasattr(self.owner, 'applyHitstun'):
+            self.owner.applyHitstun(total_kb,hitstun_multiplier,base_hitstun,trajectory)
     
 class Armor():
     """ Armor is how a fighter manages their damage, hitstun, and knockback. It

@@ -83,20 +83,20 @@ class AbstractFighter():
     # Initialized fighter variables #
     key_bindings = None
     
-    active_hitboxes = pygame.sprite.Group()
-    articles = pygame.sprite.Group()
-    active_hurtboxes = pygame.sprite.Group()
+    active_hitboxes = None #pygame.sprite.Group()
+    articles = None #pygame.sprite.Group()
+    active_hurtboxes = None #pygame.sprite.Group()
     auto_hurtbox = None
     
     shield = False
     shield_integrity = 100    
         
-    input_buffer = controller.InputBuffer()
+    input_buffer = None
     last_input_frame = 0
-    keys_held = dict()
+    keys_held = None
     
-    hitbox_lock = weakref.WeakSet()
-    hitbox_contact = set()
+    hitbox_lock = None #weakref.WeakSet()
+    hitbox_contact = None #set()
     
     ledge_lock = False
         
@@ -115,6 +115,9 @@ class AbstractFighter():
     platform_phase = 0
     tech_window = 0
     airdodges = 1
+    
+    elasticity = 0
+    ground_elasticity = 0
     
     change_x = 0
     change_y = 0
@@ -384,16 +387,24 @@ class AbstractFighter():
         
         """ Initialize components """
         # Initialize key bindings object
+        self.input_buffer = controller.InputBuffer()
         self.key_bindings = settingsManager.getControls(self.player_num)
         self.key_bindings.linkObject(self)
         self.key_bindings.flushInputs()
-        
+        self.keys_held = dict()
+    
         # Evironmental Collision Box
         self.ecb = collisionBox.ECB(self)
         
         # Hitboxes and Hurtboxes
+        self.active_hitboxes = pygame.sprite.Group()
+        self.articles = pygame.sprite.Group()
+        self.active_hurtboxes = pygame.sprite.Group()
         self.auto_hurtbox = hurtbox.Hurtbox(self)
         
+        self.hitbox_lock = weakref.WeakSet()
+        self.hitbox_contact = set()
+    
         if self.sound_path:
             settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
         
@@ -748,6 +759,7 @@ class AbstractFighter():
     """ All of this stuff below should probably be rewritten or find a way to be removed """
     
     def doGroundMove(self,_direction):
+        print(self.input_buffer)
         if (self.facing == 1 and _direction == 180) or (self.facing == -1 and _direction == 0):
             self.flip()
         self.doAction('Move')
