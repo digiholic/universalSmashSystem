@@ -407,6 +407,7 @@ class LeftPane(BuilderPanel):
         self.viewer_panel.pack(fill=BOTH,expand=TRUE)
         self.navigator_panel.pack(fill=X)
         
+#I'm modifying this one soon
 class ViewerPanel(BuilderPanel):
     def __init__(self,_parent,_root):
         BuilderPanel.__init__(self, _parent, _root)
