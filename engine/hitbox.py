@@ -133,20 +133,19 @@ class DamageHitbox(Hitbox):
         
     def onCollision(self,_other):
         if hasClass(_other, 'AbstractFighter'):
-            if _other.lockHitbox(self):
-                if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
-                self.owner.data_log.addToData('Damage Dealt',self.damage)
-                _other.trail_color = self.trail_color
-                
-                offset = random.randrange(0, 359)
-                hit_intersection = self.rect.clip(_other.sprite.rect).center
-                hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
-                from article import HitArticle
-                for i in range(int(hitlag)):
-                    art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
-                    self.owner.articles.add(art)
-                Hitbox.onCollision(self, _other)
+            if self.article is None:
+                self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+            self.owner.data_log.addToData('Damage Dealt',self.damage)
+            _other.trail_color = self.trail_color
+            
+            offset = random.randrange(0, 359)
+            hit_intersection = self.rect.clip(_other.sprite.rect).center
+            hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
+            from article import HitArticle
+            for i in range(int(hitlag)):
+                art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
+                self.owner.articles.add(art)
+            Hitbox.onCollision(self, _other)
         
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -168,34 +167,33 @@ class SakuraiAngleHitbox(DamageHitbox):
     def onCollision(self, _other):
         ret = dict()
         if hasClass(_other, 'AbstractFighter'):
-            if _other.lockHitbox(self):
-                if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
-                p = float(_other.damage)
-                d = float(self.damage)
-                w = float(_other.stats['weight']) * settingsManager.getSetting('weight')
-                s = float(self.knockback_growth)
-                b = float(self.base_knockback)
-                total_kb = (((((p/10) + (p*d)/20) * (200/(w*self.weight_influence+100))*1.4) + 5) * s) + b
+            if self.article is None:
+                self.owner.applyPushback(self.base_knockback/5.0, self.trajectory+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+            p = float(_other.damage)
+            d = float(self.damage)
+            w = float(_other.stats['weight']) * settingsManager.getSetting('weight')
+            s = float(self.knockback_growth)
+            b = float(self.base_knockback)
+            total_kb = (((((p/10) + (p*d)/20) * (200/(w*self.weight_influence+100))*1.4) + 5) * s) + b
 
-                angle = 0
-                if (self.base_knockback > 0):
-                    # Calculate the resulting angle
-                    knockback_ratio = total_kb*self.velocity_multiplier/self.base_knockback
-                    x_val = math.sqrt(knockback_ratio**2+1)/math.sqrt(2)
-                    y_val = math.sqrt(knockback_ratio**2-1)/math.sqrt(2)
-                    angle = math.atan2(y_val*math.sin(float(self.trajectory)/180*math.pi),x_val*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
-                self.owner.data_log.addToData('Damage Dealt',self.damage)
-                ret['trajectory'] = angle
-                _other.trail_color = self.trail_color
-                offset = random.randrange(0, 359)
-                hit_intersection = self.rect.clip(_other.sprite.rect).center
-                hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
-                from article import HitArticle
-                for i in range(int(hitlag)):
-                    art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
-                    self.owner.articles.add(art)
-                Hitbox.onCollision(self, _other)
+            angle = 0
+            if (self.base_knockback > 0):
+                # Calculate the resulting angle
+                knockback_ratio = total_kb*self.velocity_multiplier/self.base_knockback
+                x_val = math.sqrt(knockback_ratio**2+1)/math.sqrt(2)
+                y_val = math.sqrt(knockback_ratio**2-1)/math.sqrt(2)
+                angle = math.atan2(y_val*math.sin(float(self.trajectory)/180*math.pi),x_val*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
+            self.owner.data_log.addToData('Damage Dealt',self.damage)
+            ret['trajectory'] = angle
+            _other.trail_color = self.trail_color
+            offset = random.randrange(0, 359)
+            hit_intersection = self.rect.clip(_other.sprite.rect).center
+            hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
+            from article import HitArticle
+            for i in range(int(hitlag)):
+                art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
+                self.owner.articles.add(art)
+            Hitbox.onCollision(self, _other)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -215,30 +213,29 @@ class AutolinkHitbox(DamageHitbox):
     def onCollision(self, _other):
         ret = dict()
         if hasClass(_other, 'AbstractFighter'):
-            if _other.lockHitbox(self):
-                if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
-                    velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
-                    angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
-                    self.owner.data_log.addToData('Damage Dealt',self.damage)
-                    ret['base_knockback'] = velocity*self.velocity_multiplier+self.base_knockback
-                    ret['trajectory'] = self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory))
-                    
-                elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
-                    velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
-                    angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
-                    self.owner.data_log.addToData('Damage Dealt',self.damage)
-                    ret['base_knockback'] = velocity*self.velocity_multiplier+self.base_knockback
-                    ret['trajectory'] = getForwardWithOffset(self.article.facing*(angle+self.trajectory), self.article)
-                _other.trail_color = self.trail_color
-                offset = random.randrange(0, 359)
-                hit_intersection = self.rect.clip(_other.sprite.rect).center
-                hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
-                from article import HitArticle
-                for i in range(int(hitlag)):
-                    art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
-                    self.owner.articles.add(art)
-                Hitbox.onCollision(self, _other)
+            if self.article is None:
+                self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+                velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
+                angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
+                self.owner.data_log.addToData('Damage Dealt',self.damage)
+                ret['base_knockback'] = velocity*self.velocity_multiplier+self.base_knockback
+                ret['trajectory'] = self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory))
+                
+            elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
+                velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
+                angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
+                self.owner.data_log.addToData('Damage Dealt',self.damage)
+                ret['base_knockback'] = velocity*self.velocity_multiplier+self.base_knockback
+                ret['trajectory'] = getForwardWithOffset(self.article.facing*(angle+self.trajectory), self.article)
+            _other.trail_color = self.trail_color
+            offset = random.randrange(0, 359)
+            hit_intersection = self.rect.clip(_other.sprite.rect).center
+            hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
+            from article import HitArticle
+            for i in range(int(hitlag)):
+                art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
+                self.owner.articles.add(art)
+            Hitbox.onCollision(self, _other)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)
@@ -259,34 +256,33 @@ class FunnelHitbox(DamageHitbox):
         ret = dict()
         Hitbox.onCollision(self, _other)
         if hasClass(_other, 'AbstractFighter'):
-            if _other.lockHitbox(self):
-                if self.article is None:
-                    self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
-                    x_diff = self.rect.centerx - _other.rect.centerx
-                    y_diff = self.rect.centery - _other.rect.centery
-                    x_vel = self.x_bias+self.x_draw*x_diff
-                    y_vel = self.y_bias+self.y_draw*y_diff
-                    self.owner.data_log.addToData('Damage Dealt',self.damage)
-                    ret['base_knockback'] = math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback
-                    ret['trajectory'] = self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory))
-                else:
-                    x_diff = self.article.rect.centerx - _other.rect.centerx
-                    y_diff = self.article.rect.centery - _other.rect.centery
-                    x_vel = self.x_bias+self.x_draw*x_diff
-                    y_vel = self.y_bias+self.y_draw*y_diff
-                    self.owner.data_log.addToData('Damage Dealt',self.damage)
-                    ret['base_knockback'] = math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback
-                    ret['trajectory'] = self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory))
-                    
-                _other.trail_color = self.trail_color
-                offset = random.randrange(0, 359)
-                hit_intersection = self.rect.clip(_other.sprite.rect).center
-                hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
-                from article import HitArticle
-                for i in range(int(hitlag)):
-                    art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
-                    self.owner.articles.add(art)
-                Hitbox.onCollision(self, _other)
+            if self.article is None:
+                self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier)
+                x_diff = self.rect.centerx - _other.rect.centerx
+                y_diff = self.rect.centery - _other.rect.centery
+                x_vel = self.x_bias+self.x_draw*x_diff
+                y_vel = self.y_bias+self.y_draw*y_diff
+                self.owner.data_log.addToData('Damage Dealt',self.damage)
+                ret['base_knockback'] = math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback
+                ret['trajectory'] = self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory))
+            else:
+                x_diff = self.article.rect.centerx - _other.rect.centerx
+                y_diff = self.article.rect.centery - _other.rect.centery
+                x_vel = self.x_bias+self.x_draw*x_diff
+                y_vel = self.y_bias+self.y_draw*y_diff
+                self.owner.data_log.addToData('Damage Dealt',self.damage)
+                ret['base_knockback'] = math.hypot(x_vel,y_vel)*self.velocity_multiplier+self.base_knockback
+                ret['trajectory'] = self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory))
+                
+            _other.trail_color = self.trail_color
+            offset = random.randrange(0, 359)
+            hit_intersection = self.rect.clip(_other.sprite.rect).center
+            hitlag = (self.damage/4.0+2.0)*self.hitlag_multiplier
+            from article import HitArticle
+            for i in range(int(hitlag)):
+                art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
+                self.owner.articles.add(art)
+            Hitbox.onCollision(self, _other)
 
         if self.article and hasattr(self.article, 'onCollision'):
             self.article.onCollision(_other)

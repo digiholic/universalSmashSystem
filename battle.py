@@ -275,7 +275,7 @@ class Battle():
             #then, hurtbox collisions
             hitbox_collisions = hurtbox_hits[hbox]
             for hurtbox in hitbox_collisions:
-                if hbox.owner != hurtbox.owner:
+                if hbox.owner != hurtbox.owner and hurtbox.owner.lockHitbox(hbox):
                     data = hbox.onCollision(hurtbox.owner)
                     if not isinstance(data, dict): data = dict() #In case a custom hitbox doesn't return the right data
                     hurtbox.onHit(hbox,data)
