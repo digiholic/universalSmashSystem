@@ -245,7 +245,7 @@ class panelGrid(panel):
                 return False
             self.focused = self.children[focus_index]
             return True
-        else return panel.preFocus(self, _event)
+        else: return panel.preFocus(self, _event)
             
 """
 A panel that tries to keep the focused child object in view. 
