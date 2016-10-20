@@ -124,7 +124,7 @@ class panel(pygcurse.PygcurseSurface):
 A text button that displays feedback if clicked.
 """
 class button(panel):
-    def __init__(self, _surface, _parent=None, _width=20, _height=1, _corner=(0, 0), _font="unifont-9.0.02", _size=16, _optionDict=None)
+    def __init__(self, _surface, _parent=None, _width=20, _height=1, _corner=(0, 0), _font="unifont-9.0.02", _size=16, _optionDict=None):
         self.panel.__init__(self, _surface, _parent, _width, _height, _corner, _font, _size)
         self.putchars(_optionDict.keys[0], x=0, y=0)
         self.option_dict= _optionDict
