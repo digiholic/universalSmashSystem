@@ -164,11 +164,11 @@ class button(panel):
             return True
 
     def onEvent(self, _event):
-        if _event.type = pygame.MOUSEBUTTONUP:
+        if _event.type == pygame.MOUSEBUTTONUP:
             if self.button_down:
                 self.selection = (self.selection+1)%len(self.option_dict)
             self.button_down = False
-        elif _event.type = pygame.MOUSEBUTTONDOWN:
+        elif _event.type == pygame.MOUSEBUTTONDOWN:
             self.button_down = True
                 
 """
