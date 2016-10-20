@@ -191,7 +191,7 @@ class InputBuffer():
         self.buffer.append(dict(self.working_buff))
         self.working_buff = []
         self.last_index += 1
-                
+        
     """
     Get a sub-buffer of N frames
     """

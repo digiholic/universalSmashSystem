@@ -139,7 +139,11 @@ class Battle():
                 traceback.print_exc()
             finally:
                 self.exit_status = -1
-            
+        
+        for fighter in self.current_fighters:
+            print('Fighter '+fighter.name+' Player '+str(fighter.player_num))
+            print(fighter.input_buffer.buffer)   
+             
         if self.exit_status == 1:
             musicManager.getMusicManager().stopMusic(1000)
             print("SUBMISSION")
