@@ -11,15 +11,15 @@ This is the base UI element that everything else is based upon. It can also be i
 """
 class panel(pygcurse.PygcurseSurface):
     def __init__(self, _surface, _parent=None, _width=20, _height=1, corner=(0, 0), _font="unifont-9.0.02", _size=16):
+        self.surface = _surface
         self.parent = _parent
         self.corner = _corner
         if _parent is not None:
             _parent.children.append(self)
-            self.corner = (_parent.corner[0]+self.corner[0], _parent.corner[1]+self.corner[1])
             bgcolor = _parent.bgcolor-pygame.Color(16, 16, 16)
         else:
             bgcolor = pygame.Color(255, 255, 255)
-        pygcurse.PygcurseSurface.__init__(self, _width, _height, font=pygame.font.Font(settingsManager.createPath(_font+".ttf"),_size), fgcolor=pygame.Color(0, 0, 0), bgcolor=bgcolor, windowsurface=_surface) #Who knows? Maybe we want captions, or margins, or what. 
+        pygcurse.PygcurseSurface.__init__(self, _width, _height, font=pygame.font.Font(settingsManager.createPath(_font+".ttf"),_size), fgcolor=pygame.Color(0, 0, 0), bgcolor=bgcolor)
         self.children = []
         self.focused = None
 
@@ -36,6 +36,19 @@ class panel(pygcurse.PygcurseSurface):
                 if child is not self.focused: child.update()
             if self.focused is not None:
                 self.focused.update()
+
+    """
+    Blits self, then blits all of its children so everything displays nicely. 
+    Focused elements get priority so we don't get weird things like panels overwriting menus. 
+    I wouldn't suggest overwriting this method. 
+    """
+    def display(self, dx=0, dy=0):
+        self.blitto(_surface, corner)
+        if self.children:
+            for child in self.children:
+                if child is not self.focused: child.display(corner[0], corner[1])
+            if self.focused is not None:
+                self.focused.display(corner[0], corner[1])
 
     """
     Process an event we are given. True if focus is kept/gained, false if it is not. 
@@ -158,9 +171,8 @@ class button(panel):
         elif _event.type = pygame.MOUSEBUTTONDOWN:
             self.button_down = True
                 
-
 """
-A persistent text box object, which can be inputted to.
+A persistent text box object, which can be inputted to if active. 
 """
 class textEntry(panel):
     def __init__(self, _surface, _parent=None, _width=20, _height=1, _corner=(0, 0), _font="unifont-9.0.02", _size=16, _initText='', _active=False):
@@ -236,8 +248,12 @@ class panelGrid(panel):
         else return panel.preFocus(self, _event)
             
 """
-A panel for getting a view of a child panel. Tries its best to keep the focused panel in view. 
+A panel that tries to keep the focused child object in view. 
+TODO: Finish
 """
+class viewPanel(panel):
+    def __init__(self, _surface, _parent=None, _width=20, _height=10, corner=(0, 0), _font="unifont-9.0.02", _size=16):
+        self.panel.__init__(self, _surface, _parent, _width, _height, _corner, _font, _size)
 
 """
 #A temporary drop-down menu. Appears when created, should disappear when a choice is made
