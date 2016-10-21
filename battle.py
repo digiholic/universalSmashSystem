@@ -16,6 +16,7 @@ import menu
 import inspect
 import bdb
 from cgi import log
+from PIL.SpiderImagePlugin import isInt
 
 """
 The battle object actually creates the fight and plays it out on screen.
@@ -138,7 +139,11 @@ class Battle():
                 traceback.print_exc()
             finally:
                 self.exit_status = -1
-            
+        
+        for fighter in self.current_fighters:
+            print('Fighter '+fighter.name+' Player '+str(fighter.player_num))
+            print(fighter.input_buffer.buffer)   
+             
         if self.exit_status == 1:
             musicManager.getMusicManager().stopMusic(1000)
             print("SUBMISSION")
@@ -274,9 +279,10 @@ class Battle():
             #then, hurtbox collisions
             hitbox_collisions = hurtbox_hits[hbox]
             for hurtbox in hitbox_collisions:
-                if hbox.owner != hurtbox.owner:
-                    hbox.onCollision(hurtbox.owner)
-                    hurtbox.onHit(hbox)
+                if hbox.owner != hurtbox.owner and hurtbox.owner.lockHitbox(hbox):
+                    data = hbox.onCollision(hurtbox.owner)
+                    if not isinstance(data, dict): data = dict() #In case a custom hitbox doesn't return the right data
+                    hurtbox.onHit(hbox,data)
 
     def checkHitboxBumps(self):        
         platform_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.stage.platform_list, False, False)

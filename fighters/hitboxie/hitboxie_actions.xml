@@ -595,6 +595,9 @@
 		<sprite>neutral</sprite>
 		<sprite_rate>1</sprite_rate>
 		
+		<vars>
+			<doRepeat>False</doRepeat>
+		</vars>
 		<setUp>
 			<createHitbox type="funnel">
 				<name>jab</name>

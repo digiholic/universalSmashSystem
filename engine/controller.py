@@ -1,8 +1,6 @@
 import settingsManager
 import pygame
 
-
-
 class BaseController():
     def __init__(self,_bindings):
         self.keys_to_pass = []
@@ -12,6 +10,10 @@ class BaseController():
         self.type = 'Keyboard'
         self.target = None
         
+        self.buffer = [[]]
+        self.last_index = 0
+      
+      
     def linkObject(self,_object):
         self.target = _object
     
@@ -20,8 +22,24 @@ class BaseController():
         self.keys_to_release = []
         self.keys_held = []
         
+        self.buffer = [[]]
+        self.last_index = 0
+        
     def getInputs(self,_event,_push=True, _outputOnRelease=True):
-        pass
+        if _event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
+            return None
+        output = True
+        k = self.key_bindings.get(_event.key)
+        if k:
+            if _event.type == pygame.KEYDOWN:
+                if _push: self.keys_to_pass.append(k)
+                if k not in self.keys_held: self.keys_held.append(k)
+            elif _event.type == pygame.KEYUP:
+                output = _outputOnRelease and output
+                if _push: self.keys_to_release.append(k)
+                if k in self.keys_held: self.keys_held.remove(k)
+        if output: return k
+        return None
     
     def get(self,_key):
         return self.key_bindings.get(_key)
@@ -41,6 +59,7 @@ class BaseController():
             if name == _action:
                 list_of_bindings.append(settingsManager.getSetting().key_id_map[binding])
         return list_of_bindings
+    
     
 class Controller(BaseController):
     def __init__(self,_bindings,_timing_window = dict()):
@@ -68,7 +87,6 @@ class GamepadController(BaseController):
     def __init__(self,_padBindings):
         BaseController.__init__(self, _padBindings)
         self.type = 'Gamepad'
-    
     
     def getInputs(self,_event,_push = True, _outputOnRelease = True):
         if _event.type not in [pygame.JOYAXISMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
@@ -151,3 +169,44 @@ class PadBindings():
             if neg == _action:
                 list_of_bindings.append('Axis ' + str(axis) + ' Negative')
         return list_of_bindings
+    
+    
+"""
+The input buffer is a list of all of the buttons pressed and released,
+and the frames they're put in on. It's used to check for buttons that
+were pressed in the past, such as for a wall tech, or a buffered jump,
+but can also be used to re-create the entire battle (once a replay manager
+is set up)
+"""
+class InputBuffer():
+    def __init__(self):
+        self.buffer = [[]]
+        self.working_buff = []
+        self.last_index = 0
+      
+    """
+    Pushes the buttons for the frame into the buffer, then extends the index by one.
+    """
+    def push(self):
+        self.buffer.append(dict(self.working_buff))
+        self.working_buff = []
+        self.last_index += 1
+        
+    """
+    Get a sub-buffer of N frames
+    """
+    def getLastNFrames(self,_from,_to=0):
+        ret_buffer = []
+        if _from > self.last_index: _from = self.last_index
+        if _to > self.last_index: _to = self.last_index
+        for i in range(self.last_index - _to,self.last_index - _from,-1):
+            ret_buffer.append(self.buffer[i - _to])
+        return ret_buffer
+    
+    """
+    put a key into the current working buffer. The working buffer is all of the inputs for
+    one frame, before the frame is actually executed.
+    """
+    def append(self,_key):
+        self.working_buff.append(_key)
+

@@ -1,10 +1,18 @@
 import engine.hitbox
+import engine.hurtbox
 import baseActions
 import pygame.color
 import builder.subactionSelector as subactionSelector
 import xml.etree.ElementTree as ElementTree
 from ast import literal_eval as make_tuple
 import settingsManager
+
+"""
+TODO -
+    EnableAction
+    DisableAction
+    SetTimer
+"""
 
 ########################################################
 #               ABSTRACT ACTIONS                       #
@@ -75,8 +83,10 @@ class VarData():
         
     def unpack(self,_action,_actor):
         if self.source == 'actor':
-            if _actor.var.has_key(self.var):
-                return _actor.var[self.var]
+            if _actor.stats.has_key(self.var):
+                return _actor.stats[self.var]
+            elif _actor.vars.has_key(self.var):
+                return _actor.vars[self.var]
             elif hasattr(_actor, self.var):
                 return getattr(_actor, self.var)
             else: return None
@@ -372,8 +382,10 @@ class If(SubAction):
                 actor = _actor.owner
             else: actor = _actor
             
-            if actor.var.has_key(self.variable):
-                variable = actor.var[self.variable]
+            if actor.stats.has_key(self.variable):
+                variable = actor.stats[self.variable]
+            elif actor.vars.has_key(self.variable):
+                variable = actor.vars[self.variable]
             else: variable = getattr(actor, self.variable)
         else:
             variable = getattr(_action, self.variable)
@@ -464,8 +476,6 @@ class ifButton(SubAction):
             cond = _actor.keyTapped(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyHeld':
             cond = _actor.keyHeld(self.button, working_from, self.threshold, self.buffer_to)
-        elif self.check == 'keyUnreleased':
-            cond = _actor.keyUnreleased(self.button)
         elif self.check == 'keyUp':
             cond = _actor.keyUp(self.button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyReinput':
@@ -664,7 +674,7 @@ class changeFighterPreferredSpeed(SubAction):
             if type(self.speed_x) is tuple:
                 owner,value = self.speed_x
                 if owner == 'actor':
-                    self.speed_x = _actor.var[value]
+                    self.speed_x = _actor.stats[value]
                 elif owner == 'action':
                     self.speed_x = getattr(self, value)
             if self.x_relative: _actor.preferred_xspeed = self.speed_x*_actor.facing
@@ -674,7 +684,7 @@ class changeFighterPreferredSpeed(SubAction):
             if type(self.speed_y) is tuple:
                 owner,value = self.speed_y
                 if owner == 'actor':
-                    self.speed_y = _actor.var[value]
+                    self.speed_y = _actor.stats[value]
                 elif owner == 'action':
                     self.speed_y = getattr(self, value)
             _actor.preferred_yspeed = self.speed_y
@@ -734,7 +744,7 @@ class changeFighterSpeed(SubAction):
                 if type(self.speed_x) is tuple:
                     owner,value = self.speed_x
                     if owner == 'actor':
-                        self.speed_x = _actor.var[value]
+                        self.speed_x = _actor.stats[value]
                     elif owner == 'action':
                         self.speed_x = getattr(self, value)
                 if self.x_relative: _actor.change_x = self.speed_x*_actor.facing
@@ -744,7 +754,7 @@ class changeFighterSpeed(SubAction):
                 if type(self.speed_y) is tuple:
                     owner,value = self.speed_y
                     if owner == 'actor':
-                        self.speed_y = _actor.var[value]
+                        self.speed_y = _actor.stats[value]
                     elif owner == 'action':
                         self.speed_y = getattr(self, value)
                 if self.y_relative:_actor.change_y += self.speed_y
@@ -973,9 +983,12 @@ class modifyFighterVar(SubAction):
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
         if not self.attr =='':
-            if _actor.var.has_key(self.attr):
-                if self.relative: _actor.var[self.attr] += self.val
-                else: _actor.var[self.attr] = self.val
+            if _actor.stats.has_key(self.attr):
+                if self.relative: _actor.stats[self.attr] += self.val
+                else: _actor.stats[self.attr] = self.val
+            elif _actor.vars.has_key(self.attr):
+                if self.relative: _actor.vars[self.attr] += self.val
+                else: _actor.vars[self.attr] = self.val
             else:
                 if self.relative:
                     setattr(_actor, self.attr, getattr(_actor, self.attr)+1)
@@ -1008,14 +1021,17 @@ class setVar(SubAction):
         SubAction.execute(self, _action, _actor)
         if self.source == 'action': source = _action
         elif self.source == 'fighter': source = _actor
-        
         if not self.attr =='': #If there's a variable to set
-            if hasattr(source, 'var') and source.var.has_key(self.attr): #if it has a var dict, let's check it first
-                if self.relative: source.var[self.attr] += self.val
-                else: source.var[self.attr] = self.val
+            if hasattr(source, 'stats') and source.stats.has_key(self.attr): #if it has a var dict, let's check it first
+                if self.relative: source.stats[self.attr] += self.val
+                else: source.stats[self.attr] = self.val
+            elif hasattr(source, 'vars') and source.varss.has_key(self.attr):
+                if self.relative: source.vars[self.attr] += self.val
+                else: source.vars[self.attr] = self.val
             else:
+                print(source,self.attr,self.val)
                 if self.relative:
-                    setattr(source, self.attr, getattr(source, self.attr)+1)
+                    setattr(source, self.attr, getattr(source, self.attr)+self.val)
                 else: setattr(source,self.attr,self.val)
     
     def getPropertiesPanel(self, _root):
@@ -1373,6 +1389,7 @@ class charge(SubAction):
         else:
             #We're moving on. Turn off the flashing
             _actor.mask = None
+
 # Create a new hurtbox
 class createHurtbox(SubAction):
     subact_group = 'Hurtbox'
@@ -1388,7 +1405,7 @@ class createHurtbox(SubAction):
             _actor = _actor.owner
         if self.hurtbox_name == '': return 
         
-        hurtbox = engine.hitbox.Hurtbox(_actor,self.hurtbox_vars)
+        hurtbox = engine.hurtbox.Hurtbox(_actor,self.hurtbox_vars)
         _action.hurtboxes[self.hurtbox_name] = hurtbox
         _actor.activateHurtbox(_action.hurtboxes[self.hurtbox_name])
     
@@ -1700,8 +1717,8 @@ class debugAction(SubAction):
             if source == 'action':
                 print('action.'+name+': '+str(getattr(_action, name)))
             else:
-                if _actor.var.has_key(name):
-                    print('fighter['+name+']: '+str(_actor.var[name]))
+                if _actor.stats.has_key(name):
+                    print('fighter['+name+']: '+str(_actor.stats[name]))
                 else:
                     print('fighter.'+name+': '+str(getattr(_actor, name)))
         else:
