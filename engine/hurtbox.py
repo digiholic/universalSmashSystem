@@ -29,7 +29,7 @@ class Hurtbox(spriteManager.RectSprite):
         spriteManager.RectSprite.__init__(self,pygame.Rect([0,0],[working_width, working_height]),[255,255,0])
         self.rect.center = [_owner.rect.center[0] + self.center[0], _owner.rect.center[1] + self.center[1]]
         self.article = None
-        self.armor = Armor()
+        self.armor = []
         
     #Add to later
     def getFixRect(self):
@@ -55,8 +55,7 @@ class Hurtbox(spriteManager.RectSprite):
 
     
     """
-    This function is called when a hurtbox is hit by a hitbox. Does nothing by default,
-    but can be overridden for a custom Hurtbox class.
+    This function is called when a hurtbox is hit by a hitbox. Registers the hit and applies appropriate knockback and hitstun by default, but can be overridden
     
     @_other: The hitbox that hit this hurtbox
     """
@@ -121,7 +120,7 @@ class Hurtbox(spriteManager.RectSprite):
         total_kb = scaled_kb + base_knockback + additional_kb
         
         # Filter all of the values on the current Armor
-        damage, total_kb, hitstun_multiplier,base_hitstun = self.armor.filterValues(damage,total_kb,hitstun_multiplier,base_hitstun)
+        damage, total_kb, hitstun_multiplier,base_hitstun = reduce(lambda k, x: k(*x), self.armor, [damage, total_kb, hitstun_multiplier, base_hitstun])
         if hasattr(self.owner, 'dealDamage'):
             self.owner.dealDamage(damage)
         if hasattr(self.owner, 'applyHitstop'):

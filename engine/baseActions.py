@@ -416,7 +416,7 @@ class GrabReeling(BaseGrab):
         BaseGrab.setUp(self, _actor)
         self.target_point = (16, -16)
         self.reel_speed = 10
-        self.dist = _actor.rect.centerx + (hold_x * _actor.facing) + (_actor.grabbing.grab_point[0] * -_actor.grabbing.facing) - _actor.grabbing.rect.centerx
+        self.dist = _actor.posx + (hold_x * _actor.facing) + (_actor.grabbing.grab_point[0] * -_actor.grabbing.facing) - _actor.grabbing.posx
         self.last_frame = abs(self.dist - self.reel_speed)
         self.hold_point = (self.dist + self.target_point[0], self.target_point[1])
         if self.sprite_name=="": self.sprite_name ="grabreeling"
@@ -452,10 +452,6 @@ class Grabbing(BaseGrab):
         BaseGrab.setUp(self, _actor)
         self.hold_point = (16,-16)
         if self.sprite_name=="": self.sprite_name ="grabbing"
-        #If they're both facing the same way, flip the foe so they are facing you
-        if _actor.grabbing.facing == _actor.facing:
-            _actor.grabbing.flip()
-            print(_actor.facing,_actor.grabbing.facing)
         
     def tearDown(self, _actor, _nextAction):
         print(_nextAction.__class__.__name__)
@@ -468,6 +464,11 @@ class Grabbing(BaseGrab):
         #If you aren't holding anything, let go
         if _actor.grabbing is None or not isinstance(_actor.grabbing.current_action, Grabbed):
             _actor.doAction('Release')
+            return
+        #If they're both facing the same way, flip the foe so they are facing you
+        if _actor.grabbing.facing == _actor.facing:
+            _actor.grabbing.flip()
+            print(_actor.facing,_actor.grabbing.facing)
             
     def update(self, _actor):
         if self.frame >= self.last_frame:
@@ -493,21 +494,21 @@ class Grabbed(Trapped):
         Trapped.update(self, _actor)
         grabber = _actor.grabbed_by
         
+        _actor.change_y = 0
+
         #release if you're not being held
         if grabber is None or (not (grabber.grabbing == _actor)):
             print('No one is holding me, gonna break out.')
             _actor.doAction('Released')
             return
         
-        _actor.change_y = 0
-        
         #snap to hold point
         if hasattr(grabber.current_action, 'hold_point'):
             (hold_x,hold_y) = grabber.current_action.hold_point
         else:
             (hold_x,hold_y) = (0,0)
-        _actor.rect.centerx = grabber.rect.centerx + (hold_x * grabber.facing) + (_actor.grab_point[0] * -_actor.facing)
-        _actor.rect.centery = grabber.rect.centery + (hold_y) + (_actor.grab_point[1])
+        _actor.posx = grabber.posx + (hold_x * grabber.facing) + (_actor.grab_point[0] * -_actor.facing)
+        _actor.posy = grabber.posy + (hold_y) + (_actor.grab_point[1])
         if hasattr(grabber.current_action, 'escape_pause') and grabber.current_action.escape_pause:
             self.frame = hold_frame
         
@@ -643,7 +644,7 @@ class HitStun(action.Action):
                     _actor.rotateSprite(self.direction)
             
         if self.frame % max(1,int(100.0/max(math.hypot(_actor.change_x, _actor.change_y), 1))) == 0 and self.frame < self.last_frame:
-            art = article.HitArticle(_actor, _actor.rect.center, 1, math.degrees(math.atan2(_actor.change_y, -_actor.change_x))+random.randrange(-30, 30), .5*math.hypot(_actor.change_x, _actor.change_y), .02*(math.hypot(_actor.change_x, _actor.change_y)+1), _actor.trail_color)
+            art = article.HitArticle(_actor, (_actor.posx, _actor.posy), 1, math.degrees(math.atan2(_actor.change_y, -_actor.change_x))+random.randrange(-30, 30), .5*math.hypot(_actor.change_x, _actor.change_y), .02*(math.hypot(_actor.change_x, _actor.change_y)+1), _actor.trail_color)
             _actor.articles.add(art)
                     
         if self.frame == self.last_frame:
@@ -726,7 +727,7 @@ class Prone(action.Action):
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
-            _actor.rect.bottom = block.rect.top
+            _actor.posy = block.rect.top - _actor.rect.height/2.0
         _actor.unRotate()
 
     def tearDown(self, _actor, _nextAction):
@@ -783,7 +784,7 @@ class SlowGetup(action.Action):
         if not block is None:
             _actor.change_y = block.change_y
 
-        _actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
+        _actor.posy = _actor.ecb.current_ecb.rect.bottom - _actor.rect.height/2.0
         _actor.unRotate()
         
     def update(self, _actor):
@@ -942,7 +943,7 @@ class Land(action.Action):
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
-            _actor.rect.bottom = block.rect.top
+            _actor.posy = block.rect.top - _actor.rect.height/2.0
 
 
     def tearDown(self, _actor, _nextAction):
@@ -951,7 +952,6 @@ class Land(action.Action):
 
     def update(self,_actor):
         action.Action.update(self, _actor)
-        #_actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
         if self.frame == 0:
             _actor.preferred_yspeed = _actor.stats['max_fall_speed']
             self.last_frame = _actor.landing_lag
@@ -984,12 +984,11 @@ class HelplessLand(action.Action):
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
-            _actor.rect.bottom = block.rect.top
+            _actor.posy = block.rect.top - _actor.rect.height/2.0
 
 
     def update(self,_actor):
         action.Action.update(self, _actor)
-        #_actor.rect.bottom = _actor.ecb.current_ecb.rect.bottom
         if self.frame == 0:
             _actor.change_y = 0
             _actor.preferred_yspeed = _actor.stats['max_fall_speed']
@@ -1347,7 +1346,7 @@ class BaseTech(action.Action):
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
-            _actor.rect.bottom = block.rect.top
+            _actor.posy = block.rect.top - _actor.rect.height/2.0
         _actor.unRotate()
 
     def tearDown(self, _actor, _nextAction):
@@ -1501,8 +1500,8 @@ class LedgeGrab(BaseLedge):
                 _actor.flip()
         _actor.setSpeed(0, _actor.getFacingDirection())
         
-        _actor.rect.centerx = self.ledge.rect.centerx + (self.sweetspot_x * -_actor.facing)
-        _actor.rect.centery = self.ledge.rect.centery + (self.sweetspot_y)
+        _actor.posx = self.ledge.rect.centerx + (self.sweetspot_x * -_actor.facing)
+        _actor.posy = self.ledge.rect.centery + (self.sweetspot_y)
         
         self.frame += 1
         
@@ -1523,7 +1522,7 @@ class BaseLedgeGetup(BaseLedge):
             self.target_height = self.ledge.platform.rect.top
             if self.ledge.side == 'left': self.target_x = self.ledge.platform.rect.left
             else: self.target_x = self.ledge.platform.rect.right
-            self.diff = self.target_height - _actor.rect.bottom
+            self.diff = self.target_height - _actor.posx + _actor.rect.height/2.0
             print(self.diff)
 
     def tearDown(self, _actor, _nextAction):
@@ -1546,7 +1545,7 @@ class BaseLedgeGetup(BaseLedge):
         if self.frame == self.up_frame:
             _actor.preferred_yspeed = 0
             _actor.change_y = 0
-            _actor.rect.bottom = self.target_height
+            _actor.posy = self.target_height - _actor.rect.height/2.0
             if self.ledge.side == 'left':
                 _actor.change_x = _actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
                 _actor.preferred_xspeed = _actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
@@ -1555,7 +1554,7 @@ class BaseLedgeGetup(BaseLedge):
                 _actor.preferred_xspeed = -_actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
         
         if self.frame == self.side_frame:
-            _actor.rect.centerx = self.target_x
+            _actor.posx = self.target_x
             _actor.preferred_xspeed = 0
             _actor.change_x = 0
                 

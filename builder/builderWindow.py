@@ -449,6 +449,8 @@ class ViewerPanel(BuilderPanel):
         self.after(5, self.gameLoop) #Loop every 5ms
     
     def centerFighter(self):
+        fighter.posx = self.screen.get_rect().centerx + self.center[0]
+        fighter.posy = self.screen.get_rect().centery + self.center[1]
         fighter.rect.centerx = self.screen.get_rect().centerx + self.center[0]
         fighter.rect.centery = self.screen.get_rect().centery + self.center[1]
     

@@ -116,7 +116,7 @@ def catchMovement(_object, _other, _platformPhase=False):
         
 #Prepare for article usage
 def eject(_object, _other, _platformPhase=False):
-    _object.updatePosition(_object.rect)
+    _object.updatePosition()
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
     
@@ -141,7 +141,7 @@ def reflect(_object, _other):
         _object.elasticity = 0
     if not hasattr(_object, 'ground_elasticity'):
         _object.ground_elasticity = 0
-    _object.updatePosition(_object.rect)
+    _object.updatePosition()
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
 
@@ -270,7 +270,6 @@ class ECB():
         #center = (self.actor.sprite.bounding_rect.centerx + self.actor.current_action.ecb_center[0],self.actor.sprite.bounding_rect.centery + self.actor.current_action.ecb_center[1])
         sizes = self.actor.current_action.ecb_size
         offsets = self.actor.current_action.ecb_offset
-        
         
         if sizes[0] == 0: 
             if hasattr(self.actor, 'sprite'):

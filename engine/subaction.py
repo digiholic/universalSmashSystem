@@ -842,11 +842,11 @@ class shiftFighterPosition(SubAction):
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
         if self.new_x:
-            if self.x_relative: _actor.rect.x += self.new_x * _actor.facing
-            else: _actor.rect.x = self.new_x
+            if self.x_relative: _actor.posx += self.new_x * _actor.facing
+            else: _actor.posx = self.new_x
         if self.new_y:
-            if self.y_relative: _actor.rect.y += self.new_y
-            else: _actor.rect.y = self.new_y
+            if self.y_relative: _actor.posy += self.new_y
+            else: _actor.posy = self.new_y
             
     def getDisplayName(self):
         return 'Shift Position: ' + str(self.new_x) + ' X, ' + str(self.new_y) + 'Y'

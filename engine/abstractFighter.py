@@ -119,6 +119,8 @@ class AbstractFighter():
     elasticity = 0
     ground_elasticity = 0
     
+    posx = 0
+    posy = 0
     change_x = 0
     change_y = 0
     preferred_xspeed = 0
@@ -445,9 +447,9 @@ class AbstractFighter():
             return
         elif self.hitstop == 0 and not self.hitstop_vibration == (0,0):
             #self.hitstop_vibration = False #Lolwut?
-            self.rect.center = self.hitstop_pos
+            (self.posx, self.posy) = self.hitstop_pos
             self.hitstop_vibration = (0,0)
-            self.sprite.updatePosition(self.rect)
+            self.updatePosition()
             self.ecb.normalize()
         
         # Allow ledge re-grabs if we've vacated a ledge
@@ -465,7 +467,7 @@ class AbstractFighter():
         self.current_action.stateTransitions(self)
         self.current_action.update(self) #update our action
         
-        self.sprite.updatePosition(self.rect)
+        self.updatePosition()
         self.ecb.normalize()
         self.ecb.normalize()
         
@@ -480,7 +482,7 @@ class AbstractFighter():
         
         loop_count = 0
         while loop_count < 2:
-            self.sprite.updatePosition(self.rect)
+            self.updatePosition()
             self.ecb.normalize()
             bumped = False
             block_hit_list = collisionBox.getSizeCollisionsWith(self, self.game_state.platform_list)
@@ -497,18 +499,14 @@ class AbstractFighter():
             loop_count += 1
         # TODO: Crush death if loopcount reaches the 10 resolution attempt ceiling
 
-        self.sprite.updatePosition(self.rect)
+        self.updatePosition()
         self.ecb.normalize()
-
-        future_rect = self.ecb.current_ecb.rect.copy()
-        future_rect.x += self.change_x
-        future_rect.y += self.change_y
 
         t = 1
 
         to_bounce_block = None
 
-        self.sprite.updatePosition(self.rect)
+        self.updatePosition()
         self.ecb.normalize()
         block_hit_list = collisionBox.getMovementCollisionsWith(self, self.game_state.platform_list)
         for block in block_hit_list:
@@ -516,10 +514,10 @@ class AbstractFighter():
                 t = self.ecb.pathRectIntersects(block.rect, self.change_x, self.change_y)
                 to_bounce_block = block
                 
-        self.rect.y += self.change_y*t
-        self.rect.x += self.change_x*t
+        self.posy += self.change_y*t
+        self.posx += self.change_x*t
 
-        self.sprite.updatePosition(self.rect)
+        self.updatePosition()
         self.ecb.normalize()
         
         ground_blocks = self.checkGround()
@@ -530,7 +528,8 @@ class AbstractFighter():
         # Move with the platform
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
-            self.rect.x += block.change_x
+            self.jumps += self.stats['jumps']
+            self.posx += block.change_x
             self.change_y -= self.stats['gravity'] * settingsManager.getSetting('gravity')
 
         if to_bounce_block is not None:
@@ -585,8 +584,9 @@ class AbstractFighter():
         loop_count = 0
         
         #QUESTION: Why is this a loop?
+        #ANSWER: It's so multiple ejections can happen
         while loop_count < 2:
-            self.sprite.updatePosition(self.rect)
+            self.updatePosition()
             self.ecb.normalize()
             bumped = False
             block_hit_list = collisionBox.getSizeCollisionsWith(self, self.game_state.platform_list)
@@ -602,24 +602,24 @@ class AbstractFighter():
                 break
             loop_count += 1
         
-        self.sprite.updatePosition(self.rect)
+        self.updatePosition()
         self.ecb.normalize()
 
         # Vibrate the sprite
         if not self.hitstop_vibration == (0,0):
             (x,y) = self.hitstop_vibration
-            self.rect.x += x
+            self.posx += x
             if not self.grounded: 
-                self.rect.y += y
+                self.posy += y
             self.hitstop_vibration = (-x,-y)
 
         #Smash directional influence AKA hitstun shuffling
         di_vec = self.getSmoothedInput(int(self.key_bindings.timing_window['smoothing_window']))
-        self.rect.x += di_vec[0]*5
+        self.posx += di_vec[0]*5
         if not self.grounded or self.keysContain('jump', _threshold=1):
-            self.rect.y += di_vec[1]*5
+            self.posy += di_vec[1]*5
 
-        self.sprite.updatePosition(self.rect)
+        self.updatePosition()
         self.ecb.normalize()
     
         ground_blocks = self.checkGround()
@@ -630,9 +630,9 @@ class AbstractFighter():
         # Move with the platform
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
-            self.rect.x += block.change_x
+            self.posx += block.change_x
 
-        self.sprite.updatePosition(self.rect)
+        self.updatePosition()
 
         self.hitbox_contact.clear()
         if self.invulnerable > -1000:
@@ -939,26 +939,27 @@ class AbstractFighter():
             self.change_y += min(diff, _multiplier*self.stats['gravity'] * settingsManager.getSetting('gravity'))
         
     def checkGround(self):
-        self.sprite.updatePosition(self.rect)
+        self.updatePosition()
         return collisionBox.checkGround(self, self.game_state.platform_list, self.tech_window <= 0)
 
     def checkLeftWall(self):
-        self.sprite.updatePosition(self.rect)
+        self.updatePosition()
         return collisionBox.checkLeftWall(self, self.game_state.platform_list, True)
 
     def checkRightWall(self):
-        self.sprite.updatePosition(self.rect)
+        self.updatePosition()
         return collisionBox.checkRightWall(self, self.game_state.platform_list, True)
 
     def checkBackWall(self):
+        self.updatePosition()
         return collisionBox.checkBackWall(self, self.game_state.platform_list, True)
 
     def checkFrontWall(self):
+        self.updatePosition()
         return collisionBox.checkFrontWall(self, self.game_state.platform_list, True)
 
-
     def checkCeiling(self):
-        self.sprite.updatePosition(self.rect)
+        self.updatePosition()
         return collisionBox.checkCeiling(self, self.game_state.platform_list, True)
     
     def setSpeed(self,_speed,_direction):
@@ -1023,11 +1024,13 @@ class AbstractFighter():
         """
         self.sprite.changeSubImage(_frame,_loop)
 
-    def updatePosition(self, _updateRect):
+    def updatePosition(self):
         """ Passes the updatePosition call to the sprite.
         See documentation in SpriteLibrary.updatePosition
         """
-        return self.sprite.updatePosition(_updateRect)
+        self.rect.centerx = self.posx
+        self.rect.centery = self.posy
+        return self.sprite.updatePosition(self.posx, self.posy)
     
     ########################################################
     #                  INPUT FUNCTIONS                     #
@@ -1440,7 +1443,7 @@ class AbstractFighter():
             self.hitstop_vibration = (3,0)
         else:
             self.hitstop_vibration = (0,3)
-        self.hitstop_pos = self.rect.center
+        self.hitstop_pos = (self.posx, self.posy)
         
     def applyKnockback(self, _total_kb,_trajectory):
         """Do Knockback to the fighter. The knockback calculation is derived from the SSBWiki, and a bit of information from
@@ -1519,15 +1522,15 @@ class AbstractFighter():
                 
             self.initialize()
             for i in range(0, 11):
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30, 30, 1.5, color)
+                next_hit_article = article.HitArticle(self, (self.posx, self.posy), 1, i*30, 30, 1.5, color)
                 self.articles.add(next_hit_article)
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30+10, 60, 1.5, color)
+                next_hit_article = article.HitArticle(self, (self.posx, self.posy), 1, i*30+10, 60, 1.5, color)
                 self.articles.add(next_hit_article)
-                next_hit_article = article.HitArticle(self, self.rect.center, 1, i*30+20, 90, 1.5, color)
+                next_hit_article = article.HitArticle(self, (self.posx, self.posy), 1, i*30+20, 90, 1.5, color)
                 self.articles.add(next_hit_article)
-            self.rect.midbottom = self.game_state.spawn_locations[self.player_num]
-            self.rect.bottom -= 200
-            self.sprite.updatePosition(self.rect)
+            (self.posx, self.posy) = self.game_state.spawn_locations[self.player_num]
+            self.posy -= 200
+            self.updatePosition()
             self.ecb.normalize()
             self.ecb.store()
             self.createMask([255,255,255], 480, True, 12)

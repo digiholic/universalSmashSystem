@@ -62,8 +62,9 @@ class Sprite(pygame.sprite.Sprite):
         bounding_rect.left += self.rect.left
         return bounding_rect
 
-    def updatePosition(self,_rect):
-        self.rect = _rect.copy()
+    def updatePosition(self,_posx, _posy):
+        self.rect.centerx = _posx
+        self.rect.centery = _posy
         self.bounding_rect = self.getBoundingBox()
         self.changed = True
         

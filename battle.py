@@ -89,7 +89,9 @@ class Battle():
             for fighter in self.current_fighters:
                 fighter.loadSpriteLibrary()
                 fighter.rect.midbottom = self.stage.spawn_locations[fighter.player_num]
-                fighter.sprite.updatePosition(fighter.rect)
+                fighter.posx = fighter.rect.centerx
+                fighter.posy = fighter.rect.centery
+                fighter.updatePosition()
                 fighter.ecb.normalize()
                 fighter.ecb.store()
                 fighter.game_state = self.stage
@@ -220,8 +222,7 @@ class Battle():
                 self.active_hurtboxes.add(obj.active_hurtboxes)      
         self.checkHitboxClanks()
         self.checkHitboxHits()
-        self.checkHitboxBumps()
-        
+
         for fight in self.current_fighters:
             if fight.rect.right < self.stage.blast_line.left or fight.rect.left > self.stage.blast_line.right or fight.rect.top > self.stage.blast_line.bottom or fight.rect.bottom < self.stage.blast_line.top:
                 if not self.track_stocks:
@@ -280,17 +281,9 @@ class Battle():
             hitbox_collisions = hurtbox_hits[hbox]
             for hurtbox in hitbox_collisions:
                 if hbox.owner != hurtbox.owner and hurtbox.owner.lockHitbox(hbox):
-                    data = hbox.onCollision(hurtbox.owner)
+                    data = hbox.onCollision(hurtbox)
                     if not isinstance(data, dict): data = dict() #In case a custom hitbox doesn't return the right data
-                    hurtbox.onHit(hbox,data)
-
-    def checkHitboxBumps(self):        
-        platform_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.stage.platform_list, False, False)
-        for hbox in platform_hits:
-            #then platform collisions
-            platform_collisions = platform_hits[hbox]
-            for wall in platform_collisions:
-                hbox.onCollision(wall)      
+                    hurtbox.onHit(hbox,data)  
 
     def draw(self):
         self.screen.fill(self.stage.background_color)
