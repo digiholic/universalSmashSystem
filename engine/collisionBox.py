@@ -123,15 +123,15 @@ def eject(_object, _other, _platformPhase=False):
     if _other.solid:
         if _object.ecb.doesIntersect(check_rect):
             contact = _object.ecb.primaryEjection(check_rect)
-            _object.rect.x += contact[0][0]
-            _object.rect.y += contact[0][1]
+            _object.posx += contact[0][0]
+            _object.posy += contact[0][1]
             return reflect(_object, _other)
     else:
         if not _platformPhase and _object.ecb.checkPlatform(check_rect, _object.change_y):
             if _object.ecb.doesIntersect(check_rect):
                 contact = _object.ecb.primaryEjection(check_rect)
-                _object.rect.x += contact[0][0]
-                _object.rect.y += contact[0][1]
+                _object.posx += contact[0][0]
+                _object.posy += contact[0][1]
                 return reflect(_object, _other)
     return False
 

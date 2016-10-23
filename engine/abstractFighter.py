@@ -245,23 +245,6 @@ class AbstractFighter():
         self.costumes = [self.sprite_prefix]
         for costume in self.xml_data.findall('costume'):
             self.costumes.append(costume.text)
-         
-        if self.xml_data:
-            if self.xml_data.find('stats') is not None:
-                for stat in self.xml_data.find('stats'):
-                    vartype = type(self.default_stats[stat.tag]).__name__
-                    if vartype == 'int': self.default_stats[stat.tag] = int(stat.text)
-                    if vartype == 'float': self.default_stats[stat.tag] = float(stat.text)
-            
-            if self.xml_data.find('variables') is not None:
-                for variable in self.xml_data.find('variables'):
-                    vartype = 'string'
-                    if variable.attrib.has_key('type'): vartype = variable.attrib['type']
-                    val = variable.text
-                    if vartype == 'int': val = int(val)
-                    elif vartype == 'float': val = float(val)
-                    elif vartype == 'bool': val = bool(val)
-                    self.default_vars[variable.tag] = val
         
         self.current_color = self.player_num
           
@@ -391,20 +374,8 @@ class AbstractFighter():
         self.input_buffer = controller.InputBuffer()
         self.key_bindings = settingsManager.getControls(self.player_num)
         self.key_bindings.linkObject(self)
-        self.key_bindings.flushInputs()
-        self.keys_held = dict()
-    
-        # Evironmental Collision Box
-        self.ecb = collisionBox.ECB(self)
         
-        # Hitboxes and Hurtboxes
-        self.active_hitboxes = pygame.sprite.Group()
         self.articles = pygame.sprite.Group()
-        self.active_hurtboxes = pygame.sprite.Group()
-        self.auto_hurtbox = hurtbox.Hurtbox(self)
-        
-        self.hitbox_lock = weakref.WeakSet()
-        self.hitbox_contact = set()
     
         if self.sound_path:
             settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
@@ -416,8 +387,48 @@ class AbstractFighter():
             class_ = getattr(self.actions,'NeutralAction')
             self.current_action = class_()
 
+        if self.xml_data:
+            if self.xml_data.find('stats') is not None:
+                for stat in self.xml_data.find('stats'):
+                    vartype = type(self.default_stats[stat.tag]).__name__
+                    if vartype == 'int': self.default_stats[stat.tag] = int(stat.text)
+                    if vartype == 'float': self.default_stats[stat.tag] = float(stat.text)
+            
+            if self.xml_data.find('variables') is not None:
+                for variable in self.xml_data.find('variables'):
+                    vartype = 'string'
+                    if variable.attrib.has_key('type'): vartype = variable.attrib['type']
+                    val = variable.text
+                    if vartype == 'int': val = int(val)
+                    elif vartype == 'float': val = float(val)
+                    elif vartype == 'bool': val = bool(val)
+                    self.default_vars[variable.tag] = val
+        self.onRespawn()
+    
+        
+    ########################################################
+    #                   UPDATE METHODS                     #
+    ########################################################
+
+    def onRespawn(self):
+        """This method initializes things that should be initialized at the start of the game,
+        and each time the fighter dies. 
+        """
+        self.key_bindings.flushInputs()
+        self.keys_held = dict()
         self.stats = self.default_stats.copy()
         self.vars = self.default_vars.copy()
+    
+        # Evironmental Collision Box
+        self.ecb = collisionBox.ECB(self)
+
+        # Hitboxes and Hurtboxes
+        self.active_hitboxes = pygame.sprite.Group()
+        self.active_hurtboxes = pygame.sprite.Group()
+        self.auto_hurtbox = hurtbox.Hurtbox(self)
+        
+        self.hitbox_lock = weakref.WeakSet()
+        self.hitbox_contact = set()
         
         self.jumps = self.stats['jumps']
         
@@ -425,11 +436,7 @@ class AbstractFighter():
         
         if self.sprite.flip == 'left': self.sprite.flipX()
         self.unRotate()   
-    
-        
-    ########################################################
-    #                   UPDATE METHODS                     #
-    ########################################################
+
     
     def update(self):
         """ This method will step the fighter forward one frame. It will resolve movement,
