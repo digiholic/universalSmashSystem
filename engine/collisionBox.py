@@ -9,8 +9,9 @@ def checkGround(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
     _object.grounded = False
     _object.ecb.current_ecb.rect.y += 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     ground_block = pygame.sprite.Group()
-    block_hit_list = pygame.sprite.spritecollide(_object.ecb.current_ecb, _objectList, False)
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
     _object.ecb.current_ecb.rect.y -= 4
     for block in block_hit_list:
         if block.solid or (_object.platform_phase <= 0):
@@ -26,8 +27,9 @@ def checkLeftWall(_object, _objectList, _checkVelocity=True):
     else:
         _object.front_walled = False
     _object.ecb.current_ecb.rect.x -= 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     wall_block = pygame.sprite.Group()
-    block_hit_list = pygame.sprite.spritecollide(_object.ecb.current_ecb, _objectList, False)
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
     _object.ecb.current_ecb.rect.x += 4
     for block in block_hit_list:
         if block.solid:
@@ -46,8 +48,9 @@ def checkRightWall(_object, _objectList, _checkVelocity=True):
     else:
         _object.back_walled = False
     _object.ecb.current_ecb.rect.x += 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     wall_block = pygame.sprite.Group()
-    block_hit_list = pygame.sprite.spritecollide(_object.ecb.current_ecb, _objectList, False)
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
     _object.ecb.current_ecb.rect.x -= 4
     for block in block_hit_list:
         if block.solid:
@@ -75,8 +78,9 @@ def checkCeiling(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
     _object.ceilinged = False
     _object.ecb.current_ecb.rect.y -= 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     ceiling_block = pygame.sprite.Group()
-    block_hit_list = pygame.sprite.spritecollide(_object.ecb.current_ecb, _objectList, False)
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
     _object.ecb.current_ecb.rect.y += 4
     for block in block_hit_list:
         if block.solid:
