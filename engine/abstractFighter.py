@@ -438,8 +438,6 @@ class AbstractFighter():
         elif hasattr(self.actions, 'Respawn'):
             class_ = getattr(self.actions,'Respawn')
             self.current_action = class_()
-        (self.posx, self.posy) = self.game_state.spawn_locations[self.player_num]
-        self.posy -= 200
 
     
     def update(self):
@@ -1534,6 +1532,8 @@ class AbstractFighter():
                 next_hit_article = article.HitArticle(self, (self.posx, self.posy), 1, i*30+20, 90, 1.5, color)
                 self.articles.add(next_hit_article)
             self.onRespawn()
+            (self.posx, self.posy) = self.game_state.spawn_locations[self.player_num]
+            self.posy -= 200
             self.updatePosition()
             self.ecb.normalize()
             self.ecb.store()

@@ -282,6 +282,7 @@ class Respawn(action.Action):
         _actor.ground = True
         _actor.change_y = 0
         if self.frame == 0:
+            self.respawn_article = article.RespawnPlatformArticle(_actor)
             _actor.createMask([255,128,255], 120, True, 12)
             _actor.articles.add(self.respawn_article)
         if self.frame == 120:
@@ -734,7 +735,7 @@ class Prone(action.Action):
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
-            _actor.posy = block.rect.top - _actor.ecb.previous_ecb.rect.height/2.0
+            _actor.posy = block.rect.top - _actor.ecb.current_ecb.rect.height/2.0
         _actor.unRotate()
         (key, invkey) = _actor.getForwardBackwardKeys()
         if _actor.keyHeld(key):
@@ -796,7 +797,7 @@ class SlowGetup(action.Action):
         if not block is None:
             _actor.change_y = block.change_y
 
-        _actor.posy = _actor.ecb.current_ecb.rect.bottom - _actor.ecb.previous_ecb.rect.height/2.0
+        _actor.posy = _actor.ecb.current_ecb.rect.bottom - _actor.ecb.current_ecb.rect.height/2.0
         _actor.unRotate()
         
     def update(self, _actor):
@@ -954,7 +955,7 @@ class Land(action.Action):
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
-            _actor.posy = block.rect.top - _actor.ecb.previous_ecb.rect.height/2.0
+            _actor.posy = block.rect.top - _actor.ecb.current_ecb.rect.height/2.0
 
 
     def tearDown(self, _actor, _nextAction):
@@ -995,7 +996,7 @@ class HelplessLand(action.Action):
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
-            _actor.posy = block.rect.top - _actor.ecb.previous_ecb.rect.height/2.0
+            _actor.posy = block.rect.top - _actor.ecb.current_ecb.rect.height/2.0
 
 
     def update(self,_actor):
@@ -1357,7 +1358,7 @@ class BaseTech(action.Action):
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
             _actor.change_y = block.change_y
-            _actor.posy = block.rect.top - _actor.ecb.previous_ecb.rect.height/2.0
+            _actor.posy = block.rect.top - _actor.ecb.current_ecb.rect.height/2.0
         _actor.unRotate()
 
     def tearDown(self, _actor, _nextAction):
@@ -1533,7 +1534,7 @@ class BaseLedgeGetup(BaseLedge):
             self.target_height = self.ledge.platform.rect.top
             if self.ledge.side == 'left': self.target_x = self.ledge.platform.rect.left
             else: self.target_x = self.ledge.platform.rect.right
-            self.diff = self.target_height - _actor.posx + _actor.ecb.previous_ecb.rect.height/2.0
+            self.diff = self.target_height - _actor.posx + _actor.ecb.current_ecb.rect.height/2.0
             print(self.diff)
 
     def tearDown(self, _actor, _nextAction):
@@ -1556,7 +1557,7 @@ class BaseLedgeGetup(BaseLedge):
         if self.frame == self.up_frame:
             _actor.preferred_yspeed = 0
             _actor.change_y = 0
-            _actor.posy = self.target_height - _actor.ecb.previous_ecb.rect.height/2.0
+            _actor.posy = self.target_height - _actor.ecb.current_ecb.rect.height/2.0
             if self.ledge.side == 'left':
                 _actor.change_x = _actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
                 _actor.preferred_xspeed = _actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)

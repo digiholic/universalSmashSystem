@@ -88,12 +88,12 @@ class Battle():
             gui_offset = self.screen.get_rect().width / (len(self.players) + 1)
             for fighter in self.current_fighters:
                 fighter.loadSpriteLibrary()
-                fighter.rect.midbottom = self.stage.spawn_locations[fighter.player_num]
-                fighter.posx = fighter.rect.centerx
-                fighter.posy = fighter.rect.centery
+                fighter.posx = self.stage.spawn_locations[fighter.player_num][0]
+                fighter.posy = self.stage.spawn_locations[fighter.player_num][1]-200
                 fighter.updatePosition()
                 fighter.ecb.normalize()
                 fighter.ecb.store()
+                fighter.posy += fighter.ecb.current_ecb.rect.height/2.0
                 fighter.game_state = self.stage
                 fighter.players = self.players
                 self.stage.follows.append(fighter.rect)
