@@ -114,7 +114,7 @@ def catchMovement(_object, _other, _platformPhase=False):
         v_vel = [_object.change_x-_other.change_x, _object.change_y-_other.change_y]
         return numpy.dot(contact[1], v_vel) < 0
     elif not _platformPhase:
-        return _object.ecb.interceptPlatform(check_rect, _dx=t*(_object.change_x), _dy=t*(_object.change_y), _yvel=_object.change_y-_other.change_y)
+        return _object.ecb.interceptPlatform(check_rect, _dx=t*(_object.change_x), _dy=t*(_object.change_y), _yvel=_object.change_y)
     else:
         return False
         
@@ -131,7 +131,7 @@ def eject(_object, _other, _platformPhase=False):
             _object.posy += contact[0][1]
             return reflect(_object, _other)
     else:
-        if not _platformPhase and _object.ecb.checkPlatform(check_rect, _object.change_y-_other.change_y):
+        if not _platformPhase and _object.ecb.checkPlatform(check_rect, _object.change_y):
             if _object.ecb.doesIntersect(check_rect):
                 contact = _object.ecb.primaryEjection(check_rect)
                 _object.posx += contact[0][0]
@@ -327,7 +327,7 @@ class ECB():
         working_list = filter(lambda e: numpy.dot(e[0], e[1]) >= 0, distances)
         reference_list = copy.deepcopy(working_list)
         for element in reference_list:
-            working_list = filter(lambda k: abs(numpy.dot(k[0], element[1]) - numpy.dot(element[0], element[1])) > 0.01 or numpy.allclose(k[0], element[0]), working_list)
+            working_list = filter(lambda k: numpy.dot(k[0], element[1]) != numpy.dot(element[0], element[1]) or numpy.allclose(k[0], element[0]), working_list)
         return working_list
 
     def primaryEjection(self, _other, _dx=0, _dy=0):
@@ -342,13 +342,13 @@ class ECB():
 
         intersect = min(distances, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
 
-        if (_platform.top >= self.previous_ecb.rect.bottom-4-_yvel or True) and numpy.dot(intersect[0], intersect[1]) >= 0 and intersect[1][1] < 0 and self.current_ecb.rect.bottom >= _platform.top:
+        if _platform.top >= self.previous_ecb.rect.bottom-4-_yvel and numpy.dot(intersect[0], intersect[1]) and intersect[1][1] < 0 and self.current_ecb.rect.bottom >= _platform.top:
             return True
         return False
 
     def interceptPlatform(self, _platform, _dx, _dy, _yvel):
         intersect = self.intersectPoint(_platform, _dx, _dy)
-        if (_platform.top >= self.current_ecb.rect.bottom+_dy-4-_yvel or True) and numpy.dot(intersect[0], intersect[1]) >= 0 and intersect[1][1] < 0 and self.current_ecb.rect.bottom+_dy >= _platform.top:
+        if _platform.top >= self.current_ecb.rect.bottom-4-_yvel and numpy.dot(intersect[0], intersect[1]) and intersect[1][1] < 0 and self.current_ecb.rect.bottom+_dy >= _platform.top:
             return True
         return False
 
