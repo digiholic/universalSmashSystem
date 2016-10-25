@@ -23,6 +23,134 @@ class AbstractFighter():
     is called, creating an object that can interact with the world.
     """
     
+    # Top Level fighter variables #
+    base_dir = ''
+    player_num = 0
+    xml_data = None
+    
+    # Data loaded from XML #
+    name = 'Null'
+    franchise_icon_path = 'sprites/default_franchise_icon.png'
+    css_icon_path = './sprites/icon_unknown.png'
+    css_portrait_path =''
+    
+    sprite_directory = 'sprites/'
+    sprite_prefix = ''
+    sprite_width = 64
+    default_sprite = 'sandbag_idle'
+    sprite = None
+    
+    article_sprite_path = ''
+    article_file = ''
+    
+    sound_path = ''
+    
+    actions_file = baseActions.__file__
+    
+    default_stats = {
+                'weight': 100,
+                'gravity': .5,
+                'max_fall_speed': 20.0,
+                'max_ground_speed': 7.0,
+                'run_speed': 11.0,
+                'max_air_speed': 5.5,
+                'aerial_transition_speed': 9.0,
+                'crawl_speed': 2.5,
+                'dodge_speed': 8.5,
+                'friction': 0.3,
+                'static_grip': 0.3,
+                'pivot_grip': 0.6,
+                'air_resistance': 0.2,
+                'air_control': 0.2,
+                'jumps': 1,
+                'jump_height': 12.5,
+                'short_hop_height': 8.5,
+                'air_jump_height': 15.0,
+                'heavy_land_lag': 4,
+                'wavedash_lag': 12,
+                'fastfall_multiplier': 2.0,
+                'hitstun_elasticity': .8,
+                'shield_size': 1.0
+                }
+    
+    default_vars = dict()
+    
+    # Data gotten from the XML data, like loading files and folders #
+    actions = baseActions
+    stats = dict()
+    vars = dict()
+    
+    # Initialized fighter variables #
+    key_bindings = None
+    
+    active_hitboxes = None #pygame.sprite.Group()
+    articles = None #pygame.sprite.Group()
+    active_hurtboxes = None #pygame.sprite.Group()
+    auto_hurtbox = None
+    
+    shield = False
+    shield_integrity = 100    
+        
+    input_buffer = None
+    last_input_frame = 0
+    keys_held = None
+    
+    hitbox_lock = None #weakref.WeakSet()
+    hitbox_contact = None #set()
+    
+    ledge_lock = False
+        
+    mask = None
+    
+    hit_tagged = None
+     
+    angle = 0
+    grounded = False
+    back_walled = False
+    front_walled = False
+    ceilinged = False
+    jumps = 0
+    damage = 0
+    landing_lag = 6
+    platform_phase = 0
+    tech_window = 0
+    airdodges = 1
+    
+    elasticity = 0
+    ground_elasticity = 0
+    
+    posx = 0
+    posy = 0
+    change_x = 0
+    change_y = 0
+    preferred_xspeed = 0
+    preferred_yspeed = 0
+    trail_color = "#000000"
+    
+    #facing right = 1, left = -1
+    facing = 1
+    
+    #Adding a move to the disabled moves list prevents it from activating.
+    #If told to switch to it, the fighter will ignore the request.
+    disabled_moves = []
+    
+    invulnerable = 0
+    respawn_invulnerable = 0
+    
+    hitstop = 0
+    hitstop_vibration = (0,0)
+    hitstop_pos = (0,0)
+        
+    custom_timers = list()
+    
+    current_color = 0
+    current_costume = 0
+    
+    css_icon = spriteManager.ImageSprite(settingsManager.createPath('sprites/icon_unknown.png'))
+    
+    color_palettes = []
+    palette_display = []
+    
     def __init__(self,_baseDir,_playerNum):
         """ Create a fighter. To start, all that's needed is the directory it is in, and the player number.
         It uses the directory to find its fighter.xml file and begin storing data.
@@ -68,26 +196,26 @@ class AbstractFighter():
         else: self.xml_data = ElementTree.ElementTree().getroot()
         
         #Load the CSS info
-        self.name = loadNodeWithDefault('name', 'Null')
-        self.franchise_icon_path = loadNodeWithDefault('icon', 'sprites/default_franchise_icon.png')
-        self.css_icon_path = loadNodeWithDefault('css_icon', './sprites/icon_unknown.png')
-        self.css_portrait_path = loadNodeWithDefault('css_portrait', '')
+        self.name = loadNodeWithDefault('name', self.name)
+        self.franchise_icon_path = loadNodeWithDefault('icon', self.franchise_icon_path)
+        self.css_icon_path = loadNodeWithDefault('css_icon', self.css_icon_path)
+        self.css_portrait_path = loadNodeWithDefault('css_portrait', self.css_portrait_path)
         
         #Load the sprite info
         self.sprite_directory = loadNodeWithDefault('sprite_directory', os.path.join(self.base_dir,'sprites/'))
-        self.sprite_prefix = loadNodeWithDefault('sprite_prefix', '')
-        self.sprite_width = int(loadNodeWithDefault('sprite_width', 64))
-        self.default_sprite = loadNodeWithDefault('default_sprite', 'sandbag_idle')
+        self.sprite_prefix = loadNodeWithDefault('sprite_prefix', self.sprite_prefix)
+        self.sprite_width = int(loadNodeWithDefault('sprite_width', self.sprite_width))
+        self.default_sprite = loadNodeWithDefault('default_sprite', self.default_sprite)
         
         #Load the article info
-        self.article_sprite_path = loadNodeWithDefault('article_path', '')
-        self.article_file = loadNodeWithDefault('articles', '')
+        self.article_sprite_path = loadNodeWithDefault('article_path', self.article_sprite_path)
+        self.article_file = loadNodeWithDefault('articles', self.article_file)
         
         #Load sounds
-        self.sound_path = loadNodeWithDefault('sound_path', '')
+        self.sound_path = loadNodeWithDefault('sound_path', self.sound_path)
         
         #Load actions
-        self.actions_file = loadNodeWithDefault('actions', baseActions.__file__)
+        self.actions_file = loadNodeWithDefault('actions', self.actions_file)
         
         #Load the article loader
         self.article_path_short = loadNodeWithDefault('article_path', '')
@@ -99,9 +227,8 @@ class AbstractFighter():
         else:
             self.article_loader = engine.articleLoader.ArticleLoader(self)
         
-        self.color_palettes = []
-        self.palette_display = []
         
+        #TODO color palettes
         for color_palette in self.xml_data.findall('color_palette'):
             color_dict = {}
             for color_map in color_palette.findall('color_map'):
@@ -252,43 +379,7 @@ class AbstractFighter():
     
         if self.sound_path:
             settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
-        
-        #initialize the action
-        if hasattr(self.actions,'loadAction'):
-            self.current_action = self.actions.loadAction('NeutralAction')
-        elif hasattr(self.actions, 'NeutralAction'):
-            class_ = getattr(self.actions,'NeutralAction')
-            self.current_action = class_()
-        
-        
-        self.default_stats = {
-                    'weight': 100,
-                    'gravity': .5,
-                    'max_fall_speed': 20.0,
-                    'max_ground_speed': 7.0,
-                    'run_speed': 11.0,
-                    'max_air_speed': 5.5,
-                    'aerial_transition_speed': 9.0,
-                    'crawl_speed': 2.5,
-                    'dodge_speed': 8.5,
-                    'friction': 0.3,
-                    'static_grip': 0.3,
-                    'pivot_grip': 0.6,
-                    'air_resistance': 0.2,
-                    'air_control': 0.2,
-                    'jumps': 1,
-                    'jump_height': 12.5,
-                    'short_hop_height': 8.5,
-                    'air_jump_height': 15.0,
-                    'heavy_land_lag': 4,
-                    'wavedash_lag': 12,
-                    'fastfall_multiplier': 2.0,
-                    'hitstun_elasticity': .8,
-                    'shield_size': 1.0
-                    }
-        
-        self.default_vars = dict()
-        
+
         if self.xml_data:
             if self.xml_data.find('stats') is not None:
                 for stat in self.xml_data.find('stats'):
@@ -316,55 +407,6 @@ class AbstractFighter():
         """This method initializes things that should be initialized at the start of the game,
         and each time the fighter dies. 
         """
-        self.shield = False
-        self.shield_integrity = 100    
-            
-        self.last_input_frame = 0
-        self.keys_held = None
-        
-        self.ledge_lock = False
-            
-        self.mask = None
-        
-        self.hit_tagged = None
-         
-        self.angle = 0
-        self.grounded = False
-        self.back_walled = False
-        self.front_walled = False
-        self.ceilinged = False
-        self.damage = 0
-        self.landing_lag = 6
-        self.platform_phase = 0
-        self.tech_window = 0
-        self.airdodges = 1
-        
-        self.elasticity = 0
-        self.ground_elasticity = 0
-        
-        self.posx = 0
-        self.posy = 0
-        self.change_x = 0
-        self.change_y = 0
-        self.preferred_xspeed = 0
-        self.preferred_yspeed = 0
-        
-        #facing right = 1, left = -1
-        self.facing = 1
-        
-        #Adding a move to the disabled moves list prevents it from activating.
-        #If told to switch to it, the fighter will ignore the request.
-        self.disabled_moves = []
-        
-        self.invulnerable = 0
-        self.respawn_invulnerable = 0
-        
-        self.hitstop = 0
-        self.hitstop_vibration = (0,0)
-        self.hitstop_pos = (0,0)
-            
-        self.custom_timers = list()
-        
         self.key_bindings.flushInputs()
         self.keys_held = dict()
         self.stats = self.default_stats.copy()
@@ -381,12 +423,23 @@ class AbstractFighter():
         self.hitbox_lock = weakref.WeakSet()
         self.hitbox_contact = set()
         
+        self.damage = 0
+        self.change_x = 0
+        self.change_y = 0
         self.jumps = self.stats['jumps']
         
         self.trail_color = settingsManager.getSetting('playerColor' + str(self.player_num))
         
         if self.sprite.flip == 'left': self.sprite.flipX()
         self.unRotate()   
+        
+        if hasattr(self.actions,'loadAction'):
+            self.current_action = self.actions.loadAction('Respawn')
+        elif hasattr(self.actions, 'Respawn'):
+            class_ = getattr(self.actions,'Respawn')
+            self.current_action = class_()
+        (self.posx, self.posy) = self.game_state.spawn_locations[self.player_num]
+        self.posy -= 200
 
     
     def update(self):
@@ -1463,11 +1516,6 @@ class AbstractFighter():
         sfxlib = settingsManager.getSfx()
         if sfxlib.hasSound('death', self.name):
             self.playSound('death')
-        
-        self.damage = 0
-        self.change_x = 0
-        self.change_y = 0
-        self.jumps = self.stats['jumps']
         self.data_log.addToData('Falls',1)
         if self.hit_tagged != None:
             if hasattr(self.hit_tagged, 'data_log'):
@@ -1478,7 +1526,6 @@ class AbstractFighter():
             else:
                 color = settingsManager.getSetting('playerColor' + str(self.player_num))
                 
-            self.initialize()
             for i in range(0, 11):
                 next_hit_article = article.HitArticle(self, (self.posx, self.posy), 1, i*30, 30, 1.5, color)
                 self.articles.add(next_hit_article)
@@ -1486,8 +1533,7 @@ class AbstractFighter():
                 self.articles.add(next_hit_article)
                 next_hit_article = article.HitArticle(self, (self.posx, self.posy), 1, i*30+20, 90, 1.5, color)
                 self.articles.add(next_hit_article)
-            (self.posx, self.posy) = self.game_state.spawn_locations[self.player_num]
-            self.posy -= 200
+            self.onRespawn()
             self.updatePosition()
             self.ecb.normalize()
             self.ecb.store()

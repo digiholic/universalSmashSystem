@@ -46,8 +46,8 @@ class ForwardSpecial(action.Action):
         self.ecb_offset = [0,7]
         self.ecb_size = [64, 78]
         self.charge = 0
-        if _actor.vars['sideSpecialUses'] == 1:
-            _actor.vars['sideSpecialUses'] = 0
+        if _actor.sideSpecialUses == 1:
+            _actor.sideSpecialUses = 0
         else:
             self.should_continue = False
             return
@@ -107,7 +107,7 @@ class ForwardSpecial(action.Action):
         _actor.auto_hurtbox.rect.width = 64
         _actor.auto_hurtbox.rect.height = 64
         _actor.auto_hurtbox.rect.center = _actor.sprite.bounding_rect.center
-        _actor.accel(_actor.stats['air_control'])
+        _actor.accel(_actor.var['air_control'])
         if self.frame <= self.last_frame-2:
             self.sprite_image += 1
             if self.frame <= 16:
@@ -121,23 +121,23 @@ class ForwardSpecial(action.Action):
                     self.last_frame += 1
                     self.frame -= 1
             else: #Actually launch forwards
-                _actor.preferred_yspeed = _actor.stats['max_fall_speed']
+                _actor.preferred_yspeed = _actor.var['max_fall_speed']
                 self.charge += 1
                 self.chain_hitbox.update()
                 _actor.active_hitboxes.add(self.chain_hitbox)
                 (key, invkey) = _actor.getForwardBackwardKeys()
                 if self.frame == 17:
-                    _actor.setSpeed(_actor.stats['aerial_transition_speed'], _actor.getForwardWithOffset(0))
+                    _actor.setSpeed(_actor.var['aerial_transition_speed'], _actor.getForwardWithOffset(0))
                     _actor.change_y = -12
                 if self.sprite_image%6 == 0:
                     self.chain_hitbox.hitbox_lock = hitbox.HitboxLock()
                 if _actor.keysContain(invkey):
-                    _actor.preferred_xspeed = _actor.stats['aerial_transition_speed']//2*_actor.facing
+                    _actor.preferred_xspeed = _actor.var['aerial_transition_speed']//2*_actor.facing
                     self.frame += 2
                 elif _actor.keysContain(key):
-                    _actor.preferred_xspeed = _actor.stats['aerial_transition_speed']*_actor.facing
+                    _actor.preferred_xspeed = _actor.var['aerial_transition_speed']*_actor.facing
                 else:
-                    _actor.preferred_xspeed = _actor.stats['aerial_transition_speed']*3//4*_actor.facing
+                    _actor.preferred_xspeed = _actor.var['aerial_transition_speed']*3//4*_actor.facing
                     self.frame += 1
                 if (self.frame > self.last_frame-2):
                     self.frame = self.last_frame-2
