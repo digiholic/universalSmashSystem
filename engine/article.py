@@ -243,7 +243,7 @@ class ShieldArticle(Article):
             _actor.shield_integrity -= _other.damage*_other.shield_multiplier
             _actor.hitstop = math.floor((_other.damage / 3.0 + 3.0)*_other.hitlag_multiplier*settingsManager.getSetting('hitlag'))
             _actor.change_x = _other.base_knockback/5.0*math.cos(math.radians(_other.trajectory))
-            _actor.current_action.last_frame = math.floor((_other.damage*_other.shield_multiplier*3/4.0+_other.base_hitstun//5)*settingsManager.getSetting('shieldStun'))
+            _actor.current_action.last_frame = math.floor((_other.damage*_other.shield_multiplier*3/4.0*_other.hitstun_multiplier+_other.base_hitstun//3)*settingsManager.getSetting('shieldStun'))
         elif _hitbox == self.parry_hitbox and (isinstance(_other, hitbox.DamageHitbox) or isinstance(_other, hitbox.GrabHitbox)):
             print("Successful parry!")
             _actor.doAction('NeutralAction')
