@@ -1057,8 +1057,7 @@ class Shield(action.Action):
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
-        if _actor.keysContain('shield') and self.frame > 3:
-            shieldState(_actor)
+        shieldState(_actor)
    
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
