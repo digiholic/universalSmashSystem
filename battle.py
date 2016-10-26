@@ -281,9 +281,8 @@ class Battle():
             hitbox_collisions = hurtbox_hits[hbox]
             for hurtbox in hitbox_collisions:
                 if hbox.owner != hurtbox.owner and hurtbox.owner.lockHitbox(hbox):
-                    data = hbox.onCollision(hurtbox)
-                    if not isinstance(data, dict): data = dict() #In case a custom hitbox doesn't return the right data
-                    hurtbox.onHit(hbox,data)  
+                    hbox.onCollision(hurtbox)
+                        
 
     def draw(self):
         self.screen.fill(self.stage.background_color)

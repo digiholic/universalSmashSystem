@@ -96,7 +96,6 @@ class AbstractFighter():
     keys_held = None
     
     hitbox_lock = None #weakref.WeakSet()
-    hitbox_contact = None #set()
     
     ledge_lock = False
         
@@ -142,6 +141,7 @@ class AbstractFighter():
     hitstop_pos = (0,0)
         
     custom_timers = list()
+    armor = list()
     
     current_color = 0
     current_costume = 0
@@ -421,7 +421,6 @@ class AbstractFighter():
         self.auto_hurtbox = hurtbox.Hurtbox(self)
         
         self.hitbox_lock = weakref.WeakSet()
-        self.hitbox_contact = set()
         
         self.damage = 0
         self.change_x = 0
@@ -538,7 +537,7 @@ class AbstractFighter():
         # Move with the platform
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
         if not block is None:
-            self.jumps += self.stats['jumps']
+            self.jumps = self.stats['jumps']
             self.posx += block.change_x
             self.change_y -= self.stats['gravity'] * settingsManager.getSetting('gravity')
 
@@ -644,7 +643,6 @@ class AbstractFighter():
 
         self.updatePosition()
 
-        self.hitbox_contact.clear()
         if self.invulnerable > -1000:
             self.invulnerable -= 1
 
@@ -1418,6 +1416,11 @@ class AbstractFighter():
     ########################################################
     #                 COMBAT FUNCTIONS                     #
     ########################################################
+
+    def applySubactions(self, _subacts):
+        for subact in _subacts:
+            subact.execute(self.current_action, self)
+        return True # Our hit filter stuff expects this
     
     def dealDamage(self, _damage):
         """ Deal damage to the fighter.
@@ -1472,7 +1475,7 @@ class AbstractFighter():
         di_multiplier = 1+numpy.dot(di_vec, trajectory_vec)*.05
         
         _trajectory += numpy.cross(di_vec, trajectory_vec)*13.5
-
+        print(_total_kb)
         self.setSpeed((_total_kb)*di_multiplier, _trajectory)
     
     def applyHitstun(self,_total_kb,_hitstunMultiplier,_baseHitstun,_trajectory):
