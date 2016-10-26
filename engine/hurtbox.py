@@ -107,3 +107,34 @@ class SuperArmor(Armor):
 class HeavyArmor(Armor):
     """ Heavy Armor ignores knockback below a certain threshold """
     pass
+
+class Invulnerability(Armor):
+    """ Invulnerability does not pass actions down, but pretends as if it did. """
+    def filterValues(self, _hitbox, _subactions, _forward):
+        import engine.subaction as subaction
+        _subactions = filter(lambda k: not isinstance(k, subaction.applyHitstop), _subactions)
+        return _forward(_hitbox, _subactions)
+
+class Intangibility(Armor):
+    """ Intangibility tells the truth when it passes nothing down. """
+    def filterValues(self, _hitbox, _subactions, _forward):
+        return False
+
+class CrouchCancel(Armor):
+    """ Crouch cancelling reduces knockback and hitstun values while crouching. """
+    def filterValues(self, _hitbox, _subactions, _forward):
+        import engine.subaction as subaction
+        for subact in _subactions:
+            if isinstance(subact, subaction.applyScaledKnockback):
+                subact.base_knockback *= 0.5
+                subact.knockback_growth *= 0.8
+            if isinstance(subact, subaction.applyHitstun):
+                subact.base_knockback *= 0.5
+                subact.knockback_growth *= 0.8
+                subact.base_hitstun *= 0.6
+                subact.hitstun_multiplier *= 0.9
+            if isinstance(subact, subaction.compensateResistance):
+                subact.frames *= 0.5
+            if isinstance(subact, subaction.applyHitstop):
+                subact.pushback = 0
+        return _forward(_hitbox, _subactions)
