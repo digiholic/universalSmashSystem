@@ -45,7 +45,7 @@ class AbstractFighter():
     
     sound_path = ''
     
-    actions_file = baseActions.__file__
+    action_file = baseActions.__file__
     
     default_stats = {
                 'weight': 100,
@@ -216,7 +216,7 @@ class AbstractFighter():
         self.sound_path = loadNodeWithDefault('sound_path', self.sound_path)
         
         #Load actions
-        self.actions_file = loadNodeWithDefault('actions', self.actions_file)
+        self.action_file = loadNodeWithDefault('actions', self.action_file)
         
         #Load the article loader
         self.article_path_short = loadNodeWithDefault('article_path', '')
@@ -266,10 +266,10 @@ class AbstractFighter():
         self.rect = self.sprite.rect
         
         try:
-            if self.actions_file.endswith('.py'):
-                self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),self.actions_file,_suffix=str(self.player_num))
+            if self.action_file.endswith('.py'):
+                self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),self.action_file,_suffix=str(self.player_num))
             else:
-                self.actions = actionLoader.ActionLoader(_baseDir,self.actions_file)
+                self.actions = actionLoader.ActionLoader(_baseDir,self.action_file)
         except:
             self.actions = baseActions
             self.action_file = baseActions.__file__
@@ -381,7 +381,7 @@ class AbstractFighter():
         if self.sound_path:
             settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
 
-        if self.xml_data:
+        if self.xml_data is not None:
             if self.xml_data.find('stats') is not None:
                 for stat in self.xml_data.find('stats'):
                     vartype = type(self.default_stats[stat.tag]).__name__
@@ -433,11 +433,12 @@ class AbstractFighter():
         if self.sprite.flip == 'left': self.sprite.flipX()
         self.unRotate()   
         
+        self.current_action = self.getAction('NeutralAction')
         if hasattr(self.actions,'loadAction'):
-            self.current_action = self.actions.loadAction('Respawn')
+            self.doAction('Respawn')
         elif hasattr(self.actions, 'Respawn'):
             class_ = getattr(self.actions,'Respawn')
-            self.current_action = class_()
+            self.changeAction(class_())
 
     
     def update(self):
@@ -698,7 +699,8 @@ class AbstractFighter():
         _newAction : Action
             The Action to switch to
         """
-        self.current_action.tearDown(self,_newAction)
+        if self.current_action:
+            self.current_action.tearDown(self,_newAction)
         _newAction.setUp(self)
         self.current_action = _newAction
     

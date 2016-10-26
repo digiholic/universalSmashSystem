@@ -154,6 +154,7 @@ class MainFrame(Tk):
         
         new_fighter.loadSpriteLibrary(0)
         new_fighter.initialize()
+        new_fighter.doAction('NeutralAction')
         fighter = new_fighter
         self.wm_title('Legacy Editor - '+fighter.name)        
     
@@ -418,12 +419,11 @@ class ViewerPanel(BuilderPanel):
             os.environ['SDL_VIDEODRIVER'] = 'windib'
         else:
             os.environ['SDL_VIDEODRIVER'] = 'x11'
+        
         pygame.display.init()
-        if not sys.platform == "win32":
-            print("X crashes after this")
+        pygame.mixer.init()
+        
         self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
-        if not sys.platform == "win32":
-            print("X crashes before this")
         self.center = (0,0)
         self.scale = 1.0
         
@@ -432,23 +432,22 @@ class ViewerPanel(BuilderPanel):
     def gameLoop(self):
         global fighter
         #TODO figure out that window snap thing that's messing up a lot
-        for event in pygame.event.get():
-            if event.type == pygame.VIDEORESIZE:
-                self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
-                if fighter: self.centerFighter()
+        self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
+        if fighter: self.centerFighter()
         
         self.screen.fill(pygame.Color("pink"))
         if fighter:
             fighter.mask = None #These don't work inside of the builder
             fighter.draw(self.screen, fighter.rect.topleft, self.scale)
             for hbox in fighter.active_hitboxes:
-                hbox.draw(self.screen,hbox.rect.topleft,self.scale)
-                
+                hbox.draw(self.screen,hbox.rect.topleft,self.scale)        
             
         pygame.display.flip()
-        self.after(5, self.gameLoop) #Loop every 5ms
-    
+        #self.after(5, self.gameLoop) #Loop every 5ms
+        
     def centerFighter(self):
+        global fighter
+        
         fighter.posx = self.screen.get_rect().centerx + self.center[0]
         fighter.posy = self.screen.get_rect().centery + self.center[1]
         fighter.rect.centerx = self.screen.get_rect().centerx + self.center[0]
@@ -464,6 +463,8 @@ class ViewerPanel(BuilderPanel):
             action.frame = 0
             while action.frame <= frame:
                 action.updateAnimationOnly(fighter)
+                
+        self.gameLoop()
                 
     ####################
     # TRACER FUNCTIONS #
@@ -618,7 +619,7 @@ class SelectorPanel(BuilderPanel):
         else:
             self.group_list = self.default_group_list[:]
             if action and isinstance(action, engine.action.Action):
-                for group in action.conditional_actions.keys():
+                for group in action.events.keys():
                     self.group_list.append('Cond: '+ group)
                             
         self.action.destroy()
@@ -810,6 +811,8 @@ class Subaction_panel(BuilderPanel):
             
             self.showSubactionList()
             if self.group == 'Properties':
+                pass
+                """
                 length_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Length','int',action,'last_frame')],'Length: '+str(action.last_frame))
                 sprite_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Sprite','sprite',action,'sprite_name')],'Sprite Name: '+str(action.sprite_name))
                 sprite_rate_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Sprite Rate','int',action,'sprite_rate')],'Sprite Rate: '+str(action.sprite_rate))
@@ -824,6 +827,7 @@ class Subaction_panel(BuilderPanel):
                 #node = self.root.getFighterAction(new_action,True)
                 #self.loadText(ElementTree.tostring(node))
                 #self.showTextField()
+                """
                 
         else:
             self.loadText('Advanced action from '+str(fighter.actions))

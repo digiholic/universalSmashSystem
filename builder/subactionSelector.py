@@ -725,7 +725,7 @@ class ModifyHitboxProperties(BasePropertiesFrame):
         
         main_frame.add(properties_frame,text="Properties")
         main_frame.add(damage_frame,text="Damage")
-        if isinstance(self.root.getAction(), engine.baseActions.ChargeAttack): main_frame.add(charge_frame,text="Charge")
+        #if isinstance(self.root.getAction(), engine.baseActions.ChargeAttack): main_frame.add(charge_frame,text="Charge")
         main_frame.add(override_frame,text="Override")
         if isinstance(self.hitbox, engine.hitbox.AutolinkHitbox): main_frame.add(autolink_frame,text="Autolink")
         if isinstance(self.hitbox, engine.hitbox.FunnelHitbox): main_frame.add(funnel_frame,text="Funnel")
