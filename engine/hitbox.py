@@ -133,19 +133,19 @@ class DamageHitbox(Hitbox):
         knockback_subaction = subaction.applyScaledKnockback(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence)
         damage_subaction = subaction.dealDamage(self.damage+self.charge_damage*self.charge)
         compensation_subaction = subaction.compensateResistance(self.base_hitstun/2.0)
-        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier, (self.base_knockback+self.charge_base_knockback*self.charge)/5.0, self.getTrajectory())
+        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
         return [hitstun_subaction,damage_subaction,knockback_subaction,compensation_subaction,hitstop_subaction]+self.other_on_hit_actions
         
     def onCollision(self,_other):
         if Hitbox.onCollision(self, _other):
             if self.article is None:
-                self.owner.applyPushback((self.base_knockback+self.charge_base_knockback*self.charge)/5.0, self.trajectory+180, ((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier)
+                self.owner.applyPushback(0, 0, ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier)
             self.owner.data_log.addToData('Damage Dealt',self.damage)
             _other.owner.trail_color = self.trail_color
             
             offset = random.randrange(0, 359)
             hit_intersection = self.rect.clip(_other.rect).center
-            hitlag = ((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier
+            hitlag = ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier
             from article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
@@ -160,7 +160,7 @@ class DamageHitbox(Hitbox):
         clank_state = Hitbox.compareTo(self, _other)
         if clank_state == -1:
             if self.article is None:
-                self.owner.applyPushback((self.base_knockback+self.charge_base_knockback*self.charge)/5.0, self.getTrajectory()+180, ((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier + ((_other.damage+_other.charge_damage*_other.charge) / 4.0 + 2.0)*_other.hitlag_multiplier)
+                self.owner.applyPushback((self.base_knockback+self.charge_base_knockback*self.charge)/5.0, self.getTrajectory()+180, ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier + ((_other.damage+_other.charge_damage*_other.charge) / 3.0 + 3.0)*_other.hitlag_multiplier)
             return -1
         else: return clank_state
         
@@ -189,18 +189,18 @@ class SakuraiAngleHitbox(DamageHitbox):
         knockback_subaction = subaction.applyScaledKnockback(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence)
         damage_subaction = subaction.dealDamage(self.damage+self.charge_damage*self.charge)
         compensation_subaction = subaction.compensateResistance(self.base_hitstun/2.0)
-        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier, (self.base_knockback+self.charge_base_knockback*self.charge)/5.0, self.getTrajectory())
+        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
         return [hitstun_subaction,damage_subaction,knockback_subaction,compensation_subaction,hitstop_subaction]+self.other_on_hit_actions
         
     def onCollision(self, _other):
         if Hitbox.onCollision(self, _other):
             if self.article is None:
-                self.owner.applyPushback((self.base_knockback+self.charge_base_knockback*self.charge)/5.0, self.trajectory+180, ((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier)
+                self.owner.applyPushback(0, 0, ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier)
             self.owner.data_log.addToData('Damage Dealt',self.damage)
             _other.owner.trail_color = self.trail_color
             offset = random.randrange(0, 359)
             hit_intersection = self.rect.clip(_other.rect).center
-            ((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier
+            hitlag = ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier
             from article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
@@ -231,7 +231,7 @@ class AutolinkHitbox(DamageHitbox):
         knockback_subaction = subaction.applyScaledKnockback(self.damage+self.charge_damage*self.charge, velocity*self.velocity_multiplier+self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence)
         damage_subaction = subaction.dealDamage(self.damage+self.charge_damage*self.charge)
         compensation_subaction = subaction.compensateResistance(self.base_hitstun/2.0)
-        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier, (self.base_knockback+self.charge_base_knockback*self.charge)/5.0, self.getTrajectory())
+        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
         return [hitstun_subaction,damage_subaction,knockback_subaction,compensation_subaction,hitstop_subaction]+self.other_on_hit_actions
 
     def getTrajectory(self):
@@ -243,12 +243,12 @@ class AutolinkHitbox(DamageHitbox):
     def onCollision(self, _other):
         if Hitbox.onCollision(self, _other):
             if self.article is None:
-                self.owner.applyPushback((self.base_knockback+self.charge_base_knockback*self.charge)/5.0, self.getTrajectory()+180, ((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier)
+                self.owner.applyPushback(0, 9, ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier)
             self.owner.data_log.addToData('Damage Dealt',self.damage)
             _other.owner.trail_color = self.trail_color
             offset = random.randrange(0, 359)
             hit_intersection = self.rect.clip(_other.rect).center
-            hitlag = ((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier
+            hitlag = ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier
             from article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
@@ -282,7 +282,7 @@ class FunnelHitbox(DamageHitbox):
         knockback_subaction = subaction.applyScaledKnockback(self.damage+self.charge_damage*self.charge, velocity*self.velocity_multiplier+self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence)
         damage_subaction = subaction.dealDamage(self.damage+self.charge_damage*self.charge)
         compensation_subaction = subaction.compensateResistance(self.base_hitstun/2.0)
-        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier, (self.base_knockback+self.charge_base_knockback*self.charge)/5.0, self.getTrajectory())
+        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
         return [hitstun_subaction,damage_subaction,knockback_subaction,compensation_subaction,hitstop_subaction]+self.other_on_hit_actions
 
     def getTrajectory(self):
@@ -294,13 +294,13 @@ class FunnelHitbox(DamageHitbox):
     def onCollision(self,_other):
         if Hitbox.onCollision(self, _other):
             if self.article is None:
-                self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, ((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier)
+                self.owner.applyPushback(0, 0, ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier)
             self.owner.data_log.addToData('Damage Dealt',self.damage)
                 
             _other.owner.trail_color = self.trail_color
             offset = random.randrange(0, 359)
             hit_intersection = self.rect.clip(_other.rect).center
-            hitlag = ((self.damage+self.charge_damage*self.charge) / 4.0 + 2.0)*self.hitlag_multiplier
+            hitlag = ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier
             from article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
@@ -331,10 +331,22 @@ class GrabHitbox(Hitbox):
         if clank_state == 1:
             return 1
         elif clank_state == 0:
+            import engine.baseActions as baseActions
+            giant_filter = reduce(lambda f, g: (lambda k: f.filterValues(self, k, g)), _other.owner.armor, lambda y: _other.owner.applySubactions(y))
+
+            if hasClass(_other.owner, 'AbstractFighter') and (((not isinstance(_other.owner.current_action, baseActions.Trapped) and _other.owner.tech_window == 0 and not isinstance(_other, InertHitbox) and not isinstance(_other, InvulnerableHitbox)) or self.ignore_armor) and giant_filter(self.getOnHitSubactions(_other))):
+                if self.owner_on_hit_actions:
+                    for subact in self.owner_on_hit_actions:
+                        subact.execute(self.owner.current_action,self.owner)
+                if self.article is None:
+                    self.owner.grabbing = _other.owner
+                    _other.owner.grabbed_by = self.owner
+                #TODO: Add functionality for article command grabs
+            
             return 0
         else: 
             if self.article is None:
-                self.owner.applyPushback(self.base_knockback/5.0, self.getTrajectory()+180, (self.damage / 4.0 + 2.0)*self.hitlag_multiplier + (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
+                self.owner.applyPushback((self.base_knockback+self.charge_base_knockback*self.charge)/5.0, self.getTrajectory()+180, ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier + ((_other.damage+_other.charge_damage*_other.charge) / 3.0 + 3.0)*_other.hitlag_multiplier)
             return -1
 
 class ThrowHitbox(Hitbox):
@@ -345,8 +357,13 @@ class ThrowHitbox(Hitbox):
     def activate(self):
         Hitbox.activate(self)
         if (self.owner == self.owner.grabbing.grabbed_by):
-            self.owner.data_log.addToData('Damage Dealt',self.damage)
-            self.owner.grabbing.applyKnockback(self.damage, self.base_knockback, self.knockback_growth, self.trajectory, self.weight_influence, self.hitstun_multiplier, self.base_hitstun, self.hitlag_multiplier, self.ignore_armor)
+            import engine.subaction as subaction
+            hitstun_subaction = subaction.applyHitstun(self.damage+self.charge_damage*self.charge,self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
+            knockback_subaction = subaction.applyScaledKnockback(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence)
+            damage_subaction = subaction.dealDamage(self.damage+self.charge_damage*self.charge)
+            compensation_subaction = subaction.compensateResistance(self.base_hitstun/2.0)
+            self.owner.grabbing.applySubactions([hitstun_subaction,damage_subaction,knockback_subaction,compensation_subaction]+self.other_on_hit_actions)
+            self.owner.data_log.addToData('Damage Dealt',(self.damage+self.charge_damage*self.charge))
             self.owner.grabbing.trail_color = self.trail_color
             self.kill()
             
@@ -377,13 +394,15 @@ class ReflectorHitbox(InertHitbox):
                     reflect_speed = math.hypot(_other.article.change_x, _other.article.change_y)
                     (_other.article.change_x, _other.article.change_y) = getXYFromDM(reflect_angle, reflect_speed)
                 if hasattr(_other, 'damage') and hasattr(_other, 'shield_multiplier'):
-                    self.priority -= _other.damage*_other.shield_multiplier
-                    self.hp -= _other.damage*_other.shield_multiplier
+                    self.priority -= (_other.damage+_other.charge_damage*_other.charge)*_other.shield_multiplier
+                    self.hp -= (_other.damage+_other.charge_damage*_other.charge)*_other.shield_multiplier
                     _other.damage *= self.damage_multiplier
+                    _other.charge_damage *= self.damage_multiplier
                 elif hasattr(_other, 'damage'):
-                    self.priority -= _other.damage
-                    self.hp -= _other.damage
+                    self.priority -= (_other.damage+_other.charge_damage*_other.charge)
+                    self.hp -= (_other.damage+_other.charge_damage*_other.charge)
                     _other.damage *= self.damage_multiplier
+                    _other.charge_damage *= self.damage_multiplier
             return 1
         elif clank_state == -1:
             self.owner.change_y = -15
@@ -409,7 +428,7 @@ class AbsorberHitbox(InertHitbox):
             if not isinstance(_other, InertHitbox) and (isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox)) and self.owner != _other.owner and _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'absorbable' in _other.article.tags:
                 _other.article.deactivate()
                 if hasattr(_other, 'damage'):
-                    self.owner.dealDamage(-_other.damage*self.damage_multiplier)
+                    self.owner.dealDamage(-(_other.damage+_other.charge_damage*_other.charge)*self.damage_multiplier)
         return 0
 
     def onCollision(self, _other):
@@ -432,13 +451,13 @@ class ShieldHitbox(Hitbox):
         if clank_state == 1 and self.hp >= 0:
             if not isinstance(_other, InertHitbox) and (isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox)) and not _other.ignore_shields and self.owner.lockHitbox(_other):
                 if hasattr(_other, 'damage') and hasattr(_other, 'shield_multiplier'):
-                    self.priority -= _other.damage*_other.shield_multiplier
-                    self.hp -= _other.damage*_other.shield_multiplier
+                    self.priority -= (_other.damage+_other.charge_damage*_other.charge)*_other.shield_multiplier
+                    self.hp -= (_other.damage+_other.charge_damage*_other.charge)*_other.shield_multiplier
                 elif hasattr(_other, 'damage'):
-                    self.priority -= _other.damage
-                    self.hp -= _other.damage
+                    self.priority -= (_other.damage+_other.charge_damage*_other.charge)
+                    self.hp -= (_other.damage+_other.charge_damage*_other.charge)
                 if _other.article is None:
-                    _other.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory()+180, (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
+                    _other.owner.applyPushback((_other.base_knockback+_other.charge_base_knockback*_other.charge)/5.0, _other.getTrajectory()+180, ((_other.damage+_other.charge_damage*_other.charge) / 3.0 + 3.0)*_other.hitlag_multiplier)
             return 1
         elif clank_state == -1 or self.hp < 0:
             self.owner.change_y = -15
@@ -459,9 +478,9 @@ class InvulnerableHitbox(Hitbox):
     def compareTo(self, _other):
         if not isinstance(_other, InertHitbox) and isinstance(_other, DamageHitbox) and not _other.ignore_shields and self.owner.lockHitbox(_other):
             if self.article is None:
-                self.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory(), (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
+                self.owner.applyPushback((_other.base_knockback+_other.charge_base_knockback*_other.charge)/5.0, _other.getTrajectory(), ((_other.damage+_other.charge_damage*_other.charge) / 3.0 + 3.0)*_other.hitlag_multiplier)
             if _other.article is None:
-                _other.owner.applyPushback(_other.base_knockback/5.0, _other.getTrajectory()+180, (_other.damage / 4.0 + 2.0)*_other.hitlag_multiplier)
+                _other.owner.applyPushback((_other.base_knockback+_other.charge_base_knockback*_other.charge)/5.0, _other.getTrajectory()+180, ((_other.damage+_other.charge_damage*_other.charge) / 3.0 + 3.0)*_other.hitlag_multiplier)
             return 1
         return 0
 

@@ -326,8 +326,9 @@ class Crouch(action.Action):
             _actor.preferred_xspeed = -_actor.stats['crawl_speed']*_actor.facing
         else:
             _actor.preferred_xspeed = 0
-        
         self.frame += 1
+        if self.frame > self.last_frame:
+            self.frame = self.last_frame
 
 class CrouchGetup(action.Action):
     def __init__(self,_length=1):
@@ -413,13 +414,12 @@ class BaseGrab(action.Action):
 
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
-        if self.frame == self.last_frame:
+        if self.frame >= self.last_frame:
             _actor.doAction('Release')
     
     def update(self, _actor):
         action.Action.update(self, _actor)       
         self.hold_point = (self.hold_point[0],self.hold_point[1])
-        self.frame += 1
 
 class GrabReeling(BaseGrab):
     def __init__(self,_length=1):
@@ -439,7 +439,7 @@ class GrabReeling(BaseGrab):
     def stateTransitions(self, _actor):
         BaseGrab.stateTransitions(self, _actor)
         grabbingState(_actor)
-        if self.frame > 0 and _actor.grabbing is None or not isinstance(_actor.grabbing.current_action, Grabbed):
+        if self.frame > 0 and (_actor.grabbing is None or not isinstance(_actor.grabbing.current_action, Grabbed)):
             _actor.doAction('Release')
         if self.frame >= self.last_frame:
             _actor.doAction('Grabbing')
@@ -457,6 +457,7 @@ class GrabReeling(BaseGrab):
                 self.hold_point[0] -= self.reel_speed
             else:
                 self.hold_point[0] += self.reel_speed
+        self.frame += 1
         
 class Grabbing(BaseGrab):
     def __init__(self,_length=1):
@@ -476,17 +477,18 @@ class Grabbing(BaseGrab):
         BaseGrab.stateTransitions(self, _actor)
         grabbingState(_actor)
         #If you aren't holding anything, let go
-        if self.frame > 0 and _actor.grabbing is None or not isinstance(_actor.grabbing.current_action, Grabbed):
+        if (_actor.grabbing is None or not isinstance(_actor.grabbing.current_action, Grabbed)):
             _actor.doAction('Release')
             return
             
     def update(self, _actor):
-        if self.frame >= self.last_frame:
-            self.frame = 0
         BaseGrab.update(self, _actor)
         #If they're both facing the same way, flip the foe so they are facing you
-        if _actor.grabbing.facing == _actor.facing:
+        if _actor.grabbing is not None and _actor.grabbing.facing == _actor.facing:
             _actor.grabbing.flip()
+        self.frame += 1
+        if self.frame >= self.last_frame:
+            self.frame = 0
         
 class Grabbed(Trapped):
     def __init__(self,_length=1):
@@ -504,12 +506,12 @@ class Grabbed(Trapped):
 
     def stateTransitions(self, _actor):
         Trapped.stateTransitions(self, _actor)
+        grabber = _actor.grabbed_by
         #release if you're not being held
-        if self.frame > 0:
-            if grabber is None or (not (grabber.grabbing == _actor)):
-                print('No one is holding me, gonna break out.')
-                _actor.doAction('Released')
-        if self.frame >= self.last_frame:
+        if self.frame > 0 and grabber is None or (not (grabber.grabbing == _actor)):
+            print('No one is holding me, gonna break out.')
+            _actor.doAction('Released')
+        elif self.frame >= self.last_frame:
             #If the grabber's action doesn't have "escapable" set or if it is set to True, break out on last frame
             if (not hasattr(grabber.current_action, 'escapable')) or grabber.current_action.escapable:
                 _actor.doAction('Released')
@@ -524,7 +526,7 @@ class Grabbed(Trapped):
         
         _actor.change_y = 0
 
-        if self.frame > 0 and grabber is not None:
+        if grabber is not None:
             #snap to hold point
             if hasattr(grabber.current_action, 'hold_point'):
                 (hold_x,hold_y) = grabber.current_action.hold_point
@@ -1776,6 +1778,10 @@ class BaseThrow(BaseGrab):
     def __init__(self,_length=1):
         BaseGrab.__init__(self, _length)
 
+    def setUp(self, _actor):
+        BaseGrab.setUp(self, _actor)
+        self.hold_point = (16,-16)
+
     def stateTransitions(self, _actor):
         BaseGrab.stateTransitions(self, _actor)
         if self.frame >= self.last_frame:
@@ -1786,6 +1792,7 @@ class BaseThrow(BaseGrab):
         for hitbox in self.hitboxes.values():
             hitbox.update()
         BaseGrab.update(self, _actor)
+        self.frame += 1
 
 class Pummel(BaseGrab):
     def __init__(self,_length=1):
@@ -1800,6 +1807,7 @@ class Pummel(BaseGrab):
         for hitbox in self.hitboxes.values():
             hitbox.update()
         BaseGrab.update(self, _actor)
+        self.frame += 1
     
 class ForwardThrow(BaseThrow):
     def __init__(self,_length=0):
@@ -1937,7 +1945,7 @@ def crouchState(_actor):
         _actor.doGroundSpecial()
     elif _actor.keyHeld('jump'):
         _actor.doAction('Jump')
-    elif not _actor.keysContain('down'):
+    elif not _actor.keysContain('down') and not isinstance(_actor.current_action, CrouchGetup):
         _actor.doAction('CrouchGetup')
 
 def airState(_actor):

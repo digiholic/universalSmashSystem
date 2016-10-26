@@ -117,6 +117,7 @@ class AbstractFighter():
     
     elasticity = 0
     ground_elasticity = 0
+    grab_point = (0, 0)
     
     posx = 0
     posy = 0
