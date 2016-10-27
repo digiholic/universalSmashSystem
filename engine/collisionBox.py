@@ -231,12 +231,9 @@ class ECB():
     def __init__(self,_actor):
         self.actor = _actor
 
-        if hasattr(self.actor, 'sprite'):
-            self.current_ecb = spriteManager.RectSprite(self.actor.sprite.bounding_rect.copy(), pygame.Color('#ECB134'))
-            self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
-        else:
-            self.current_ecb = spriteManager.RectSprite(self.actor.bounding_rect.copy(), pygame.Color('#ECB134'))
-            self.current_ecb.rect.center = self.actor.bounding_rect.center
+        self.current_ecb = spriteManager.RectSprite(self.actor.sprite.bounding_rect.copy(), pygame.Color('#ECB134'))
+        self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
+
         self.original_size = self.current_ecb.rect.size
 
         self.previous_ecb = spriteManager.RectSprite(self.current_ecb.rect.copy(), pygame.Color('#EA6F1C'))
@@ -276,24 +273,16 @@ class ECB():
         offsets = self.actor.current_action.ecb_offset
         
         if sizes[0] == 0: 
-            if hasattr(self.actor, 'sprite'):
-                self.current_ecb.rect.width = self.actor.sprite.bounding_rect.width
-            else:
-                self.current_ecb.rect.width = self.actor.bounding_rect.width
+            self.current_ecb.rect.width = self.actor.sprite.bounding_rect.width
         else:
             self.current_ecb.rect.width = sizes[0]
         if sizes[1] == 0: 
-            if hasattr(self.actor, 'sprite'):
-                self.current_ecb.rect.height = self.actor.sprite.bounding_rect.height
-            else:
-                self.current_ecb.rect.height = self.actor.bounding_rect.height
+            self.current_ecb.rect.height = self.actor.sprite.bounding_rect.height
         else:
             self.current_ecb.rect.height = sizes[1]
         
-        if hasattr(self.actor, 'sprite'):
-            self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
-        else:
-            self.current_ecb.rect.center = self.actor.bounding_rect.center
+        self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
+
         self.current_ecb.rect.x += offsets[0]
         self.current_ecb.rect.y += offsets[1]
         

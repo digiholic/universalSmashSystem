@@ -11,6 +11,7 @@ import settingsManager
 TODO -
     EnableAction
     DisableAction
+    SetArmor
     SetTimer
 """
 
@@ -82,11 +83,19 @@ class VarData():
         self.var = _var
         
     def unpack(self,_action,_actor):
+        if self.source == 'article' and isinstance(_actor, engine.article.DynamicArticle):
+            if _actor.variables.has_key(self.var):
+                return _actor.variables[self.var]
+            elif hasattr(_actor, self.var):
+                return getattr(_actor, self.var)
+            else: return None
         if self.source == 'actor':
+            if isinstance(_actor, engine.article.DynamicArticle):
+                _actor = _actor.owner
             if _actor.stats.has_key(self.var):
                 return _actor.stats[self.var]
-            elif _actor.vars.has_key(self.var):
-                return _actor.vars[self.var]
+            elif _actor.variables.has_key(self.var):
+                return _actor.variables[self.var]
             elif hasattr(_actor, self.var):
                 return getattr(_actor, self.var)
             else: return None
@@ -115,7 +124,16 @@ class FuncData():
             if isinstance(arg, FuncData) or isinstance(arg, VarData) or isinstance(arg, EvalData):
                 self.args[argname] = arg.unpack(_action,_actor)
                 
+        if self.source == 'article' and isinstance(_actor, engine.article.DynamicArticle):
+            if hasattr(_actor, self.functionName):
+                method = getattr(_actor, self.functionName)
+                return method(**self.args)
+            else:
+                print('No such function exists in article: '+str(self.functionName))
+                return None
         if self.source == 'actor':
+            if isinstance(_actor, engine.article.DynamicArticle):
+                _actor = _actor.owner
             if hasattr(_actor, self.functionName):
                 method = getattr(_actor, self.functionName)
                 return method(**self.args)
@@ -154,6 +172,10 @@ class EvalData(object):
         if self.scope == 'action':
             working_locals = {field: getattr(_action, field) for field in dir(_action)}
         elif self.scope == 'actor':
+            if isinstance(_actor, engine.article.DynamicArticle):
+                _actor = _actor.owner
+            working_locals = {field: getattr(_actor, field) for field in dir(_actor)}
+        elif self.scope == 'article' and isinstance(_actor, engine.article.DynamicArticle):
             working_locals = {field: getattr(_actor, field) for field in dir(_actor)}
         elif self.scope == 'global':
             working_locals = globals()
@@ -304,6 +326,8 @@ def loadValueOrVariable(_node, _sub_node, _type="string", _default=""):
                 return ('actor', var_node.text)
             elif fromKey == 'action':
                 return ('action', var_node.text)
+            elif fromKey == 'article':
+                return ('article', var_node.text)
         else: #If it's a normal value
             if _type=="int":
                 return int(_node.find(_sub_node).text)
@@ -409,16 +433,15 @@ class If(SubAction):
         SubAction.execute(self, _action, _actor)
         if self.variable == '': return
         if self.source == 'fighter' or self.source == 'actor':
-            #If this is for an article, we want to use the owner as the actor
             if isinstance(_actor, engine.article.DynamicArticle):
-                actor = _actor.owner
-            else: actor = _actor
-            
+                _actor = _actor.owner
             if actor.stats.has_key(self.variable):
-                variable = actor.stats[self.variable]
-            elif actor.vars.has_key(self.variable):
-                variable = actor.vars[self.variable]
+                variable = _actor.stats[self.variable]
+            elif actor.variables.has_key(self.variable):
+                variable = _actor.variables[self.variable]
             else: variable = getattr(actor, self.variable)
+        elif self.source == 'article' and isinstance(_actor, engine.article.DynamicArticle):
+            variable = _actor.variables[self.variable]
         else:
             variable = getattr(_action, self.variable)
         
@@ -706,6 +729,10 @@ class changeFighterPreferredSpeed(SubAction):
             if type(self.speed_x) is tuple:
                 owner,value = self.speed_x
                 if owner == 'actor':
+                    if isinstance(_actor, engine.article.DynamicArticle):
+                        _actor = _actor.owner
+                    self.speed_x = _actor.stats[value]
+                elif owner == 'article' and isinstance(_actor, engine.article.DynamicArticle):
                     self.speed_x = _actor.stats[value]
                 elif owner == 'action':
                     self.speed_x = getattr(self, value)
@@ -716,6 +743,10 @@ class changeFighterPreferredSpeed(SubAction):
             if type(self.speed_y) is tuple:
                 owner,value = self.speed_y
                 if owner == 'actor':
+                    if isinstance(_actor, engine.article.DynamicArticle):
+                        _actor = _actor.owner
+                    self.speed_y = _actor.stats[value]
+                elif owner == 'article' and isinstance(_actor, engine.article.DynamicArticle):
                     self.speed_y = _actor.stats[value]
                 elif owner == 'action':
                     self.speed_y = getattr(self, value)
@@ -776,6 +807,10 @@ class changeFighterSpeed(SubAction):
                 if type(self.speed_x) is tuple:
                     owner,value = self.speed_x
                     if owner == 'actor':
+                        if isinstance(_actor, engine.article.DynamicArticle):
+                            _actor = _actor.owner
+                        self.speed_x = _actor.stats[value]
+                    elif owner == 'article' and isinstance(_actor, engine.article.DynamicArticle):
                         self.speed_x = _actor.stats[value]
                     elif owner == 'action':
                         self.speed_x = getattr(self, value)
@@ -784,8 +819,11 @@ class changeFighterSpeed(SubAction):
             
             if self.speed_y is not None:
                 if type(self.speed_y) is tuple:
-                    owner,value = self.speed_y
                     if owner == 'actor':
+                        if isinstance(_actor, engine.article.DynamicArticle):
+                            _actor = _actor.owner
+                        self.speed_y = _actor.stats[value]
+                    elif owner == 'article' and isinstance(_actor, engine.article.DynamicArticle):
                         self.speed_y = _actor.stats[value]
                     elif owner == 'action':
                         self.speed_y = getattr(self, value)
@@ -829,6 +867,8 @@ class changeGravity(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
+        if isinstance(_actor, engine.article.DynamicArticle):
+            _actor = _actor.owner
         _actor.calcGrav(self.new_gravity)
         
     def getPropertiesPanel(self, _root):
@@ -848,6 +888,8 @@ class dealDamage(SubAction):
 
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
+        if isinstance(_actor, engine.article.DynamicArticle):
+            _actor = _actor.owner
         _actor.dealDamage(self.damage)
 
     def getPropertiesPanel(self, _root):
@@ -874,6 +916,8 @@ class applyScaledKnockback(SubAction):
 
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
+        if isinstance(_actor, engine.article.DynamicArticle):
+            _actor = _actor.owner
         percent_portion = (_actor.damage/10.0) + (_actor.damage*self.damage)/20.0
         weight_portion = 200.0/(_actor.stats['weight']*settingsManager.getSetting('weight')*self.weight_influence+100)
         scaled_kb = (((percent_portion * weight_portion *1.4) + 5) * self.knockback_growth) 
@@ -908,6 +952,8 @@ class applyHitstun(SubAction):
 
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
+        if isinstance(_actor, engine.article.DynamicArticle):
+            _actor = _actor.owner
         percent_portion = (_actor.damage/10.0) + (_actor.damage*self.damage)/20.0
         weight_portion = 200.0/(_actor.stats['weight']*self.weight_influence+100)
         scaled_kb = (((percent_portion * weight_portion *1.4) + 5) * self.knockback_growth)
@@ -929,6 +975,8 @@ class compensateResistance(SubAction):
 
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
+        if isinstance(_actor, engine.article.DynamicArticle):
+            _actor = _actor.owner	
         if _actor.change_x > 0:
             _actor.change_x += .5*_actor.stats['air_resistance']*settingsManager.getSetting('airControl')*self.frames
         elif _actor.change_x < 0:
@@ -959,6 +1007,8 @@ class applyHitstop(SubAction):
 
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
+        if isinstance(_actor, engine.article.DynamicArticle):
+            _actor = _actor.owner
         _actor.applyPushback(self.pushback, self.trajectory, self.frames)
 
     def getPropertiesPanel(self, _root):
@@ -1112,6 +1162,8 @@ class updateLandingLag(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
+        if isinstance(_actor, engine.article.DynamicArticle):
+            _actor = _actor.owner
         _actor.updateLandingLag(self.new_lag,self.reset)
     
     def getPropertiesPanel(self, _root):
@@ -1147,9 +1199,9 @@ class modifyFighterVar(SubAction):
             if _actor.stats.has_key(self.attr):
                 if self.relative: _actor.stats[self.attr] += self.val
                 else: _actor.stats[self.attr] = self.val
-            elif _actor.vars.has_key(self.attr):
-                if self.relative: _actor.vars[self.attr] += self.val
-                else: _actor.vars[self.attr] = self.val
+            elif _actor.variables.has_key(self.attr):
+                if self.relative: _actor.variables[self.attr] += self.val
+                else: _actor.variables[self.attr] = self.val
             else:
                 if self.relative:
                     setattr(_actor, self.attr, getattr(_actor, self.attr)+1)
@@ -1181,14 +1233,20 @@ class setVar(SubAction):
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
         if self.source == 'action': source = _action
-        elif self.source == 'fighter': source = _actor
+        elif self.source == 'fighter': 
+	    if isinstance(_actor, engine.article.DynamicArticle):
+                source = _actor.owner
+            else:
+                source = _actor
+        elif self.source == 'article' and isinstance(_actor, engine.article.DynamicArticle):
+            source = _actor
         if not self.attr =='': #If there's a variable to set
             if hasattr(source, 'stats') and source.stats.has_key(self.attr): #if it has a var dict, let's check it first
                 if self.relative: source.stats[self.attr] += self.val
                 else: source.stats[self.attr] = self.val
-            elif hasattr(source, 'vars') and source.varss.has_key(self.attr):
-                if self.relative: source.vars[self.attr] += self.val
-                else: source.vars[self.attr] = self.val
+            elif hasattr(source, 'variables') and source.variables.has_key(self.attr):
+                if self.relative: source.variables[self.attr] += self.val
+                else: source.variables[self.attr] = self.val
             else:
                 print(source,self.attr,self.val)
                 if self.relative:
@@ -1281,8 +1339,7 @@ class createHitbox(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        if not isinstance(_actor, engine.abstractFighter.AbstractFighter):
-            _actor = _actor.owner
+
         if self.hitbox_name == '': return #Don't make a hitbox without a name or we'll lose it
         #Use an existing hitbox lock by name, or create a new one
         
@@ -1314,13 +1371,14 @@ class createHitbox(SubAction):
         elif self.hitbox_type == "throw":
             hitbox = engine.hitbox.ThrowHitbox(_actor, hitbox_lock, self.hitbox_vars)
             
-        if hasattr(_action, 'events'): #Articles don't have events, and this can be called from article
-            if _action.events.has_key(self.owner_event):
-                hitbox.owner_on_hit_actions = _action.events[self.owner_event]
-            if _action.events.has_key(self.other_event):
-                hitbox.other_on_hit_actions = _action.events[self.other_event]
         
-        _action.hitboxes[self.hitbox_name] = hitbox
+        if _action is not None:
+            if hasattr(_action, 'events'): #Articles don't have events, and this can be called from article
+                if _action.events.has_key(self.owner_event):
+                    hitbox.owner_on_hit_actions = _action.events[self.owner_event]
+                if _action.events.has_key(self.other_event):
+                    hitbox.other_on_hit_actions = _action.events[self.other_event]
+            _action.hitboxes[self.hitbox_name] = hitbox
     
     def getDisplayName(self):
         return 'Create New Hitbox: ' + self.hitbox_name
@@ -1383,7 +1441,6 @@ class createHitbox(SubAction):
             else:
                 variables[tag] = val
             
-        
         return createHitbox(name, hitbox_type, hitbox_lock, variables, owner_event, other_event)
         
 # Change the properties of an existing hitbox, such as position, or power
@@ -1562,8 +1619,6 @@ class createHurtbox(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        if not isinstance(_actor, engine.abstractFighter.AbstractFighter):
-            _actor = _actor.owner
         if self.hurtbox_name == '': return 
         
         hurtbox = engine.hurtbox.Hurtbox(_actor,self.hurtbox_vars)
@@ -1932,6 +1987,11 @@ class executeCode(SubAction):
         if self.scope == 'action':
             working_locals = {field: getattr(_action, field) for field in dir(_action)}
         elif self.scope == 'actor':
+            if isintance(_actor, engine.article.DynamicArticle):
+                working_locals = {field: getattr(_actor.owner, field) for field in dir(_actor.owner)}
+            else:
+                working_locals = {field: getattr(_actor, field) for field in dir(_actor)}
+        elif self.scope == 'article' and isinstance(_actor, engine.article.DynamicArticle):
             working_locals = {field: getattr(_actor, field) for field in dir(_actor)}
         elif self.scope == 'global':
             working_locals = globals()

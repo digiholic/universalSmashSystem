@@ -285,7 +285,7 @@ class Respawn(action.Action):
         if self.frame == 0:
             self.respawn_article = article.RespawnPlatformArticle(_actor)
             _actor.createMask([255,128,255], 120, True, 12)
-            _actor.articles.add(self.respawn_article)
+            _actor.articles.append(self.respawn_article)
         if self.frame == 180:
             _actor.createMask([255,255,255], 360, True, 12)
         self.frame += 1
@@ -677,7 +677,7 @@ class HitStun(action.Action):
             
         if self.frame % max(1,int(100.0/max(math.hypot(_actor.change_x, _actor.change_y), 1))) == 0 and self.frame < self.last_frame:
             art = article.HitArticle(_actor, (_actor.posx, _actor.posy), 1, math.degrees(math.atan2(_actor.change_y, -_actor.change_x))+random.randrange(-30, 30), .5*math.hypot(_actor.change_x, _actor.change_y), .02*(math.hypot(_actor.change_x, _actor.change_y)+1), _actor.trail_color)
-            _actor.articles.add(art)
+            _actor.articles.append(art)
 
         self.frame += 1
 
@@ -995,7 +995,7 @@ class Land(action.Action):
                 print("l-cancel")
                 self.last_frame = self.last_frame // 2
         if self.frame == 1:
-            #_actor.articles.add(article.LandingArticle(_actor)) #this looks awful don't try it
+            #_actor.articles.append(article.LandingArticle(_actor)) #this looks awful don't try it
             pass
         self.frame += 1
 

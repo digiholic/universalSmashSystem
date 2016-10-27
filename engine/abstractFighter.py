@@ -78,13 +78,13 @@ class AbstractFighter():
     # Data gotten from the XML data, like loading files and folders #
     actions = baseActions
     stats = dict()
-    vars = dict()
+    variables = dict()
     
     # Initialized fighter variables #
     key_bindings = None
     
     active_hitboxes = None #pygame.sprite.Group()
-    articles = None #pygame.sprite.Group()
+    articles = None #list()
     active_hurtboxes = None #pygame.sprite.Group()
     auto_hurtbox = None
     
@@ -376,7 +376,7 @@ class AbstractFighter():
         self.key_bindings = settingsManager.getControls(self.player_num)
         self.key_bindings.linkObject(self)
         
-        self.articles = pygame.sprite.Group()
+        self.articles = list()
     
         if self.sound_path:
             settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
@@ -411,7 +411,7 @@ class AbstractFighter():
         self.key_bindings.flushInputs()
         self.keys_held = dict()
         self.stats = self.default_stats.copy()
-        self.vars = self.default_vars.copy()
+        self.variables = self.default_vars.copy()
     
         # Evironmental Collision Box
         self.ecb = collisionBox.ECB(self)
@@ -478,7 +478,6 @@ class AbstractFighter():
         self.current_action.update(self) #update our action
         
         self.updatePosition()
-        self.ecb.normalize()
         self.ecb.normalize()
         
         self.collisionUpdate()            
@@ -1532,11 +1531,11 @@ class AbstractFighter():
                 
             for i in range(0, 11):
                 next_hit_article = article.HitArticle(self, (self.posx, self.posy), 1, i*30, 30, 1.5, color)
-                self.articles.add(next_hit_article)
+                self.articles.append(next_hit_article)
                 next_hit_article = article.HitArticle(self, (self.posx, self.posy), 1, i*30+10, 60, 1.5, color)
-                self.articles.add(next_hit_article)
+                self.articles.append(next_hit_article)
                 next_hit_article = article.HitArticle(self, (self.posx, self.posy), 1, i*30+20, 90, 1.5, color)
-                self.articles.add(next_hit_article)
+                self.articles.append(next_hit_article)
             self.onRespawn()
             (self.posx, self.posy) = self.game_state.spawn_locations[self.player_num]
             self.posy -= 200
@@ -1737,7 +1736,7 @@ class AbstractFighter():
     
     def startShield(self):
         """ Creates a shield particle and adds it to your active articles list """
-        self.articles.add(article.ShieldArticle(settingsManager.createPath("sprites/melee_shield.png"),self))
+        self.articles.append(article.ShieldArticle(settingsManager.createPath("sprites/melee_shield.png"),self))
                     
 def test():
     fight = AbstractFighter('',0)

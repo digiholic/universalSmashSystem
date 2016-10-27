@@ -6,7 +6,7 @@
 		<img_width>16</img_width>
 		<origin_point>0,6</origin_point>
 		<facing_direction>1</facing_direction>
-		<tags><reflectable /></tags>
+		<tags><reflectable /><collides /><bounces /></tags>
 		
 		<setUp>
 			<createHitbox>
@@ -35,7 +35,13 @@
 		</collision>
 		
 		<collision other="Platform">
-			<deactivateSelf />
+			<if function="==">
+				<function>
+					<functionName source="article">isGrounded</functionName>
+				</function>
+				<value>True</value>
+				<pass>stop</pass>
+			</if>
 		</collision>
 		
 		<frame number="before">
@@ -43,6 +49,10 @@
 				<ySpeed relative="True">0.5</ySpeed>
 			</changeFighterSpeed>
 		</frame>
+
+		<conditional name="stop">
+			<deactivateSelf />
+		</conditional>
 	</SplatArticle>
 	
 	<ShineArticle>

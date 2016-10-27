@@ -4,6 +4,8 @@ import math
 import random
 import settingsManager
 import engine.hitbox as hitbox
+import engine.hurtbox as hurtbox
+import engine.collisionBox as collisionBox
 
 """
 Articles are generated sprites that have their own behavior. For example, projectiles, shields,
@@ -16,13 +18,15 @@ length - if this article has logic or animation, you can set this to be used in 
          just like a fighter's action.
 """
 #Add method to get its own bounding rect
-class DynamicArticle(spriteManager.SheetSprite):
+class DynamicArticle():
     def __init__(self,_owner,_sheet,_imgWidth=0,_originPoint=(0,0),_length=1,_spriteRate=0,_startingDirection=0,_draw_depth=1,_tags = []):
         self.owner = _owner
-        spriteManager.SheetSprite.__init__(self, _sheet, _imgWidth)
-        
+
+        self.sprite = spriteManager.SheetSprite(_sheet, _imgWidth)
         self.frame = 0
         self.last_frame = _length
+	self.posx = 0
+	self.posy = 0
         self.change_x = 0
         self.change_y = 0
         self.sprite_rate = _spriteRate
@@ -31,6 +35,7 @@ class DynamicArticle(spriteManager.SheetSprite):
         self.starting_direction = _startingDirection
         self.facing = _startingDirection
         self.tags = _tags
+        self.variables = dict()
         
         self.hitboxes = {}
         self.hitbox_locks = {}
@@ -47,8 +52,18 @@ class DynamicArticle(spriteManager.SheetSprite):
         self.collision_actions = dict()
         
         self.active_hitboxes = pygame.sprite.Group()
+        self.active_hurtboxes = pygame.sprite.Group()
+        self.auto_hurtbox = hurtbox.Hurtbox(self)
+        self.ecb = collisionBox.ECB(self)
+
+        self.platform_phase = 0
+        self.elasticity = 0
+        self.ground_elasticity = 0
         
     def update(self):
+        self.ecb.normalize()
+        self.ecb.store()
+        
         for hbox in self.active_hitboxes:
             hbox.owner = self.owner
             hbox.article = self
@@ -59,9 +74,9 @@ class DynamicArticle(spriteManager.SheetSprite):
         if self.sprite_rate is not 0:
             if self.frame % self.sprite_rate == 0:
                 if self.sprite_rate < 0:
-                    self.getImageAtIndex((self.frame / self.sprite_rate)-1)
+                    self.sprite.getImageAtIndex((self.frame / self.sprite_rate)-1)
                 else:
-                    self.getImageAtIndex(self.frame / self.sprite_rate)
+                    self.sprite.getImageAtIndex(self.frame / self.sprite_rate)
         
         #Do all of the subactions involving update
         for act in self.actions_before_frame:
@@ -73,25 +88,31 @@ class DynamicArticle(spriteManager.SheetSprite):
             for act in self.actions_at_last_frame:
                 act.execute(self,self)
         
-        #Update stuff
-        self.rect.x += self.change_x
-        self.rect.y += self.change_y
+        self.updatePosition()
+        self.ecb.normalize()
+        
+        if 'collides' in self.tags:
+            self.collisionUpdate()
+        else:
+            self.posx += self.change_x
+            self.posy += self.change_y
+
         for hitbox in self.hitboxes.values():
             hitbox.update()
             
         for act in self.actions_after_frame:
             act.execute(self,self)
-        
+
         if self.frame == self.last_frame:
             self.deactivate()
         self.frame += 1 
     
     def activate(self):
         self.owner.articles.add(self)
-        self.recenter()
+        self.sprite.recenter()
         self.facing = self.owner.facing
         if not self.facing == 0 and not self.facing == self.starting_direction: 
-            self.flipX()
+            self.sprite.flipX()
         for act in self.set_up_actions:
             act.execute(self,self)
         
@@ -100,7 +121,8 @@ class DynamicArticle(spriteManager.SheetSprite):
             hitbox.kill()
         for act in self.tear_down_actions:
             act.execute(self,self)
-        self.kill()
+        self.sprite.kill()
+        self.owner.articles.remove(self)
 
     def changeOwner(self, _newOwner):
         self.owner = _newOwner
@@ -114,6 +136,9 @@ class DynamicArticle(spriteManager.SheetSprite):
     def onClank(self,_actor,_hitbox,_other):
         for act in self.actions_on_clank:
             act.execute(self,_actor,_hitbox,_other)
+
+    def draw(self,_screen,_offset,_scale):
+        return self.sprite.draw(_screen, _offset, _scale)
     
     def onCollision(self,_other):
         others_classes = list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]
@@ -131,16 +156,26 @@ class DynamicArticle(spriteManager.SheetSprite):
             return _offSet
         else:
             return 180 - _offSet
+
+    def updatePosition(self):
+        """ Passes the updatePosition call to the sprite.
+        See documentation in SpriteLibrary.updatePosition
+        """
+        self.rect.centerx = self.posx
+        self.rect.centery = self.posy
+        return self.sprite.updatePosition(self.posx, self.posy)
     
     """
     Recenter Self on origin point
     """
     def recenter(self):
-        self.rect.centerx = self.owner.posx + (self.origin_point[0] * self.owner.facing)
-        self.rect.centery = self.owner.posy + self.origin_point[1]
+        self.posx = self.owner.posx + (self.origin_point[0] * self.owner.facing)
+        self.posy = self.owner.posy + self.origin_point[1]
+        self.rect.center = [self.posx, self.posy]
+        self.sprite.rect.center = [self.posx, self.posy]
         
     def changeSpriteImage(self,index):
-        self.getImageAtIndex(index)
+        self.sprite.getImageAtIndex(index)
     
     def activateHitbox(self,_hitbox):
         self.active_hitboxes.add(_hitbox)
@@ -148,11 +183,59 @@ class DynamicArticle(spriteManager.SheetSprite):
     
     def playSound(self,_sound):
         self.owner.playSound(_sound)
+
+    def collisionUpdate(self):
+        """ Execute movement and resolve collisions.
+        This function is due for a huge overhaul.
+        """
+        
+        loop_count = 0
+        while loop_count < 2:
+            self.updatePosition()
+            self.ecb.normalize()
+            bumped = False
+            block_hit_list = collisionBox.getSizeCollisionsWith(self, self.owner.game_state.platform_list)
+            if not block_hit_list:
+                break
+            for block in block_hit_list:
+                if block.solid or (self.platform_phase <= 0):
+                    self.platform_phase = 0
+                    if collisionBox.eject(self, block, self.platform_phase > 0):
+                        bumped = True
+                        break
+            if not bumped:
+                break
+            loop_count += 1
+        # TODO: Crush death if loopcount reaches the 10 resolution attempt ceiling
+
+        self.updatePosition()
+        self.ecb.normalize()
+
+        t = 1
+
+        to_bounce_block = None
+
+        self.updatePosition()
+        self.ecb.normalize()
+        block_hit_list = collisionBox.getMovementCollisionsWith(self, self.owner.game_state.platform_list)
+        for block in block_hit_list:
+            if self.ecb.pathRectIntersects(block.rect, self.change_x, self.change_y) > 0 and self.ecb.pathRectIntersects(block.rect, self.change_x, self.change_y) < t and collisionBox.catchMovement(self, block, self.platform_phase > 0): 
+                t = self.ecb.pathRectIntersects(block.rect, self.change_x, self.change_y)
+                to_bounce_block = block
+                
+        self.posy += self.change_y*t
+        self.posx += self.change_x*t
+
+        self.updatePosition()
+        self.ecb.normalize()
+
+        if to_bounce_block is not None and 'bounces' in self.tags:
+            collisionBox.reflect(self, to_bounce_block)
           
-class Article(spriteManager.ImageSprite):
+class Article():
     def __init__(self, _spritePath, _owner, _origin, _length=1, _draw_depth = 1):
-        spriteManager.ImageSprite.__init__(self,_spritePath)
-        self.rect.center = _origin
+        self.sprite = spriteManager.ImageSprite(_spritePath)
+        self.sprite.rect.center = _origin
         self.owner = _owner
         self.frame = 0
         self.last_frame = _length
@@ -161,6 +244,9 @@ class Article(spriteManager.ImageSprite):
         
     def update(self):
         pass
+
+    def draw(self,_screen,_offset,_scale):
+        return self.sprite.draw(_screen, _offset, _scale)
     
     def changeOwner(self, _newOwner):
         self.owner = _newOwner
@@ -170,21 +256,25 @@ class Article(spriteManager.ImageSprite):
         self.owner.articles.add(self)
     
     def deactivate(self):
-        self.kill()
+        self.sprite.kill()
+        self.owner.articles.remove(self)
 
          
-class AnimatedArticle(spriteManager.SheetSprite):
+class AnimatedArticle():
     def __init__(self, _sprite, _owner, _origin, _imageWidth, _length=1, _draw_depth=1):
-        spriteManager.SheetSprite.__init__(self, pygame.image.load(_sprite), _imageWidth)
-        self.rect.center = _origin
+        self.sprite = spriteManager.SheetSprite(pygame.image.load(_sprite), _imageWidth)
+        self.sprite.rect.center = _origin
         self.owner = _owner
         self.frame = 0
         self.last_frame = _length
         self.tags = []
         self.draw_depth = _draw_depth
+
+    def draw(self,_screen,_offset,_scale):
+        return self.sprite.draw(_screen, _offset, _scale)
     
     def update(self):
-        self.getImageAtIndex(self.frame)
+        self.sprite.getImageAtIndex(self.frame)
         self.frame += 1
         if self.frame == self.last_frame: self.kill()
     
@@ -195,7 +285,8 @@ class AnimatedArticle(spriteManager.SheetSprite):
         self.owner.articles.add(self)
     
     def deactivate(self):
-        self.kill()
+        self.sprite.kill()
+        self.owner.articles.remove(self)
                 
 class ShieldArticle(Article):
     def __init__(self,_image,_owner):
@@ -235,7 +326,7 @@ class ShieldArticle(Article):
                                                        'priority':float('inf')
                                                       })
         self.parry_hitbox.article = self
-        self.scale = (self.owner.shield_integrity*self.owner.stats['shield_size']/100.0)
+        self.sprite.scale = (self.owner.shield_integrity*self.owner.stats['shield_size']/100.0)
 
     def onPrevail(self, _actor, _hitbox, _other):
         if _hitbox == self.main_hitbox and self.frame > 2 and (isinstance(_other, hitbox.DamageHitbox) and not _other.ignore_shields):
@@ -257,9 +348,9 @@ class ShieldArticle(Article):
         self.owner.doStunned(400)
         
     def update(self):
-        self.rect.center = [self.owner.posx+50*self.owner.stats['shield_size']*self.owner.getSmoothedInput(int(self.owner.key_bindings.timing_window['smoothing_window']), 0.5)[0], 
+        self.sprite.rect.center = [self.owner.posx+50*self.owner.stats['shield_size']*self.owner.getSmoothedInput(int(self.owner.key_bindings.timing_window['smoothing_window']), 0.5)[0], 
                             self.owner.posy+50*self.owner.stats['shield_size']*self.owner.getSmoothedInput(int(self.owner.key_bindings.timing_window['smoothing_window']), 0.5)[1]]
-        self.scale = (self.owner.shield_integrity*self.owner.stats['shield_size']/100.0)
+        self.sprite.scale = (self.owner.shield_integrity*self.owner.stats['shield_size']/100.0)
         if self.frame == 0:
             import engine.baseActions as baseActions
             if isinstance(self.owner.current_action, baseActions.Parry):
@@ -284,7 +375,7 @@ class ShieldArticle(Article):
             self.main_hitbox.kill()
             self.parry_hitbox.kill()
             self.parry_reflect_hitbox.kill()
-            self.kill()     
+            self.deactivate()     
 
         self.reflect_hitbox.rect.size = [self.owner.shield_integrity*self.owner.stats['shield_size'], self.owner.shield_integrity*self.owner.stats['shield_size']]
         self.main_hitbox.priority = self.owner.shield_integrity-8
@@ -307,10 +398,10 @@ class LandingArticle(AnimatedArticle):
         width, height = (86, 22) #to edit these easier if (when) we change the sprite
         scaled_width = _owner.rect.width
         #self.scale_ratio = float(scaled_width) / float(width)
-        self.scale = 1
+        self.sprite.scale = 1
         scaled_height = math.floor(height * self.scale_ratio)
         AnimatedArticle.__init__(self, settingsManager.createPath('sprites/halfcirclepuff.png'), _owner, _owner.rect.midbottom, 86, 6)
-        self.rect.y -= scaled_height / 2
+        self.sprite.rect.y -= scaled_height / 2
         
     def draw(self, _screen, _offset, _scale):
         return AnimatedArticle.draw(self, _screen, _offset, _scale)
@@ -327,9 +418,9 @@ class HitArticle(Article):
 
     def __init__(self, _owner, _origin, _scale=1, _angle=0, _speed=0, _resistance=0, _colorBase = None):
         Article.__init__(self, settingsManager.createPath('sprites/hit_particle.png'), _owner, _origin, 256, -1)
-        self.scale = _scale*.25
-        self.rect.center = _origin
-        self.angle = _angle
+        self.sprite.scale = _scale*.25
+        self.sprite.rect.center = _origin
+        self.sprite.angle = _angle
         self.speed = _speed
         self.resistance = _resistance
 
@@ -358,15 +449,17 @@ class HitArticle(Article):
             else:
                 base_color[2] += random_displacement[2]
         
-        self.recolor(self.image, (0,0,0), base_color)
-        self.alpha(128)
+        self.sprite.recolor(self.image, (0,0,0), base_color)
+        self.sprite.alpha(128)
 
     def update(self):
-        self.rect.x += self.speed * math.cos(math.radians(self.angle))
-        self.rect.y += -self.speed * math.sin(math.radians(self.angle))
+        posx += self.speed * math.cos(math.radians(self.angle))
+        posy += -self.speed * math.sin(math.radians(self.angle))
+        self.sprite.rect.x = posx
+        self.sprite.rect.y = posy
         self.speed -= self.resistance
         if self.speed <= 0:
-            self.kill()
+            self.deactivate()
    
     def draw(self,_screen,_offset,_scale):
         return Article.draw(self, _screen, _offset, _scale)
@@ -381,12 +474,9 @@ class RespawnPlatformArticle(Article):
         Article.__init__(self, settingsManager.createPath('sprites/platform.png'), _owner, _owner.rect.midbottom, 120, _draw_depth = -1)
         
         w,h = int(width * scale_ratio),int(height * scale_ratio)
-        self.image = pygame.transform.smoothscale(self.image, (w,h))
+        self.sprite.image = pygame.transform.smoothscale(self.sprite.image, (w,h))
         
-        self.rect = self.image.get_rect()
+        self.sprite.rect = self.sprite.image.get_rect()
         
-        self.rect.center = _owner.rect.midbottom
-        self.rect.bottom += self.rect.height / 4
-    
-    def draw(self, _screen, _offset, _scale):
-        return Article.draw(self, _screen, _offset, _scale)
+        self.sprite.rect.center = _owner.rect.midbottom
+        self.sprite.rect.bottom += self.sprite.rect.height // 4

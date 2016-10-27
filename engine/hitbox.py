@@ -13,7 +13,14 @@ class HitboxLock(object):
 
 class Hitbox(spriteManager.RectSprite):
     def __init__(self,_owner,_lock,_variables = dict()):
-        self.owner = _owner
+        import engine.article as article
+        if hasClass(_owner, article.DynamicArticle):
+            self.owner = _owner.owner
+            self.article = _owner
+        else:
+            self.owner = _owner
+            self.article = None
+
         self.hitbox_type = 'hitbox'
         
         self.variable_dict = {
@@ -63,7 +70,6 @@ class Hitbox(spriteManager.RectSprite):
         
         spriteManager.RectSprite.__init__(self,pygame.Rect([0,0],self.size),[255,0,0])
         self.rect.center = [_owner.posx + self.center[0], _owner.posy + self.center[1]]
-        self.article = None
 
         if self.trail_color is None: 
             if self.article is None:
@@ -403,6 +409,8 @@ class ReflectorHitbox(InertHitbox):
                     self.hp -= (_other.damage+_other.charge_damage*_other.charge)
                     _other.damage *= self.damage_multiplier
                     _other.charge_damage *= self.damage_multiplier
+                if hasattr(_other.article, 'onClank'):
+                    _other.article.onClank(self.owner, self, _other)
             return 1
         elif clank_state == -1:
             self.owner.change_y = -15
