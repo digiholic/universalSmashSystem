@@ -350,7 +350,39 @@ class SubAction():
         for node in subaction_dict[_subactName].fields:
             node.populateFromXML(subAction, _node)
         return subAction
+
+class Event(SubAction):
+    subact_group = 'Control'
     
+    def __init__(self,_eventSubactions):
+        SubAction.__init__(self)
+        self.event_subactions = _eventSubactions
+    
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+        for subact in self.event_subactions:
+            subact.execute(_action,_actor)
+    
+    def getPropertiesPanel(self, _root):
+        return None
+                    
+    def getDisplayName(self):
+        return ''
+    
+    def getXmlElement(self):
+        elem = ElementTree.Element('Event')
+        for subact in self.event_subactions:
+            elem.append(subact.getXmlElement())
+        return elem
+    
+    @staticmethod
+    def customBuildFromXml(_node):
+        event_actions = []
+        for subact in _node:
+            if subaction_dict.has_key(subact.tag): 
+                event_actions.append(SubAction.buildFromXml(subact.tag,subact))
+        return Event(event_actions)
+        
 ########################################################
 #                 CONDITIONALS                         #
 ########################################################
@@ -910,7 +942,7 @@ class compensateResistance(SubAction):
         return SubAction.getPropertiesPanel(self, _root)
 
     def getDisplayName(self):
-        return 'Compensate for ' + frames + ' frames of gravity and air resistance'
+        return 'Compensate for ' + self.frames + ' frames of gravity and air resistance'
 
 
 class applyHitstop(SubAction):
@@ -1943,6 +1975,7 @@ class unrotateSprite(SubAction):
     
 subaction_dict = {
                  #Control Flow
+                 'event': Event,
                  'setFrame': changeActionFrame,
                  'nextFrame': nextFrame,
                  'if': If,

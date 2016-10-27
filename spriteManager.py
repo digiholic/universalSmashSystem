@@ -262,7 +262,10 @@ class SheetSprite(ImageSprite):
         
     def draw(self,_screen,_offset,_scale):
         return Sprite.draw(self, _screen, _offset, _scale)
-                
+    
+    def changeImage(self,_newImage,_subImage = 0):
+        pass
+                    
 class MaskSprite(ImageSprite):
     def __init__(self, _parentSprite,_color,_duration,_pulse = False,_pulseSize = 16):
         Sprite.__init__(self)
