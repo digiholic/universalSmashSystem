@@ -183,9 +183,9 @@ def eject(_object, _other, _platformPhase=False):
 #Prepare for article usage
 def reflect(_object, _other):
     if not hasattr(_object, 'elasticity'):
-        _object.elasticity = 0
+        _object.elasticity = 0.0
     if not hasattr(_object, 'ground_elasticity'):
-        _object.ground_elasticity = 0
+        _object.ground_elasticity = 0.0
     _object.updatePosition()
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
@@ -194,7 +194,7 @@ def reflect(_object, _other):
         contact = _object.ecb.primaryEjection(check_rect)
         #The contact vector is perpendicular to the axis over which the reflection should happen
         v_vel = [_object.change_x-_other.change_x, _object.change_y-_other.change_y]
-        if numpy.dot(v_vel, contact[1]) < 0:
+        if (numpy.dot(v_vel, contact[1]) < 0 or True):
             v_norm = [contact[1][1], -contact[1][0]]
             dot = numpy.dot(v_norm, v_vel)
             projection = [v_norm[0]*dot, v_norm[1]*dot] #Projection of v_vel onto v_norm

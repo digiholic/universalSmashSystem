@@ -150,6 +150,20 @@ class DynamicArticle():
         self.owner.articles.append(self)
         self.recenter()
         self.facing = self.owner.facing
+
+        self.variables = dict()
+    
+        # Evironmental Collision Box
+        self.ecb = collisionBox.ECB(self)
+
+        # Hitboxes and Hurtboxes
+        self.active_hitboxes = pygame.sprite.Group()
+        self.active_hurtboxes = pygame.sprite.Group()
+        self.auto_hurtbox = hurtbox.Hurtbox(self)
+        
+        self.change_x = 0
+        self.change_y = 0
+        
         if not self.facing == 0 and not self.facing == self.starting_direction: 
             self.sprite.flipX()
         for act in self.set_up_actions:
@@ -267,55 +281,65 @@ class DynamicArticle():
         self.ecb.normalize()
 
         if to_bounce_block is not None and 'bounces' in self.tags:
+            if 'elasticity' in self.variables:
+                self.elasticity = self.variables['elasticity']
+            else:
+                print("Couldn't find elasticity, using 0")
+                self.elasticity = 0.0
+            if 'ground_elasticity' in self.variables:
+                self.ground_elasticity = self.variables['ground_elasticity']
+            else:
+                print("Couldn't find ground elasticity, using 0")
+                self.ground_elasticity = 0.0
             collisionBox.reflect(self, to_bounce_block)
 
     def checkGround(self):
         self.updatePosition()
-        return collisionBox.checkGround(self, self.game_state.platform_list, self.tech_window <= 0)
+        return collisionBox.checkGround(self, self.owner.game_state.platform_list, True)
 
     def checkLeftWall(self):
         self.updatePosition()
-        return collisionBox.checkLeftWall(self, self.game_state.platform_list, True)
+        return collisionBox.checkLeftWall(self, self.owner.game_state.platform_list, True)
 
     def checkRightWall(self):
         self.updatePosition()
-        return collisionBox.checkRightWall(self, self.game_state.platform_list, True)
+        return collisionBox.checkRightWall(self, self.owner.game_state.platform_list, True)
 
     def checkBackWall(self):
         self.updatePosition()
-        return collisionBox.checkBackWall(self, self.game_state.platform_list, True)
+        return collisionBox.checkBackWall(self, self.owner.game_state.platform_list, True)
 
     def checkFrontWall(self):
         self.updatePosition()
-        return collisionBox.checkFrontWall(self, self.game_state.platform_list, True)
+        return collisionBox.checkFrontWall(self, self.owner.game_state.platform_list, True)
 
     def checkCeiling(self):
         self.updatePosition()
-        return collisionBox.checkCeiling(self, self.game_state.platform_list, True)
+        return collisionBox.checkCeiling(self, self.owner.game_state.platform_list, True)
 
     def isGrounded(self):
         self.updatePosition()
-        return collisionBox.isGrounded(self, self.game_state.platform_list, self.tech_window <= 0)
+        return collisionBox.isGrounded(self, self.owner.game_state.platform_list, True)
 
     def isLeftWalled(self):
         self.updatePosition()
-        return collisionBox.isLeftWalled(self, self.game_state.platform_list, True)
+        return collisionBox.isLeftWalled(self, self.owner.game_state.platform_list, True)
 
     def isRightWalled(self):
         self.updatePosition()
-        return collisionBox.isRightWalled(self, self.game_state.platform_list, True)
+        return collisionBox.isRightWalled(self, self.owner.game_state.platform_list, True)
 
     def isBackWalled(self):
         self.updatePosition()
-        return collisionBox.isBackWalled(self, self.game_state.platform_list, True)
+        return collisionBox.isBackWalled(self, self.owner.game_state.platform_list, True)
 
     def isFrontWalled(self):
         self.updatePosition()
-        return collisionBox.isFrontWalled(self, self.game_state.platform_list, True)
+        return collisionBox.isFrontWalled(self, self.owner.game_state.platform_list, True)
 
     def isCeilinged(self):
         self.updatePosition()
-        return collisionBox.isCeilinged(self, self.game_state.platform_list, True)
+        return collisionBox.isCeilinged(self, self.owner.game_state.platform_list, True)
           
 class Article():
     def __init__(self, _spritePath, _owner, _origin, _length=1, _draw_depth = 1):

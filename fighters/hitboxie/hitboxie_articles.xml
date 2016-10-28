@@ -25,6 +25,12 @@
 			<changeFighterSpeed>
 				<xSpeed relative="True">24</xSpeed>
 			</changeFighterSpeed>
+			<setFighterVar attr="elasticity">
+				<val type="float">0.8</val>
+			</setFighterVar>
+			<setFighterVar attr="ground_elasticity">
+				<val type="float">0.0</val>
+			</setFighterVar>
 			
 			<activateHitbox>SplatHitbox</activateHitbox>
 		</setUp>
@@ -43,14 +49,17 @@
 			<changeFighterSpeed>
 				<ySpeed relative="True">0.5</ySpeed>
 			</changeFighterSpeed>
-		</frame>
-
-		<frame number="after">
+			<setVar source="article">
+				<variable>shouldStop</variable>
+				<value>
+					<function>
+						<functionName source="article">isGrounded</functionName>
+					</function>
+				</value>
+			</setVar>
 			<if function="==">
-				<function>
-					<functionName source="article">isGrounded</functionName>
-				</function>
-				<value>True</value>
+				<variable source="article">shouldStop</variable>
+				<value type="boolean">True</value>
 				<pass>stop</pass>
 			</if>
 		</frame>
