@@ -34,15 +34,10 @@
 			<deactivateSelf />
 		</collision>
 		
-		<collision other="Platform">
-			<if function="==">
-				<function>
-					<functionName source="article">isGrounded</functionName>
-				</function>
-				<value>True</value>
-				<pass>stop</pass>
-			</if>
-		</collision>
+		<onClank>
+			<print>"DERP"</print>
+			<deactivateSelf />
+		</onClank>
 		
 		<frame number="before">
 			<changeFighterSpeed>
@@ -50,7 +45,18 @@
 			</changeFighterSpeed>
 		</frame>
 
+		<frame number="after">
+			<if function="==">
+				<function>
+					<functionName source="article">isGrounded</functionName>
+				</function>
+				<value>True</value>
+				<pass>stop</pass>
+			</if>
+		</frame>
+
 		<conditional name="stop">
+			<print>"STOP"</print>
 			<deactivateSelf />
 		</conditional>
 	</SplatArticle>

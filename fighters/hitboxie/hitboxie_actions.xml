@@ -360,7 +360,7 @@
 	</SlowGetup>
 
 	<Respawn>
-		<length>1</length>
+		<length>360</length>
 		<sprite>idle</sprite>
 		<sprite_rate>0</sprite_rate>
 		<setUp>

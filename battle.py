@@ -33,6 +33,7 @@ class Battle():
         self.players = _players
         self.controllers = []
         for player in _players:
+            player.game_state = _stage
             player.initialize()
             player.key_bindings.linkObject(player)
             self.controllers.append(player.key_bindings)
@@ -94,9 +95,8 @@ class Battle():
                 fighter.ecb.normalize()
                 fighter.ecb.store()
                 fighter.posy += fighter.ecb.current_ecb.rect.height/2.0
-                fighter.game_state = self.stage
                 fighter.players = self.players
-                self.stage.follows.append(fighter.rect)
+                self.stage.follows.append(fighter.sprite.rect)
                 log = DataLog()
                 self.data_logs.append(log)
                 fighter.data_log = log
@@ -295,19 +295,19 @@ class Battle():
             if hasattr(obj, 'articles'):
                 for art in obj.articles:
                     if art.draw_depth == -1:
-                        offset = self.stage.stageToScreen(art.rect)
+                        offset = self.stage.stageToScreen(art.sprite.rect)
                         scale =  self.stage.getScale()
                         draw_rect = art.draw(self.screen,offset,scale)
                         if draw_rect: self.dirty_rects.append(draw_rect)
                     else: foreground_articles.append(art)
 
-            offset = self.stage.stageToScreen(obj.rect)
+            offset = self.stage.stageToScreen(obj.sprite.rect)
             scale =  self.stage.getScale()
             draw_rect = obj.draw(self.screen,offset,scale)
             if draw_rect: self.dirty_rects.append(draw_rect)
             
             for art in foreground_articles:
-                offset = self.stage.stageToScreen(art.rect)
+                offset = self.stage.stageToScreen(art.sprite.rect)
                 scale =  self.stage.getScale()
                 draw_rect = art.draw(self.screen,offset,scale)
                 if draw_rect: self.dirty_rects.append(draw_rect)

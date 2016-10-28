@@ -387,7 +387,7 @@
 	</SlowGetup>
 
 	<Respawn>
-		<length>1</length>
+		<length>360</length>
 		<sprite>idle</sprite>
 	</Respawn>
 	

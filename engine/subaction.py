@@ -1762,21 +1762,18 @@ class deactivateHurtbox(SubAction):
 
 class changeECB(SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('center','tuple','changeECB>center',(0,0)),
-              NodeMap('size','tuple','changeECB>size',(0,0)),
+    fields = [NodeMap('size','tuple','changeECB>size',(0,0)),
               NodeMap('offset','tuple','changeECB>offset',(0,0))
               ]
     
-    def __init__(self,_center=[0,0],_size=[0,0],_ecbOffset=[0,0]):
+    def __init__(self,_size=[0,0],_ecbOffset=[0,0]):
         SubAction.__init__(self)
-        self.center = _center
         self.size = _size
         self.offset = _ecbOffset
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
         _action.ecb_size = self.size
-        _action.ecb_center = self.center
         _action.ecb_offset = self.offset
     
     def getDisplayName(self):
@@ -1784,16 +1781,13 @@ class changeECB(SubAction):
     
     @staticmethod
     def customBuildFromXml(_node):
-        center=[0,0]
         size = [0,0]
         ecb_offset = [0,0]
-        if _node.find('center') is not None:
-            center = map(int, _node.find('center').text.split(','))
         if _node.find('size') is not None:
             size = map(int, _node.find('size').text.split(','))
         if _node.find('offset') is not None:
             ecb_offset = map(int, _node.find('offset').text.split(','))
-        return changeECB(center,size,ecb_offset)
+        return changeECB(size,ecb_offset)
 
 class loadArticle(SubAction):
     subact_group = 'Article'

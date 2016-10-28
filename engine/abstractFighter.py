@@ -104,10 +104,6 @@ class AbstractFighter():
     hit_tagged = None
      
     angle = 0
-    grounded = False
-    back_walled = False
-    front_walled = False
-    ceilinged = False
     jumps = 0
     damage = 0
     landing_lag = 6
@@ -115,6 +111,7 @@ class AbstractFighter():
     tech_window = 0
     airdodges = 1
     
+    grounded = False
     elasticity = 0
     ground_elasticity = 0
     grab_point = (0, 0)
@@ -528,14 +525,11 @@ class AbstractFighter():
 
         self.updatePosition()
         self.ecb.normalize()
-        
-        ground_blocks = self.checkGround()
-        self.checkLeftWall()
-        self.checkRightWall()
-        self.checkCeiling()
+
+        self.grounded = self.isGrounded()
 
         # Move with the platform
-        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, self.checkGround(), None)
         if not block is None:
             self.jumps = self.stats['jumps']
             self.posx += block.change_x
@@ -630,14 +624,9 @@ class AbstractFighter():
 
         self.updatePosition()
         self.ecb.normalize()
-    
-        ground_blocks = self.checkGround()
-        self.checkLeftWall()
-        self.checkRightWall()
-        self.checkCeiling()
 
         # Move with the platform
-        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, self.checkGround(), None)
         if not block is None:
             self.posx += block.change_x
 
@@ -970,6 +959,30 @@ class AbstractFighter():
     def checkCeiling(self):
         self.updatePosition()
         return collisionBox.checkCeiling(self, self.game_state.platform_list, True)
+
+    def isGrounded(self):
+        self.updatePosition()
+        return collisionBox.isGrounded(self, self.game_state.platform_list, self.tech_window <= 0)
+
+    def isLeftWalled(self):
+        self.updatePosition()
+        return collisionBox.isLeftWalled(self, self.game_state.platform_list, True)
+
+    def isRightWalled(self):
+        self.updatePosition()
+        return collisionBox.isRightWalled(self, self.game_state.platform_list, True)
+
+    def isBackWalled(self):
+        self.updatePosition()
+        return collisionBox.isBackWalled(self, self.game_state.platform_list, True)
+
+    def isFrontWalled(self):
+        self.updatePosition()
+        return collisionBox.isFrontWalled(self, self.game_state.platform_list, True)
+
+    def isCeilinged(self):
+        self.updatePosition()
+        return collisionBox.isCeilinged(self, self.game_state.platform_list, True)
     
     def setSpeed(self,_speed,_direction):
         """ Set the actor's speed. Instead of modifying the change_x and change_y values manually,

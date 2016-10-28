@@ -14,7 +14,7 @@ class HitboxLock(object):
 class Hitbox(spriteManager.RectSprite):
     def __init__(self,_owner,_lock,_variables = dict()):
         import engine.article as article
-        if hasClass(_owner, article.DynamicArticle):
+        if hasattr(_owner, 'owner'):
             self.owner = _owner.owner
             self.article = _owner
         else:
@@ -69,13 +69,15 @@ class Hitbox(spriteManager.RectSprite):
         self.hitbox_lock = _lock
         
         spriteManager.RectSprite.__init__(self,pygame.Rect([0,0],self.size),[255,0,0])
-        self.rect.center = [_owner.posx + self.center[0], _owner.posy + self.center[1]]
+        if self.article is None:
+            self.rect.center = [self.owner.posx + self.center[0]*self.owner.facing, self.owner.posy + self.center[1]]
+        elif hasattr(self.article, "facing"):
+            self.rect.center = [self.article.posx + self.center[0]*self.article.facing, self.article.posy + self.center[1]]
+        else:
+            self.rect.center = [self.article.posx + self.center[0], self.article.posy + self.center[1]]
 
         if self.trail_color is None: 
-            if self.article is None:
-                self.trail_color = settingsManager.getSetting('playerColor' + str(self.owner.player_num))
-            else:
-                self.trail_color = settingsManager.getSetting('playerColor' + str(self.article.owner.player_num))
+            self.trail_color = settingsManager.getSetting('playerColor' + str(self.owner.player_num))
         
         self.owner_on_hit_actions = []
         self.other_on_hit_actions = []
@@ -98,9 +100,9 @@ class Hitbox(spriteManager.RectSprite):
         if self.article is None:
             self.rect.center = [self.owner.posx + self.center[0]*self.owner.facing, self.owner.posy + self.center[1]]
         elif hasattr(self.article, "facing"):
-            self.rect.center = [self.article.rect.center[0] + self.center[0]*self.article.facing, self.article.rect.center[1] + self.center[1]]
+            self.rect.center = [self.article.posx + self.center[0]*self.article.facing, self.article.posy + self.center[1]]
         else:
-            self.rect.center = [self.article.rect.center[0] + self.center[0], self.article.rect.center[1] + self.center[1]]
+            self.rect.center = [self.article.posx + self.center[0], self.article.posy + self.center[1]]
         if self.article == None:
             if hasattr(self.owner.current_action, self.charge_source):
                 self.charge = getattr(self.owner.current_action, self.charge_source)
@@ -155,7 +157,7 @@ class DamageHitbox(Hitbox):
             from article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
-                self.owner.articles.add(art)
+                self.owner.articles.append(art)
         
             if self.article and hasattr(self.article, 'onCollision'):
                 self.article.onCollision(_other.owner)
@@ -210,7 +212,7 @@ class SakuraiAngleHitbox(DamageHitbox):
             from article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
-                self.owner.articles.add(art)
+                self.owner.articles.append(art)
 
             if self.article and hasattr(self.article, 'onCollision'):
                 self.article.onCollision(_other.owner)
@@ -258,7 +260,7 @@ class AutolinkHitbox(DamageHitbox):
             from article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
-                self.owner.articles.add(art)
+                self.owner.articles.append(art)
 
             if self.article and hasattr(self.article, 'onCollision'):
                 self.article.onCollision(_other.owner)
@@ -310,7 +312,7 @@ class FunnelHitbox(DamageHitbox):
             from article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
-                self.owner.articles.add(art)
+                self.owner.articles.append(art)
 
             if self.article and hasattr(self.article, 'onCollision'):
                 self.article.onCollision(_other.owner)

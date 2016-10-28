@@ -257,7 +257,7 @@ class NeutralAction(action.Action):
         self.frame += 1
 
 class Respawn(action.Action):
-    def __init__(self,_length=480):
+    def __init__(self,_length=360):
         action.Action.__init__(self, _length)
         
     def setUp(self, _actor):
@@ -276,18 +276,18 @@ class Respawn(action.Action):
         action.Action.tearDown(self, _actor, _nextAction)
         _actor.createMask([255,255,255], 120, True, 12)
         _actor.respawn_invulnerable = 120
-        self.respawn_article.kill()
+        self.respawn_article.deactivate()
         
     def update(self,_actor):
         action.Action.update(self, _actor)
-        _actor.ground = True
+        _actor.grounded = True
         _actor.change_y = 0
         if self.frame == 0:
             self.respawn_article = article.RespawnPlatformArticle(_actor)
-            _actor.createMask([255,128,255], 120, True, 12)
+            _actor.createMask([255,128,255], 180, True, 12)
             _actor.articles.append(self.respawn_article)
         if self.frame == 180:
-            _actor.createMask([255,255,255], 360, True, 12)
+            _actor.createMask([255,255,255], 180, True, 12)
         self.frame += 1
         
 class Crouch(action.Action):
@@ -742,8 +742,7 @@ class Prone(action.Action):
         action.Action.setUp(self, _actor)
         _actor.tech_window = 10
 
-        ground_blocks = _actor.checkGround()
-        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, _actor.checkGround(), None)
         if not block is None:
             _actor.change_y = block.change_y
             _actor.posy = block.rect.top - _actor.ecb.current_ecb.rect.height/2.0
@@ -806,8 +805,7 @@ class SlowGetup(action.Action):
         
         if self.last_frame < 50: self.last_frame = 50 #slow getups must be this long
         
-        ground_blocks = _actor.checkGround()
-        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, _actor.checkGround(), None)
         if not block is None:
             _actor.change_y = block.change_y
 
@@ -962,8 +960,7 @@ class Land(action.Action):
         action.Action.setUp(self, _actor)
         _actor.unRotate()
 
-        ground_blocks = _actor.checkGround()
-        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, _actor.checkGround(), None)
         if not block is None:
             _actor.change_y = block.change_y
             _actor.posy = block.rect.top - _actor.ecb.previous_ecb.rect.height/2.0
@@ -1006,8 +1003,7 @@ class HelplessLand(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="helplessLand"
         action.Action.setUp(self, _actor)
-        ground_blocks = _actor.checkGround()
-        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, _actor.checkGround(), None)
         if not block is None:
             _actor.change_y = block.change_y
             _actor.posy = block.rect.top - _actor.ecb.previous_ecb.rect.height/2.0
@@ -1391,8 +1387,7 @@ class BaseTech(action.Action):
         action.Action.setUp(self, _actor)
         self.start_invuln_frame = -1
         self.end_invuln_frame = -1
-        ground_blocks = _actor.checkGround()
-        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, ground_blocks, None)
+        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, _actor.checkGround(), None)
         if not block is None:
             _actor.change_y = block.change_y
             _actor.posy = block.rect.top - _actor.ecb.previous_ecb.rect.height/2.0

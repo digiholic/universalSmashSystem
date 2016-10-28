@@ -3,10 +3,17 @@ import settingsManager
 import engine.hitbox as hitbox
 import pygame
 import math
+from global_functions import *
 
 class Hurtbox(spriteManager.RectSprite):
     def __init__(self,_owner,_variables = dict()):
-        self.owner = _owner
+        import engine.article as article
+        if hasClass(_owner, article.DynamicArticle):
+            self.owner = _owner.owner
+            self.article = _owner
+        else:
+            self.owner = _owner
+            self.article = None
         
         self.variable_dict = {
                        'center': (0,0),
@@ -21,38 +28,63 @@ class Hurtbox(spriteManager.RectSprite):
         for key,value in self.variable_dict.iteritems():
             setattr(self, key, value)
 
-        fix_rect = self.getFixRect()
-        if self.size[0] == 0: working_width = fix_rect.width
+        fix_center = self.getFixCenter()
+        if self.size[0] == 0: 
+            if self.article is None:
+                working_width = self.owner.sprite.bounding_rect.width
+            else:
+                working_width = self.article.sprite.bounding_rect.width
         else: working_width = self.size[0]
-        if self.size[1] == 0: working_height = fix_rect.height
+        if self.size[1] == 0: 
+            if self.article is None: 
+                working_height = self.owner.sprite.bounding_rect.height
+            else:
+                working_height = self.article.sprite.bounding_rect.height
         else: working_height = self.size[1]
 
         spriteManager.RectSprite.__init__(self,pygame.Rect([0,0],[working_width, working_height]),[255,255,0])
-        self.rect.center = [_owner.rect.center[0] + self.center[0], _owner.rect.center[1] + self.center[1]]
-        self.article = None
+        if self.article is None:
+            self.rect.center = [self.owner.posx + self.center[0]*self.owner.facing, self.owner.posy + self.center[1]]
+        elif hasattr(self.article, "facing"):
+            self.rect.center = [self.article.posx + self.center[0]*self.article.facing, self.article.posy + self.center[1]]
+        else:
+            self.rect.center = [self.article.posx + self.center[0], self.article.posy + self.center[1]]
         self.armor = []
         
     #Add to later
-    def getFixRect(self):
+    def getFixCenter(self):
         if self.fix_rect == 'rect':
-            return self.owner.sprite.rect
+            if self.article is None:
+                return (self.owner.posx, self.owner.posy)
+            else:
+                return (self.article.posx, self.article.posy)
         else:
-            return self.owner.sprite.bounding_rect
-        
+            if self.article is None:
+                return (self.owner.sprite.bounding_rect.centerx, self.owner.sprite.bounding_rect.centery)
+            else:
+                return (self.article.sprite.bounding_rect.centerx, self.article.sprite.bounding_rect.centery)
 
     def update(self):
-        fix_rect = self.getFixRect()
-        if self.size[0] == 0: self.rect.width = fix_rect.width
+        fix_center = self.getFixCenter()
+        if self.size[0] == 0: 
+            if self.article is None:
+                self.rect.width = self.owner.sprite.bounding_rect.width
+            else:
+                self.rect.width = self.article.sprite.bounding_rect.width
         else: self.rect.width = self.size[0]
-        if self.size[1] == 0: self.rect.height = fix_rect.height
+        if self.size[1] == 0: 
+            if self.article is None: 
+                self.rect.height = self.owner.sprite.bounding_rect.height
+            else:
+                self.rect.height = self.article.sprite.bounding_rect.height
         else: self.rect.height = self.size[1]
 
         if self.article is None:
-            self.rect.center = [fix_rect.center[0] + self.center[0]*self.owner.facing, fix_rect.center[1] + self.center[1]]
+            self.rect.center = [self.owner.posx + self.center[0]*self.owner.facing, self.owner.posy + self.center[1]]
         elif hasattr(self.article, "facing"):
-            self.rect.center = [fix_rect.center[0] + self.center[0]*self.article.facing, fix_rect.center[1] + self.center[1]]
+            self.rect.center = [self.article.posx + self.center[0]*self.article.facing, self.article.posy + self.center[1]]
         else:
-            self.rect.center = [fix_rect.center[0] + self.center[0], fix_rect.center[1] + self.center[1]]
+            self.rect.center = [self.article.posx + self.center[0], self.article.posy + self.center[1]]
 
     """
     This function is called when a hurtbox is hit by a hitbox. Registers the hit and applies the corresponding subactions by default, but can be overridden

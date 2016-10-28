@@ -29,13 +29,22 @@ class DynamicArticle():
 	self.posy = 0
         self.change_x = 0
         self.change_y = 0
-        self.sprite_rate = _spriteRate
         self.draw_depth = _draw_depth
         self.origin_point = _originPoint
         self.starting_direction = _startingDirection
         self.facing = _startingDirection
         self.tags = _tags
         self.variables = dict()
+
+        #These determine the size and shape of the fighter's ECB
+        #Keep these at 0 to make it fit the sprite
+        self.ecb_size = [0,0]
+        self.ecb_offset = [0,0]
+
+        self.sprite_rate = _spriteRate
+        self.base_sprite_rate = _spriteRate
+        self.sprite_name = _sheet
+        self.loop = True
         
         self.hitboxes = {}
         self.hitbox_locks = {}
@@ -60,7 +69,7 @@ class DynamicArticle():
         self.elasticity = 0
         self.ground_elasticity = 0
         
-    def update(self):
+    def update(self, *args): #Ignores actor
         self.ecb.normalize()
         self.ecb.store()
         
@@ -69,14 +78,12 @@ class DynamicArticle():
             hbox.article = self
             if hbox not in self.owner.active_hitboxes:
                 self.owner.active_hitboxes.add(hbox)
-        
-        #Animate the article
+
         if self.sprite_rate is not 0:
-            if self.frame % self.sprite_rate == 0:
-                if self.sprite_rate < 0:
-                    self.sprite.getImageAtIndex((self.frame / self.sprite_rate)-1)
-                else:
-                    self.sprite.getImageAtIndex(self.frame / self.sprite_rate)
+            if self.sprite_rate < 0:
+                self.sprite.getImageAtIndex((self.frame // self.sprite_rate)-1)
+            else:
+                self.sprite.getImageAtIndex(self.frame // self.sprite_rate)
         
         #Do all of the subactions involving update
         for act in self.actions_before_frame:
@@ -106,10 +113,42 @@ class DynamicArticle():
         if self.frame == self.last_frame:
             self.deactivate()
         self.frame += 1 
+
+    def updateAnimationOnly(self, *args): #Ignores actor
+        animation_actions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition,
+                            subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox, 
+                            subaction.activateHurtbox, subaction.deactivateHurtbox, subaction.modifyHurtbox)
+        for act in self.actions_before_frame:
+            if isinstance(act, animation_actions):
+                act.execute(self,self)
+        if self.frame < len(self.actions_at_frame):
+            for act in self.actions_at_frame[self.frame]:
+                if isinstance(act, animation_actions):
+                    act.execute(self,self)
+        if self.frame == self.last_frame:
+            for act in self.actions_at_last_frame:
+                if isinstance(act, animation_actions):
+                    act.execute(self,self)
+        for act in self.actions_after_frame:
+            if isinstance(act, animation_actions):
+                act.execute(self,self)
+        
+        if self.sprite_rate is not 0:
+            if self.sprite_rate < 0:
+                self.sprite.getImageAtIndex((self.frame // self.sprite_rate)-1)
+            else:
+                self.sprite.getImageAtIndex(self.frame // self.sprite_rate)
+
+        for hitbox in self.hitboxes.values():
+            hitbox.update()
+        for hurtbox in self.hurtboxes.values():
+            hurtbox.update()
+                
+        self.frame += 1      
     
     def activate(self):
-        self.owner.articles.add(self)
-        self.sprite.recenter()
+        self.owner.articles.append(self)
+        self.recenter()
         self.facing = self.owner.facing
         if not self.facing == 0 and not self.facing == self.starting_direction: 
             self.sprite.flipX()
@@ -122,7 +161,8 @@ class DynamicArticle():
         for act in self.tear_down_actions:
             act.execute(self,self)
         self.sprite.kill()
-        self.owner.articles.remove(self)
+        if self in self.owner.articles:
+            self.owner.articles.remove(self)
 
     def changeOwner(self, _newOwner):
         self.owner = _newOwner
@@ -161,8 +201,6 @@ class DynamicArticle():
         """ Passes the updatePosition call to the sprite.
         See documentation in SpriteLibrary.updatePosition
         """
-        self.rect.centerx = self.posx
-        self.rect.centery = self.posy
         return self.sprite.updatePosition(self.posx, self.posy)
     
     """
@@ -171,7 +209,6 @@ class DynamicArticle():
     def recenter(self):
         self.posx = self.owner.posx + (self.origin_point[0] * self.owner.facing)
         self.posy = self.owner.posy + self.origin_point[1]
-        self.rect.center = [self.posx, self.posy]
         self.sprite.rect.center = [self.posx, self.posy]
         
     def changeSpriteImage(self,index):
@@ -231,19 +268,73 @@ class DynamicArticle():
 
         if to_bounce_block is not None and 'bounces' in self.tags:
             collisionBox.reflect(self, to_bounce_block)
+
+    def checkGround(self):
+        self.updatePosition()
+        return collisionBox.checkGround(self, self.game_state.platform_list, self.tech_window <= 0)
+
+    def checkLeftWall(self):
+        self.updatePosition()
+        return collisionBox.checkLeftWall(self, self.game_state.platform_list, True)
+
+    def checkRightWall(self):
+        self.updatePosition()
+        return collisionBox.checkRightWall(self, self.game_state.platform_list, True)
+
+    def checkBackWall(self):
+        self.updatePosition()
+        return collisionBox.checkBackWall(self, self.game_state.platform_list, True)
+
+    def checkFrontWall(self):
+        self.updatePosition()
+        return collisionBox.checkFrontWall(self, self.game_state.platform_list, True)
+
+    def checkCeiling(self):
+        self.updatePosition()
+        return collisionBox.checkCeiling(self, self.game_state.platform_list, True)
+
+    def isGrounded(self):
+        self.updatePosition()
+        return collisionBox.isGrounded(self, self.game_state.platform_list, self.tech_window <= 0)
+
+    def isLeftWalled(self):
+        self.updatePosition()
+        return collisionBox.isLeftWalled(self, self.game_state.platform_list, True)
+
+    def isRightWalled(self):
+        self.updatePosition()
+        return collisionBox.isRightWalled(self, self.game_state.platform_list, True)
+
+    def isBackWalled(self):
+        self.updatePosition()
+        return collisionBox.isBackWalled(self, self.game_state.platform_list, True)
+
+    def isFrontWalled(self):
+        self.updatePosition()
+        return collisionBox.isFrontWalled(self, self.game_state.platform_list, True)
+
+    def isCeilinged(self):
+        self.updatePosition()
+        return collisionBox.isCeilinged(self, self.game_state.platform_list, True)
           
 class Article():
     def __init__(self, _spritePath, _owner, _origin, _length=1, _draw_depth = 1):
         self.sprite = spriteManager.ImageSprite(_spritePath)
-        self.sprite.rect.center = _origin
+        self.posx, self.posy = _origin
+        self.sprite.rect.center = self.posx, self.posy
         self.owner = _owner
         self.frame = 0
         self.last_frame = _length
         self.tags = []
         self.draw_depth = _draw_depth
+
+        self.sprite_rate = 0
+        self.base_sprite_rate = 0
+        self.sprite_name = _spritePath
+        self.loop = False
         
     def update(self):
-        pass
+        self.sprite.updatePosition(self.posx, self.posy)
 
     def draw(self,_screen,_offset,_scale):
         return self.sprite.draw(_screen, _offset, _scale)
@@ -253,19 +344,27 @@ class Article():
         self.hitbox.owner = _newOwner
     
     def activate(self):
-        self.owner.articles.add(self)
+        self.owner.articles.append(self)
     
     def deactivate(self):
         self.sprite.kill()
-        self.owner.articles.remove(self)
+        if self in self.owner.articles:
+            self.owner.articles.remove(self)
 
          
 class AnimatedArticle():
     def __init__(self, _sprite, _owner, _origin, _imageWidth, _length=1, _draw_depth=1):
         self.sprite = spriteManager.SheetSprite(pygame.image.load(_sprite), _imageWidth)
+        self.posx, self.posy = _origin
         self.sprite.rect.center = _origin
         self.owner = _owner
         self.frame = 0
+
+        self.sprite_rate = 1
+        self.base_sprite_rate = 1
+        self.sprite_name = _sprite
+        self.loop = False
+
         self.last_frame = _length
         self.tags = []
         self.draw_depth = _draw_depth
@@ -274,19 +373,25 @@ class AnimatedArticle():
         return self.sprite.draw(_screen, _offset, _scale)
     
     def update(self):
-        self.sprite.getImageAtIndex(self.frame)
+        self.sprite.updatePosition(self.posx, self.posy)
+        if self.sprite_rate is not 0:
+            if self.sprite_rate < 0:
+                self.sprite.getImageAtIndex((self.frame // self.sprite_rate)-1)
+            else:
+                self.sprite.getImageAtIndex(self.frame // self.sprite_rate)
         self.frame += 1
-        if self.frame == self.last_frame: self.kill()
+        if self.frame == self.last_frame: self.deactivate()
     
     def changeOwner(self, _newOwner):
         self.owner = _newOwner
     
     def activate(self):
-        self.owner.articles.add(self)
+        self.owner.articles.append(self)
     
     def deactivate(self):
         self.sprite.kill()
-        self.owner.articles.remove(self)
+        if self in self.owner.articles:
+            self.owner.articles.remove(self)
                 
 class ShieldArticle(Article):
     def __init__(self,_image,_owner):
@@ -387,7 +492,7 @@ class ShieldArticle(Article):
         self.main_hitbox.update()
         self.parry_hitbox.update() 
         self.parry_reflect_hitbox.update()
-        self.owner.shield_integrity -= 1
+        self.owner.shield_integrity -= .6
         self.frame += 1       
    
     def draw(self,_screen,_offset,_scale):
@@ -396,11 +501,11 @@ class ShieldArticle(Article):
 class LandingArticle(AnimatedArticle):
     def __init__(self,_owner):
         width, height = (86, 22) #to edit these easier if (when) we change the sprite
-        scaled_width = _owner.rect.width
+        scaled_width = _owner.sprite.rect.width
         #self.scale_ratio = float(scaled_width) / float(width)
         self.sprite.scale = 1
         scaled_height = math.floor(height * self.scale_ratio)
-        AnimatedArticle.__init__(self, settingsManager.createPath('sprites/halfcirclepuff.png'), _owner, _owner.rect.midbottom, 86, 6)
+        AnimatedArticle.__init__(self, settingsManager.createPath('sprites/halfcirclepuff.png'), _owner, _owner.sprite.rect.midbottom, 86, 6)
         self.sprite.rect.y -= scaled_height / 2
         
     def draw(self, _screen, _offset, _scale):
@@ -419,7 +524,9 @@ class HitArticle(Article):
     def __init__(self, _owner, _origin, _scale=1, _angle=0, _speed=0, _resistance=0, _colorBase = None):
         Article.__init__(self, settingsManager.createPath('sprites/hit_particle.png'), _owner, _origin, 256, -1)
         self.sprite.scale = _scale*.25
+        self.posx, self.posy = _origin
         self.sprite.rect.center = _origin
+        self.angle = _angle
         self.sprite.angle = _angle
         self.speed = _speed
         self.resistance = _resistance
@@ -449,34 +556,34 @@ class HitArticle(Article):
             else:
                 base_color[2] += random_displacement[2]
         
-        self.sprite.recolor(self.image, (0,0,0), base_color)
+        self.sprite.recolor(self.sprite.image, (0,0,0), base_color)
         self.sprite.alpha(128)
 
     def update(self):
-        posx += self.speed * math.cos(math.radians(self.angle))
-        posy += -self.speed * math.sin(math.radians(self.angle))
-        self.sprite.rect.x = posx
-        self.sprite.rect.y = posy
+        self.posx += self.speed * math.cos(math.radians(self.angle))
+        self.posy += -self.speed * math.sin(math.radians(self.angle))
+        self.sprite.rect.centerx = self.posx
+        self.sprite.rect.centery = self.posy
         self.speed -= self.resistance
         if self.speed <= 0:
             self.deactivate()
-   
-    def draw(self,_screen,_offset,_scale):
-        return Article.draw(self, _screen, _offset, _scale)
         
 
 class RespawnPlatformArticle(Article):
     def __init__(self,_owner):
         width, height = (256,69)
-        scaled_width = _owner.rect.width * 1.5
+        scaled_width = _owner.sprite.rect.width * 1.5
+        scaled_height = _owner.sprite.rect.height * 1.5
         scale_ratio = float(scaled_width) / float(width)
         
-        Article.__init__(self, settingsManager.createPath('sprites/platform.png'), _owner, _owner.rect.midbottom, 120, _draw_depth = -1)
+        Article.__init__(self, settingsManager.createPath('sprites/platform.png'), _owner, _owner.sprite.rect.midbottom, 120, _draw_depth = -1)
         
         w,h = int(width * scale_ratio),int(height * scale_ratio)
         self.sprite.image = pygame.transform.smoothscale(self.sprite.image, (w,h))
         
         self.sprite.rect = self.sprite.image.get_rect()
         
-        self.sprite.rect.center = _owner.rect.midbottom
-        self.sprite.rect.bottom += self.sprite.rect.height // 4
+        self.sprite.rect.center = _owner.sprite.rect.midbottom
+        self.posx, self.posy = _owner.sprite.rect.midbottom
+        self.sprite.rect.bottom += scaled_height // 4
+        self.posy += scaled_height // 4
