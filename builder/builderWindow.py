@@ -422,8 +422,13 @@ class ViewerPanel(BuilderPanel):
         
         pygame.display.init()
         pygame.mixer.init()
+        _root.update()
         
+        print("Before!")
+        print (self.winfo_width())
+        print (self.winfo_height())
         self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
+        print("After!")
         self.center = (0,0)
         self.scale = 1.0
         
