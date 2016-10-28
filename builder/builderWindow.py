@@ -12,6 +12,7 @@ from Tkinter import *
 from tkFileDialog import askopenfile
 from tkMessageBox import showinfo
 from shutil import copyfile
+import stages.training_stage.stage
 import ttk
 from engine.abstractFighter import AbstractFighter
 
@@ -154,6 +155,7 @@ class MainFrame(Tk):
         
         new_fighter.loadSpriteLibrary(0)
         new_fighter.initialize()
+        new_fighter.game_state = stages.training_stage.stage.getStage()
         new_fighter.doAction('NeutralAction')
         fighter = new_fighter
         self.wm_title('Legacy Editor - '+fighter.name)        
@@ -475,24 +477,17 @@ class ViewerPanel(BuilderPanel):
     # TRACER FUNCTIONS #
     ####################
     def changeFighter(self,*_args):
-        global fighter
         self.centerFighter()
+        self.reloadFrame()
         
     def changeFrame(self,*_args):
-        global fighter
-        global action
-        global frame
-        
-        if action:
-            fighter.changeAction(action)
-            action.frame = 0
-            while action.frame <= frame:
-                action.updateAnimationOnly(fighter)
+        self.reloadFrame()
             
     def changeAction(self,*_args):
         global action
         global fighter
         if action: fighter.changeAction(action)
+        self.reloadFrame()
         
 class NavigatorPanel(BuilderPanel):
     def __init__(self,_parent,_root):
