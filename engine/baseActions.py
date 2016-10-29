@@ -258,7 +258,7 @@ class NeutralAction(action.Action):
 
 class Respawn(action.Action):
     def __init__(self,_length=360):
-        action.Action.__init__(self, _length)
+        action.Action.__init__(self, settingsManager.getSetting('respawnLifetime'))
         
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="neutralAction"
@@ -267,15 +267,15 @@ class Respawn(action.Action):
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
-        if self.frame > 180:
+        if self.frame > settingsManager.getSetting('respawnDowntime'):
             neutralState(_actor)
         if self.frame == self.last_frame:
             _actor.doAction('Fall')
     
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        _actor.createMask([255,255,255], 120, True, 12)
-        _actor.respawn_invulnerable = 120
+        _actor.createMask([255,255,255], settingsManager.getSetting('respawnInvincibility'), True, 12)
+        _actor.respawn_invulnerable = settingsManager.getSetting('respawnInvincibility')
         self.respawn_article.deactivate()
         
     def update(self,_actor):
@@ -284,10 +284,10 @@ class Respawn(action.Action):
         _actor.change_y = 0
         if self.frame == 0:
             self.respawn_article = article.RespawnPlatformArticle(_actor)
-            _actor.createMask([255,128,255], 180, True, 12)
+            _actor.createMask([255,128,255], settingsManager.getSetting('respawnDowntime'), True, 12)
             _actor.articles.append(self.respawn_article)
         if self.frame == 180:
-            _actor.createMask([255,255,255], 180, True, 12)
+            _actor.createMask([255,255,255], settingsManager.getSetting('respawnLifetime') - settingsManager.getSetting('respawnDowntime'), True, 12)
         self.frame += 1
         
 class Crouch(action.Action):

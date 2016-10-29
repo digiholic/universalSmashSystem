@@ -214,6 +214,10 @@ class Settings():
         self.setting['ledgeInvincibilityTime'] = getNumber(preset_parser, preset, 'ledgeInvincibilityTime')
         self.setting['regrabInvincibility'] = getBoolean(preset_parser, preset, 'regrabInvincibility')
         self.setting['slowLedgeWakeupThreshold'] = getNumber(preset_parser, preset, 'slowLedgeWakeupThreshold')
+
+        self.setting['respawnDowntime'] = int(getNumber(preset_parser, preset, 'respawnDowntime'))
+        self.setting['respawnLifetime'] = int(getNumber(preset_parser, preset, 'respawnLifetime'))
+        self.setting['respawnInvincibility'] = int(getNumber(preset_parser, preset, 'respawnInvincibility'))
         
         self.setting['airDodgeType'] = getString(preset_parser, preset, 'airDodgeType')
         self.setting['freeDodgeSpecialFall'] = getBoolean(preset_parser, preset, 'freeDodgeSpecialFall')
