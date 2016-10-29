@@ -456,9 +456,9 @@ class If(SubAction):
                 _actor = _actor.owner
             if hasattr(_actor, 'stats') and _actor.stats.has_key(self.variable):
                 variable = _actor.stats[self.variable]
-            elif actor.variables.has_key(self.variable):
+            elif _actor.variables.has_key(self.variable):
                 variable = _actor.variables[self.variable]
-            else: variable = getattr(actor, self.variable)
+            else: variable = getattr(_actor, self.variable)
         elif self.source == 'article' and hasattr(_actor, 'owner'):
             variable = _actor.variables[self.variable]
         elif self.source == 'object':
@@ -1662,7 +1662,8 @@ class createHurtbox(SubAction):
         return 'Create New Hurtbox: ' + self.hurtbox_name
     
     def getPropertiesPanel(self, _root):
-        return subactionSelector.ModifyHurtboxProperties(_root,self,newHurtbox=True)
+        #return subactionSelector.ModifyHurtboxProperties(_root,self,newHurtbox=True)
+        return None
        
     def getXmlElement(self):
         elem = ElementTree.Element('createHurbox')
@@ -1720,7 +1721,8 @@ class modifyHurtbox(SubAction):
         return 'Modify Hurtbox: ' + str(self.hurtbox_name)
     
     def getPropertiesPanel(self, _root):
-        return subactionSelector.ModifyHurtboxProperties(_root,self,newHurtbox=False)
+        #return subactionSelector.ModifyHurtboxProperties(_root,self,newHurtbox=False)
+        return None
         
     def getXmlElement(self):
         elem = ElementTree.Element('modifyHurtbox')

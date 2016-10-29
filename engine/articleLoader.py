@@ -68,6 +68,20 @@ class ArticleLoader():
         origin_point = make_tuple(self.loadNodeWithDefault(article_xml, 'origin_point', '(0,0)'))
         facing_direction = int(self.loadNodeWithDefault(article_xml, 'facing_direction', 0))
         
+        article_vars = {}
+        if article_xml.find('vars') is not None:
+            for var in article_xml.find('vars'):
+                t = var.attrib['type'] if var.attrib.has_key('type') else None
+                if t and t == 'int':
+                    article_vars[var.tag] = int(var.text)
+                elif t and t == 'float':
+                    article_vars[var.tag] = float(var.text)
+                elif t and t == 'bool':
+                    article_vars[var.tag] = (var.text == 'True')
+                elif t and t == 'tuple':
+                    article_vars[var.tag] = make_tuple(var.text)
+                else: article_vars[var.tag] = var.text
+        
         tags = []
         if article_xml.find('tags') is not None:
             for tagNode in article_xml.find('tags'):
@@ -146,7 +160,7 @@ class ArticleLoader():
                 if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
                     event_list.append(subaction.SubAction.buildFromXml(subact.tag,subact))
             events[cond.attrib['name']] = event_list
-        print(events)
+        
         
         collision_actions = dict()
         collisions = article_xml.findall('collision')
@@ -175,6 +189,7 @@ class ArticleLoader():
         if sprite_name: dyn_article.sprite_name = sprite_name
         if sprite_rate: dyn_article.base_sprite_rate = sprite_rate
         
+        dyn_article.default_vars = article_vars
         return dyn_article
     
     """

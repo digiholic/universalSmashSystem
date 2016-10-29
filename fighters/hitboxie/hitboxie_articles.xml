@@ -7,6 +7,9 @@
 		<origin_point>0,6</origin_point>
 		<facing_direction>1</facing_direction>
 		<tags><reflectable /><collides /><bounces /></tags>
+		<vars>
+			<shouldStop type="bool">True</shouldStop>
+		</vars>
 		
 		<setUp>
 			<createHitbox>

@@ -6,6 +6,7 @@ import settingsManager
 import engine.hitbox as hitbox
 import engine.hurtbox as hurtbox
 import engine.collisionBox as collisionBox
+import subaction
 
 """
 Articles are generated sprites that have their own behavior. For example, projectiles, shields,
@@ -25,8 +26,8 @@ class DynamicArticle():
         self.sprite = spriteManager.SheetSprite(_sheet, _imgWidth)
         self.frame = 0
         self.last_frame = _length
-	self.posx = 0
-	self.posy = 0
+        self.posx = 0
+        self.posy = 0
         self.change_x = 0
         self.change_y = 0
         self.draw_depth = _draw_depth
@@ -68,6 +69,9 @@ class DynamicArticle():
         self.platform_phase = 0
         self.elasticity = 0
         self.ground_elasticity = 0
+        
+        self.default_vars = {}
+        self.variables = {}
         
     def update(self, *args): #Ignores actor
         self.ecb.normalize()
@@ -151,7 +155,7 @@ class DynamicArticle():
         self.recenter()
         self.facing = self.owner.facing
 
-        self.variables = dict()
+        self.variables = self.default_vars.copy()
     
         # Evironmental Collision Box
         self.ecb = collisionBox.ECB(self)
