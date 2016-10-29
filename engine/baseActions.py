@@ -1,6 +1,5 @@
 import engine.action as action
 import engine.hitbox as hitbox
-import engine.article as article
 import pygame
 import math
 import random
@@ -261,6 +260,7 @@ class Respawn(action.Action):
         action.Action.__init__(self, settingsManager.getSetting('respawnLifetime'))
         
     def setUp(self, _actor):
+        import engine.article as article
         if self.sprite_name=="": self.sprite_name ="neutralAction"
         action.Action.setUp(self, _actor)
         self.respawn_article = article.RespawnPlatformArticle(_actor)
@@ -273,12 +273,14 @@ class Respawn(action.Action):
             _actor.doAction('Fall')
     
     def tearDown(self, _actor, _nextAction):
+        import engine.article as article
         action.Action.tearDown(self, _actor, _nextAction)
         _actor.createMask([255,255,255], settingsManager.getSetting('respawnInvincibility'), True, 12)
         _actor.respawn_invulnerable = settingsManager.getSetting('respawnInvincibility')
         self.respawn_article.deactivate()
         
     def update(self,_actor):
+        import engine.article as article
         action.Action.update(self, _actor)
         _actor.grounded = True
         _actor.change_y = 0
@@ -676,6 +678,7 @@ class HitStun(action.Action):
                     _actor.rotateSprite(self.direction)
             
         if self.frame % max(1,int(100.0/max(math.hypot(_actor.change_x, _actor.change_y), 1))) == 0 and self.frame < self.last_frame:
+            import engine.article as article
             art = article.HitArticle(_actor, (_actor.posx, _actor.posy), 1, math.degrees(math.atan2(_actor.change_y, -_actor.change_x))+random.randrange(-30, 30), .5*math.hypot(_actor.change_x, _actor.change_y), .02*(math.hypot(_actor.change_x, _actor.change_y)+1), _actor.trail_color)
             _actor.articles.append(art)
 

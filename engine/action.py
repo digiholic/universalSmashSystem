@@ -1,4 +1,3 @@
-import engine.subaction as subaction
 import xml.etree.ElementTree as ElementTree
 
 # The action class is used for creating attacks, movement options,
@@ -69,6 +68,8 @@ class Action(object):
             hurtbox.update()
             
     def updateAnimationOnly(self,_actor):
+        import engine.subaction as subaction
+
         animation_actions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition,
                             subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox, 
                             subaction.activateHurtbox, subaction.deactivateHurtbox, subaction.modifyHurtbox)
