@@ -676,7 +676,7 @@ class Subaction_panel(BuilderPanel):
     When displaying a modifiable subaction list instead of text,
     switch to the list.
     """
-    def showSubactionList(self):
+    def showSubactionList(self): 
         #Show subaction selector
         self.text_field.pack_forget()
         self.y_scroll_bar.pack_forget()
@@ -987,3 +987,14 @@ class VerticalScrolledFrame(Frame):
         canvas.bind('<Configure>', _configure_canvas)
 
         return
+
+
+class FighterTabPane(BuilderPanel):
+    def __init__(self,_parent,_root):
+        BuilderPanel.__init__(self, _parent, _root)
+        
+        tabWindow = ttk.Notebook(self)
+        
+class PropertiesFrame(ttk.Frame):
+    def __init__(self, _parent):
+        ttk.Frame.__init__(self, _parent)
