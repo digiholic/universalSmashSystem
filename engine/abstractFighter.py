@@ -529,11 +529,11 @@ class AbstractFighter():
         if not block is None and self.ecb.current_ecb.rect.centerx > block.rect.left and self.ecb.current_ecb.rect.centerx < block.rect.right:
             self.jumps = self.stats['jumps']
             self.posx += block.change_x
-            if self.ecb.current_ecb.rect.bottom > block.rect.top:
-                self.posy += block.rect.top - self.ecb.current_ecb.rect.bottom-block.change_y
+            #if self.ecb.current_ecb.rect.bottom > block.rect.top:
+            #    self.posy += block.rect.top - self.ecb.current_ecb.rect.bottom-block.change_y
+            self.change_y -= self.stats['gravity'] * settingsManager.getSetting('gravity')
             if self.change_y > block.change_y:
                 self.change_y = block.change_y
-            self.change_y -= self.stats['gravity'] * settingsManager.getSetting('gravity')
 
         self.grounded = self.isGrounded()
 
