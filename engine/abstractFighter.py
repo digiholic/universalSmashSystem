@@ -48,6 +48,11 @@ class AbstractFighter():
             css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
             self.css_icon_path = settingsManager.createPath('sprites/icon_unknown.png')
         self.css_icon = spriteManager.ImageSprite(css_icon_path)
+           
+        try:
+            self.sprite_flip = self.xml_data.find('facing').text
+        except:
+            self.sprite_flip = "right"
         
         self.var = {
                 'weight': 100,
@@ -236,7 +241,8 @@ class AbstractFighter():
             scale = float(self.xml_data.find('scale').text)
         except:
             scale = 1.0
-        
+
+            
         if _color == None: _color = self.current_color
         
         
@@ -245,7 +251,8 @@ class AbstractFighter():
                                                   self.default_sprite,
                                                   self.sprite_width,
                                                   self.color_palettes[_color % len(self.color_palettes)],
-                                                  scale)
+                                                  scale,
+                                                  self.sprite_flip)
         self.rect = self.sprite.rect
         
     def initialize(self):
@@ -344,7 +351,9 @@ class AbstractFighter():
         
         #facing right = 1, left = -1
         self.facing = 1
-        if self.sprite.flip == 'left': self.sprite.flipX()
+        if self.sprite_flip == 'left': self.facing = -1
+        
+        print('sprite flip',self.sprite_flip)
         self.unRotate()
     
     def update(self):

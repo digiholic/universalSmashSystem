@@ -69,15 +69,16 @@ class Sprite(pygame.sprite.Sprite):
         
         
 class SpriteHandler(Sprite):
-    def __init__(self,_directory,_prefix,_startingImage,_offset,_colorMap = {},_scale=1.0):
+    def __init__(self,_directory,_prefix,_startingImage,_offset,_colorMap = {},_scale=1.0,_flip="right"):
         Sprite.__init__(self)
         self.color_map = _colorMap
         self.scale_factor = _scale
+        self.flip = _flip
         self.image_library = self.buildImageLibrary(ImageLibrary(_directory,_prefix), _offset)
         
         self.starting_image = _startingImage
         
-        self.flip = "right"
+        
         if not self.starting_image in self.image_library[self.flip]:
             key_list = self.image_library[self.flip].keys()
             self.starting_image = key_list[0] 
@@ -97,6 +98,7 @@ class SpriteHandler(Sprite):
         if self.flip == "right": self.flip = "left"
         else: self.flip = "right"
         self.changed = True
+        print(self.flip)
                 
     def changeImage(self,_newImage,_subImage = 0):
         self.current_sheet = _newImage
@@ -146,8 +148,11 @@ class SpriteHandler(Sprite):
                 img = pygame.transform.flip(img,True,False)
                 flip_list.append(img)
             flipped_library[key] = flip_list
-
-        return {"right": library, "left": flipped_library}
+        
+        if self.flip == "right": reverse = "left"
+        else: reverse = "right"
+        
+        return {self.flip: library, reverse: flipped_library}
         
     def buildSubimage_list(self,_sheet,_offset):
         index = 0
