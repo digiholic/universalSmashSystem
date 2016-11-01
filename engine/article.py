@@ -22,6 +22,7 @@ length - if this article has logic or animation, you can set this to be used in 
 class DynamicArticle():
     def __init__(self,_owner,_sheet,_imgWidth=0,_originPoint=(0,0),_length=1,_spriteRate=0,_startingDirection=0,_draw_depth=1,_tags = []):
         self.owner = _owner
+        self.game_state = self.owner.game_state
 
         self.sprite = spriteManager.SheetSprite(_sheet, _imgWidth)
         self.frame = 0
@@ -178,7 +179,6 @@ class DynamicArticle():
     
         # Evironmental Collision Box
         self.ecb = collisionBox.ECB(self)
-        self.game_state = self.owner.game_state
 
         # Hitboxes and Hurtboxes
         self.active_hitboxes = pygame.sprite.Group()
@@ -267,7 +267,7 @@ class DynamicArticle():
         if 'platform_phase' in self.variables:
             self.platform_phase = self.variables['platform_phase']
         else:
-            self.plastform_phase = 0
+            self.platform_phase = 0
         """ Execute movement and resolve collisions.
         This function is due for a huge overhaul.
         """

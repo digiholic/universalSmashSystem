@@ -48,9 +48,6 @@
 			<changeFighterSpeed>
 				<ySpeed relative="True">0.5</ySpeed>
 			</changeFighterSpeed>
-		</frame>
-
-		<frame number="after">
 			<setVar source="article">
 				<variable source="article">shouldStop</variable>
 				<value>
