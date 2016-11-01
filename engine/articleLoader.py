@@ -150,8 +150,26 @@ class ArticleLoader():
                         frames.remove(frame) #Done with this one
                          
             subactions_at_frame.append(sublist) #Put the list in, whether it's empty or not
+
+        #Interpret frame ranges
+        for frame in frames:
+            if "," in frame.attrib['number'] and frame.attrib['number'].replace(",","").replace(" ","").isdigit():
+                for subact in frame:
+                    if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                        for frame_num in make_tuple(frame.attrib['number']):
+                            subactions_at_frame[frame_num].append(subaction.SubAction.buildFromXml(subact.tag,subact))
+                frames.remove(frame)
+
+        for frame in frames:
+            if "-" in frame.attrib['number'] and frame.attrib['number'].replace("-","").replace(" ","").isdigit():
+                ends = frame.attrib['number'].split("-")
+                for subact in frame:
+                    if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                        for frame_num in range(int(ends[0]), int(ends[1])+1):
+                            subactions_at_frame[frame_num].append(subaction.SubAction.buildFromXml(subact.tag,subact))
+                frames.remove(frame)
         
-        events = dict()
+        event_actions = dict()
         conds = article_xml.findall('conditional')
         conds.extend(article_xml.findall('event'))
         for cond in conds:
@@ -159,7 +177,7 @@ class ArticleLoader():
             for subact in cond:
                 if subaction.subaction_dict.has_key(subact.tag): #Subactions string to class dict
                     event_list.append(subaction.SubAction.buildFromXml(subact.tag,subact))
-            events[cond.attrib['name']] = event_list
+            event_actions[cond.attrib['name']] = event_list
         
         
         collision_actions = dict()
@@ -184,7 +202,7 @@ class ArticleLoader():
         dyn_article.tear_down_actions = tear_down_actions
         dyn_article.actions_on_clank = actions_on_clank
         dyn_article.actions_on_prevail = actions_on_prevail
-        dyn_article.conditional_actions = events
+        dyn_article.events = event_actions
         dyn_article.collision_actions = collision_actions
         if sprite_name: dyn_article.sprite_name = sprite_name
         if sprite_rate: dyn_article.base_sprite_rate = sprite_rate

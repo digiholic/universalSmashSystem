@@ -646,9 +646,9 @@ class AbstractFighter():
         rect = self.sprite.draw(_screen,_offset,_scale)
         if self.mask: self.mask.draw(_screen,_offset,_scale)
         if settingsManager.getSetting('showECB'): 
-            for ecb in self.active_hurtboxes:
-                ecb.draw(_screen,_offset,_scale)
+            self.ecb.draw(_screen,_offset,_scale)
         return rect
+
     ########################################################
     #                 ACTION MANAGEMENT                    #
     ########################################################
@@ -1614,7 +1614,6 @@ class AbstractFighter():
         
         return (direction,magnitude)
     
-    
     def getFacingDirection(self):
         """ A simple function that converts the facing variable into a direction in degrees.
         
@@ -1730,10 +1729,6 @@ class AbstractFighter():
         _hbox : Hitbox
             The hitbox we are checking for
         """
-        
-        #Check for invulnerability first
-        if self.invulnerable > 0 or self.respawn_invulnerable > 0:
-            return False
 
         #If the hitbox belongs to something, get tagged by it
         if not _hbox.owner is None:

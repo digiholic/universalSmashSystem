@@ -1244,7 +1244,7 @@ class modifyFighterVar(SubAction):
                 else: _actor.variables[self.attr] = self.val
             else:
                 if self.relative:
-                    setattr(_actor, self.attr, getattr(_actor, self.attr)+1)
+                    setattr(_actor, self.attr, getattr(_actor, self.attr)+self.val)
                 else: setattr(_actor,self.attr,self.val)
     
     def getPropertiesPanel(self, _root):

@@ -7,6 +7,7 @@ import engine.hitbox as hitbox
 import engine.hurtbox as hurtbox
 import engine.collisionBox as collisionBox
 import subaction
+import numpy
 
 """
 Articles are generated sprites that have their own behavior. For example, projectiles, shields,
@@ -74,6 +75,10 @@ class DynamicArticle():
         
         self.default_vars = {}
         self.variables = {}
+
+    ########################################################
+    #                   UPDATE METHODS                     #
+    ########################################################
         
     def update(self, *args): #Ignores actor
         self.ecb.normalize()
@@ -176,6 +181,7 @@ class DynamicArticle():
         self.facing = self.owner.facing
 
         self.variables = self.default_vars.copy()
+        print(self.variables)
     
         # Evironmental Collision Box
         self.ecb = collisionBox.ECB(self)
@@ -205,63 +211,6 @@ class DynamicArticle():
         self.sprite = None
         if self in self.owner.articles:
             self.owner.articles.remove(self)
-
-    def changeOwner(self, _newOwner):
-        self.owner = _newOwner
-        for hitbox in self.hitboxes.values():
-            hitbox.owner = _newOwner
-
-    def onPrevail(self,_actor,_hitbox,_other):
-        for act in self.actions_on_prevail:
-            act.execute(self,_actor,_hitbox,_other)
-
-    def onClank(self,_actor,_hitbox,_other):
-        for act in self.actions_on_clank:
-            act.execute(self,_actor,_hitbox,_other)
-
-    def draw(self,_screen,_offset,_scale):
-        return self.sprite.draw(_screen, _offset, _scale)
-    
-    def onCollision(self,_other):
-        others_classes = list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]
-        
-        for classKey,subacts in self.collision_actions.iteritems():
-            if (classKey in others_classes):
-                for subact in subacts:
-                    subact.execute(_other,self)
-    
-    """
-    Articles need to know which way they're facing too.
-    """
-    def getForwardWithOffset(self,_offSet = 0):
-        if self.facing == 1:
-            return _offSet
-        else:
-            return 180 - _offSet
-
-    def updatePosition(self):
-        """ Passes the updatePosition call to the sprite.
-        See documentation in SpriteLibrary.updatePosition
-        """
-        return self.sprite.updatePosition(self.posx, self.posy)
-    
-    """
-    Recenter Self on origin point
-    """
-    def recenter(self):
-        self.posx = self.owner.posx + (self.origin_point[0] * self.owner.facing)
-        self.posy = self.owner.posy + self.origin_point[1]
-        self.sprite.rect.center = [self.posx, self.posy]
-        
-    def changeSpriteImage(self,index):
-        self.sprite.getImageAtIndex(index)
-    
-    def activateHitbox(self,_hitbox):
-        self.active_hitboxes.add(_hitbox)
-        _hitbox.activate()
-    
-    def playSound(self,_sound):
-        self.owner.playSound(_sound)
 
     def collisionUpdate(self):
         if 'platform_phase' in self.variables:
@@ -323,6 +272,45 @@ class DynamicArticle():
                 self.ground_elasticity = 0.0
             collisionBox.reflect(self, to_bounce_block)
 
+    def draw(self,_screen,_offset,_scale):
+        if settingsManager.getSetting('showECB'): 
+            self.ecb.draw(_screen,_offset,_scale)
+        return self.sprite.draw(_screen, _offset, _scale)
+
+    """
+    Recenter Self on origin point
+    """
+    def recenter(self):
+        self.posx = self.owner.posx + (self.origin_point[0] * self.owner.facing)
+        self.posy = self.owner.posy + self.origin_point[1]
+        self.sprite.rect.center = [self.posx, self.posy]
+
+    ########################################################
+    #                  EVENT MANAGEMENT                    #
+    ########################################################
+
+    def onPrevail(self,_actor,_hitbox,_other):
+        for act in self.actions_on_prevail:
+            act.execute(self,_actor,_hitbox,_other)
+
+    def onClank(self,_actor,_hitbox,_other):
+        for act in self.actions_on_clank:
+            act.execute(self,_actor,_hitbox,_other)
+    
+    def onCollision(self,_other):
+        others_classes = list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]
+        
+        for classKey,subacts in self.collision_actions.iteritems():
+            if (classKey in others_classes):
+                for subact in subacts:
+                    subact.execute(_other,self)
+
+
+    ########################################################
+    #              COLLISIONS AND MOVEMENT                 #
+    ########################################################
+
+
     def checkGround(self):
         self.updatePosition()
         return collisionBox.checkGround(self, self.game_state.platform_list, True)
@@ -370,6 +358,144 @@ class DynamicArticle():
     def isCeilinged(self):
         self.updatePosition()
         return collisionBox.isCeilinged(self, self.game_state.platform_list, True)
+
+    def setSpeed(self,_speed,_direction):
+        """ Set the article's speed. Instead of modifying the change_x and change_y values manually,
+        this will calculate what they should be set at if you want to give a direction and
+        magnitude instead.
+        
+        Parameters
+        -----------
+        _speed : float
+            The total speed you want the fighter to move
+        _direction : int
+            The angle of the speed vector in degrees, 0 being right, 90 being up, 180 being left.
+        """
+        (x,y) = getXYFromDM(_direction,_speed)
+        self.change_x = x
+        self.change_y = y
+
+    ########################################################
+    #              ANIMATION FUNCTIONS                     #
+    ########################################################
+
+    def rotateSprite(self,_direction):
+        """ Rotate's the fighter's sprite a given number of degrees
+        
+        Parameters
+        -----------
+        _direction : int
+            The degrees to rotate towards. 0 being forward, 90 being up
+        """
+        self.sprite.rotate(-1 * (90 - _direction)) 
+        
+    def unRotate(self):
+        """ Resets rotation to it's proper, straight upwards value """
+        self.sprite.rotate()
+
+    def changeSpriteImage(self,index):
+        self.sprite.getImageAtIndex(index)
+
+    def updatePosition(self):
+        """ Passes the updatePosition call to the sprite.
+        See documentation in SpriteLibrary.updatePosition
+        """
+        return self.sprite.updatePosition(self.posx, self.posy)
+    
+    ########################################################
+    #                 COMBAT FUNCTIONS                     #
+    ########################################################
+    
+    def applySubactions(self, _subacts):
+        for subact in _subacts:
+            subact.execute(self.current_action, self)
+        return True # Our hit filter stuff expects this
+
+    def changeOwner(self, _newOwner):
+        self.owner = _newOwner
+        for hitbox in self.hitboxes.values():
+            hitbox.owner = _newOwner
+        
+    def activateHitbox(self,_hitbox):
+        self.active_hitboxes.add(_hitbox)
+        _hitbox.activate()
+
+    def activateHurtbox(self,_hurtbox):
+        """ Activates a hurtbox, adding it to your active_hurtboxes list.
+        _hurtbox : Hurtbox
+            The hitbox to activate
+        """
+        self.active_hurtboxes.add(_hurtbox)
+
+    ########################################################
+    #                 HELPER FUNCTIONS                     #
+    ########################################################
+    
+    """
+    Articles need to know which way they're facing too.
+    """
+    def getForwardWithOffset(self,_offSet = 0):
+        if self.facing == 1:
+            return _offSet
+        else:
+            return 180 - _offSet
+
+    
+    def getDirectionMagnitude(self):
+        """ Converts the fighter's current speed from XY components into
+        a Direction and Magnitude. Angles are in degrees, with 0 being forward
+        
+        Return
+        -----------
+        (direction,magnitude) : Tuple (int,float)
+            The direction in degrees, and the magnitude in map uints
+        """
+        if self.change_x == 0:
+            magnitude = self.change_y
+            direction = 90 if self.change_y < 0 else 270
+            return (direction,magnitude)
+        if self.change_y == 0:
+            magnitude = self.change_x
+            direction = 0 if self.change_x > 0 else 180
+            return(direction,magnitude)
+        
+        direction = math.degrees(math.atan2(-self.change_y, self.change_x))
+        direction = round(direction)
+        magnitude = numpy.linalg.norm([self.change_x, self.change_y])
+        
+        return (direction,magnitude) 
+
+    def getFacingDirection(self):
+        """ A simple function that converts the facing variable into a direction in degrees.
+        
+        Return
+        -----------
+        The direction the fighter is facing in degrees, zero being right, 90 being up
+        """
+        if self.facing == 1: return 0
+        else: return 180
+
+    def flip(self):
+        """ Flip the fighter so he is now facing the other way.
+        Also flips the sprite for you.
+        """
+        self.facing = -self.facing
+        self.sprite.flipX()
+
+    def getForwardBackwardKeys(self):
+        """ This returns a tuple of the key for forward, then backward
+        Useful for checking if the fighter is pivoting, or doing a back air, or getting the
+        proper key to dash-dance, etc.
+        
+        The best way to use this is something like
+        (key,invkey) = actor.getForwardBackwardKeys()
+        which will assign the variable "key" to the forward key, and "invkey" to the backward key.
+        """
+        if self.facing == 1: return ('right','left')
+        else: return ('left','right')
+
+    def playSound(self,_sound):
+        self.owner.playSound(_sound)
           
 class Article():
     def __init__(self, _spritePath, _owner, _origin, _length=1, _draw_depth = 1):

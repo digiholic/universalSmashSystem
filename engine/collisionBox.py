@@ -16,6 +16,8 @@ def checkGround(_object, _objectList, _checkVelocity=True):
         if block.solid or (_object.platform_phase <= 0):
             if _object.ecb.current_ecb.rect.bottom <= block.rect.top+4 and (not _checkVelocity or (hasattr(_object, 'change_y') and hasattr(block, 'change_y') and _object.change_y > block.change_y-1)):
                 ground_block.add(block)
+            else:
+                print(_object.ecb.current_ecb.rect.bottom, block.rect.top+4)
     return ground_block
 
 def checkLeftWall(_object, _objectList, _checkVelocity=True):

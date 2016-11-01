@@ -8,7 +8,7 @@
 		<facing_direction>1</facing_direction>
 		<tags><reflectable /><collides /><bounces /></tags>
 		<vars>
-			<shouldStop type="bool">True</shouldStop>
+			<shouldStop type="bool">False</shouldStop>
 			<elasticity type="float">1.0</elasticity>
 			<ground_elasticity type="float">0.0</ground_elasticity>
 		</vars>
@@ -30,7 +30,6 @@
 			<changeFighterSpeed>
 				<xSpeed relative="True">24</xSpeed>
 			</changeFighterSpeed>
-			
 			<activateHitbox>SplatHitbox</activateHitbox>
 		</setUp>
 		
@@ -48,8 +47,14 @@
 			<changeFighterSpeed>
 				<ySpeed relative="True">0.5</ySpeed>
 			</changeFighterSpeed>
+			<rotateSprite>
+				<eval scope="article">getDirectionMagnitude()[0]</eval>
+			</rotateSprite>
+		</frame>
+
+		<frame number="after">
 			<setVar source="article">
-				<variable source="article">shouldStop</variable>
+				<variable>shouldStop</variable>
 				<value>
 					<function>
 						<functionName source="article">isGrounded</functionName>
