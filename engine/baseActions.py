@@ -2237,7 +2237,7 @@ def helplessControl(_actor):
 def grabLedges(_actor):
     # Check if we're colliding with any ledges.
     if not _actor.ledge_lock: #If we're not allowed to re-grab, don't bother calculating
-        ledge_hit_list = pygame.sprite.spritecollide(_actor, _actor.game_state.platform_ledges, False)
+        ledge_hit_list = pygame.sprite.spritecollide(_actor.ecb.current_ecb, _actor.game_state.platform_ledges, False)
         for ledge in ledge_hit_list:
             # Don't grab any ledges if the _actor is holding down
             if _actor.keysContain('down') is False:

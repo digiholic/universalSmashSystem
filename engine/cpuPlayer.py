@@ -66,8 +66,8 @@ class CPUplayer(controller.Controller):
 
     def ducklingTargeting(self):
         opposing_players = filter(lambda k: k != self.fighter, self.fighter.players)
-        opposing_dists = map(lambda x: self.getPathDistance((self.fighter.posx, self.fighter.posy), x.rect.center), opposing_players)
-        return opposing_players[opposing_dists.index(min(opposing_dists))].rect.center
+        opposing_dists = map(lambda x: self.getPathDistance((self.fighter.posx, self.fighter.posy), x.sprite.rect.center), opposing_players)
+        return opposing_players[opposing_dists.index(min(opposing_dists))].sprite.rect.center
 
     def ledgeTargeting(self):
         ledge_points = map(lambda x: [x.rect.left-self.fighter.sprite.bounding_rect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.bounding_rect.width/2.0, x.rect.bottom+self.fighter.sprite.bounding_rect.height/2.0], self.fighter.game_state.platform_ledges)

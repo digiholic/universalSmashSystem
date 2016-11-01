@@ -72,37 +72,37 @@ def checkCeiling(_object, _objectList, _checkVelocity=True):
 
 def isGrounded(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
-    _object.ecb.current_ecb.rect.y += 4
+    _object.ecb.current_ecb.rect.y += 8
     collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
-    _object.ecb.current_ecb.rect.y -= 4
+    _object.ecb.current_ecb.rect.y -= 8
     for block in block_hit_list:
         if block.solid or (_object.platform_phase <= 0):
-            if _object.ecb.current_ecb.rect.bottom <= block.rect.top+4 and (not _checkVelocity or (hasattr(_object, 'change_y') and hasattr(block, 'change_y') and _object.change_y > block.change_y-1)):
+            if _object.ecb.current_ecb.rect.bottom <= block.rect.top+8 and (not _checkVelocity or (hasattr(_object, 'change_y') and hasattr(block, 'change_y') and _object.change_y > block.change_y-1)):
                 return True
     return False
 
 def isLeftWalled(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
-    _object.ecb.current_ecb.rect.x -= 4
+    _object.ecb.current_ecb.rect.x -= 8
     collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
-    _object.ecb.current_ecb.rect.x += 4
+    _object.ecb.current_ecb.rect.x += 8
     for block in block_hit_list:
         if block.solid:
-            if _object.ecb.current_ecb.rect.left >= block.rect.right-4 and (not _checkVelocity or (hasattr(_object, 'change_x') and hasattr(block, 'change_x') and _object.change_x < block.change_x+1)):
+            if _object.ecb.current_ecb.rect.left >= block.rect.right-8 and (not _checkVelocity or (hasattr(_object, 'change_x') and hasattr(block, 'change_x') and _object.change_x < block.change_x+1)):
                 return True
     return False
 
 def isRightWalled(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
-    _object.ecb.current_ecb.rect.x += 4
+    _object.ecb.current_ecb.rect.x += 8
     collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
-    _object.ecb.current_ecb.rect.x -= 4
+    _object.ecb.current_ecb.rect.x -= 8
     for block in block_hit_list:
         if block.solid:
-            if _object.ecb.current_ecb.rect.right <= block.rect.left+4 and (not _checkVelocity or (hasattr(_object, 'change_x') and hasattr(block, 'change_x') and _object.change_x > block.change_x-1)):
+            if _object.ecb.current_ecb.rect.right <= block.rect.left+8 and (not _checkVelocity or (hasattr(_object, 'change_x') and hasattr(block, 'change_x') and _object.change_x > block.change_x-1)):
                 return True
     return False
 
@@ -120,13 +120,13 @@ def isFrontWalled(_object, _objectList, _checkVelocity=True):
 
 def isCeilinged(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
-    _object.ecb.current_ecb.rect.y -= 4
+    _object.ecb.current_ecb.rect.y -= 8
     collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
-    _object.ecb.current_ecb.rect.y += 4
+    _object.ecb.current_ecb.rect.y += 8
     for block in block_hit_list:
         if block.solid:
-            if _object.ecb.current_ecb.rect.top >= block.rect.bottom-4 and (not _checkVelocity or (hasattr(_object, 'change_y') and hasattr(block, 'change_y') and _object.change_y < block.change_y+1)):
+            if _object.ecb.current_ecb.rect.top >= block.rect.bottom-8 and (not _checkVelocity or (hasattr(_object, 'change_y') and hasattr(block, 'change_y') and _object.change_y < block.change_y+1)):
                 return True
     return False
 
@@ -276,6 +276,7 @@ class ECB():
         self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
 
         self.original_size = self.current_ecb.rect.size
+        self.tracking_rect = self.current_ecb.rect.copy()
 
         self.previous_ecb = spriteManager.RectSprite(self.current_ecb.rect.copy(), pygame.Color('#EA6F1C'))
         
@@ -304,6 +305,7 @@ class ECB():
     """
     def store(self):
         self.previous_ecb = spriteManager.RectSprite(self.current_ecb.rect,pygame.Color('#EA6F1C'))
+        self.tracking_rect.center = self.actor.posx, self.actor.posy
     
     """
     Set the ECB's height and width to the sprite's, and centers it

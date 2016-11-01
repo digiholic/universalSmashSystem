@@ -96,7 +96,7 @@ class Battle():
                 fighter.ecb.store()
                 fighter.posy += fighter.ecb.current_ecb.rect.height/2.0
                 fighter.players = self.players
-                self.stage.follows.append(fighter.sprite.rect)
+                self.stage.follows.append(fighter.ecb.tracking_rect)
                 log = DataLog()
                 self.data_logs.append(log)
                 fighter.data_log = log
@@ -224,21 +224,24 @@ class Battle():
         self.checkHitboxHits()
 
         for fight in self.current_fighters:
-            if fight.rect.right < self.stage.blast_line.left or fight.rect.left > self.stage.blast_line.right or fight.rect.top > self.stage.blast_line.bottom or fight.rect.bottom < self.stage.blast_line.top:
+            if fight.ecb.current_ecb.rect.right < self.stage.blast_line.left or fight.ecb.current_ecb.rect.left > self.stage.blast_line.right or fight.ecb.current_ecb.rect.top > self.stage.blast_line.bottom or fight.ecb.current_ecb.rect.bottom < self.stage.blast_line.top:
                 if not self.track_stocks:
                     # Get score
                     fight.die()
                 else:
                     fight.stocks -= 1
+
+                    self.stage.follows.remove(fight.ecb.tracking_rect)
                     print(fight.stocks)
                     if fight.stocks == 0:
                         fight.die(False)
                         self.current_fighters.remove(fight)
-                        self.stage.follows.remove(fight.rect)
                         #If someone's eliminated and there's 1 or fewer people left
                         if len(self.current_fighters) < 2:
                             self.exit_status = 2 #Game set
-                    else: fight.die()
+                    else: 
+                        fight.die()
+                        self.stage.follows.append(fight.ecb.tracking_rect)
         # End object updates
         self.draw()
         pygame.display.update()

@@ -49,6 +49,7 @@ class DynamicArticle():
         
         self.hitboxes = {}
         self.hitbox_locks = {}
+        self.hurtboxes = {}
         
         self.actions_at_frame = [[]]
         self.actions_before_frame = []
@@ -82,6 +83,11 @@ class DynamicArticle():
             hbox.article = self
             if hbox not in self.owner.active_hitboxes:
                 self.owner.active_hitboxes.add(hbox)
+        for hbox in self.active_hurtboxes:
+            hbox.owner = self.owner
+            hbox.article = self
+            if hbox not in self.owner.active_hurtboxes:
+                self.owner.active_hurtboxes.add(hbox)
 
         if self.sprite_rate is not 0:
             if self.sprite_rate < 0:
@@ -110,6 +116,8 @@ class DynamicArticle():
 
         for hitbox in self.hitboxes.values():
             hitbox.update()
+        for hurtbox in self.hurtboxes.values():
+            hurtbox.update()
             
         for act in self.actions_after_frame:
             act.execute(self,self)
@@ -122,6 +130,17 @@ class DynamicArticle():
         animation_actions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition,
                             subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox, 
                             subaction.activateHurtbox, subaction.deactivateHurtbox, subaction.modifyHurtbox)
+
+        for hbox in self.active_hitboxes:
+            hbox.owner = self.owner
+            hbox.article = self
+            if hbox not in self.owner.active_hitboxes:
+                self.owner.active_hitboxes.add(hbox)
+        for hbox in self.active_hurtboxes:
+            hbox.owner = self.owner
+            hbox.article = self
+            if hbox not in self.owner.active_hurtboxes:
+                self.owner.active_hurtboxes.add(hbox)
         for act in self.actions_before_frame:
             if isinstance(act, animation_actions):
                 act.execute(self,self)
@@ -159,6 +178,7 @@ class DynamicArticle():
     
         # Evironmental Collision Box
         self.ecb = collisionBox.ECB(self)
+        self.game_state = self.owner.game_state
 
         # Hitboxes and Hurtboxes
         self.active_hitboxes = pygame.sprite.Group()
@@ -176,9 +196,13 @@ class DynamicArticle():
     def deactivate(self):
         for hitbox in self.hitboxes.values():
             hitbox.kill()
+        for hurtbox in self.hurtboxes.values():
+            hurtbox.kill()
         for act in self.tear_down_actions:
             act.execute(self,self)
+        self.ecb = None
         self.sprite.kill()
+        self.sprite = None
         if self in self.owner.articles:
             self.owner.articles.remove(self)
 
@@ -240,6 +264,10 @@ class DynamicArticle():
         self.owner.playSound(_sound)
 
     def collisionUpdate(self):
+        if 'platform_phase' in self.variables:
+            self.platform_phase = self.variables['platform_phase']
+        else:
+            self.plastform_phase = 0
         """ Execute movement and resolve collisions.
         This function is due for a huge overhaul.
         """
@@ -249,7 +277,7 @@ class DynamicArticle():
             self.updatePosition()
             self.ecb.normalize()
             bumped = False
-            block_hit_list = collisionBox.getSizeCollisionsWith(self, self.owner.game_state.platform_list)
+            block_hit_list = collisionBox.getSizeCollisionsWith(self, self.game_state.platform_list)
             if not block_hit_list:
                 break
             for block in block_hit_list:
@@ -272,7 +300,7 @@ class DynamicArticle():
 
         self.updatePosition()
         self.ecb.normalize()
-        block_hit_list = collisionBox.getMovementCollisionsWith(self, self.owner.game_state.platform_list)
+        block_hit_list = collisionBox.getMovementCollisionsWith(self, self.game_state.platform_list)
         for block in block_hit_list:
             if self.ecb.pathRectIntersects(block.rect, self.change_x, self.change_y) > 0 and self.ecb.pathRectIntersects(block.rect, self.change_x, self.change_y) < t and collisionBox.catchMovement(self, block, self.platform_phase > 0): 
                 t = self.ecb.pathRectIntersects(block.rect, self.change_x, self.change_y)
@@ -288,62 +316,60 @@ class DynamicArticle():
             if 'elasticity' in self.variables:
                 self.elasticity = self.variables['elasticity']
             else:
-                print("Couldn't find elasticity, using 0")
                 self.elasticity = 0.0
             if 'ground_elasticity' in self.variables:
                 self.ground_elasticity = self.variables['ground_elasticity']
             else:
-                print("Couldn't find ground elasticity, using 0")
                 self.ground_elasticity = 0.0
             collisionBox.reflect(self, to_bounce_block)
 
     def checkGround(self):
         self.updatePosition()
-        return collisionBox.checkGround(self, self.owner.game_state.platform_list, True)
+        return collisionBox.checkGround(self, self.game_state.platform_list, True)
 
     def checkLeftWall(self):
         self.updatePosition()
-        return collisionBox.checkLeftWall(self, self.owner.game_state.platform_list, True)
+        return collisionBox.checkLeftWall(self, self.game_state.platform_list, True)
 
     def checkRightWall(self):
         self.updatePosition()
-        return collisionBox.checkRightWall(self, self.owner.game_state.platform_list, True)
+        return collisionBox.checkRightWall(self, self.game_state.platform_list, True)
 
     def checkBackWall(self):
         self.updatePosition()
-        return collisionBox.checkBackWall(self, self.owner.game_state.platform_list, True)
+        return collisionBox.checkBackWall(self, self.game_state.platform_list, True)
 
     def checkFrontWall(self):
         self.updatePosition()
-        return collisionBox.checkFrontWall(self, self.owner.game_state.platform_list, True)
+        return collisionBox.checkFrontWall(self, self.game_state.platform_list, True)
 
     def checkCeiling(self):
         self.updatePosition()
-        return collisionBox.checkCeiling(self, self.owner.game_state.platform_list, True)
+        return collisionBox.checkCeiling(self, self.game_state.platform_list, True)
 
     def isGrounded(self):
         self.updatePosition()
-        return collisionBox.isGrounded(self, self.owner.game_state.platform_list, True)
+        return collisionBox.isGrounded(self, self.game_state.platform_list, True)
 
     def isLeftWalled(self):
         self.updatePosition()
-        return collisionBox.isLeftWalled(self, self.owner.game_state.platform_list, True)
+        return collisionBox.isLeftWalled(self, self.game_state.platform_list, True)
 
     def isRightWalled(self):
         self.updatePosition()
-        return collisionBox.isRightWalled(self, self.owner.game_state.platform_list, True)
+        return collisionBox.isRightWalled(self, self.game_state.platform_list, True)
 
     def isBackWalled(self):
         self.updatePosition()
-        return collisionBox.isBackWalled(self, self.owner.game_state.platform_list, True)
+        return collisionBox.isBackWalled(self, self.game_state.platform_list, True)
 
     def isFrontWalled(self):
         self.updatePosition()
-        return collisionBox.isFrontWalled(self, self.owner.game_state.platform_list, True)
+        return collisionBox.isFrontWalled(self, self.game_state.platform_list, True)
 
     def isCeilinged(self):
         self.updatePosition()
-        return collisionBox.isCeilinged(self, self.owner.game_state.platform_list, True)
+        return collisionBox.isCeilinged(self, self.game_state.platform_list, True)
           
 class Article():
     def __init__(self, _spritePath, _owner, _origin, _length=1, _draw_depth = 1):

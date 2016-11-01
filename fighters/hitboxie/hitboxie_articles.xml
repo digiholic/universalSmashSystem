@@ -9,6 +9,8 @@
 		<tags><reflectable /><collides /><bounces /></tags>
 		<vars>
 			<shouldStop type="bool">True</shouldStop>
+			<elasticity type="float">1.0</elasticity>
+			<ground_elasticity type="float">0.0</ground_elasticity>
 		</vars>
 		
 		<setUp>
@@ -28,12 +30,6 @@
 			<changeFighterSpeed>
 				<xSpeed relative="True">24</xSpeed>
 			</changeFighterSpeed>
-			<setFighterVar attr="elasticity">
-				<val type="float">0.8</val>
-			</setFighterVar>
-			<setFighterVar attr="ground_elasticity">
-				<val type="float">0.0</val>
-			</setFighterVar>
 			
 			<activateHitbox>SplatHitbox</activateHitbox>
 		</setUp>
@@ -52,15 +48,18 @@
 			<changeFighterSpeed>
 				<ySpeed relative="True">0.5</ySpeed>
 			</changeFighterSpeed>
+		</frame>
+
+		<frame number="after">
 			<setVar source="article">
-				<variable>shouldStop</variable>
+				<variable source="article">shouldStop</variable>
 				<value>
 					<function>
 						<functionName source="article">isGrounded</functionName>
 					</function>
 				</value>
 			</setVar>
-			<if function="==">
+			<if function="true">
 				<variable source="article">shouldStop</variable>
 				<value type="boolean">True</value>
 				<pass>stop</pass>

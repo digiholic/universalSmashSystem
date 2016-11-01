@@ -478,6 +478,14 @@ class If(SubAction):
             function = lambda var,val: var > val
         elif self.function == '<':
             function = lambda var,val: var < val
+        elif self.function == 'is':
+            function = lambda var,val: var is val
+        elif self.function == 'is not':
+            function = lambda var,val: var is not val
+        elif self.function == 'true':
+            function = lambda var,val: bool(var)
+        elif self.function == 'false':
+            function = lambda var,val: not bool(var)
             
         cond = function(variable,self.value)
         if cond:

@@ -445,7 +445,7 @@ class ViewerPanel(BuilderPanel):
         self.screen.fill(pygame.Color("pink"))
         if fighter:
             fighter.mask = None #These don't work inside of the builder
-            fighter.draw(self.screen, fighter.rect.topleft, self.scale)
+            fighter.draw(self.screen, fighter.sprite.rect.topleft, self.scale)
             for hbox in fighter.active_hitboxes:
                 hbox.draw(self.screen,hbox.rect.topleft,self.scale)        
             
@@ -457,8 +457,7 @@ class ViewerPanel(BuilderPanel):
         
         fighter.posx = self.screen.get_rect().centerx + self.center[0]
         fighter.posy = self.screen.get_rect().centery + self.center[1]
-        fighter.rect.centerx = self.screen.get_rect().centerx + self.center[0]
-        fighter.rect.centery = self.screen.get_rect().centery + self.center[1]
+        fighter.updatePosition()
     
     def reloadFrame(self):
         global fighter

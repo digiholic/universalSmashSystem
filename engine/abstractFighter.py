@@ -260,7 +260,6 @@ class AbstractFighter():
         #TODO: The ECB crashes unless there is a sprite to pull from, so we load this one even though it'll never actually be drawn
         spriteName = self.sprite_prefix + self.default_sprite + '.png'
         self.sprite = spriteManager.SheetSprite(os.path.join(self.base_dir,self.sprite_directory,spriteName), self.sprite_width)
-        self.rect = self.sprite.rect
         
         try:
             if self.action_file.endswith('.py'):
@@ -359,7 +358,6 @@ class AbstractFighter():
                                                   self.sprite_width,
                                                   self.color_palettes[_color % len(self.color_palettes)],
                                                   scale)
-        self.rect = self.sprite.rect
     
     def initialize(self):
         """ This method is called when shit gets real. It creates the collision box, sprite library,
@@ -461,7 +459,7 @@ class AbstractFighter():
         
         # Allow ledge re-grabs if we've vacated a ledge
         if self.ledge_lock:
-            ledges = pygame.sprite.spritecollide(self, self.game_state.platform_ledges, False)
+            ledges = pygame.sprite.spritecollide(self.ecb.current_ecb, self.game_state.platform_ledges, False)
             if len(ledges) == 0: # If we've cleared out of all of the ledges
                 self.ledge_lock = False
         
@@ -526,14 +524,18 @@ class AbstractFighter():
         self.updatePosition()
         self.ecb.normalize()
 
-        self.grounded = self.isGrounded()
-
         # Move with the platform
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, self.checkGround(), None)
-        if not block is None:
+        if not block is None and self.ecb.current_ecb.rect.centerx > block.rect.left and self.ecb.current_ecb.rect.centerx < block.rect.right:
             self.jumps = self.stats['jumps']
             self.posx += block.change_x
+            if self.ecb.current_ecb.rect.bottom > block.rect.top:
+                self.posy += block.rect.top - self.ecb.current_ecb.rect.bottom-block.change_y
+            if self.change_y > block.change_y:
+                self.change_y = block.change_y
             self.change_y -= self.stats['gravity'] * settingsManager.getSetting('gravity')
+
+        self.grounded = self.isGrounded()
 
         if to_bounce_block is not None:
             collisionBox.reflect(self, to_bounce_block)
@@ -640,7 +642,7 @@ class AbstractFighter():
         self.ecb.normalize()
 
     def draw(self,_screen,_offset,_scale):
-        if (settingsManager.getSetting('showSpriteArea')): spriteManager.RectSprite(self.rect).draw(_screen, _offset, _scale)
+        if (settingsManager.getSetting('showSpriteArea')): spriteManager.RectSprite(self.sprite.rect).draw(_screen, _offset, _scale)
         rect = self.sprite.draw(_screen,_offset,_scale)
         if self.mask: self.mask.draw(_screen,_offset,_scale)
         if settingsManager.getSetting('showECB'): 
@@ -1050,8 +1052,6 @@ class AbstractFighter():
         """ Passes the updatePosition call to the sprite.
         See documentation in SpriteLibrary.updatePosition
         """
-        self.rect.centerx = self.posx
-        self.rect.centery = self.posy
         return self.sprite.updatePosition(self.posx, self.posy)
     
     ########################################################
@@ -1551,6 +1551,7 @@ class AbstractFighter():
                 self.articles.append(next_hit_article)
             self.onRespawn()
             (self.posx, self.posy) = self.game_state.spawn_locations[self.player_num]
+            self.posy += self.ecb.current_ecb.rect.height/2.0
             self.posy -= 200
             self.updatePosition()
             self.ecb.normalize()
