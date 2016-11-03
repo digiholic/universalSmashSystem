@@ -4,14 +4,13 @@ import math
 import random
 import settingsManager
 import engine.hitbox as hitbox
-import engine.hurtbox as hurtbox
 import engine.collisionBox as collisionBox
 import subaction
 import numpy
 
 """
-Articles are generated sprites that have their own behavior. For example, projectiles, shields,
-particles, and all sorts of other sprites.
+Articles are objects subordinate to a fighter that have their own behavior. For example, projectiles, shields,
+particles, and all sorts of other objects. 
 
 spritePath - the path to the image that the article uses.
 owner - the fighter that "owns" the article. Can be None.
@@ -37,7 +36,6 @@ class DynamicArticle():
         self.starting_direction = _startingDirection
         self.facing = _startingDirection
         self.tags = _tags
-        self.variables = dict()
 
         #These determine the size and shape of the fighter's ECB
         #Keep these at 0 to make it fit the sprite
@@ -51,7 +49,6 @@ class DynamicArticle():
         
         self.hitboxes = {}
         self.hitbox_locks = {}
-        self.hurtboxes = {}
         
         self.actions_at_frame = [[]]
         self.actions_before_frame = []
@@ -65,8 +62,6 @@ class DynamicArticle():
         self.collision_actions = dict()
         
         self.active_hitboxes = pygame.sprite.Group()
-        self.active_hurtboxes = pygame.sprite.Group()
-        self.auto_hurtbox = hurtbox.Hurtbox(self)
         self.ecb = collisionBox.ECB(self)
 
         self.platform_phase = 0
@@ -89,11 +84,6 @@ class DynamicArticle():
             hbox.article = self
             if hbox not in self.owner.active_hitboxes:
                 self.owner.active_hitboxes.add(hbox)
-        for hbox in self.active_hurtboxes:
-            hbox.owner = self.owner
-            hbox.article = self
-            if hbox not in self.owner.active_hurtboxes:
-                self.owner.active_hurtboxes.add(hbox)
 
         if self.sprite_rate is not 0:
             if self.sprite_rate < 0:
@@ -122,8 +112,6 @@ class DynamicArticle():
 
         for hitbox in self.hitboxes.values():
             hitbox.update()
-        for hurtbox in self.hurtboxes.values():
-            hurtbox.update()
             
         for act in self.actions_after_frame:
             act.execute(self,self)
@@ -134,19 +122,13 @@ class DynamicArticle():
 
     def updateAnimationOnly(self, *args): #Ignores actor
         animation_actions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition,
-                            subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox, 
-                            subaction.activateHurtbox, subaction.deactivateHurtbox, subaction.modifyHurtbox)
+                            subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox)
 
         for hbox in self.active_hitboxes:
             hbox.owner = self.owner
             hbox.article = self
             if hbox not in self.owner.active_hitboxes:
                 self.owner.active_hitboxes.add(hbox)
-        for hbox in self.active_hurtboxes:
-            hbox.owner = self.owner
-            hbox.article = self
-            if hbox not in self.owner.active_hurtboxes:
-                self.owner.active_hurtboxes.add(hbox)
         for act in self.actions_before_frame:
             if isinstance(act, animation_actions):
                 act.execute(self,self)
@@ -170,8 +152,6 @@ class DynamicArticle():
 
         for hitbox in self.hitboxes.values():
             hitbox.update()
-        for hurtbox in self.hurtboxes.values():
-            hurtbox.update()
                 
         self.frame += 1      
     
@@ -186,10 +166,8 @@ class DynamicArticle():
         # Evironmental Collision Box
         self.ecb = collisionBox.ECB(self)
 
-        # Hitboxes and Hurtboxes
+        # Hitboxes
         self.active_hitboxes = pygame.sprite.Group()
-        self.active_hurtboxes = pygame.sprite.Group()
-        self.auto_hurtbox = hurtbox.Hurtbox(self)
         
         self.change_x = 0
         self.change_y = 0
@@ -202,8 +180,6 @@ class DynamicArticle():
     def deactivate(self):
         for hitbox in self.hitboxes.values():
             hitbox.kill()
-        for hurtbox in self.hurtboxes.values():
-            hurtbox.kill()
         for act in self.tear_down_actions:
             act.execute(self,self)
         self.ecb = None
@@ -419,13 +395,6 @@ class DynamicArticle():
     def activateHitbox(self,_hitbox):
         self.active_hitboxes.add(_hitbox)
         _hitbox.activate()
-
-    def activateHurtbox(self,_hurtbox):
-        """ Activates a hurtbox, adding it to your active_hurtboxes list.
-        _hurtbox : Hurtbox
-            The hitbox to activate
-        """
-        self.active_hurtboxes.add(_hurtbox)
 
     ########################################################
     #                 HELPER FUNCTIONS                     #

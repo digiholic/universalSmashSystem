@@ -85,8 +85,10 @@ class AbstractFighter():
     
     active_hitboxes = None #pygame.sprite.Group()
     articles = None #list()
+    status_effects = None #list()
     active_hurtboxes = None #pygame.sprite.Group()
     auto_hurtbox = None
+    armor = None
     
     shield = False
     shield_integrity = 100    
@@ -139,7 +141,6 @@ class AbstractFighter():
     hitstop_pos = (0,0)
         
     custom_timers = list()
-    armor = list()
     
     current_color = 0
     current_costume = 0
@@ -374,6 +375,7 @@ class AbstractFighter():
         self.key_bindings.linkObject(self)
         
         self.articles = list()
+        self.status_effects = list()
     
         if self.sound_path:
             settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
@@ -417,6 +419,7 @@ class AbstractFighter():
         self.active_hitboxes = pygame.sprite.Group()
         self.active_hurtboxes = pygame.sprite.Group()
         self.auto_hurtbox = hurtbox.Hurtbox(self)
+        self.armor = dict()
         
         self.hitbox_lock = weakref.WeakSet()
         
@@ -548,12 +551,10 @@ class AbstractFighter():
         """
         if self.mask:self.mask = self.mask.update()
         
-        #reset the flash if you're still invulnerable
-        if not self.mask and (self.respawn_invulnerable > 0 or self.invulnerable > 0):
-            self.createMask([255,255,255], max(self.respawn_invulnerable,self.invulnerable), True, 12)
-        
         for art in self.articles:
             art.update()
+        for stat in self.status_effects:
+            stat.update()
         
         
     def timerUpdate(self):
@@ -564,10 +565,6 @@ class AbstractFighter():
         self.tech_window = max(0,self.tech_window-1)
         self.shield_integrity = min(100,self.shield_integrity+0.15)
         self.platform_phase = max(0,self.platform_phase-1)
-        
-        #QUESTION: Why -1000?
-        self.invulnerable = max(-1000,self.invulnerable-1)
-        self.respawn_invulnerable = max(-1000,self.invulnerable-1)
         
         finished_timers = []
         for timer in self.custom_timers:
@@ -635,9 +632,6 @@ class AbstractFighter():
             self.posx += block.change_x
 
         self.updatePosition()
-
-        if self.invulnerable > -1000:
-            self.invulnerable -= 1
 
         if self.platform_phase > 0:
             self.platform_phase -= 1

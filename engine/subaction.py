@@ -1,5 +1,6 @@
 import engine.hitbox
 import engine.hurtbox
+import engine.statusEffect
 import baseActions
 import pygame.color
 import builder.subactionSelector as subactionSelector
@@ -11,7 +12,6 @@ import settingsManager
 TODO -
     EnableAction
     DisableAction
-    SetArmor
     SetTimer
 """
 
@@ -1129,7 +1129,8 @@ class setInvulnerability(SubAction):
     
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        _actor.invulnerable = self.invuln_amt
+        apply_effect = engine.TemporaryHitFilter(_actor,engine.hurtbox.Intangibility(_actor),self.invuln_amt)
+        apply_effect.activate()
     
     def getDisplayName(self):
         return "Set invulnerability time to "+str(self.invuln_amt)
@@ -1807,6 +1808,203 @@ class deactivateHurtbox(SubAction):
     def getDisplayName(self):
         return 'Deactivate Hurtbox: ' + self.hurtbox_name
 
+class createArmor(SubAction):
+    subact_group = 'Armor'
+    
+    def __init__(self, _name='', _armorType='hyper', _hurtbox='', _variables={}):
+        SubAction.__init__(self)
+        
+        self.armor_name = _name
+        self.armor_type = _armorType if _armorType is not None else "hyper"
+        self.hurtbox = _hurtbox
+        self.armor_vars = _variables
+        
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+
+        if self.armor_name == '': return
+        
+        #Create the armor of the right type    
+        if self.armor_type == "hyper":
+            armor = engine.hurtbox.HyperArmor(_actor,self.armor_vars)
+        elif self.armor_type == "super":
+            armor = engine.hurtbox.SuperArmor(_actor,self.armor_vars)
+        elif self.armor_type == "heavy":
+            armor = engine.hurtbox.HeavyArmor(_actor,self.armor_vars)
+        elif self.armor_type == "invulnerable":
+            armor = engine.hurtbox.Invulnerability(_actor,self.armor_vars)
+        elif self.armor_type == "intangible":
+            armor = engine.hurtbox.Intangibility(_actor,self.armor_vars)
+        elif self.armor_type == "cumulative":
+            armor = engine.hurtbox.CumulativeArmor(_actor,self.armor_vars)
+            
+        if self.hurtbox is not '' and _action is not None:
+            _action.hurtbox[self.hurtbox_name].armor[self.armor_name] = armor
+        else:
+            _actor.armor[self.armor_name] = armor
+    
+    def getDisplayName(self):
+        return 'Add ' + self.armor_type + ' armor to ' + self.hurtbox if self.hurtbox is not '' else 'the fighter'
+    
+    def getPropertiesPanel(self, _root):
+        return subactionSelector.ModifyArmorProperties(_root,self,newArmor=True)
+       
+    def getXmlElement(self):
+        elem = ElementTree.Element('createArmor')
+        elem.attrib['type'] = self.armor_type
+        name_elem = ElementTree.Element('name')
+        name_elem.text = self.armor_name
+        elem.append(name_elem)
+        hurtbox_elem = ElementTree.Element('hurtbox')
+        hurtbox_elem.text = self.hurtbox
+        elem.append(hurtbox_elem)
+        for tag,value in self.armor_vars.iteritems():
+            new_elem = ElementTree.Element(tag)
+            new_elem.text = str(value)
+            elem.append(new_elem)
+        return elem
+    
+    @staticmethod
+    def customBuildFromXml(_node):
+        #mandatory fields
+        armor_type = _node.attrib['type'] if _node.attrib.has_key('type') else "hyper"
+        
+        #build the variable dict
+        variables = {}
+        #these lists let the code know which keys should be which types.
+        float_type = ['num_hits', 'damage_threshold', 'knockback_threshold', 'armor_damage_multiplier', 'armor_knockback_multiplier', 'overflow_damage_multiplier', 'overflow_knockback_multiplier']
+            
+        for child in _node:
+            tag = child.tag
+            val = child.text
+            
+            owner_event = ''
+            other_event = ''
+            #special cases
+            if tag == 'name':
+                name = val
+            elif tag == 'hurtbox':
+                hurtbox = val
+            elif tag in tuple_type:
+                variables[tag] = make_tuple(val)
+            elif tag in float_type:
+                variables[tag] = float(val)
+            elif tag in int_type:
+                variables[tag] = int(val)
+            else:
+                variables[tag] = val
+            
+        return createArmor(name, armor_type, hurtbox, variables)
+        
+# Change the properties of an existing hitbox, such as position, or power
+class modifyArmor(SubAction):
+    subact_group = 'Armor'
+    
+    def __init__(self,_armorName='',_hurtbox='',_armorVars={}):
+        SubAction.__init__(self)
+        self.armor_name = _armorName
+        self.hurtbox = _hurtbox
+        self.armor_vars = _armorVars
+        
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+        if _action.hurtboxes.has_key(self.hurtbox):  
+            hurtbox = _action.hurtboxes[self.hurtbox]
+            if hurtbox.armor.has_key(self.armor_name):
+                armor = hurtbox.armor[self.armor_name]
+                if armor:
+                    for name,value in self.hitbox_vars.iteritems():
+                        if hasattr(armor, name):
+                            if isinstance(value, VarData) or isinstance(value, FuncData) or isinstance(value, EvalData):
+                                setattr(armor, name, value.unpack(_action,_actor))
+                                if name in armor.variable_dict:
+                                    armor.variable_dict[name] = value.unpack(_action, _actor)
+                            else: 
+                                setattr(hitbox, name, value)
+                                if name in armor.variable_dict:
+                                    armor.variable_dict[name] = value
+        else:
+            if _actor.armor.has_key(self.armor_name):
+                armor = _actor.armor[self.armor_name]
+                for name,value in self.hitbox_vars.iteritems():
+                    if hasattr(armor, name):
+                        if isinstance(value, VarData) or isinstance(value, FuncData) or isinstance(value, EvalData):
+                            setattr(armor, name, value.unpack(_action,_actor))
+                            if name in armor.variable_dict:
+                                armor.variable_dict[name] = value.unpack(_action, _actor)
+                        else: 
+                            setattr(hitbox, name, value)
+                            if name in armor.variable_dict:
+                                armor.variable_dict[name] = value
+        
+    def getDisplayName(self):
+        return 'Modify Armor: ' + str(self.armor_name)
+    
+    def getPropertiesPanel(self, _root):
+        return subactionSelector.ModifyArmorProperties(_root,self,newArmor=False)
+        
+    def getXmlElement(self):
+        elem = ElementTree.Element('modifyArmor')
+        elem.attrib['name'] = self.armor_name
+        for tag,value in self.armor_vars.iteritems():
+            new_elem = ElementTree.Element(tag)
+            new_elem.text = str(value)
+            elem.append(new_elem)
+        return elem
+    
+    @staticmethod
+    def customBuildFromXml(_node):
+        armor_name = _node.attrib['name']
+        hurtbox = _node.attrib['hurtbox']
+        armor_vars = {}
+        #these lists let the code know which keys should be which types.
+        float_type = ['num_hits', 'damage_threshold', 'knockback_threshold', 'armor_damage_multiplier', 'armor_knockback_multiplier', 'overflow_damage_multiplier', 'overflow_knockback_multiplier']
+        
+        for child in _node:
+            tag = child.tag
+            val = child.text
+            
+            #special cases
+            if tag in float_type:
+                _type = 'float'
+            
+            val = parseData(child, _type, None)
+            armor_vars[tag] = val
+            
+        return modifyHitbox(armor_name,hurtbox,armor_vars)
+    
+class removeArmor(SubAction):
+    subact_group = 'Armor'
+    fields = [NodeMap('armor_name','string','removeArmor',''),
+              NodeMap('hurtbox','string','removeArmor|hurtbox','')
+              ]
+    
+    def __init__(self,_armorName='',_hurtbox=''):
+        SubAction.__init__(self)
+        self.armor_name = _armorName
+        self.hurtbox = _hurtbox
+    
+    def execute(self, _action, _actor):
+        SubAction.execute(self, _action, _actor)
+        if self.hurtbox is not '':
+            if _action.hurtboxes.has_key(self.hurtbox):
+                hurtbox = _action.hurtboxes[self.hurtbox]
+                if self.armor_name is '':
+                    hurtbox.armor.clear()
+                elif hurtbox.armor.has_key(self.armor_name):
+                    del hurtbox.armor[self.armor_name]
+        else:
+            if self.armor_name is '':
+                _actor.armor.clear()
+            elif _actor.armor.has_key(self.armor_name):
+                del _actor.armor[self.armor_name]
+    
+    def getPropertiesPanel(self, _root):
+        return subactionSelector.UpdateHitboxProperties(_root,self)
+    
+    def getDisplayName(self):
+        return 'Deactivate Armor: ' + self.armor_name
+
 class changeECB(SubAction):
     subact_group = 'Behavior'
     fields = [NodeMap('size','tuple','changeECB>size',(0,0)),
@@ -2126,6 +2324,11 @@ subaction_dict = {
                  'activateHurtbox': activateHurtbox,
                  'deactivateHurtbox': deactivateHurtbox,
                  'modifyHurtbox': modifyHurtbox,
+
+                 #Armor Manipulation
+                 'createArmor': createArmor,
+                 'modifyArmor': modifyArmor,
+                 'removeArmor': removeArmor,
                  
                  #Articles
                  'loadArticle': loadArticle,

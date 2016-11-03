@@ -1,5 +1,7 @@
 import engine.action as action
 import engine.hitbox as hitbox
+import engine.hurtbox as hurtbox
+import engine.statusEffect as statusEffect
 import pygame
 import math
 import random
@@ -263,6 +265,7 @@ class Respawn(action.Action):
         import engine.article as article
         if self.sprite_name=="": self.sprite_name ="neutralAction"
         action.Action.setUp(self, _actor)
+        _actor.armor['respawn_invuln'] = hurtbox.Intangibility(_actor)
         self.respawn_article = article.RespawnPlatformArticle(_actor)
         
     def stateTransitions(self, _actor):
@@ -275,8 +278,10 @@ class Respawn(action.Action):
     def tearDown(self, _actor, _nextAction):
         import engine.article as article
         action.Action.tearDown(self, _actor, _nextAction)
-        _actor.createMask([255,255,255], settingsManager.getSetting('respawnInvincibility'), True, 12)
-        _actor.respawn_invulnerable = settingsManager.getSetting('respawnInvincibility')
+        if 'respawn_invuln' in _actor.armor:
+            del _actor.armor['respawn_invuln']
+        apply_invuln = statusEffect.TemporaryHitFilter(_actor,hurtbox.Intangibility(_actor),settingsManager.getSetting('respawnInvincibility'))
+        apply_invuln.activate()
         self.respawn_article.deactivate()
         
     def update(self,_actor):
@@ -1198,8 +1203,8 @@ class ForwardRoll(action.Action):
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
         _actor.preferred_xspeed = 0
-        if _actor.invulnerable > 0:
-            _actor.invulnerable = 0
+        if 'dodge_invuln' in _actor.armor:
+            del _actor.armor['dodge_invuln']
         _actor.mask = None
 
     def stateTransitions(self, _actor):
@@ -1219,9 +1224,11 @@ class ForwardRoll(action.Action):
         if self.frame == 1:
             _actor.change_x = _actor.facing * _actor.stats['dodge_speed']
         elif self.frame == self.start_invuln_frame:
-            _actor.createMask([255,255,255], 22, True, 24)
-            _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
+            _actor.createMask([255,255,255], self.end_invuln_frame-self.start_invuln_frame, True, 24)
+            _actor.armor['dodge_invuln'] = hurtbox.Intangibility(_actor)
         elif self.frame == self.end_invuln_frame:
+            if 'dodge_invuln' in _actor.armor:
+                del _actor.armor['dodge_invuln']
             _actor.flip()
             _actor.change_x = 0
         self.frame += 1
@@ -1239,8 +1246,8 @@ class BackwardRoll(action.Action):
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
         _actor.preferred_xspeed = 0
-        if _actor.invulnerable > 0:
-            _actor.invulnerable = 0
+        if 'dodge_invuln' in _actor.armor:
+            del _actor.armor['dodge_invuln']
         _actor.mask = None
 
     def stateTransitions(self, _actor):
@@ -1260,9 +1267,11 @@ class BackwardRoll(action.Action):
         if self.frame == 1:
             _actor.change_x = _actor.facing * -_actor.stats['dodge_speed']
         elif self.frame == self.start_invuln_frame:
-            _actor.createMask([255,255,255], 22, True, 24)
-            _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
+            _actor.createMask([255,255,255], self.end_invuln_frame-self.start_invuln_frame, True, 24)
+            _actor.armor['dodge_invuln'] = hurtbox.Intangibility(_actor)
         elif self.frame == self.end_invuln_frame:
+            if 'dodge_invuln' in _actor.armor:
+                del _actor.armor['dodge_invuln']
             _actor.change_x = 0
         self.frame += 1
         
@@ -1293,8 +1302,8 @@ class SpotDodge(action.Action):
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
         _actor.preferred_xspeed = 0
-        if _actor.invulnerable > 0:
-            _actor.invulnerable = 0
+        if 'dodge_invuln' in _actor.armor:
+            del _actor.armor['dodge_invuln']
         if _actor.grounded is False:
             _actor.doAction('Fall')
         _actor.mask = None
@@ -1304,10 +1313,11 @@ class SpotDodge(action.Action):
         if self.frame == 1:
             _actor.change_x = 0
         elif self.frame == self.start_invuln_frame:
-            _actor.createMask([255,255,255],16,True,24)
-            _actor.invulnerable = self.end_invuln_frame - self.start_invuln_frame
+            _actor.createMask([255,255,255], self.end_invuln_frame-self.start_invuln_frame, True, 24)
+            _actor.armor['dodge_invuln'] = hurtbox.Intangibility(_actor)
         elif self.frame == self.end_invuln_frame:
-            pass
+            if 'dodge_invuln' in _actor.armor:
+                del _actor.armor['dodge_invuln']
         self.frame += 1
         
 class AirDodge(action.Action):
@@ -1339,8 +1349,8 @@ class AirDodge(action.Action):
             _actor.preferred_yspeed = _actor.stats['max_fall_speed']
             _actor.preferred_xspeed = 0
         if _actor.mask: _actor.mask = None
-        if _actor.invulnerable > 0:
-            _actor.invulnerable = 0
+        if 'dodge_invuln' in _actor.armor:
+            del _actor.armor['dodge_invuln']
     
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
@@ -1376,9 +1386,11 @@ class AirDodge(action.Action):
             (key, invkey) = _actor.getForwardBackwardKeys()
             if _actor.keysContain(invkey, 1):
                 _actor.flip()
-            _actor.createMask([255,255,255],self.end_invuln_frame-self.start_invuln_frame,True,24)
-            _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
+            _actor.createMask([255,255,255], self.end_invuln_frame-self.start_invuln_frame, True, 24)
+            _actor.armor['dodge_invuln'] = hurtbox.Intangibility(_actor)
         elif self.frame == self.end_invuln_frame:
+            if 'dodge_invuln' in _actor.armor:
+                del _actor.armor['dodge_invuln']
             _actor.landing_lag = settingsManager.getSetting('airDodgeLag')
         self.frame += 1
 
@@ -1405,8 +1417,8 @@ class BaseTech(action.Action):
 
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        if _actor.invulnerable > 0:
-            _actor.invulnerable = 0
+        if 'dodge_invuln' in _actor.armor:
+            del _actor.armor['dodge_invuln']
         _actor.mask = None
         _actor.preferred_xspeed = 0
         _actor.tech_window = 0
@@ -1414,8 +1426,11 @@ class BaseTech(action.Action):
     def update(self, _actor):
         action.Action.update(self,_actor)
         if self.frame == self.start_invuln_frame:
-            _actor.createMask([255,255,255], 22, True, 24)
-            _actor.invulnerable = self.end_invuln_frame-self.start_invuln_frame
+            _actor.createMask([255,255,255], self.end_invuln_frame-self.start_invuln_frame, True, 24)
+            _actor.armor['dodge_invuln'] = hurtbox.Intangibility(_actor)
+        if self.frame == self.end_invuln_frame:
+            if 'dodge_invuln' in _actor.armor:
+                del _actor.armor['dodge_invuln']
         self.frame += 1
 
 class ForwardTech(BaseTech):
@@ -1513,11 +1528,13 @@ class LedgeGrab(BaseLedge):
         if self.sprite_name=="": self.sprite_name ="ledgeGrab"
         BaseLedge.setUp(self, _actor)
         _actor.createMask([255,255,255], settingsManager.getSetting('ledgeInvincibilityTime'), True, 12)
-        _actor.invulnerable = settingsManager.getSetting('ledgeInvincibilityTime')
+        _actor.armor['ledge_invuln'] = hurtbox.Intangibility(_actor)
         _actor.last_input_frame = 0
         
     def tearDown(self, _actor, _nextAction):
         BaseLedge.tearDown(self, _actor, _nextAction)
+        if 'ledge_invuln' in _actor.armor:
+            del _actor.armor['ledge_invuln']
     
     def stateTransitions(self, _actor):
         BaseLedge.stateTransitions(self, _actor)
@@ -1534,6 +1551,10 @@ class LedgeGrab(BaseLedge):
             if _actor.facing == 1:
                 _actor.flip()
         _actor.setSpeed(0, _actor.getFacingDirection())
+
+        if self.frame == settingsManager.getSetting('ledgeInvincibilityTime'):
+            if 'ledge_invuln' in _actor.armor:
+                del _actor.armor['ledge_invuln']
         
         _actor.posx = self.ledge.rect.centerx + (self.sweetspot_x * -_actor.facing)
         _actor.posy = self.ledge.rect.centery + (self.sweetspot_y)
@@ -1550,7 +1571,7 @@ class BaseLedgeGetup(BaseLedge):
         BaseLedge.setUp(self, _actor)
         _actor.preferred_xspeed = 0
         _actor.preferred_yspeed = 0
-        _actor.invulnerable = self.last_frame
+        _actor.armor['ledge_getup_invuln'] = hurtbox.Intangibility(_actor)
         if not hasattr(self, 'up_frame'): self.up_frame = 1
         if not hasattr(self, 'side_frame'): self.side_frame = 2
         if self.ledge:
@@ -1562,6 +1583,8 @@ class BaseLedgeGetup(BaseLedge):
 
     def tearDown(self, _actor, _nextAction):
         BaseLedge.tearDown(self, _actor, _nextAction)
+        if 'ledge_getup_invuln' in _actor.armor:
+            del _actor.armor['ledge_getup_invuln']
         _actor.invulnerable = 0
         _actor.mask = None
         _actor.preferred_xspeed = 0
@@ -2131,18 +2154,21 @@ def ledgeState(_actor):
         _actor.doAction('LedgeAttack')
     elif _actor.keyHeld('jump'):
         _actor.ledge_lock = True
-        _actor.invincible = 6
+        apply_invuln = statusEffect.TemporaryHitFilter(_actor,hurtbox.Intangibility(_actor),6)
+        apply_invuln.activate()
         _actor.doAction('Jump')
     elif _actor.keyHeld(key):
         _actor.ledge_lock = True
         _actor.doAction('LedgeGetup')
     elif _actor.keyHeld(invkey):
         _actor.ledge_lock = True
-        _actor.invincible = 6
+        apply_invuln = statusEffect.TemporaryHitFilter(_actor,hurtbox.Intangibility(_actor),6)
+        apply_invuln.activate()
         _actor.doAction('Fall')
     elif _actor.keyHeld('down'):
         _actor.ledge_lock = True
-        _actor.invincible = 6
+        apply_invuln = statusEffect.TemporaryHitFilter(_actor,hurtbox.Intangibility(_actor),6)
+        apply_invuln.activate()
         _actor.doAction('Fall')
 
 def grabbingState(_actor):
