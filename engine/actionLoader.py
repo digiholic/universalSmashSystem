@@ -32,6 +32,16 @@ class ActionLoader():
         if not _path: _path = self.actions_xml_data
         self.actions_xml_full.write(_path)
     
+    def getGlobalEvents(self):
+        """ Grabs all event subactions at the top level and returns
+        them into a dict."""
+        retDict = dict()
+        
+        for eventNode in self.actions_xml.findall('event'):
+            event = subaction.SubAction.buildFromXml('event',eventNode)
+            retDict[eventNode.attrib['name']] = event
+        return retDict
+    
     """
     This function will take an action name, and a dynamicAction object,
     and rebuild the XML of that action, and then modify that in the actions_xml

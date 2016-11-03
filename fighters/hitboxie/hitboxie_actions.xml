@@ -1,4 +1,8 @@
 <actionList>
+	<event name="test">
+		<print>Test Global Event</print>
+	</event>
+	
 	<NeutralAction>
 		<length>1</length>
 		<sprite>idle</sprite>
@@ -612,6 +616,7 @@
 				<y_bias>-4</y_bias>
 				<x_draw>-.1</x_draw>
 				<y_draw>-.1</y_draw>
+				<onHitOther>test</onHitOther>
 			</createHitbox>
 		</setUp>
 		

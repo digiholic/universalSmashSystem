@@ -261,11 +261,13 @@ class AbstractFighter():
         spriteName = self.sprite_prefix + self.default_sprite + '.png'
         self.sprite = spriteManager.SheetSprite(os.path.join(self.base_dir,self.sprite_directory,spriteName), self.sprite_width)
         
+        self.events = dict()
         try:
             if self.action_file.endswith('.py'):
                 self.actions = settingsManager.importFromURI(os.path.join(_baseDir,'fighter.xml'),self.action_file,_suffix=str(self.player_num))
             else:
                 self.actions = actionLoader.ActionLoader(_baseDir,self.action_file)
+                self.events = self.actions.getGlobalEvents()
         except:
             self.actions = baseActions
             self.action_file = baseActions.__file__
