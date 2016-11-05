@@ -15,6 +15,11 @@ import string
 import menu
 import inspect
 import bdb
+
+import engine.network as network
+
+from collections import namedtuple
+
 from cgi import log
 
 """
@@ -129,6 +134,9 @@ class Battle():
             data_log.addSection('test', 1)
             data_log.setData('test', 3, (lambda x,y: x + y))
             self.dirty_rects = [pygame.Rect(0,0,self.settings['windowWidth'],self.settings['windowHeight'])]
+            
+            #initialises network
+            self.network = network.Network()
             while self.exit_status == 0:
                 self.gameEventLoop()
                 
@@ -172,8 +180,10 @@ class Battle():
     def gameEventLoop(self):
         for cont in self.controllers:
             cont.passInputs()
-            
-        for event in pygame.event.get():
+        rawEvents = pygame.event.get()
+        #process events through network.
+        events = self.network.processEvents(rawEvents)
+        for event in events:
             if event.type == pygame.QUIT:
                 os._exit(1)
                 return -1
@@ -216,7 +226,7 @@ class Battle():
         self.checkHitboxClanks()
         self.checkHitboxHits()
         self.checkHitboxBumps()
-        
+        self.network.processFighters(self.current_fighters)
         for fight in self.current_fighters:
             if fight.rect.right < self.stage.blast_line.left or fight.rect.left > self.stage.blast_line.right or fight.rect.top > self.stage.blast_line.bottom or fight.rect.bottom < self.stage.blast_line.top:
                 if not self.track_stocks:
