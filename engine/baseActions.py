@@ -305,6 +305,7 @@ class Crouch(action.Action):
         if self.sprite_name=="": self.sprite_name ="crouch"
         action.Action.setUp(self, _actor)
         self.direction = _actor.getForwardWithOffset(0)
+        _actor.armor['crouch_cancel'] = hurtbox.CrouchCancel(_actor)
 
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
@@ -322,6 +323,8 @@ class Crouch(action.Action):
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
         _actor.preferred_xspeed = 0
+        if not isinstance(_nextAction, CrouchGetup) and 'crouch_cancel' in _actor.armor:
+            del _actor.armor['crouch_cancel']
 
     def update(self, _actor):
         action.Action.update(self, _actor)
@@ -344,6 +347,11 @@ class CrouchGetup(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="crouchGetup"
         action.Action.setUp(self, _actor)
+
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        if 'crouch_cancel' in _actor.armor:
+            del _actor.armor['crouch_cancel']
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)

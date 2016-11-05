@@ -63,8 +63,8 @@ class Hurtbox(spriteManager.RectSprite):
     def onHit(self,_hitbox):
         all_armor = self.armor.values()+self.owner.armor.values()
         # Use currying to composit everything together
-        giant_filter = reduce(lambda f, g: (lambda k: g.filterValues(_hitbox, k, f)), all_armor, lambda y: self.owner.applySubactions(y))
-        return giant_filter(_hitbox.getOnHitSubactions(self))
+        giant_filter = reduce(lambda f, g: (lambda j, k: g.filterHits(_hitbox, k, f)), all_armor, lambda x, y: self.owner.filterHits(x, y))
+        return giant_filter(_hitbox, _hitbox.getOnHitSubactions(self))
     
 class Armor():
     """ Armor is how a fighter manages their damage, hitstun, and knockback. It
@@ -94,7 +94,7 @@ class Armor():
         for key,value in self.variable_dict.iteritems():
             setattr(self, key, value)
 
-    def filterValues(self,_hitbox,_subactions,_forward):
+    def filterHits(self,_hitbox,_subactions,_forward):
         """ Applies the Armor's filter to the passed subaction list. Default Armor
         simply forwards the values as given, and passes the return value up. 
         
@@ -116,7 +116,7 @@ class HyperArmor(Armor):
         Armor.__init__(self, _owner, _variables)
         self.armor_type = 'hyper'
         
-    def filterValues(self, _hitbox, _subactions, _forward):
+    def filterHits(self, _hitbox, _subactions, _forward):
         if isinstance(_hitbox, hitbox.DamageHitbox) and not _hitbox.ignore_armor:
             import engine.subaction as subaction
             _subactions = filter(lambda k: not isinstance(k, subaction.applyHitstop) and not isinstance(k, subaction.dealDamage) and not isinstance(k, subaction.ApplyScaledKnockback) and not isinstance(k, subaction.CompensateResistance), _subactions)
@@ -138,8 +138,7 @@ class SuperArmor(Armor):
         Armor.__init__(self, _owner, _variables)
         self.armor_type = 'super'
 
-    # TODO: Scrap self when a hit registers
-    def filterValues(self, _hitbox, _subactions, _forward):
+    def filterHits(self, _hitbox, _subactions, _forward):
         if isinstance(_hitbox, hitbox.DamageHitbox) and self.num_hits > 0 and not _hitbox.ignore_armor:
             import engine.subaction as subaction
             _subactions = filter(lambda k: not isinstance(k, subaction.applyHitstop) and not isinstance(k, subaction.dealDamage) and not isinstance(k, subaction.ApplyScaledKnockback) and not isinstance(k, subaction.CompensateResistance), _subactions)
@@ -159,7 +158,7 @@ class HeavyArmor(Armor):
         Armor.__init__(self, _owner, _variables)
         self.armor_type = 'heavy'
         
-    def filterValues(self, _hitbox, _subactions, _forward):
+    def filterHits(self, _hitbox, _subactions, _forward):
         if isinstance(_hitbox, hitbox.DamageHitbox) and not _hitbox.ignore_armor:
 
             # Calculate knockback
@@ -198,7 +197,7 @@ class Invulnerability(Armor):
         Armor.__init__(self, _owner, _variables)
         self.armor_type = 'invulnerable'
 
-    def filterValues(self, _hitbox, _subactions, _forward):
+    def filterHits(self, _hitbox, _subactions, _forward):
         import engine.subaction as subaction
         _subactions = filter(lambda k: not isinstance(k, subaction.applyHitstop), _subactions)
         return _forward(_hitbox, _subactions)
@@ -209,7 +208,7 @@ class Intangibility(Armor):
         Armor.__init__(self, _owner, _variables)
         self.armor_type = 'intangible'
 
-    def filterValues(self, _hitbox, _subactions, _forward):
+    def filterHits(self, _hitbox, _subactions, _forward):
         return False
 
 class CumulativeArmor(Armor):
@@ -217,7 +216,7 @@ class CumulativeArmor(Armor):
         Armor.__init__(self, _owner, _variables)
         self.armor_type = 'heavy'
         
-    def filterValues(self, _hitbox, _subactions, _forward):
+    def filterHits(self, _hitbox, _subactions, _forward):
         if self.damage_threshold > 0 and self.knockback_threshold > 0 and isinstance(_hitbox, hitbox.DamageHitbox) and not _hitbox.ignore_armor:
             # Calculate knockback
             percent_portion = (self.owner.damage/10.0) + (self.owner.damage*_hitbox.damage)/20.0
@@ -256,7 +255,7 @@ class CrouchCancel(Armor):
         Armor.__init__(self, _owner, _variables=dict())
         self.armor_type = 'crouch_cancel'
 
-    def filterValues(self, _hitbox, _subactions, _forward):
+    def filterHits(self, _hitbox, _subactions, _forward):
         import engine.subaction as subaction
         for subact in _subactions:
             if isinstance(subact, subaction.applyScaledKnockback):
@@ -271,4 +270,7 @@ class CrouchCancel(Armor):
                 subact.frames *= 0.5
             if isinstance(subact, subaction.applyHitstop):
                 subact.pushback = 0
+        print(_hitbox)
+        print(_subactions)
+        print(_forward)
         return _forward(_hitbox, _subactions)

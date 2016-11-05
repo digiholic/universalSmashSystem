@@ -1430,6 +1430,11 @@ class AbstractFighter():
         for subact in _subacts:
             subact.execute(self.current_action, self)
         return True # Our hit filter stuff expects this
+
+    def filterHits(self, _hitbox, _subacts):
+        for subact in _subacts:
+            subact.execute(self.current_action, self)
+        return True
     
     def dealDamage(self, _damage):
         """ Deal damage to the fighter.

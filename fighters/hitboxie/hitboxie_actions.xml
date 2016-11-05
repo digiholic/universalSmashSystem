@@ -600,7 +600,7 @@
 		<sprite_rate>1</sprite_rate>
 		
 		<vars>
-			<doRepeat>False</doRepeat>
+			<doRepeat>True</doRepeat>
 		</vars>
 		<setUp>
 			<createHitbox type="funnel">
@@ -623,17 +623,14 @@
 		<transitions>
 			<transitionState>checkGrounded</transitionState>
 		</transitions>
-		
-		<frame number="4">
-			<setVar source="action">
-				<variable>doRepeat</variable>
-				<value>False</value>
-			</setVar>
+		<frame number="before">
 			<ifButton>
 				<button check="keysContain">attack</button>
-				<pass>setRepeat</pass>
 				<fail>doFinisher</fail>
 			</ifButton>
+		</frame>
+		
+		<frame number="4">
 			<playSound>jab</playSound>
 			<activateHitbox>jab</activateHitbox>
 			<unlockHitbox>jab</unlockHitbox>
@@ -659,13 +656,11 @@
 		<conditional name="repeatAttack">
 			<setFrame>0</setFrame>
 		</conditional>
-		<conditional name="setRepeat">
+		<conditional name="doFinisher">
 			<setVar source="action">
 				<variable>doRepeat</variable>
-				<value>True</value>
+				<value>False</value>
 			</setVar>
-		</conditional>
-		<conditional name="doFinisher">
 			<modifyHitbox name="jab">
 				<base_knockback>8</base_knockback>
 				<knockback_growth>0.06</knockback_growth>
