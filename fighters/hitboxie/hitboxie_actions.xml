@@ -1669,10 +1669,10 @@
 		<frame number="20">
 			<changeSubimage>8</changeSubimage>
 		</frame>
-		<frame number="22">
+		<frame number="22-36">
 			<ifButton>
 				<button check="keysContain">special</button>
-				<pass>repeatAttack</pass>
+				<pass>checkRepeat</pass>
 			</ifButton>
 		</frame>
 		<frame number="26">
@@ -1682,6 +1682,26 @@
 			<changeSubimage>10</changeSubimage>
 		</frame>
 		
+		<conditional name="checkRepeat">
+			<setVar source="action">
+				<variable>dir</variable>
+				<value>
+					<function>
+						<functionName>netDirection</functionName>
+						<args>
+							<_checkDirectionList type="tuple">
+								("up", "down", "left", "right")
+							</_checkDirectionList>
+						</args>
+					</function>
+				</value>
+			</setVar>
+			<if>
+				<variable source="action">dir</variable>
+				<value type="string">neutral</value>
+				<pass>repeatAttack</pass>
+			</if>
+		</conditional>
 		<conditional name="repeatAttack">
 			<doAction>NeutralGroundSpecial</doAction>
 		</conditional>
@@ -1717,7 +1737,7 @@
 			<changeSubimage>7</changeSubimage>
 		</frame>
 
-		<frame number="15">
+		<frame number="15-36">
 			<ifButton>
 				<button check="keysContain">special</button>
 				<pass>repeatAttack</pass>
@@ -1736,6 +1756,27 @@
 		<frame number="last">
 			<updateLandingLag reset="true">12</updateLandingLag>
 		</frame>
+		
+		<conditional name="checkRepeat">
+			<setVar source="action">
+				<variable>dir</variable>
+				<value>
+					<function>
+						<functionName>netDirection</functionName>
+						<args>
+							<_checkDirectionList type="tuple">
+								("up", "down", "left", "right")
+							</_checkDirectionList>
+						</args>
+					</function>
+				</value>
+			</setVar>
+			<if>
+				<variable source="action">dir</variable>
+				<value type="string">neutral</value>
+				<pass>repeatAttack</pass>
+			</if>
+		</conditional>
 		<conditional name="repeatAttack">
 			<doAction>NeutralAirSpecial</doAction>
 		</conditional>
