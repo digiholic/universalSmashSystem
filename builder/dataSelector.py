@@ -1,7 +1,7 @@
 from Tkinter import *
 import settingsManager
                 
-class dataLine(Label):
+class dataLine(Frame):
     """
     A DataLine is an object that can be displayed in the right panel.
     This is the base class for those lines. It itself just displays text,
@@ -19,9 +19,12 @@ class dataLine(Label):
         self.display_name = StringVar()
         self.display_name.set(_name)
         
-        Label.__init__(self, _parent, textvariable=self.display_name,bg="white",anchor=W)
+        Frame.__init__(self, _parent, bg="white",anchor=W)
         self.root = _parent
         
+        self.label = Label(self,textvariable=self.display_name)
+        
+        self.label.pack(side=LEFT)
         self.visible = True
         
     def pack(self, cnf={}, **kw):
@@ -35,6 +38,9 @@ class dataLine(Label):
         if _string: self.display_name.set(_string)
         
 class dataSelector(dataLine):
+    """
+    Data Selector is a dataLine that can be selected. These will usually open up a config window.
+    """
     def __init__(self,_parent,_name=''):
         dataLine.__init__(self, _parent, _name)
         self.bind("<Button-1>", self.onClick)
@@ -62,6 +68,9 @@ class dataSelector(dataLine):
         self.root.selected = None
 
 class SubactionSelector(dataSelector):
+    """
+    The Data Selector for subactions.
+    """
     def __init__(self,_root,_subaction):
         dataSelector.__init__(self, _root,_subaction.getDisplayName())
         
@@ -91,6 +100,9 @@ class SubactionSelector(dataSelector):
         self.display_name.set(self.data.getDisplayName())
 
 class PropertySelector(dataSelector):
+    """
+    The data selector for properties, such as fighter stats
+    """
     def __init__(self, _root, _owner, _fieldname, _displayName, _vartype):
         dataSelector.__init__(self, _root)
 
@@ -107,6 +119,9 @@ class PropertySelector(dataSelector):
         self.display_name.set(self.display_name+': '+ str(fielddata))
 
 class GroupSelector(dataLine):
+    """
+    A group selector has an expand/collapse button to view or hide its children.
+    """
     def __init__(self,_parent,_name):
         dataLine.__init__(self, _parent, _name)
         
@@ -131,3 +146,9 @@ class GroupSelector(dataLine):
             for child in self.children:
                 child.visible = False
         """ TODO Redraw the parent panel """
+        
+class NewSubactionLine(dataSelector):
+    """
+    Prompts the user with a subaction config panel when clicked. Adds to the proper group.
+    """
+    pass

@@ -7,6 +7,7 @@ class dataPanel(BuilderPanel):
     def __init__(self,_parent,_root):
         BuilderPanel.__init__(self, _parent, _root)
         
+        # A list of dataLines to draw
         self.data_list = []
         
         self.scroll_frame = VerticalScrolledFrame(self,bg="blue")
@@ -17,9 +18,12 @@ class dataPanel(BuilderPanel):
         
     def loadDataList(self):
         self.scroll_frame.pack(fill=BOTH,expand=TRUE)
-        for subact in self.subaction_list:
-            subact.pack(fill=X) #the data line will hide itself if it's not expanded
+        for data in self.data_list:
+            data.pack(fill=X) #the data line will hide itself if it's not expanded
             
+
+class FighterPropertiesPanel(dataPanel):
+    pass
     
 class Subaction_panel(BuilderPanel):
     def __init__(self,_parent,_root):
