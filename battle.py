@@ -275,7 +275,7 @@ class Battle():
                     if other.article == None: other.owner.current_action.onPrevail(other.owner, other, hbox)
                     else: other.article.onPrevail(other.owner, other, hbox)
                 if hbox_clank == -1: other.owner.lockHitbox(hbox)
-                if other_clank == -1: hbox.owner.blockHitbox(other)
+                if other_clank == -1: hbox.owner.lockHitbox(other)
 
     def checkHitboxHits(self):
         hurtbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hurtboxes, False, False)
@@ -283,7 +283,7 @@ class Battle():
             #then, hurtbox collisions
             hitbox_collisions = hurtbox_hits[hbox]
             for hurtbox in hitbox_collisions:
-                if hbox.owner != hurtbox.owner and hurtbox.owner.lockHitbox(hbox):
+                if hbox.owner != hurtbox.owner:
                     hbox.onCollision(hurtbox)
                         
 

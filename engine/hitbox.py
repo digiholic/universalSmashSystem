@@ -385,7 +385,7 @@ class ReflectorHitbox(InertHitbox):
     def compareTo(self, _other):
         clank_state = Hitbox.compareTo(self, _other)
         if clank_state == 1 and self.hp >= 0:
-            if not isinstance(_other, InertHitbox) and (isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox)) and self.owner != _other.owner and _other.hitbox_lock not in self.owner.hitbox_lock and _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags:
+            if not isinstance(_other, InertHitbox) and (isinstance(_other, DamageHitbox) or isinstance(_other, GrabHitbox)) and self.owner != _other.owner and _other.article != None and _other.article.owner != self.owner and hasattr(_other.article, 'tags') and 'reflectable' in _other.article.tags:
                 if hasattr(_other.article, 'changeOwner'):
                     _other.article.changeOwner(self.owner)
                 if hasattr(_other.article, 'change_x') and hasattr(_other.article, 'change_y'):

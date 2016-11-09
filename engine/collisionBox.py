@@ -48,15 +48,15 @@ def checkRightWall(_object, _objectList, _checkVelocity=True):
 
 def checkBackWall(_object, _objectList, _checkVelocity=True):
     if _object.facing == 1:
-        return _object.checkLeftWall(_object, _objectList, _checkVelocity)
+        return checkLeftWall(_object, _objectList, _checkVelocity)
     else:
-        return _object.checkRightWall(_object, _objectList, _checkVelocity)
+        return checkRightWall(_object, _objectList, _checkVelocity)
 
 def checkFrontWall(_object, _objectList, _checkVelocity=True):
     if _object.facing == 1:
-        return _object.checkRightWall(_object, _objectList, _checkVelocity)
+        return checkRightWall(_object, _objectList, _checkVelocity)
     else:
-        return _object.checkLeftWall(_object, _objectList, _checkVelocity)
+        return checkLeftWall(_object, _objectList, _checkVelocity)
 
 def checkCeiling(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
@@ -110,15 +110,15 @@ def isRightWalled(_object, _objectList, _checkVelocity=True):
 
 def isBackWalled(_object, _objectList, _checkVelocity=True):
     if _object.facing == 1:
-        return _object.checkLeftWall(_object, _objectList, _checkVelocity)
+        return isLeftWalled(_object, _objectList, _checkVelocity)
     else:
-        return _object.checkRightWall(_object, _objectList, _checkVelocity)
+        return isRightWalled(_object, _objectList, _checkVelocity)
 
 def isFrontWalled(_object, _objectList, _checkVelocity=True):
     if _object.facing == 1:
-        return _object.checkRightWall(_object, _objectList, _checkVelocity)
+        return isRightWalled(_object, _objectList, _checkVelocity)
     else:
-        return _object.checkLeftWall(_object, _objectList, _checkVelocity)
+        return isLeftWalled(_object, _objectList, _checkVelocity)
 
 def isCeilinged(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()

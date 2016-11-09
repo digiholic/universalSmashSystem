@@ -52,6 +52,52 @@
 		<length>1</length>
 		<sprite>jump</sprite>
 		<sprite_rate>0</sprite_rate>
+		<setUp>
+			<setVar source="action">
+				<variable>always</variable>
+				<value type="boolean">True</value>
+			</setVar>
+		</setUp>
+		<frame number="before">
+			<ifButton>
+				<button check="keysContain">forward</button>
+				<pass>check_cling</pass>
+				<fail>fast_fall</fail>
+			</ifButton>
+		</frame>
+		<tearDown>
+			<if function="true">
+				<variable source="action">always</variable>
+				<value type="boolean">True</value>
+				<pass>fast_fall</pass>
+			</if>
+		</tearDown>
+		<conditional name="slow_fall">
+			<changeFighterPreferredSpeed>
+				<ySpeed>1</ySpeed>
+			</changeFighterPreferredSpeed>
+		</conditional>
+		<conditional name="fast_fall">
+			<changeFighterPreferredSpeed>
+				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
+			</changeFighterPreferredSpeed>
+		</conditional>
+		<conditional name="check_cling">
+			<setVar source="action">
+				<variable>frontWalled</variable>
+				<value>
+					<function>
+						<functionName source="fighter">isFrontWalled</functionName>
+					</function>
+				</value>
+			</setVar>
+			<if function="true">
+				<variable source="action">frontWalled</variable>
+				<value type="boolean">True</value>
+				<pass>slow_fall</pass>
+				<fail>fast_fall</fail>
+			</if>
+		</conditional>
 	</Fall>
 	
 	<Jump>
@@ -601,19 +647,20 @@
 		
 		<vars>
 			<doRepeat>True</doRepeat>
+			<doComplete>False</doComplete>
 		</vars>
 		<setUp>
 			<createHitbox type="funnel">
 				<name>jab</name>
 				<center>0,0</center>
 				<size>80,80</size>
-				<damage>3</damage>
-				<base_knockback>2</base_knockback>
+				<damage>2</damage>
+				<base_knockback>6.5</base_knockback>
 				<knockback_growth>0</knockback_growth>
 				<velocity_multiplier>0</velocity_multiplier>
 				<base_hitstun>20</base_hitstun>
-				<hitstun_growth>4</hitstun_growth>
-				<y_bias>-4</y_bias>
+				<hitstun_growth>2</hitstun_growth>
+				<y_bias>-16</y_bias>
 				<x_draw>-.1</x_draw>
 				<y_draw>-.1</y_draw>
 				<onHitOther>test</onHitOther>
@@ -626,7 +673,7 @@
 		<frame number="before">
 			<ifButton>
 				<button check="keysContain">attack</button>
-				<fail>doFinisher</fail>
+				<fail>setFinisher</fail>
 			</ifButton>
 		</frame>
 		
@@ -655,16 +702,27 @@
 
 		<conditional name="repeatAttack">
 			<setFrame>0</setFrame>
+			<if function="==">
+				<variable source="action">doComplete</variable>
+				<value>True</value>
+				<pass>stopLoop</pass>
+			</if>
 		</conditional>
-		<conditional name="doFinisher">
+		<conditional name="setFinisher">
+			<setVar source="action">
+				<variable>doComplete</variable>
+				<value>True</value>
+			</setVar>
+			<modifyHitbox name="jab">
+				<base_knockback>8</base_knockback>
+				<knockback_growth>0.04</knockback_growth>
+			</modifyHitbox>
+		</conditional>
+		<conditional name="stopLoop">
 			<setVar source="action">
 				<variable>doRepeat</variable>
 				<value>False</value>
 			</setVar>
-			<modifyHitbox name="jab">
-				<base_knockback>8</base_knockback>
-				<knockback_growth>0.06</knockback_growth>
-			</modifyHitbox>
 		</conditional>
 	</NeutralAttack>
 	
