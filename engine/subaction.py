@@ -546,6 +546,14 @@ class ifButton(SubAction):
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
         if self.button == '': return
+        if self.button == 'forward': 
+            key, invkey = _actor.getForwardBackwardKeys()
+            working_button = key
+        elif self.button == 'backward':
+            key, invkey = _actor.getForwardBackwardKeys()
+            working_button = invkey
+        else:
+            working_button = self.button
 
         if self.beyond_action:
             working_from = self.buffer_from
@@ -553,23 +561,23 @@ class ifButton(SubAction):
             working_from = max(min(_actor.last_input_frame, self.buffer_from), 1)
         
         if self.check == 'keysContain':
-            cond = _actor.keysContain(self.button, self.threshold)
+            cond = _actor.keysContain(working_button, self.threshold)
         elif self.check == 'keyBuffered':
-            cond = _actor.keyBuffered(self.button, working_from, self.threshold, self.buffer_to)
+            cond = _actor.keyBuffered(working_button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyTapped':
-            cond = _actor.keyTapped(self.button, working_from, self.threshold, self.buffer_to)
+            cond = _actor.keyTapped(working_button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyHeld':
-            cond = _actor.keyHeld(self.button, working_from, self.threshold, self.buffer_to)
+            cond = _actor.keyHeld(working_button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyUp':
-            cond = _actor.keyUp(self.button, working_from, self.threshold, self.buffer_to)
+            cond = _actor.keyUp(working_button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyReinput':
-            cond = _actor.keyReinput(self.button, working_from, self.threshold, self.buffer_to)
+            cond = _actor.keyReinput(working_button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'keyIdle':
-            cond = _actor.keyIdle(self.button, working_from, self.threshold, self.buffer_to)
+            cond = _actor.keyIdle(working_button, working_from, self.threshold, self.buffer_to)
         elif self.check == 'smash':
-            cond = _actor.checkSmash(self.button)
+            cond = _actor.checkSmash(working_button)
         elif self.check == 'tap':
-            cond = _actor.checkTap(self.button)
+            cond = _actor.checkTap(working_button)
         else:
             return
 
