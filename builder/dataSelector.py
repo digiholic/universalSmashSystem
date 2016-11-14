@@ -1,5 +1,6 @@
 from Tkinter import *
 import settingsManager
+from idlelib.ObjectBrowser import _object_browser
                 
 class dataLine(Frame):
     """
@@ -19,16 +20,26 @@ class dataLine(Frame):
         self.display_name = StringVar()
         self.display_name.set(_name)
         
-        Frame.__init__(self, _parent, bg="white",anchor=W)
+        self.bg = StringVar()
+        self.bg.trace('w', self.changebg)
+        
+        Frame.__init__(self, _parent, bg="white")
         self.root = _parent
         
         self.label = Label(self,textvariable=self.display_name)
         
-        self.label.pack(side=LEFT)
+        self.bg.set("gainsboro") #it's a real color. Who knew?
         self.visible = True
         
+    def changebg(self,*args):
+        self.config(bg=self.bg.get())
+        self.label.config(bg=self.bg.get())
+        
+    def packChildren(self):
+        self.label.pack(side=LEFT)
+        
     def pack(self, cnf={}, **kw):
-        if self.visible: Label.pack(self, cnf=cnf, **kw)
+        if self.visible: Frame.pack(self, cnf=cnf, **kw)
         
     def setButtons(self,_buttons):
         for button in _buttons:
@@ -36,6 +47,34 @@ class dataLine(Frame):
         
     def updateName(self,_string):
         if _string: self.display_name.set(_string)
+    
+class StringLine(dataLine):
+    def __init__(self,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _parent, _name)
+        
+        self.target_object = _target_object
+        self.var_name = _varname
+        
+        self.string_data = StringVar()
+        self.string_entry = Entry(self,textvariable=self.string_data)
+        
+        # If the object exists and has the attribute, set the variable
+        if self.target_object and hasattr(self.target_object, _varname):
+            self.string_data.set(getattr(self.target_object, _varname))
+            self.string_entry.config(state=NORMAL)
+        else:
+            self.string_entry.config(state=DISABLED)
+            
+        self.string_data.trace('w', self.updateVariable)
+        self.packChildren()
+        
+    def updateVariable(self,*args):
+        if self.target_object:
+            setattr(self.target_object,self.var_name,self.string_data.get())
+    
+    def packChildren(self):
+        dataLine.packChildren(self)
+        self.string_entry.pack(side=LEFT,fill=BOTH)
         
 class dataSelector(dataLine):
     """
@@ -44,6 +83,7 @@ class dataSelector(dataLine):
     def __init__(self,_parent,_name=''):
         dataLine.__init__(self, _parent, _name)
         self.bind("<Button-1>", self.onClick)
+        self.bg.set("white")
         
     def onClick(self,*_args):
         if self.selected:
@@ -55,7 +95,7 @@ class dataSelector(dataLine):
     
     def select(self):
         self.selected = True
-        self.config(bg="lightblue")
+        self.bg.set('lightblue')
         if self.root.selected:
             self.root.selected.unselect()
         self.root.selected = self

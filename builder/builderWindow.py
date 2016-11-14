@@ -14,6 +14,7 @@ from tkMessageBox import showinfo
 from shutil import copyfile
 import stages.training_stage.stage
 import ttk
+import builder.dataSelector as dataSelector
 from engine.abstractFighter import AbstractFighter
 
 """
@@ -94,12 +95,13 @@ class MainFrame(Tk):
         # Create and place subpanels
         self.config(menu=MenuBar(self))
         self.viewer_pane = LeftPane(self,self)
-        self.action_pane = RightPane(self,self)
+        self.action_pane = EditorPane(self)
         self.viewer_pane.grid(row=0,column=0,sticky=N+S+E+W)
         self.action_pane.grid(row=0,column=1,sticky=N+S+E+W)
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=3, uniform="column")
         self.grid_columnconfigure(1, weight=2, uniform="column")
+        
         self.fighter_string.trace('w',self.changeFighter)
         self.action_string.trace('w',self.changeAction)
         self.frame.trace('w',self.changeFrame)
@@ -154,8 +156,10 @@ class MainFrame(Tk):
             new_fighter = engine.abstractFighter.AbstractFighter(dirname,0)
         
         new_fighter.loadSpriteLibrary(0)
+        stage = stages.training_stage.stage.getStage()
+        stage.initializeCamera()
+        new_fighter.game_state = stage
         new_fighter.initialize()
-        new_fighter.game_state = stages.training_stage.stage.getStage()
         new_fighter.doAction('NeutralAction')
         fighter = new_fighter
         self.wm_title('Legacy Editor - '+fighter.name)        
@@ -455,9 +459,10 @@ class ViewerPanel(BuilderPanel):
     def centerFighter(self):
         global fighter
         
-        fighter.posx = self.screen.get_rect().centerx + self.center[0]
-        fighter.posy = self.screen.get_rect().centery + self.center[1]
-        fighter.updatePosition()
+        if fighter:
+            fighter.posx = self.screen.get_rect().centerx + self.center[0]
+            fighter.posy = self.screen.get_rect().centery + self.center[1]
+            fighter.updatePosition()
     
     def reloadFrame(self):
         global fighter
@@ -552,6 +557,7 @@ class RightPane(BuilderPanel):
         BuilderPanel.__init__(self, _parent, _root)
         self.action_selector_panel = SelectorPanel(self,_root)
         self.subaction_panel = Subaction_panel(self,_root)
+        
         self.subaction_property_panel = PropertiesPanel(self,_root)
         
         self.action_selector_panel.pack(fill=X)
@@ -988,12 +994,64 @@ class VerticalScrolledFrame(Frame):
         return
 
 
-class FighterTabPane(BuilderPanel):
+class EditorPane(Frame):
+    def __init__(self,_parent):
+        Frame.__init__(self, _parent, bg="blue")
+        self.root = _parent
+        
+        self.data_panel = SidePanel(self,self.root)
+        
+        self.data_panel.pack(fill=BOTH,expand=TRUE)
+        
+class SidePanel(ttk.Notebook):
+    """
+    The tabbed panel (Notebook) that will contain the side panel of the builder.
+    """
+    def __init__(self,_parent,_root):
+        ttk.Notebook.__init__(self, _parent)
+        fighter_properties = FighterPropertiesPanel(self,_root)
+        
+        panel_windows = {
+            'Properties': fighter_properties,
+            }
+        
+        for name,window in panel_windows.iteritems():
+            self.add(window,text=name,sticky=N+S+E+W)
+        
+class dataPanel(BuilderPanel):
     def __init__(self,_parent,_root):
         BuilderPanel.__init__(self, _parent, _root)
         
-        tabWindow = ttk.Notebook(self)
+        # A list of dataLines to draw
+        self.data_list = []
         
-class PropertiesFrame(ttk.Frame):
-    def __init__(self, _parent):
-        ttk.Frame.__init__(self, _parent)
+        self.scroll_frame = VerticalScrolledFrame(self,bg="red")
+        self.interior = self.scroll_frame.interior
+        
+        self.selected_string = StringVar(self)
+        self.selected = None
+        
+    def loadDataList(self):
+        self.scroll_frame.pack(fill=BOTH,expand=TRUE)
+        for data in self.data_list:
+            data.pack(fill=X) #the data line will hide itself if it's not expanded
+            
+
+class FighterPropertiesPanel(dataPanel):
+    def __init__(self,_parent,_root):
+        dataPanel.__init__(self, _parent, _root)
+        self.config(bg="green")
+        
+        namePanel = dataSelector.StringLine(self.interior,'Name:',None,'name')
+        self.data_list.append(namePanel)
+        
+        self.loadDataList()
+        
+    def changeFighter(self, *_args):
+        global fighter
+        
+        dataPanel.changeFighter(self, *_args)
+        
+        namePanel = dataSelector.StringLine(self,'Name:',fighter,'name')
+        self.data_list.append(namePanel)
+        

@@ -273,7 +273,8 @@ class AbstractFighter():
             self.actions = baseActions
             self.action_file = baseActions.__file__
         if self.sound_path:
-            settingsManager.getSfx().addSoundsFromDirectory(os.path.join(self.base_dir,self.sound_path), self.name)
+            #settingsManager.getSfx().addSoundsFromDirectory(os.path.join(self.base_dir,self.sound_path), self.name)
+            pass
         
     def saveFighter(self,_path=None):
         """ Save the fighter's data to XML. Basically the inverse of __init__.

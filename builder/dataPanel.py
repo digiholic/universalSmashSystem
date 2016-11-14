@@ -1,30 +1,10 @@
 from Tkinter import *
+import ttk
 from builderWindow import BuilderPanel
 import dataSelector
 
 
-class dataPanel(BuilderPanel):
-    def __init__(self,_parent,_root):
-        BuilderPanel.__init__(self, _parent, _root)
-        
-        # A list of dataLines to draw
-        self.data_list = []
-        
-        self.scroll_frame = VerticalScrolledFrame(self,bg="blue")
-        self.scroll_frame.config(width=self.winfo_width())
-        
-        self.selected_string = StringVar(self)
-        self.selected = None
-        
-    def loadDataList(self):
-        self.scroll_frame.pack(fill=BOTH,expand=TRUE)
-        for data in self.data_list:
-            data.pack(fill=X) #the data line will hide itself if it's not expanded
-            
 
-class FighterPropertiesPanel(dataPanel):
-    pass
-    
 class Subaction_panel(BuilderPanel):
     def __init__(self,_parent,_root):
         BuilderPanel.__init__(self, _parent, _root)
