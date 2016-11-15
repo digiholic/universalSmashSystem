@@ -58,24 +58,67 @@ class StringLine(dataLine):
         self.string_data = StringVar()
         self.string_entry = Entry(self,textvariable=self.string_data)
         
-        # If the object exists and has the attribute, set the variable
-        if self.target_object and hasattr(self.target_object, _varname):
-            self.string_data.set(getattr(self.target_object, _varname))
-            self.string_entry.config(state=NORMAL)
-        else:
-            self.string_entry.config(state=DISABLED)
-            
-        self.string_data.trace('w', self.updateVariable)
-        self.packChildren()
+        self.update()
         
-    def updateVariable(self,*args):
+        self.string_data.trace('w', self.changeVariable)
+        
+    def changeVariable(self,*args):
         if self.target_object:
             setattr(self.target_object,self.var_name,self.string_data.get())
+            print(self.target_object.name)
     
     def packChildren(self):
         dataLine.packChildren(self)
         self.string_entry.pack(side=LEFT,fill=BOTH)
+    
+    def update(self):
+        print('Updating string panel')
+        # If the object exists and has the attribute, set the variable
+        if self.target_object and hasattr(self.target_object, self.var_name):
+            self.string_data.set(getattr(self.target_object, self.var_name))
+            self.string_entry.config(state=NORMAL)
+        else:
+            self.string_entry.config(state=DISABLED)
         
+        self.packChildren()
+        
+class ImageLine(dataLine):
+    def __init__(self,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _parent, _name)
+        
+        self.target_object = _target_object
+        self.var_name = _varname
+        
+        self.image_data = StringVar()
+        self.image_entry = Entry(self,textvariable=self.image_data)
+        self.image_button = Button(self,text='...',command=self.loadImage)
+        
+        self.update()
+        
+        self.image_data.trace('w', self.changeVariable)
+        
+    def changeVariable(self,*args):
+        if self.target_object:
+            setattr(self.target_object,self.var_name,self.image_data.get())
+    
+    def packChildren(self):
+        dataLine.packChildren(self)
+        self.image_entry.pack(side=LEFT,fill=BOTH)
+        self.image_button.pack(side=LEFT)
+    
+    def update(self):
+        # If the object exists and has the attribute, set the variable
+        if self.target_object and hasattr(self.target_object, self.var_name):
+            self.image_data.set(getattr(self.target_object, self.var_name))
+            self.image_entry.config(state=DISABLED)
+        else:
+            self.image_entry.config(state=DISABLED)
+        
+        self.packChildren()
+    
+    def loadImage(self):
+        pass     
+           
 class dataSelector(dataLine):
     """
     Data Selector is a dataLine that can be selected. These will usually open up a config window.

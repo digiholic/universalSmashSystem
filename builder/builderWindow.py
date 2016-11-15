@@ -156,10 +156,13 @@ class MainFrame(Tk):
             new_fighter = engine.abstractFighter.AbstractFighter(dirname,0)
         
         new_fighter.loadSpriteLibrary(0)
-        stage = stages.training_stage.stage.getStage()
-        stage.initializeCamera()
-        new_fighter.game_state = stage
-        new_fighter.initialize()
+        new_fighter.current_action = new_fighter.getAction('NeutralAction')
+        new_fighter.init_boxes()
+        #stage = stages.training_stage.stage.getStage()
+        #new_fighter.game_state = stage
+        #new_fighter.initialize()
+        #stage.follows.append(new_fighter.ecb.tracking_rect)
+        #stage.initializeCamera()
         new_fighter.doAction('NeutralAction')
         fighter = new_fighter
         self.wm_title('Legacy Editor - '+fighter.name)        
@@ -1042,16 +1045,22 @@ class FighterPropertiesPanel(dataPanel):
         dataPanel.__init__(self, _parent, _root)
         self.config(bg="green")
         
-        namePanel = dataSelector.StringLine(self.interior,'Name:',None,'name')
-        self.data_list.append(namePanel)
+        self.namePanel = dataSelector.StringLine(self.interior,'Name:',None,'name')
+        self.iconPanel = dataSelector.ImageLine(self.interior,'Franchise Icon:',None,'franchise_icon_path')
+        
+        self.data_list.append(self.namePanel)
+        self.data_list.append(self.iconPanel)
         
         self.loadDataList()
         
     def changeFighter(self, *_args):
         global fighter
-        
         dataPanel.changeFighter(self, *_args)
         
-        namePanel = dataSelector.StringLine(self,'Name:',fighter,'name')
-        self.data_list.append(namePanel)
+        self.namePanel.target_object = fighter
+        self.iconPanel.target_object = fighter
+        
+        self.namePanel.update()
+        self.iconPanel.update()
+
         

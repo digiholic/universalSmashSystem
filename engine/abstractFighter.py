@@ -272,9 +272,8 @@ class AbstractFighter():
         except:
             self.actions = baseActions
             self.action_file = baseActions.__file__
-        if self.sound_path:
-            #settingsManager.getSfx().addSoundsFromDirectory(os.path.join(self.base_dir,self.sound_path), self.name)
-            pass
+        
+        self.game_state = None
         
     def saveFighter(self,_path=None):
         """ Save the fighter's data to XML. Basically the inverse of __init__.
@@ -416,11 +415,7 @@ class AbstractFighter():
         # Evironmental Collision Box
         self.ecb = collisionBox.ECB(self)
 
-        # Hitboxes and Hurtboxes
-        self.active_hitboxes = pygame.sprite.Group()
-        self.active_hurtboxes = pygame.sprite.Group()
-        self.auto_hurtbox = hurtbox.Hurtbox(self)
-        self.armor = dict()
+        self.init_boxes()
         
         self.hitbox_lock = weakref.WeakSet()
         
@@ -441,7 +436,12 @@ class AbstractFighter():
             class_ = getattr(self.actions,'Respawn')
             self.changeAction(class_())
 
-    
+    def init_boxes(self):
+        self.active_hitboxes = pygame.sprite.Group()
+        self.active_hurtboxes = pygame.sprite.Group()
+        self.auto_hurtbox = hurtbox.Hurtbox(self)
+        self.armor = dict()
+        
     def update(self):
         """ This method will step the fighter forward one frame. It will resolve movement,
         collisions, animations, and all sorts of things. It should be called every frame.
@@ -639,7 +639,7 @@ class AbstractFighter():
         self.ecb.normalize()
 
     def draw(self,_screen,_offset,_scale):
-        if (settingsManager.getSetting('showSpriteArea')): spriteManager.RectSprite(self.sprite.rect).draw(_screen, _offset, _scale)
+        if (settingsManager.getSetting('showSpriteArea')):spriteManager.RectSprite(self.sprite.rect).draw(_screen, _offset, _scale)
         rect = self.sprite.draw(_screen,_offset,_scale)
         if self.mask: self.mask.draw(_screen,_offset,_scale)
         if settingsManager.getSetting('showECB'): 

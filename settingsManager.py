@@ -76,7 +76,6 @@ def getSetting(_key = None):
     global settings
     if settings == None:
         settings = Settings()
-        return settings
     if _key:
         return settings.setting[_key]
     else:
