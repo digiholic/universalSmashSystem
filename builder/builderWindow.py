@@ -532,7 +532,7 @@ class NavigatorPanel(BuilderPanel):
             self.current_frame.config(state=NORMAL)
             self.button_plus.config(state=NORMAL)
             self.button_plus_five.config(state=NORMAL)
-            
+            2
             #Disable ones that shouldn't be clicked anymore
             if frame == 0:
                 self.button_minus.config(state=DISABLED)
@@ -1053,23 +1053,22 @@ class FighterPropertiesPanel(dataPanel):
         dataPanel.__init__(self, _parent, _root)
         self.config(bg="green")
         
-        self.panels = {
-            'namePanel' : dataSelector.StringLine(self.interior,'Name:',None,'name'),
-            'iconPanel' : dataSelector.ImageLine(self.interior,'Franchise Icon:',None,'franchise_icon_path'),
-            'cssPanel' : dataSelector.ImageLine(self.interior,'CSS Icon:',None,'css_icon_path'),
-            'portraitPanel' : dataSelector.ImageLine(self.interior,'CSS Portrait:',None,'css_portrait_path'),
-            'spritePanel' : dataSelector.DirLine(self.interior,'Sprite Path:',None,'sprite_directory'),
-            'prefixPanel' : dataSelector.StringLine(self.interior,'Sprite Prefix:',None,'sprite_prefix'),
-            #'widthPanel' : dataSelector.NumLine(self.interior,'Sprite Width:',None,'sprite_width'),
-            'defaultSpritePanel' : dataSelector.StringLine(self.interior,'Default Sprite:',None,'default_sprite'),
-            'articlePathPanel' : dataSelector.DirLine(self.interior,'Article Path:',None,'article_path'),
-            'articleFilePanel' : dataSelector.ModuleLine(self.interior,'Articles:',None,'article_file'),
-            'soundPanel' : dataSelector.DirLine(self.interior,'Sound Path:',None,'sound_path'),
-            'actionPanel': dataSelector.ModuleLine(self.interior,'Actions:',None,'action_file'),
-            
-            }
+        self.panels = [
+            dataSelector.StringLine(self.interior,'Name:',None,'name'),
+            dataSelector.ImageLine(self.interior,'Franchise Icon:',None,'franchise_icon_path'),
+            dataSelector.ImageLine(self.interior,'CSS Icon:',None,'css_icon_path'),
+            dataSelector.ImageLine(self.interior,'CSS Portrait:',None,'css_portrait_path'),
+            dataSelector.DirLine(self.interior,'Sprite Path:',None,'sprite_directory'),
+            dataSelector.StringLine(self.interior,'Sprite Prefix:',None,'sprite_prefix'),
+            dataSelector.NumLine(self.interior,'Sprite Width:',None,'sprite_width'),
+            dataSelector.StringLine(self.interior,'Default Sprite:',None,'default_sprite'),
+            dataSelector.DirLine(self.interior,'Article Path:',None,'article_path'),
+            dataSelector.ModuleLine(self.interior,'Articles:',None,'article_file'),
+            dataSelector.DirLine(self.interior,'Sound Path:',None,'sound_path'),
+            dataSelector.ModuleLine(self.interior,'Actions:',None,'action_file')
+            ]
         
-        for panel in self.panels.values():
+        for panel in self.panels:
             self.data_list.append(panel)
             
         self.loadDataList()

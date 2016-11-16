@@ -67,7 +67,7 @@ class StringLine(dataLine):
     def changeVariable(self,*args):
         if self.target_object:
             setattr(self.target_object,self.var_name,self.string_data.get())
-            print(self.target_object.name)
+            print(getattr(self.target_object,self.var_name))
     
     def packChildren(self):
         dataLine.packChildren(self)
@@ -204,6 +204,57 @@ class ModuleLine(dataLine):
             modulefile = askopenfile(mode="r",initialdir=self.target_object.base_dir,filetypes=[('TUSSLE ActionScript files','*.xml'),('Python Files','*.py')])
             self.module_data.set(os.path.relpath(modulefile.name, self.target_object.base_dir))
 
+class NumLine(dataLine):
+    def __init__(self,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _parent, _name)
+        
+        self.target_object = _target_object
+        self.var_name = _varname
+        
+        self.num_data = StringVar()
+        vcmd = (_parent.register(self.validate),
+                '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+        self.num_entry = Entry(self,textvariable=self.num_data,validate='key',validatecommand=vcmd)
+        
+        self.update()
+        
+        self.num_data.trace('w', self.changeVariable)
+        
+    def changeVariable(self,*args):
+        if self.target_object:
+            setattr(self.target_object,self.var_name,self.num_data.get())
+            print(getattr(self.target_object,self.var_name))
+    
+    def packChildren(self):
+        dataLine.packChildren(self)
+        self.num_entry.pack(side=LEFT,fill=BOTH)
+    
+    def update(self):
+        print('Updating string panel')
+        # If the object exists and has the attribute, set the variable
+        if self.target_object and hasattr(self.target_object, self.var_name):
+            self.num_data.set(getattr(self.target_object, self.var_name))
+            self.num_entry.config(state=NORMAL)
+        else:
+            self.num_entry.config(state=DISABLED)
+        
+        self.packChildren()
+
+    def validate(self, action, index, value_if_allowed,
+        prior_value, text, validation_type, trigger_type, widget_name):
+        # action=1 -> insert
+        if(action=='1'):
+            if text in '0123456789.-+':
+                try:
+                    float(value_if_allowed)
+                    return True
+                except ValueError:
+                    return False
+            else:
+                return False
+        else:
+            return True
+         
 class dataSelector(dataLine):
     """
     Data Selector is a dataLine that can be selected. These will usually open up a config window.
