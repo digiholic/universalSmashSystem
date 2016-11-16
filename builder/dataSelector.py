@@ -164,6 +164,46 @@ class DirLine(dataLine):
             directory = askdirectory(initialdir=self.target_object.base_dir)
             self.dir_data.set(os.path.relpath(directory, self.target_object.base_dir))
 
+class ModuleLine(dataLine):
+    def __init__(self,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _parent, _name)
+        
+        self.target_object = _target_object
+        self.var_name = _varname
+        
+        self.module_data = StringVar()
+        self.module_entry = Entry(self,textvariable=self.module_data)
+        self.module_button = Button(self,text='...',command=self.loadImage)
+        self.module_entry.config(state=DISABLED)
+        
+        self.update()
+        
+        self.module_data.trace('w', self.changeVariable)
+        
+    def changeVariable(self,*args):
+        if self.target_object:
+            setattr(self.target_object,self.var_name,self.module_data.get())
+    
+    def packChildren(self):
+        dataLine.packChildren(self)
+        self.module_entry.pack(side=LEFT,fill=BOTH)
+        self.module_button.pack(side=LEFT)
+    
+    def update(self):
+        # If the object exists and has the attribute, set the variable
+        if self.target_object and hasattr(self.target_object, self.var_name):
+            self.module_data.set(getattr(self.target_object, self.var_name))
+            self.module_button.config(state=NORMAL)
+        else:
+            self.module_button.config(state=DISABLED)
+        
+        self.packChildren()
+    
+    def loadImage(self):
+        if self.target_object:
+            modulefile = askopenfile(mode="r",initialdir=self.target_object.base_dir,filetypes=[('TUSSLE ActionScript files','*.xml'),('Python Files','*.py')])
+            self.module_data.set(os.path.relpath(modulefile.name, self.target_object.base_dir))
+
 class dataSelector(dataLine):
     """
     Data Selector is a dataLine that can be selected. These will usually open up a config window.

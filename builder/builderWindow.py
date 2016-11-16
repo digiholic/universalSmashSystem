@@ -1063,9 +1063,9 @@ class FighterPropertiesPanel(dataPanel):
             #'widthPanel' : dataSelector.NumLine(self.interior,'Sprite Width:',None,'sprite_width'),
             'defaultSpritePanel' : dataSelector.StringLine(self.interior,'Default Sprite:',None,'default_sprite'),
             'articlePathPanel' : dataSelector.DirLine(self.interior,'Article Path:',None,'article_path'),
-            #'articleFilePanel' : dataSelector.ModuleLine(self.interior,'Articles:',None,'article_file'),
+            'articleFilePanel' : dataSelector.ModuleLine(self.interior,'Articles:',None,'article_file'),
             'soundPanel' : dataSelector.DirLine(self.interior,'Sound Path:',None,'sound_path'),
-            #'actionPanel': dataSelector.ModuleLine(self.interior,'Actions:',None,'action_file'),
+            'actionPanel': dataSelector.ModuleLine(self.interior,'Actions:',None,'action_file'),
             
             }
         
