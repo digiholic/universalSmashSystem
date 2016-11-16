@@ -100,27 +100,40 @@ class Network(object):
     def send(self,msg,target):
         if(self.connect_mode == self.SOCKET_MODE_UDP):
             self.conn.sendto(msg, target)
-    def receive(self,sock):
-        if(self.connect_mode == self.SOCKET_MODE_UDP):
-            msg,addr = sock.recvfrom(128)
-            return msg,addr
+        if(self.connect_mode == self.SOCKET_MODE_TCP):
+            if len(msg)<self.MESSAGE_SIZE:#fixed-width messages, could be made better by proper buffering 
+                msg='{message: <{fill}}'.format(message=msg, fill=self.MESSAGE_SIZE)
+            else:
+                print("message too long: "+str(len(msg)))
+            self.conn.sendall(msg)
         
     #TODO: replace hard-coded ports/addresses/buffer/etc with configurable ones
     def __init__(self):
         #set to false to disable all networking and just run locally
         self.enabled = False
         if(self.enabled):
-            self.SOCKET_MODE_UDP = "UDP"#maybe later add code to support TCP. Might be preferable to avoid dropping packets?
-            self.connect_mode = self.SOCKET_MODE_UDP
-            self.clientport = random.randrange(8000, 8999)
-            self.addr = "192.168.1.1"#change to IP of server to connect to
+            self.MESSAGE_SIZE = 96
+            self.SOCKET_MODE_UDP = "UDP"
+            self.SOCKET_MODE_TCP = "TCP"#not implemented yet
+            self.connect_mode = self.SOCKET_MODE_TCP
+            
+            self.serveraddr = "127.0.0.1"#change to IP of server to connect to
             self.serverport = 9009
+            
             if(self.connect_mode == self.SOCKET_MODE_UDP):
                 self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.conn.bind(("", self.clientport))#bind to everything. 
+                self.conn.setblocking(0)
+                self.clientport = random.randrange(8000, 8999)
+                self.conn.bind(("", self.clientport))#bind to everything.
+            if(self.connect_mode == self.SOCKET_MODE_TCP):
+                self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.conn.connect((self.serveraddr,self.serverport))
+                self.conn.setblocking(0)
+            
             self.read_list = [self.conn]
             self.write_list = []
-            self.send("c", (self.addr, self.serverport))
+            
+            self.send("c", (self.serveraddr, self.serverport))
             #count each frame with an id so that it can be identified when sent over the wire
             self.tick_count = 0
             self.buffer_size = 6 #number of frames of latency to introduce locally (should be greater than the network latency)
@@ -135,6 +148,7 @@ class Network(object):
             self.current_state = self.STATE_WAITING_FOR_OPPONENT
             self.playerno = 0
             #TODO: on exit implement disconnect (message status "d" to server)
+            #close TCP
             
     """
     Creates a fake 'pipe' between the local event source (keyboard) and the network processing
@@ -212,15 +226,53 @@ class Network(object):
                     #send input to others
                     msgEvt = NetworkUpdateMessage()
                     msgEvt.update(e.type,json.dumps(e.__dict__),bufferTicks)
-                    self.send(msgEvt.toString(), (self.addr, self.serverport))
+                    self.send(msgEvt.toString(), (self.serveraddr, self.serverport))
                     #print("sent input for frame: "+str(bufferTicks)+" current frame: "+str(self.tick_count))
         #periodically send "progressing to frame X"
         if(self.tick_count % self.buffer_size == 0):
             msgProgress = NetworkProgressMessage()
             msgProgress.frame = self.tick_count + self.buffer_size
-            self.send(msgProgress.toString(),(self.addr, self.serverport))
-            #print("send req to progress to frame: "+str(self.tick_count))
+            self.send(msgProgress.toString(),(self.serveraddr, self.serverport))
     
+    def handleMessage(self, msg):
+        msgEvt = NetworkUpdateMessage()
+        msgTick = NetworkTickMessage()
+        msgFighter = NetworkFighterMessage()
+        msgProgress = NetworkProgressMessage()
+        if(msgEvt.isValid(msg)):
+            fromString = msgEvt.fromString(msg)
+            receivedTime = msgEvt.frame
+            #print("received input for frame: "+str(msgEvt.frame)+" current frame: "+str(self.tick_count))
+            frameDiff = self.buffer_size - (receivedTime - self.tick_count)
+            if(frameDiff<self.buffer_size and frameDiff>=0):
+                if(self.serveraddr not in self.buffer[frameDiff].receivedFrom):#initialise list
+                    self.buffer[frameDiff].receivedFrom[self.serveraddr] = []
+                if(not msgEvt.isBlank()):
+                    self.buffer[frameDiff].receivedFrom[self.serveraddr].append(fromString)#new entry, insert into buffer
+            else:
+                print("frame outside range"+str(msgEvt.frame))
+                if msgEvt.frame>=self.buffer_size:
+                    #Note: should never get here, it means frame rates are out of sync by a lot
+                    #but if we have hit this, try and re-sync frame count
+                    print(str(self.tick_count)+" adjusted to: "+str(msgEvt.frame-self.buffer_size+1))
+                    self.tick_count = msgEvt.frame-self.buffer_size+1
+        if(msgTick.isValid(msg)):
+            msgTick.fromString(msg)
+            self.tick_count = msgTick.tick
+            self.playerno = json.loads(msgTick.json)['playerno']
+            if(self.current_state == self.STATE_WAITING_FOR_OPPONENT):
+                self.current_state = self.STATE_PLAYING
+            print("starting")
+        if(msgFighter.isValid(msg)):
+            fromString = msgFighter.fromString(msg)
+            receivedTime = msgFighter.frame
+            frameDiff = receivedTime - self.tick_count
+            if(frameDiff-1<self.buffer_size and frameDiff-1>-1):
+                self.fighter_buffer[frameDiff-1].append(fromString)#insert into buffer
+        if(msgProgress.isValid(msg)):
+            fromString = msgProgress.fromString(msg)
+            self.max_frame = fromString.frame
+            
     def readFromNetwork(self):
         repeat = True
         while(repeat):
@@ -228,49 +280,20 @@ class Network(object):
             readable, writable, exceptional = (
                 select.select(self.read_list, self.write_list, [], 0)
             )
-            for f in readable:
-              if f is self.conn:
-                #msg, addr = f.recvfrom(128)
-                msg,addr = self.receive(f)
-                repeat = True#may be more than 1 message waiting to be read, catch up by looping until select returns nothing
-                msgEvt = NetworkUpdateMessage()
-                msgTick = NetworkTickMessage()
-                msgFighter = NetworkFighterMessage()
-                msgProgress = NetworkProgressMessage()
-                if(msgEvt.isValid(msg)):
-                    fromString = msgEvt.fromString(msg)
-                    receivedTime = msgEvt.frame
-                    #print("received input for frame: "+str(msgEvt.frame)+" current frame: "+str(self.tick_count))
-                    frameDiff = self.buffer_size - (receivedTime - self.tick_count)
-                    if(frameDiff<self.buffer_size and frameDiff>=0):
-                        if(addr not in self.buffer[frameDiff].receivedFrom):#initialise list
-                            self.buffer[frameDiff].receivedFrom[addr] = []
-                        if(not msgEvt.isBlank()):
-                            self.buffer[frameDiff].receivedFrom[addr].append(fromString)#new entry, insert into buffer
-                    else:
-                        print("frame outside range"+str(msgEvt.frame))
-                        if msgEvt.frame>=self.buffer_size:
-                            #Note: should never get here, it means frame rates are out of sync by a lot
-                            #but if we have hit this, try and re-sync frame count
-                            print(str(self.tick_count)+" adjusted to: "+str(msgEvt.frame-self.buffer_size+1))
-                            self.tick_count = msgEvt.frame-self.buffer_size+1
-                if(msgTick.isValid(msg)):
-                    msgTick.fromString(msg)
-                    self.tick_count = msgTick.tick
-                    self.playerno = json.loads(msgTick.json)['playerno']
-                    if(self.current_state == self.STATE_WAITING_FOR_OPPONENT):
-                        self.current_state = self.STATE_PLAYING
-                    print("starting")
-                if(msgFighter.isValid(msg)):
-                    fromString = msgFighter.fromString(msg)
-                    receivedTime = msgFighter.frame
-                    frameDiff = receivedTime - self.tick_count
-                    if(frameDiff-1<self.buffer_size and frameDiff-1>-1):
-                        self.fighter_buffer[frameDiff-1].append(fromString)#insert into buffer
-                if(msgProgress.isValid(msg)):
-                    fromString = msgProgress.fromString(msg)
-                    self.max_frame = fromString.frame
-                    #print("can progress to frame: "+str(self.max_frame))
+            if self.connect_mode == self.SOCKET_MODE_UDP:
+                for f in readable:
+                  if f is self.conn:
+                    msg,addr = f.recvfrom(self.MESSAGE_SIZE)
+                    repeat = True#may be more than 1 message waiting to be read, catch up by looping until select returns nothing
+                    self.handleMessage(msg)
+            if self.connect_mode == self.SOCKET_MODE_TCP:
+                for f in readable:
+                    if f is self.conn:
+                        msg,addr = f.recvfrom(self.MESSAGE_SIZE)              
+                        msg = msg.strip()
+                        repeat = True
+                        self.handleMessage(msg)
+                        
     def processFighters(self,fighters):
         if(not self.enabled or
            not self.current_state == self.STATE_PLAYING or 
@@ -327,7 +350,7 @@ class Network(object):
                     #grabbing = None#??
                     #grabbed_by = None#??
                     #hit_tagged = None#??"""
-                self.send(msg.toString(), (self.addr, self.serverport))
+                self.send(msg.toString(), (self.serveraddr, self.serverport))
         for fighter_message in nextFighterList:
             fighter_data = json.loads(fighter_message.json).items()
             print("updating fighter"+str(fighter_data.frame)+" "+str(self.tick_count))
