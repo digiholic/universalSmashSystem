@@ -1013,9 +1013,11 @@ class SidePanel(ttk.Notebook):
     def __init__(self,_parent,_root):
         ttk.Notebook.__init__(self, _parent)
         fighter_properties = FighterPropertiesPanel(self,_root)
+        fighter_actions = ActionListPanel(self,_root)
         
         panel_windows = {
             'Properties': fighter_properties,
+            'Actions': fighter_actions
             }
         
         for name,window in panel_windows.iteritems():
@@ -1039,28 +1041,60 @@ class dataPanel(BuilderPanel):
         for data in self.data_list:
             data.pack(fill=X) #the data line will hide itself if it's not expanded
             
-
+    def changeFighter(self, *_args):
+        global fighter
+        
+        for panel in self.data_list:
+            panel.target_object = fighter
+            panel.update()
+            
 class FighterPropertiesPanel(dataPanel):
     def __init__(self,_parent,_root):
         dataPanel.__init__(self, _parent, _root)
         self.config(bg="green")
         
-        self.namePanel = dataSelector.StringLine(self.interior,'Name:',None,'name')
-        self.iconPanel = dataSelector.ImageLine(self.interior,'Franchise Icon:',None,'franchise_icon_path')
+        self.panels = {
+            'namePanel' : dataSelector.StringLine(self.interior,'Name:',None,'name'),
+            'iconPanel' : dataSelector.ImageLine(self.interior,'Franchise Icon:',None,'franchise_icon_path'),
+            'cssPanel' : dataSelector.ImageLine(self.interior,'CSS Icon:',None,'css_icon_path'),
+            'portraitPanel' : dataSelector.ImageLine(self.interior,'CSS Portrait:',None,'css_portrait_path'),
+            'spritePanel' : dataSelector.DirLine(self.interior,'Sprite Path:',None,'sprite_directory'),
+            'prefixPanel' : dataSelector.StringLine(self.interior,'Sprite Prefix:',None,'sprite_prefix'),
+            #'widthPanel' : dataSelector.NumLine(self.interior,'Sprite Width:',None,'sprite_width'),
+            'defaultSpritePanel' : dataSelector.StringLine(self.interior,'Default Sprite:',None,'default_sprite'),
+            'articlePathPanel' : dataSelector.DirLine(self.interior,'Article Path:',None,'article_path'),
+            #'articleFilePanel' : dataSelector.ModuleLine(self.interior,'Articles:',None,'article_file'),
+            'soundPanel' : dataSelector.DirLine(self.interior,'Sound Path:',None,'sound_path'),
+            #'actionPanel': dataSelector.ModuleLine(self.interior,'Actions:',None,'action_file'),
+            
+            }
         
-        self.data_list.append(self.namePanel)
-        self.data_list.append(self.iconPanel)
-        
+        for panel in self.panels.values():
+            self.data_list.append(panel)
+            
         self.loadDataList()
+        
+    
+class ActionListPanel(dataPanel):
+    def __init__(self,_parent,_root):
+        dataPanel.__init__(self, _parent, _root)
+        self.config(bg="teal")
         
     def changeFighter(self, *_args):
         global fighter
+        
+        act_list = []
+        if isinstance(fighter.actions, engine.actionLoader.ActionLoader):
+            act_list.extend(fighter.actions.getAllActions())
+        else:
+            for name,_ in inspect.getmembers(fighter.actions, inspect.isclass):
+                act_list.append(name)
+        
+        for action in act_list:
+            #Once we have action selector lines, replace this
+            dataLine = dataSelector.dataLine(self.interior,action)
+            self.data_list.append(dataLine)
+            dataLine.packChildren()
+        self.loadDataList()
+        
         dataPanel.changeFighter(self, *_args)
-        
-        self.namePanel.target_object = fighter
-        self.iconPanel.target_object = fighter
-        
-        self.namePanel.update()
-        self.iconPanel.update()
-
-        

@@ -1,7 +1,9 @@
 from Tkinter import *
 import settingsManager
 from idlelib.ObjectBrowser import _object_browser
-                
+from tkFileDialog import askopenfile,askdirectory
+import os
+
 class dataLine(Frame):
     """
     A DataLine is an object that can be displayed in the right panel.
@@ -92,6 +94,7 @@ class ImageLine(dataLine):
         self.image_data = StringVar()
         self.image_entry = Entry(self,textvariable=self.image_data)
         self.image_button = Button(self,text='...',command=self.loadImage)
+        self.image_entry.config(state=DISABLED)
         
         self.update()
         
@@ -110,15 +113,57 @@ class ImageLine(dataLine):
         # If the object exists and has the attribute, set the variable
         if self.target_object and hasattr(self.target_object, self.var_name):
             self.image_data.set(getattr(self.target_object, self.var_name))
-            self.image_entry.config(state=DISABLED)
+            self.image_button.config(state=NORMAL)
         else:
-            self.image_entry.config(state=DISABLED)
+            self.image_button.config(state=DISABLED)
         
         self.packChildren()
     
     def loadImage(self):
-        pass     
-           
+        if self.target_object:
+            imgfile = askopenfile(mode="r",initialdir=self.target_object.base_dir,filetypes=[('Image Files','*.png')])
+            self.image_data.set(os.path.relpath(imgfile.name, self.target_object.base_dir))
+
+class DirLine(dataLine):
+    def __init__(self,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _parent, _name)
+        
+        self.target_object = _target_object
+        self.var_name = _varname
+        
+        self.dir_data = StringVar()
+        self.dir_entry = Entry(self,textvariable=self.dir_data)
+        self.dir_button = Button(self,text='...',command=self.loadDir)
+        self.dir_entry.config(state=DISABLED)
+        
+        self.update()
+        
+        self.dir_data.trace('w', self.changeVariable)
+        
+    def changeVariable(self,*args):
+        if self.target_object:
+            setattr(self.target_object,self.var_name,self.dir_data.get())
+    
+    def packChildren(self):
+        dataLine.packChildren(self)
+        self.dir_entry.pack(side=LEFT,fill=BOTH)
+        self.dir_button.pack(side=LEFT)
+    
+    def update(self):
+        # If the object exists and has the attribute, set the variable
+        if self.target_object and hasattr(self.target_object, self.var_name):
+            self.dir_data.set(getattr(self.target_object, self.var_name))
+            self.dir_button.config(state=NORMAL)
+        else:
+            self.dir_button.config(state=DISABLED)
+        
+        self.packChildren()
+    
+    def loadDir(self):
+        if self.target_object:
+            directory = askdirectory(initialdir=self.target_object.base_dir)
+            self.dir_data.set(os.path.relpath(directory, self.target_object.base_dir))
+
 class dataSelector(dataLine):
     """
     Data Selector is a dataLine that can be selected. These will usually open up a config window.
