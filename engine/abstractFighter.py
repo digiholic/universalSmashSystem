@@ -260,7 +260,13 @@ class AbstractFighter():
         
         #TODO: The ECB crashes unless there is a sprite to pull from, so we load this one even though it'll never actually be drawn
         spriteName = self.sprite_prefix + self.default_sprite + '.png'
+        try:
+            self.scale = float(self.xml_data.find('scale').text)
+        except:
+            self.scale = 1.0
+        
         self.sprite = spriteManager.SheetSprite(os.path.join(self.base_dir,self.sprite_directory,spriteName), self.sprite_width)
+        
         
         self.events = dict()
         try:
@@ -299,18 +305,19 @@ class AbstractFighter():
         
         tree = ElementTree.Element('fighter')
         
-        tree.append(self.createElement('name', self.name))
-        tree.append(self.createElement('icon', self.franchise_icon_path))
-        tree.append(self.createElement('css_icon', self.css_icon_path))
-        tree.append(self.createElement('scale', self.sprite.scale))
+        tree.append(createElement('name', self.name))
+        tree.append(createElement('icon', self.franchise_icon_path))
+        tree.append(createElement('css_icon', self.css_icon_path))
+        tree.append(createElement('scale', self.scale))
         
-        tree.append(self.createElement('sprite_directory', self.sprite_directory))
-        tree.append(self.createElement('sprite_prefix', self.sprite_prefix))
-        tree.append(self.createElement('sprite_width', self.sprite_width))
-        tree.append(self.createElement('default_sprite', self.default_sprite))
-        tree.append(self.createElement('article_path', self.article_path_short))
-        tree.append(self.createElement('sound_path', self.sound_path_short))
-        tree.append(self.createElement('actions', self.action_file))
+        tree.append(createElement('sprite_directory', self.sprite_directory))
+        tree.append(createElement('sprite_prefix', self.sprite_prefix))
+        tree.append(createElement('sprite_width', self.sprite_width))
+        tree.append(createElement('default_sprite', self.default_sprite))
+        tree.append(createElement('article_path', self.article_path_short))
+        tree.append(createElement('articles', self.article_file))
+        tree.append(createElement('sound_path', self.sound_path))
+        tree.append(createElement('actions', self.action_file))
         
         for i,color_dict in enumerate(self.color_palettes):
             color_elem = ElementTree.Element('color_palette')
@@ -326,12 +333,15 @@ class AbstractFighter():
         
         for costume in self.costumes:
             if not costume == self.sprite_prefix:
-                tree.append(self.createElement('costume', costume))
+                tree.append(createElement('costume', costume))
             
         for tag,val in self.stats.iteritems():
-            stats_elem.append(self.createElement(tag, val))
+            stats_elem.append(createElement(tag, val))
         tree.append(stats_elem)
         
+        if _path is None:
+            _path = os.path.join(self.base_dir,'fighter.xml')
+            
         xmlfile = xml.dom.minidom.parseString(ElementTree.tostring(tree))
         outputFile = open(_path,'w')
         outputFile.write(xmlfile.toprettyxml())
@@ -348,11 +358,6 @@ class AbstractFighter():
             the game's color choice to load up a different palette.
         """
         directory = os.path.join(self.base_dir,self.sprite_directory)
-        try:
-            scale = float(self.xml_data.find('scale').text)
-        except:
-            scale = 1.0
-        
         if _color == None: _color = self.current_color
         
         self.sprite = spriteManager.SpriteHandler(str(directory),
@@ -360,7 +365,7 @@ class AbstractFighter():
                                                   self.default_sprite,
                                                   self.sprite_width,
                                                   self.color_palettes[_color % len(self.color_palettes)],
-                                                  scale)
+                                                  self.scale)
     
     def initialize(self):
         """ This method is called when shit gets real. It creates the collision box, sprite library,

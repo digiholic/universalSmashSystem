@@ -53,6 +53,9 @@ class ActionLoader():
         
         elem = ElementTree.Element(_actionName)
         
+        """
+        This isn't working. Find a way to populate the base value from the object hierarchy.
+        
         #Set the base if it's different from normal
         if _newAction.parent:
             #if it's base is different than its name, set base. Otherwise, no need.
@@ -60,6 +63,7 @@ class ActionLoader():
                 baseElem = ElementTree.Element('base')
                 baseElem.text = _newAction.parent.__name__
                 elem.append(baseElem)
+        """
         
         #action variables
         #length

@@ -10,7 +10,7 @@ class dataLine(Frame):
     This is the base class for those lines. It itself just displays text,
     with no functionality.
     """
-    def __init__(self,_parent,_name=''):
+    def __init__(self,_root,_parent,_name=''):
         """
         Parameters
         -----------
@@ -26,7 +26,8 @@ class dataLine(Frame):
         self.bg.trace('w', self.changebg)
         
         Frame.__init__(self, _parent, bg="white")
-        self.root = _parent
+        self.parent = _parent
+        self.root = _root
         
         self.label = Label(self,textvariable=self.display_name)
         
@@ -51,8 +52,8 @@ class dataLine(Frame):
         if _string: self.display_name.set(_string)
     
 class StringLine(dataLine):
-    def __init__(self,_parent,_name,_target_object,_varname):
-        dataLine.__init__(self, _parent, _name)
+    def __init__(self,_root,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _root, _parent, _name)
         
         self.target_object = _target_object
         self.var_name = _varname
@@ -85,8 +86,8 @@ class StringLine(dataLine):
         self.packChildren()
         
 class ImageLine(dataLine):
-    def __init__(self,_parent,_name,_target_object,_varname):
-        dataLine.__init__(self, _parent, _name)
+    def __init__(self,_root,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _root, _parent, _name)
         
         self.target_object = _target_object
         self.var_name = _varname
@@ -125,8 +126,8 @@ class ImageLine(dataLine):
             self.image_data.set(os.path.relpath(imgfile.name, self.target_object.base_dir))
 
 class DirLine(dataLine):
-    def __init__(self,_parent,_name,_target_object,_varname):
-        dataLine.__init__(self, _parent, _name)
+    def __init__(self,_root,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _root, _parent, _name)
         
         self.target_object = _target_object
         self.var_name = _varname
@@ -165,8 +166,8 @@ class DirLine(dataLine):
             self.dir_data.set(os.path.relpath(directory, self.target_object.base_dir))
 
 class ModuleLine(dataLine):
-    def __init__(self,_parent,_name,_target_object,_varname):
-        dataLine.__init__(self, _parent, _name)
+    def __init__(self,_root,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _root, _parent, _name)
         
         self.target_object = _target_object
         self.var_name = _varname
@@ -205,8 +206,8 @@ class ModuleLine(dataLine):
             self.module_data.set(os.path.relpath(modulefile.name, self.target_object.base_dir))
 
 class NumLine(dataLine):
-    def __init__(self,_parent,_name,_target_object,_varname):
-        dataLine.__init__(self, _parent, _name)
+    def __init__(self,_root,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _root, _parent, _name)
         
         self.target_object = _target_object
         self.var_name = _varname
@@ -254,7 +255,55 @@ class NumLine(dataLine):
                 return False
         else:
             return True
-         
+   
+class ActionLine(dataLine):
+    def __init__(self,_root,_parent,_action,_target_object):
+        dataLine.__init__(self, _root, _parent, _action)
+        
+        self.target_object = _target_object
+        self.action_name = _action
+        
+        self.edit_button = Button(self,text='Edit',command=self.editAction)
+        self.delete_button = Button(self,text='Delete',command=self.deleteAction)
+        
+        self.update()
+        
+    def changeVariable(self,*args):
+        pass
+    
+    def packChildren(self):
+        dataLine.packChildren(self)
+        self.edit_button.pack(side=LEFT)
+        self.delete_button.pack(side=LEFT)
+        
+    def update(self):
+        self.packChildren()
+        
+    def editAction(self,*args):
+        print('editing action '+self.action_name,self.target_object.getAction(self.action_name))
+    
+    def deleteAction(self,*args):
+        print('deleting action '+self.action_name,self.target_object.getAction(self.action_name))
+    
+class NewActionLine(dataLine):
+    def __init__(self,_root,_parent,_target_object):
+        dataLine.__init__(self, _root, _parent, 'Create New Action...')
+        
+        self.button = Button(self,text='Create New Action...',bg="aquamarine",command=self.addAction)
+        self.config(bg="aquamarine")
+        self.label.config(bg="aquamarine")
+        self.update()
+            
+    def update(self):
+        self.packChildren()
+        
+    def packChildren(self):
+        self.button.pack(side=LEFT,fill=BOTH,expand=TRUE)
+        
+    def addAction(self,*args):
+        print('Add action button clicked')
+        self.root.addAction()
+    
 class dataSelector(dataLine):
     """
     Data Selector is a dataLine that can be selected. These will usually open up a config window.

@@ -135,11 +135,14 @@ class MainFrame(Tk):
         if _getRawXml:return fighter.actions.actions_xml.find(_actionName)
         else: return fighter.getAction(_actionName)
     
-    def addAction(self,_actionName):
+    def addAction(self,_action):
         global fighter
-        changed_actions[_actionName] = engine.action.Action(1)
-        fighter.actions.modifyAction(_actionName, changed_actions[_actionName])
-        self.action_pane.action_selector_panel.refreshDropdowns()
+        
+        changed_actions[_action.name] = _action
+        fighter.actions.modifyAction(_action.name, _action)
+        self.action_pane.data_panel.panel_windows['Actions'].changeFighter()
+        self.action_pane.data_panel.panel_windows['Actions'].scroll_frame.canvas.yview_moveto(1.0)
+        #self.action_pane.action_selector_panel.refreshDropdowns()
     
     def changeFighter(self,*_args):
         global fighter
@@ -266,11 +269,10 @@ class CreateActionWindow(Toplevel):
         sep_text = Label(self,text="Or choose a Basic Action to implement:")
         
         basic_list = []
-        print(self.root.action_pane.action_selector_panel.act_list)
                     
         for name, obj in inspect.getmembers(sys.modules[engine.baseActions.__name__]):
             if inspect.isclass(obj):
-                if not name in self.root.action_pane.action_selector_panel.act_list:
+                if not name in self.root.action_pane.data_panel.panel_windows['Actions'].act_list:
                     #print(basic_list)
                     basic_list.append(name)
                     
@@ -295,8 +297,9 @@ class CreateActionWindow(Toplevel):
         if name:
             if not fighter.actions.hasAction(name): #if it doesn't already exist
                 if not changed_actions.has_key(name): #and we didn't already make one
-                    print('create action: ' + name)
-                    self.root.addAction(name)
+                    act = engine.action.Action()
+                    act.name = name
+                    self.root.addAction(act)
                     self.destroy()
     
     def submitBasic(self,*_args):
@@ -308,8 +311,11 @@ class CreateActionWindow(Toplevel):
             if not fighter.actions.hasAction(name): #if it doesn't already exist
                 if not changed_actions.has_key(name): #and we didn't already make one
                     print('create action: ' + name)
-                    self.root.addAction(name)
-                    self.destroy()
+                    if hasattr(engine.baseActions, name):
+                        act = getattr(engine.baseActions, name)()
+                        act.name = name
+                        self.root.addAction(act)
+                        self.destroy()
                 
 class AddConditionalWindow(Toplevel):
     def __init__(self,_root):
@@ -963,18 +969,18 @@ class VerticalScrolledFrame(Frame):
         # create a canvas object and a vertical scrollbar for scrolling it
         v_scroll_bar = Scrollbar(self, orient=VERTICAL)
         v_scroll_bar.pack(fill=Y, side=RIGHT, expand=FALSE)
-        canvas = Canvas(self, bd=0, highlightthickness=0,
+        self.canvas = Canvas(self, bd=0, highlightthickness=0,
                         yscrollcommand=v_scroll_bar.set,bg="blue")
-        canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
-        v_scroll_bar.config(command=canvas.yview)
+        self.canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+        v_scroll_bar.config(command=self.canvas.yview)
 
         # reset the view
-        canvas.xview_moveto(0)
-        canvas.yview_moveto(0)
+        self.canvas.xview_moveto(0)
+        self.canvas.yview_moveto(0)
 
         # create a frame inside the canvas which will be scrolled with it
-        self.interior = interior = Frame(canvas)
-        interior_id = canvas.create_window(0, 0, window=interior,
+        self.interior = interior = Frame(self.canvas)
+        interior_id = self.canvas.create_window(0, 0, window=interior,
                                            anchor=NW)
 
         # track changes to the canvas and frame width and sync them,
@@ -982,17 +988,17 @@ class VerticalScrolledFrame(Frame):
         def _configure_interior(_event):
             # update the scrollbars to match the size of the inner frame
             size = (interior.winfo_reqwidth(), interior.winfo_reqheight())
-            canvas.config(scrollregion="0 0 %s %s" % size)
-            if interior.winfo_reqwidth() != canvas.winfo_width():
+            self.canvas.config(scrollregion="0 0 %s %s" % size)
+            if interior.winfo_reqwidth() != self.canvas.winfo_width():
                 # update the canvas's width to fit the inner frame
-                canvas.config(width=interior.winfo_reqwidth())
+                self.canvas.config(width=interior.winfo_reqwidth())
         interior.bind('<Configure>', _configure_interior)
 
         def _configure_canvas(_event):
-            if interior.winfo_reqwidth() != canvas.winfo_width():
+            if interior.winfo_reqwidth() != self.canvas.winfo_width():
                 # update the inner frame's width to fill the canvas
-                canvas.itemconfigure(interior_id, width=canvas.winfo_width())
-        canvas.bind('<Configure>', _configure_canvas)
+                self.canvas.itemconfigure(interior_id, width=self.canvas.winfo_width())
+        self.canvas.bind('<Configure>', _configure_canvas)
 
         return
 
@@ -1015,12 +1021,12 @@ class SidePanel(ttk.Notebook):
         fighter_properties = FighterPropertiesPanel(self,_root)
         fighter_actions = ActionListPanel(self,_root)
         
-        panel_windows = {
+        self.panel_windows = {
             'Properties': fighter_properties,
             'Actions': fighter_actions
             }
         
-        for name,window in panel_windows.iteritems():
+        for name,window in self.panel_windows.iteritems():
             self.add(window,text=name,sticky=N+S+E+W)
         
 class dataPanel(BuilderPanel):
@@ -1054,18 +1060,19 @@ class FighterPropertiesPanel(dataPanel):
         self.config(bg="green")
         
         self.panels = [
-            dataSelector.StringLine(self.interior,'Name:',None,'name'),
-            dataSelector.ImageLine(self.interior,'Franchise Icon:',None,'franchise_icon_path'),
-            dataSelector.ImageLine(self.interior,'CSS Icon:',None,'css_icon_path'),
-            dataSelector.ImageLine(self.interior,'CSS Portrait:',None,'css_portrait_path'),
-            dataSelector.DirLine(self.interior,'Sprite Path:',None,'sprite_directory'),
-            dataSelector.StringLine(self.interior,'Sprite Prefix:',None,'sprite_prefix'),
-            dataSelector.NumLine(self.interior,'Sprite Width:',None,'sprite_width'),
-            dataSelector.StringLine(self.interior,'Default Sprite:',None,'default_sprite'),
-            dataSelector.DirLine(self.interior,'Article Path:',None,'article_path'),
-            dataSelector.ModuleLine(self.interior,'Articles:',None,'article_file'),
-            dataSelector.DirLine(self.interior,'Sound Path:',None,'sound_path'),
-            dataSelector.ModuleLine(self.interior,'Actions:',None,'action_file')
+            dataSelector.StringLine(self,self.interior,'Name:',None,'name'),
+            dataSelector.ImageLine(self,self.interior,'Franchise Icon:',None,'franchise_icon_path'),
+            dataSelector.ImageLine(self,self.interior,'CSS Icon:',None,'css_icon_path'),
+            dataSelector.ImageLine(self,self.interior,'CSS Portrait:',None,'css_portrait_path'),
+            dataSelector.DirLine(self,self.interior,'Sprite Path:',None,'sprite_directory'),
+            dataSelector.StringLine(self,self.interior,'Sprite Prefix:',None,'sprite_prefix'),
+            dataSelector.NumLine(self,self.interior,'Sprite Width:',None,'sprite_width'),
+            dataSelector.NumLine(self,self.interior,'Sprite Scale:',None,'scale'),
+            dataSelector.StringLine(self,self.interior,'Default Sprite:',None,'default_sprite'),
+            dataSelector.DirLine(self,self.interior,'Article Path:',None,'article_path'),
+            dataSelector.ModuleLine(self,self.interior,'Articles:',None,'article_file'),
+            dataSelector.DirLine(self,self.interior,'Sound Path:',None,'sound_path'),
+            dataSelector.ModuleLine(self,self.interior,'Actions:',None,'action_file')
             ]
         
         for panel in self.panels:
@@ -1078,22 +1085,32 @@ class ActionListPanel(dataPanel):
     def __init__(self,_parent,_root):
         dataPanel.__init__(self, _parent, _root)
         self.config(bg="teal")
+        self.act_list = []
         
     def changeFighter(self, *_args):
         global fighter
+        for data in self.data_list:
+            data.pack_forget()
         
-        act_list = []
+        self.data_list = []
+        self.act_list = []
+        
+        self.scroll_frame.canvas.yview_moveto(0.0)
+        
         if isinstance(fighter.actions, engine.actionLoader.ActionLoader):
-            act_list.extend(fighter.actions.getAllActions())
+            self.act_list.extend(fighter.actions.getAllActions())
         else:
             for name,_ in inspect.getmembers(fighter.actions, inspect.isclass):
-                act_list.append(name)
+                self.act_list.append(name)
         
-        for action in act_list:
+        for action in self.act_list:
             #Once we have action selector lines, replace this
-            dataLine = dataSelector.dataLine(self.interior,action)
+            dataLine = dataSelector.ActionLine(self,self.interior,action,fighter)
             self.data_list.append(dataLine)
-            dataLine.packChildren()
+        self.data_list.append(dataSelector.NewActionLine(self,self.interior,fighter))
         self.loadDataList()
         
         dataPanel.changeFighter(self, *_args)
+    
+    def addAction(self):
+        CreateActionWindow(self.root)
