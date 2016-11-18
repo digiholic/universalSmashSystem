@@ -2,6 +2,7 @@ import socket
 import select
 import sys
 import json
+import settingsManager
 
 #remove this import if removing debug code
 import time
@@ -12,10 +13,12 @@ import time
 class GameServer(object):
   #TODO: replace hard-coded ports/addresses with configurable ones
   def __init__(self, port=9009):
+    self.settings = settingsManager.getSetting().setting
+    port =self.settings['networkServerPort']
     self.MESSAGE_SIZE = 96
-    self.SOCKET_MODE_UDP = "UDP"
-    self.SOCKET_MODE_TCP = "TCP"#not implemented yet
-    self.connect_mode = self.SOCKET_MODE_TCP
+    self.SOCKET_MODE_UDP = "udp"
+    self.SOCKET_MODE_TCP = "tcp"#not implemented yet
+    self.connect_mode = self.settings['networkProtocol']
     if(self.connect_mode == self.SOCKET_MODE_UDP):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.conn.bind(("", port))#bind to everything.
@@ -87,6 +90,7 @@ class GameServer(object):
         if addr in self.players:
           del self.players[addr]
           #TODO: if len(self.players==0), exit server
+          #TODO: close TCP connections
       else:
         print "Unexpected: {0}".format(msg)
   

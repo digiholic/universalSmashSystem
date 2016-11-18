@@ -3,6 +3,7 @@ import json
 import select 
 import random
 import pygame
+import settingsManager
 
 import time
 
@@ -109,21 +110,23 @@ class Network(object):
         
     #TODO: replace hard-coded ports/addresses/buffer/etc with configurable ones
     def __init__(self):
+        self.settings = settingsManager.getSetting().setting
         #set to false to disable all networking and just run locally
-        self.enabled = False
-        if(self.enabled):
+        self.enabled = self.settings['networkEnabled']
+        if(self.enabled):     
             self.MESSAGE_SIZE = 96
-            self.SOCKET_MODE_UDP = "UDP"
-            self.SOCKET_MODE_TCP = "TCP"#not implemented yet
-            self.connect_mode = self.SOCKET_MODE_TCP
+            self.SOCKET_MODE_UDP = "udp"
+            self.SOCKET_MODE_TCP = "tcp"
             
-            self.serveraddr = "127.0.0.1"#change to IP of server to connect to
-            self.serverport = 9009
+            self.connect_mode = self.settings['networkProtocol']
+            
+            self.serveraddr = self.settings['networkServerIP']
+            self.serverport = self.settings['networkServerPort']
             
             if(self.connect_mode == self.SOCKET_MODE_UDP):
                 self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 self.conn.setblocking(0)
-                self.clientport = random.randrange(8000, 8999)
+                self.clientport = random.randrange(self.settings['networkUDPClientPortMin'], self.settings['networkUDPClientPortMax'])
                 self.conn.bind(("", self.clientport))#bind to everything.
             if(self.connect_mode == self.SOCKET_MODE_TCP):
                 self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -136,7 +139,7 @@ class Network(object):
             self.send("c", (self.serveraddr, self.serverport))
             #count each frame with an id so that it can be identified when sent over the wire
             self.tick_count = 0
-            self.buffer_size = 6 #number of frames of latency to introduce locally (should be greater than the network latency)
+            self.buffer_size = self.settings['networkBufferSize']#number of frames of latency to introduce locally (should be greater than the network latency)
             self.max_frame = self.buffer_size
             self.buffer = [NetworkBufferEntry() for x in range(self.buffer_size)]
             for x in self.buffer:
