@@ -67,6 +67,10 @@ class BuilderPanel(Frame):
     def getFrame(self):
         global frame
         return frame
+    
+    def getChangedActions(self):
+        global changed_actions
+        return changed_actions
 """
 The main window, that all the other panels are child objects of.
 """
@@ -1146,11 +1150,14 @@ class ActionListPanel(dataPanel):
 class ActionPanel(dataPanel):
     def __init__(self,_parent,_root,_actionName):
         global fighter
+        global changed_actions
         
         dataPanel.__init__(self, _parent, _root)
         self.config(bg="light coral")
         
-        self.action = fighter.getAction(_actionName)
+        if changed_actions.has_key(_actionName):
+            self.action = changed_actions[_actionName]
+        else: self.action = fighter.getAction(_actionName)
         
         self.action_name = _actionName
         self.data_list.append(dataSelector.CloseActionLine(self,self.interior))

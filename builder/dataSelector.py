@@ -4,6 +4,7 @@ from idlelib.ObjectBrowser import _object_browser
 from tkFileDialog import askopenfile,askdirectory
 import os
 import tkMessageBox
+import engine.action
 
 class dataLine(Frame):
     """
@@ -51,7 +52,7 @@ class dataLine(Frame):
         
     def updateName(self,_string):
         if _string: self.display_name.set(_string)
-    
+        
 class dataSelector(dataLine):
     """
     Data Selector is a dataLine that can be selected. These will usually open up a config window.
@@ -98,6 +99,10 @@ class StringLine(dataLine):
         self.string_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
+        if isinstance(self.target_object, engine.action.Action):
+            #need to update the changed actions
+            self.root.getChangedActions()[self.root.action_name] = self.target_object
+            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.string_data.get())
             print(getattr(self.target_object,self.var_name))
@@ -133,6 +138,10 @@ class BoolLine(dataLine):
         self.bool_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
+        if isinstance(self.target_object, engine.action.Action):
+            #need to update the changed actions
+            self.root.getChangedActions()[self.root.action_name] = self.target_object
+            
         if self.target_object:
             setattr(self.target_object,self.var_name,bool(self.bool_data.get()))
     
@@ -168,6 +177,10 @@ class ImageLine(dataLine):
         self.image_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
+        if isinstance(self.target_object, engine.action.Action):
+            #need to update the changed actions
+            self.root.getChangedActions()[self.root.action_name] = self.target_object
+            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.image_data.get())
     
@@ -208,6 +221,10 @@ class DirLine(dataLine):
         self.dir_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
+        if isinstance(self.target_object, engine.action.Action):
+            #need to update the changed actions
+            self.root.getChangedActions()[self.root.action_name] = self.target_object
+            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.dir_data.get())
     
@@ -248,6 +265,10 @@ class ModuleLine(dataLine):
         self.module_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
+        if isinstance(self.target_object, engine.action.Action):
+            #need to update the changed actions
+            self.root.getChangedActions()[self.root.action_name] = self.target_object
+            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.module_data.get())
     
@@ -288,6 +309,10 @@ class NumLine(dataLine):
         self.num_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
+        if isinstance(self.target_object, engine.action.Action):
+            #need to update the changed actions
+            self.root.getChangedActions()[self.root.action_name] = self.target_object
+            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.num_data.get())
             print(getattr(self.target_object,self.var_name))
@@ -345,6 +370,10 @@ class SpriteLine(dataLine):
         self.update()
         
     def changeVariable(self,*args):
+        if isinstance(self.target_object, engine.action.Action):
+            #need to update the changed actions
+            self.root.getChangedActions()[self.root.action_name] = self.target_object
+            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.sprite_data.get())
             
