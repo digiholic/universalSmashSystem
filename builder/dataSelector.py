@@ -52,6 +52,37 @@ class dataLine(Frame):
     def updateName(self,_string):
         if _string: self.display_name.set(_string)
     
+class dataSelector(dataLine):
+    """
+    Data Selector is a dataLine that can be selected. These will usually open up a config window.
+    """
+    def __init__(self,_root,_parent,_name=''):
+        dataLine.__init__(self, _root, _parent, _name)
+        self.selected = False
+        self.bind("<Button-1>", self.onClick)
+        self.label.bind("<Button-1>", self.onClick)
+        self.bg.set('white')
+        
+    def onClick(self,*_args):
+        if self.selected:
+            self.unselect()
+        else:
+            self.select()
+        #if not self.root.selected:
+            #self.root.selected_string.set('')
+    
+    def select(self):
+        self.selected = True
+        self.bg.set('lightblue')
+        if self.root.selected:
+            self.root.selected.unselect()
+        self.root.selected = self
+        
+    def unselect(self):
+        self.selected = False
+        self.bg.set('white')
+        self.root.selected = None
+
 class StringLine(dataLine):
     def __init__(self,_root,_parent,_name,_target_object,_varname):
         dataLine.__init__(self, _root, _parent, _name)
@@ -257,9 +288,9 @@ class NumLine(dataLine):
         else:
             return True
    
-class ActionLine(dataLine):
+class ActionLine(dataSelector):
     def __init__(self,_root,_parent,_action,_target_object):
-        dataLine.__init__(self, _root, _parent, _action)
+        dataSelector.__init__(self, _root, _parent, _action)
         
         self.target_object = _target_object
         self.action_name = _action
@@ -273,7 +304,7 @@ class ActionLine(dataLine):
         pass
     
     def packChildren(self):
-        dataLine.packChildren(self)
+        dataSelector.packChildren(self)
         self.delete_button.pack(side=RIGHT)
         self.edit_button.pack(side=RIGHT)
         
@@ -304,40 +335,24 @@ class NewActionLine(dataLine):
         self.button.pack(side=LEFT,fill=BOTH,expand=TRUE)
         
     def addAction(self,*args):
-        print('Add action button clicked')
         self.root.addAction()
-    
-class dataSelector(dataLine):
-    """
-    Data Selector is a dataLine that can be selected. These will usually open up a config window.
-    """
-    def __init__(self,_parent,_name=''):
-        dataLine.__init__(self, _parent, _name)
-        self.bind("<Button-1>", self.onClick)
-        self.bg.set("white")
-        
-    def onClick(self,*_args):
-        if self.selected:
-            self.unselect()
-        else:
-            self.select()
-        if not self.root.selected:
-            self.root.selected_string.set('')
-    
-    def select(self):
-        self.selected = True
-        self.bg.set('lightblue')
-        if self.root.selected:
-            self.root.selected.unselect()
-        self.root.selected = self
-        if self.data:
-            self.root.selected_string.set(str(self.data))
-    
-    def unselect(self):
-        self.selected = False
-        self.config(bg="white")
-        self.root.selected = None
 
+class CloseActionLine(dataLine):
+    def __init__(self,_root,_parent):
+        dataLine.__init__(self, _root, _parent, 'Close Tab')
+        
+        self.button = Button(self,text='Close Tab',bg="light coral",command=self.closeTab)
+        self.update()
+        
+    def update(self):
+        self.packChildren()
+        
+    def packChildren(self):
+        self.button.pack(side=LEFT,fill=BOTH,expand=TRUE)
+        
+    def closeTab(self,*args):
+        self.root.closeTab()
+        
 class SubactionSelector(dataSelector):
     """
     The Data Selector for subactions.

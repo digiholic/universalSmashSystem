@@ -1,6 +1,7 @@
 import os
 import pygame
 import sys
+from builder.dataSelector import dataLine
 sys.path.insert(0, '../')
 import settingsManager
 import inspect
@@ -1040,7 +1041,7 @@ class SidePanel(ttk.Notebook):
             self.add(window,text=name,sticky=N+S+E+W)
         
     def addActionPane(self,_actionName):
-        actionPanel = ActionListPanel(self,self.root)
+        actionPanel = ActionPanel(self,self.root,_actionName)
         self.panel_windows[_actionName] = actionPanel
         self.add(actionPanel,text=_actionName,sticky=N+S+E+W)
         
@@ -1099,7 +1100,6 @@ class FighterPropertiesPanel(dataPanel):
             
         self.loadDataList()
         
-    
 class ActionListPanel(dataPanel):
     def __init__(self,_parent,_root):
         dataPanel.__init__(self, _parent, _root)
@@ -1138,3 +1138,19 @@ class ActionListPanel(dataPanel):
         global fighter
         action = fighter.getAction(_actionName)
         self.root.deleteAction(action)
+        
+class ActionPanel(dataPanel):
+    def __init__(self,_parent,_root,_actionName):
+        dataPanel.__init__(self, _parent, _root)
+        self.config(bg="light coral")
+        
+        self.action_name = _actionName
+        self.data_list.append(dataSelector.CloseActionLine(self,self.interior))
+        
+        self.loadDataList()
+        
+    def loadDataList(self):
+        dataPanel.loadDataList(self)
+        
+    def closeTab(self):
+        self.parent.closeActionPane(self.action_name)
