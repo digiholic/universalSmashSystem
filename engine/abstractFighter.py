@@ -279,6 +279,9 @@ class AbstractFighter():
             self.actions = baseActions
             self.action_file = baseActions.__file__
         
+        self.stats = self.default_stats.copy()
+        self.variables = self.default_vars.copy()
+    
         self.game_state = None
         
     def saveFighter(self,_path=None):

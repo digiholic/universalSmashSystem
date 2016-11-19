@@ -1139,13 +1139,27 @@ class ActionListPanel(dataPanel):
         action = fighter.getAction(_actionName)
         self.root.deleteAction(action)
         
+    def setAction(self,_actionName):
+        print('setting action ' + _actionName)
+        self.root.action_string.set(_actionName)
+        
 class ActionPanel(dataPanel):
     def __init__(self,_parent,_root,_actionName):
+        global fighter
+        
         dataPanel.__init__(self, _parent, _root)
         self.config(bg="light coral")
         
+        self.action = fighter.getAction(_actionName)
+        
         self.action_name = _actionName
         self.data_list.append(dataSelector.CloseActionLine(self,self.interior))
+        
+        #Action Properties
+        self.data_list.append(dataSelector.NumLine(self,self.interior,'Length: ',self.action,'last_frame'))
+        self.data_list.append(dataSelector.SpriteLine(self,self.interior,'Sprite: ',self.action,'sprite_name'))
+        self.data_list.append(dataSelector.NumLine(self,self.interior,'Sprite Rate: ',self.action,'sprite_rate'))
+        self.data_list.append(dataSelector.BoolLine(self,self.interior,'Loop',self.action,'loop'))
         
         self.loadDataList()
         

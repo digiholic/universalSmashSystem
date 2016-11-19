@@ -116,7 +116,41 @@ class StringLine(dataLine):
             self.string_entry.config(state=DISABLED)
         
         self.packChildren()
+
+class BoolLine(dataLine):
+    def __init__(self,_root,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _root, _parent, _name)
         
+        self.target_object = _target_object
+        self.var_name = _varname
+        
+        self.bool_data = IntVar()
+        self.bool_button = Checkbutton(self,text=_name,variable=self.bool_data,anchor="w")
+        self.bool_button.config(bg=self.bg.get())
+        
+        self.update()
+        
+        self.bool_data.trace('w', self.changeVariable)
+        
+    def changeVariable(self,*args):
+        if self.target_object:
+            setattr(self.target_object,self.var_name,bool(self.bool_data.get()))
+    
+    def packChildren(self):
+        self.bool_button.pack(side=LEFT,fill=BOTH,expand=TRUE)
+        
+    def update(self):
+        # If the object exists and has the attribute, set the variable
+        if self.target_object and hasattr(self.target_object, self.var_name):
+            if getattr(self.target_object, self.var_name):
+                self.bool_data.set(1)
+            else: self.bool_data.set(0)
+            self.bool_button.config(state=NORMAL)
+        else:
+            self.bool_button.config(state=DISABLED)
+        
+        self.packChildren()
+                
 class ImageLine(dataLine):
     def __init__(self,_root,_parent,_name,_target_object,_varname):
         dataLine.__init__(self, _root, _parent, _name)
@@ -287,6 +321,46 @@ class NumLine(dataLine):
                 return False
         else:
             return True
+
+class SpriteLine(dataLine):
+    def __init__(self,_root,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _root, _parent, _name)
+        
+        self.target_object = _target_object
+        self.var_name = _varname
+        
+        
+        self.sprite_data = StringVar(self)
+        
+        sprite_vals = ['No Sprites found']
+        if self.root.getFighter():
+            sprite_vals = self.root.getFighter().sprite.image_library["right"].keys()
+            
+        self.sprite_entry = OptionMenu(self,self.sprite_data,*sprite_vals)
+        self.sprite_entry.config(width=18)
+        self.sprite_data.trace('w', self.changeVariable)
+        
+        self.sprite_data.set(getattr(self.target_object, self.var_name))
+            
+        self.update()
+        
+    def changeVariable(self,*args):
+        if self.target_object:
+            setattr(self.target_object,self.var_name,self.sprite_data.get())
+            
+    def packChildren(self):
+        dataLine.packChildren(self)
+        self.sprite_entry.pack(side=LEFT,fill=BOTH)
+    
+    def update(self):
+        # If the object exists and has the attribute, set the variable
+        if self.target_object and hasattr(self.target_object, self.var_name):
+            self.sprite_data.set(getattr(self.target_object, self.var_name))
+            self.sprite_entry.config(state=NORMAL)
+        else:
+            self.sprite_entry.config(state=DISABLED)
+        
+        self.packChildren()
    
 class ActionLine(dataSelector):
     def __init__(self,_root,_parent,_action,_target_object):
@@ -299,6 +373,10 @@ class ActionLine(dataSelector):
         self.delete_button = Button(self,text='Delete',command=self.deleteAction)
         
         self.update()
+    
+    def select(self):
+        dataSelector.select(self)    
+        self.root.setAction(self.action_name)
         
     def changeVariable(self,*args):
         pass
