@@ -3,6 +3,7 @@ import settingsManager
 from idlelib.ObjectBrowser import _object_browser
 from tkFileDialog import askopenfile,askdirectory
 import os
+import tkMessageBox
 
 class dataLine(Frame):
     """
@@ -273,18 +274,20 @@ class ActionLine(dataLine):
     
     def packChildren(self):
         dataLine.packChildren(self)
-        self.edit_button.pack(side=LEFT)
-        self.delete_button.pack(side=LEFT)
+        self.delete_button.pack(side=RIGHT)
+        self.edit_button.pack(side=RIGHT)
         
     def update(self):
         self.packChildren()
         
     def editAction(self,*args):
-        print('editing action '+self.action_name,self.target_object.getAction(self.action_name))
-    
+        self.root.parent.addActionPane(self.action_name)
+        
     def deleteAction(self,*args):
-        print('deleting action '+self.action_name,self.target_object.getAction(self.action_name))
-    
+        choice = tkMessageBox.askquestion("Delete", "Are You Sure you want to delete the action "+self.display_name.get()+"?", icon='warning')
+        if choice == 'yes':
+            self.root.deleteAction(self.action_name)
+        
 class NewActionLine(dataLine):
     def __init__(self,_root,_parent,_target_object):
         dataLine.__init__(self, _root, _parent, 'Create New Action...')

@@ -51,111 +51,112 @@ class ActionLoader():
         action_xml = self.actions_xml.find(_actionName)
         if action_xml is not None:self.actions_xml.remove(action_xml)
         
-        elem = ElementTree.Element(_actionName)
-        
-        """
-        This isn't working. Find a way to populate the base value from the object hierarchy.
-        
-        #Set the base if it's different from normal
-        if _newAction.parent:
-            #if it's base is different than its name, set base. Otherwise, no need.
-            if not _newAction.parent.__name__ == _actionName:
-                baseElem = ElementTree.Element('base')
-                baseElem.text = _newAction.parent.__name__
-                elem.append(baseElem)
-        """
-        
-        #action variables
-        #length
-        length_elem =  ElementTree.Element('length')
-        length_elem.text = str(_newAction.last_frame)
-        elem.append(length_elem)
-        #sprite_name
-        s_name_elem =  ElementTree.Element('sprite')
-        s_name_elem.text = str(_newAction.sprite_name)
-        elem.append(s_name_elem)
-        #sprite_rate
-        s_rate_elem =  ElementTree.Element('sprite_rate')
-        s_rate_elem.text = str(_newAction.base_sprite_rate)
-        elem.append(s_rate_elem)
-        #loop
-        loop_elem =  ElementTree.Element('loop')
-        loop_elem.text = str(_newAction.loop)
-        elem.append(loop_elem)
-        
-        if _newAction.default_vars:
-            vars_elem = ElementTree.Element('vars')
-            for tag,val in _newAction.default_vars.iteritems():
-                new_elem = ElementTree.Element(tag)
-                new_elem.attrib['type'] = type(val).__name__
-                new_elem.text = str(val)
-                vars_elem.append(new_elem)
-            elem.append(vars_elem)
-        
-        if len(_newAction.set_up_actions) > 0:
-            set_up_elem = ElementTree.Element('setUp')
-            for subact in _newAction.set_up_actions:
-                set_up_elem.append(subact.getXmlElement())
-            elem.append(set_up_elem)
-        if len(_newAction.tear_down_actions) > 0:
-            tear_down_elem = ElementTree.Element('tearDown')
-            for subact in _newAction.tear_down_actions:
-                tear_down_elem.append(subact.getXmlElement())
-            elem.append(tear_down_elem)
-        if len(_newAction.state_transition_actions) > 0:
-            transition_elem = ElementTree.Element('transitions')
-            for subact in _newAction.state_transition_actions:
-                transition_elem.append(subact.getXmlElement())
-            elem.append(transition_elem)
-        if len(_newAction.actions_on_clank) > 0:
-            clank_elem = ElementTree.Element('onClank')
-            for subact in _newAction.actions_on_clank:
-                clank_elem.append(subact.getXmlElement())
-            elem.append(clank_elem)
-        if len(_newAction.actions_on_prevail) > 0:
-            prevail_elem = ElementTree.Element('onPrevail')
-            for subact in _newAction.actions_on_prevail:
-                prevail_elem.append(subact.getXmlElement())
-            elem.append(prevail_elem)
-        if len(_newAction.actions_before_frame) > 0:
-            before_elem = ElementTree.Element('frame')
-            before_elem.attrib['number'] = 'before'
-            for subact in _newAction.actions_before_frame:
-                before_elem.append(subact.getXmlElement())
-            elem.append(before_elem)
-        if len(_newAction.actions_after_frame) > 0:
-            after_elem = ElementTree.Element('frame')
-            after_elem.attrib['number'] = 'after'
-            for subact in _newAction.actions_after_frame:
-                after_elem.append(subact.getXmlElement())
-            elem.append(after_elem)
-        if len(_newAction.actions_at_last_frame) > 0:
-            last_elem = ElementTree.Element('frame')
-            last_elem.attrib['number'] = 'last'
-            for subact in _newAction.actions_at_last_frame:
-                last_elem.append(subact.getXmlElement())
-            elem.append(last_elem)
-        
-        for i,frameList in enumerate(_newAction.actions_at_frame):
-            if len(frameList) > 0:
-                frameElem = ElementTree.Element('frame')
-                frameElem.attrib['number'] = str(i)
-                for subact in frameList:
-                    frameElem.append(subact.getXmlElement())
-                elem.append(frameElem)
-        
-        for event_name,event in _newAction.events.iteritems():
-            if len(event) > 0:
-                event_elem = ElementTree.Element('Event')
-                event_elem.attrib['name'] = str(event_name)
-                for subact in event:
-                    event_elem.append(subact.getXmlElement())
-                elem.append(event_elem)
-                
-        rough_string = ElementTree.tostring(elem, 'utf-8')
-        reparsed = minidom.parseString(rough_string)
-        data = reparsed.toprettyxml(indent="\t")
-        self.actions_xml.append(ElementTree.fromstring(data))
+        if _newAction is not None: #if it's none, we just remove it and don't put anything back
+            elem = ElementTree.Element(_actionName)
+            
+            """
+            This isn't working. Find a way to populate the base value from the object hierarchy.
+            
+            #Set the base if it's different from normal
+            if _newAction.parent:
+                #if it's base is different than its name, set base. Otherwise, no need.
+                if not _newAction.parent.__name__ == _actionName:
+                    baseElem = ElementTree.Element('base')
+                    baseElem.text = _newAction.parent.__name__
+                    elem.append(baseElem)
+            """
+            
+            #action variables
+            #length
+            length_elem =  ElementTree.Element('length')
+            length_elem.text = str(_newAction.last_frame)
+            elem.append(length_elem)
+            #sprite_name
+            s_name_elem =  ElementTree.Element('sprite')
+            s_name_elem.text = str(_newAction.sprite_name)
+            elem.append(s_name_elem)
+            #sprite_rate
+            s_rate_elem =  ElementTree.Element('sprite_rate')
+            s_rate_elem.text = str(_newAction.base_sprite_rate)
+            elem.append(s_rate_elem)
+            #loop
+            loop_elem =  ElementTree.Element('loop')
+            loop_elem.text = str(_newAction.loop)
+            elem.append(loop_elem)
+            
+            if _newAction.default_vars:
+                vars_elem = ElementTree.Element('vars')
+                for tag,val in _newAction.default_vars.iteritems():
+                    new_elem = ElementTree.Element(tag)
+                    new_elem.attrib['type'] = type(val).__name__
+                    new_elem.text = str(val)
+                    vars_elem.append(new_elem)
+                elem.append(vars_elem)
+            
+            if len(_newAction.set_up_actions) > 0:
+                set_up_elem = ElementTree.Element('setUp')
+                for subact in _newAction.set_up_actions:
+                    set_up_elem.append(subact.getXmlElement())
+                elem.append(set_up_elem)
+            if len(_newAction.tear_down_actions) > 0:
+                tear_down_elem = ElementTree.Element('tearDown')
+                for subact in _newAction.tear_down_actions:
+                    tear_down_elem.append(subact.getXmlElement())
+                elem.append(tear_down_elem)
+            if len(_newAction.state_transition_actions) > 0:
+                transition_elem = ElementTree.Element('transitions')
+                for subact in _newAction.state_transition_actions:
+                    transition_elem.append(subact.getXmlElement())
+                elem.append(transition_elem)
+            if len(_newAction.actions_on_clank) > 0:
+                clank_elem = ElementTree.Element('onClank')
+                for subact in _newAction.actions_on_clank:
+                    clank_elem.append(subact.getXmlElement())
+                elem.append(clank_elem)
+            if len(_newAction.actions_on_prevail) > 0:
+                prevail_elem = ElementTree.Element('onPrevail')
+                for subact in _newAction.actions_on_prevail:
+                    prevail_elem.append(subact.getXmlElement())
+                elem.append(prevail_elem)
+            if len(_newAction.actions_before_frame) > 0:
+                before_elem = ElementTree.Element('frame')
+                before_elem.attrib['number'] = 'before'
+                for subact in _newAction.actions_before_frame:
+                    before_elem.append(subact.getXmlElement())
+                elem.append(before_elem)
+            if len(_newAction.actions_after_frame) > 0:
+                after_elem = ElementTree.Element('frame')
+                after_elem.attrib['number'] = 'after'
+                for subact in _newAction.actions_after_frame:
+                    after_elem.append(subact.getXmlElement())
+                elem.append(after_elem)
+            if len(_newAction.actions_at_last_frame) > 0:
+                last_elem = ElementTree.Element('frame')
+                last_elem.attrib['number'] = 'last'
+                for subact in _newAction.actions_at_last_frame:
+                    last_elem.append(subact.getXmlElement())
+                elem.append(last_elem)
+            
+            for i,frameList in enumerate(_newAction.actions_at_frame):
+                if len(frameList) > 0:
+                    frameElem = ElementTree.Element('frame')
+                    frameElem.attrib['number'] = str(i)
+                    for subact in frameList:
+                        frameElem.append(subact.getXmlElement())
+                    elem.append(frameElem)
+            
+            for event_name,event in _newAction.events.iteritems():
+                if len(event) > 0:
+                    event_elem = ElementTree.Element('Event')
+                    event_elem.attrib['name'] = str(event_name)
+                    for subact in event:
+                        event_elem.append(subact.getXmlElement())
+                    elem.append(event_elem)
+                    
+            rough_string = ElementTree.tostring(elem, 'utf-8')
+            reparsed = minidom.parseString(rough_string)
+            data = reparsed.toprettyxml(indent="\t")
+            self.actions_xml.append(ElementTree.fromstring(data))
             
     def loadAction(self,_actionName):
         #Load the action XML

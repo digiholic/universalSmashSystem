@@ -99,8 +99,8 @@ class MainFrame(Tk):
         self.viewer_pane.grid(row=0,column=0,sticky=N+S+E+W)
         self.action_pane.grid(row=0,column=1,sticky=N+S+E+W)
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=3, uniform="column")
-        self.grid_columnconfigure(1, weight=2, uniform="column")
+        self.grid_columnconfigure(0, weight=5, uniform="column")
+        self.grid_columnconfigure(1, weight=4, uniform="column")
         
         self.fighter_string.trace('w',self.changeFighter)
         self.action_string.trace('w',self.changeAction)
@@ -144,6 +144,13 @@ class MainFrame(Tk):
         self.action_pane.data_panel.panel_windows['Actions'].scroll_frame.canvas.yview_moveto(1.0)
         #self.action_pane.action_selector_panel.refreshDropdowns()
     
+    def deleteAction(self,_action):
+        global fighter
+        
+        changed_actions[_action.name] = None
+        fighter.actions.modifyAction(_action.name, None)
+        self.action_pane.data_panel.panel_windows['Actions'].changeFighter()
+        
     def changeFighter(self,*_args):
         global fighter
         dirname, _ = os.path.split(self.fighter_file.name)
@@ -1018,8 +1025,11 @@ class SidePanel(ttk.Notebook):
     """
     def __init__(self,_parent,_root):
         ttk.Notebook.__init__(self, _parent)
+        self.root = _root
+        
         fighter_properties = FighterPropertiesPanel(self,_root)
         fighter_actions = ActionListPanel(self,_root)
+        
         
         self.panel_windows = {
             'Properties': fighter_properties,
@@ -1029,6 +1039,15 @@ class SidePanel(ttk.Notebook):
         for name,window in self.panel_windows.iteritems():
             self.add(window,text=name,sticky=N+S+E+W)
         
+    def addActionPane(self,_actionName):
+        actionPanel = ActionListPanel(self,self.root)
+        self.panel_windows[_actionName] = actionPanel
+        self.add(actionPanel,text=_actionName,sticky=N+S+E+W)
+        
+    def closeActionPane(self,_actionName):
+        self.forget(self.panel_windows[_actionName])
+        self.panel_windows.pop(_actionName,None)
+    
 class dataPanel(BuilderPanel):
     def __init__(self,_parent,_root):
         BuilderPanel.__init__(self, _parent, _root)
@@ -1114,3 +1133,8 @@ class ActionListPanel(dataPanel):
     
     def addAction(self):
         CreateActionWindow(self.root)
+        
+    def deleteAction(self,_actionName):
+        global fighter
+        action = fighter.getAction(_actionName)
+        self.root.deleteAction(action)
