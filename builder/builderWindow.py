@@ -1045,10 +1045,13 @@ class SidePanel(ttk.Notebook):
             self.add(window,text=name,sticky=N+S+E+W)
         
     def addActionPane(self,_actionName):
-        actionPanel = ActionPanel(self,self.root,_actionName)
-        self.panel_windows[_actionName] = actionPanel
-        self.add(actionPanel,text=_actionName,sticky=N+S+E+W)
-        
+        if not _actionName in self.panel_windows.keys():
+            actionPanel = ActionPanel(self,self.root,_actionName)
+            self.panel_windows[_actionName] = actionPanel
+            self.add(actionPanel,text=_actionName,sticky=N+S+E+W)
+            self.select(actionPanel)
+        else:
+            self.select(self.panel_windows[_actionName])
     def closeActionPane(self,_actionName):
         self.forget(self.panel_windows[_actionName])
         self.panel_windows.pop(_actionName,None)
