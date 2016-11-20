@@ -113,7 +113,6 @@ class StringLine(dataLine):
         self.string_entry.pack(side=LEFT,fill=BOTH)
     
     def update(self):
-        print('Updating string panel')
         # If the object exists and has the attribute, set the variable
         if self.target_object and hasattr(self.target_object, self.var_name):
             self.string_data.set(getattr(self.target_object, self.var_name))

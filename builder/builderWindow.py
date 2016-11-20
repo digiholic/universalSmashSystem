@@ -571,7 +571,9 @@ class NavigatorPanel(BuilderPanel):
         global action
         if action:
             self.root.frame.set(0)
-            self.changeFrameNumber(0)
+    
+    def changeFrame(self, *_args):
+        self.changeFrameNumber(0)
                 
 class RightPane(BuilderPanel):
     def __init__(self,_parent,_root):
@@ -1066,9 +1068,11 @@ class dataPanel(BuilderPanel):
         
         self.scroll_frame = VerticalScrolledFrame(self,bg="red")
         self.interior = self.scroll_frame.interior
+        self.bind("<Visibility>", self.onVisibility)
         
         self.selected_string = StringVar(self)
         self.selected = None
+        
         
     def loadDataList(self):
         for data in self.data_list:
@@ -1084,6 +1088,9 @@ class dataPanel(BuilderPanel):
             panel.target_object = fighter
             panel.update()
             
+    def onVisibility(self, *args):
+        pass
+        
 class FighterPropertiesPanel(dataPanel):
     def __init__(self,_parent,_root):
         dataPanel.__init__(self, _parent, _root)
@@ -1167,6 +1174,7 @@ class ActionPanel(dataPanel):
         
         self.action_name = _actionName
         self.data_list.append(dataSelector.CloseActionLine(self,self.interior))
+        self.last_known_frame = 0
         
         #Action Properties
         self.data_list.append(dataSelector.NumLine(self,self.interior,'Length: ',self.action,'last_frame'))
@@ -1202,3 +1210,14 @@ class ActionPanel(dataPanel):
         
     def closeTab(self):
         self.parent.closeActionPane(self.action_name)
+    
+    def changeFrame(self, *_args):
+        if self.root.action_string.get() == self.action_name: #if our action is selected
+            self.last_known_frame = self.root.frame.get() #update our last known frame
+            print(self.last_known_frame)
+        
+    def onVisibility(self, *args):
+        dataPanel.onVisibility(self, *args)
+        lastframe = self.last_known_frame
+        self.root.action_string.set(self.action_name)
+        self.root.frame.set(lastframe)
