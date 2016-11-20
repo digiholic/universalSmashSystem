@@ -386,7 +386,7 @@ class AbstractFighter():
         self.status_effects = list()
     
         if self.sound_path:
-            settingsManager.getSfx().addSoundsFromDirectory(self.sound_path, self.name)
+            settingsManager.getSfx().addSoundsFromDirectory(os.path.join(self.base_dir,self.sound_path), self.name)
 
         if self.xml_data is not None:
             if self.xml_data.find('stats') is not None:
