@@ -44,7 +44,8 @@ class dataLine(Frame):
         self.label.pack(side=LEFT)
         
     def pack(self, cnf={}, **kw):
-        if self.visible: Frame.pack(self, cnf=cnf, **kw)
+        #if self.visible: 
+        Frame.pack(self, cnf=cnf, **kw)
         
     def setButtons(self,_buttons):
         for button in _buttons:
@@ -459,7 +460,50 @@ class CloseActionLine(dataLine):
         
     def closeTab(self,*args):
         self.root.closeTab()
+
+class GroupLine(dataLine):
+    """
+    A group selector has an expand/collapse button to view or hide its children.
+    """
+    def __init__(self,_root,_parent,_name):
+        dataLine.__init__(self, _root, _parent, _name)
         
+        self.expanded = False
+        #self.collapsed_image = PhotoImage(file=settingsManager.createPath('sprites/icons/right.png'))
+        #self.expanded_image  = PhotoImage(file=settingsManager.createPath('sprites/icons/down.png'))
+        self.toggle_button = Button(self,text='- '+_name,command=self.toggleCollapse,anchor="w")
+        
+        self.childElements = []
+        self.update()
+        
+    def update(self):
+        if self.expanded: #If we're expanded
+            self.toggle_button.config(text='- '+self.display_name.get())
+            self.toggle_button.config(relief=SUNKEN)
+        else: #If we're collapsed
+            self.toggle_button.config(text='+ '+self.display_name.get())
+            self.toggle_button.config(relief=RAISED)
+        
+        self.packChildren()
+        
+    def pack(self, cnf={}, **kw):
+        for child in self.childElements:
+            child.pack_forget()
+        dataLine.pack(self, cnf=cnf, **kw)
+        if self.expanded:
+            for child in self.childElements:
+                child.pack(cnf=cnf,**kw)
+        
+    def packChildren(self):
+        self.toggle_button.pack(side=LEFT,fill=BOTH,expand=TRUE)
+        
+    def toggleCollapse(self):
+        self.expanded = not self.expanded
+        self.update()
+        self.root.loadDataList()
+
+
+""""""""""""""""""""""""""""""""""""        
 class SubactionSelector(dataSelector):
     """
     The Data Selector for subactions.
@@ -510,35 +554,6 @@ class PropertySelector(dataSelector):
         fielddata = ''
         if hasattr(self.owner, self.fieldname): fielddata = getattr(self.owner, self.fieldname)
         self.display_name.set(self.display_name+': '+ str(fielddata))
-
-class GroupSelector(dataLine):
-    """
-    A group selector has an expand/collapse button to view or hide its children.
-    """
-    def __init__(self,_parent,_name):
-        dataLine.__init__(self, _parent, _name)
-        
-        self.expanded = True
-        self.collapsed_image = PhotoImage(file=settingsManager.createPath('sprites/icons/right.png'))
-        self.expanded_image  = PhotoImage(file=settingsManager.createPath('sprites/icons/down.png'))
-        self.toggle_button   = Button(self,image=self.expanded_image,command=self.toggleCollapse())
-        
-        self.toggle_button.pack(side=RIGHT)
-        
-        self.children = []
-        
-    def toggleCollapse(self):
-        self.expanded = not self.expanded
-        
-        if self.expanded: #If we're expanded
-            self.toggle_button.config(image=self.expanded_image)
-            for child in self.children:
-                child.visible = True
-        else: #If we're collapsed
-            self.toggle_button.config(image=self.collapsed_image)
-            for child in self.children:
-                child.visible = False
-        """ TODO Redraw the parent panel """
         
 class NewSubactionLine(dataSelector):
     """

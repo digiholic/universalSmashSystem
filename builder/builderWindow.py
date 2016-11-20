@@ -1052,6 +1052,7 @@ class SidePanel(ttk.Notebook):
             self.select(actionPanel)
         else:
             self.select(self.panel_windows[_actionName])
+            
     def closeActionPane(self,_actionName):
         self.forget(self.panel_windows[_actionName])
         self.panel_windows.pop(_actionName,None)
@@ -1070,6 +1071,8 @@ class dataPanel(BuilderPanel):
         self.selected = None
         
     def loadDataList(self):
+        for data in self.data_list:
+            data.pack_forget()
         self.scroll_frame.pack(fill=BOTH,expand=TRUE)
         for data in self.data_list:
             data.pack(fill=X) #the data line will hide itself if it's not expanded
@@ -1170,6 +1173,27 @@ class ActionPanel(dataPanel):
         self.data_list.append(dataSelector.SpriteLine(self,self.interior,'Sprite: ',self.action,'sprite_name'))
         self.data_list.append(dataSelector.NumLine(self,self.interior,'Sprite Rate: ',self.action,'sprite_rate'))
         self.data_list.append(dataSelector.BoolLine(self,self.interior,'Loop',self.action,'loop'))
+        
+        """
+        {'Current Frame': action.actions_at_frame[frame],
+                         'Transitions': action.state_transition_actions,
+                         'Before Frames': action.actions_before_frame,
+                         'After Frames': action.actions_after_frame,
+                         'Last Frame': action.actions_at_last_frame}
+        """
+        
+        #Action Groups
+        setUpGroup = dataSelector.GroupLine(self,self.interior,'Set Up')
+        setUpGroup.childElements.append(dataSelector.StringLine(self,self.interior,'Test Line 1',None,''))
+        setUpGroup.childElements.append(dataSelector.StringLine(self,self.interior,'Test Line 2',None,''))
+        
+        self.data_list.append(setUpGroup)
+        
+        setUpGroup = dataSelector.GroupLine(self,self.interior,'Tear Down')
+        setUpGroup.childElements.append(dataSelector.StringLine(self,self.interior,'Test Line 3',None,''))
+        setUpGroup.childElements.append(dataSelector.StringLine(self,self.interior,'Test Line 4',None,''))
+        
+        self.data_list.append(setUpGroup)
         
         self.loadDataList()
         
