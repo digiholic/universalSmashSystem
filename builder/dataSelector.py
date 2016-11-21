@@ -36,6 +36,9 @@ class dataLine(Frame):
         self.bg.set("gainsboro") #it's a real color. Who knew?
         self.visible = True
         
+        self.target_object = None
+        self.var_name = None
+        
     def changebg(self,*args):
         self.config(bg=self.bg.get())
         self.label.config(bg=self.bg.get())
@@ -53,7 +56,13 @@ class dataLine(Frame):
         
     def updateName(self,_string):
         if _string: self.display_name.set(_string)
-        
+       
+    def changeVariable(self,*args):
+        if isinstance(self.target_object, engine.action.Action):
+            #need to update the changed actions
+            self.root.getChangedActions()[self.root.action_name] = self.target_object
+            self.root.root.updateViewer()
+             
 class dataSelector(dataLine):
     """
     Data Selector is a dataLine that can be selected. These will usually open up a config window.
@@ -100,14 +109,10 @@ class StringLine(dataLine):
         self.string_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
-        if isinstance(self.target_object, engine.action.Action):
-            #need to update the changed actions
-            self.root.getChangedActions()[self.root.action_name] = self.target_object
-            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.string_data.get())
-            print(getattr(self.target_object,self.var_name))
-    
+        dataLine.changeVariable(self)
+        
     def packChildren(self):
         dataLine.packChildren(self)
         self.string_entry.pack(side=LEFT,fill=BOTH)
@@ -138,13 +143,10 @@ class BoolLine(dataLine):
         self.bool_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
-        if isinstance(self.target_object, engine.action.Action):
-            #need to update the changed actions
-            self.root.getChangedActions()[self.root.action_name] = self.target_object
-            
         if self.target_object:
             setattr(self.target_object,self.var_name,bool(self.bool_data.get()))
-    
+        dataLine.changeVariable(self)
+        
     def packChildren(self):
         self.bool_button.pack(side=LEFT,fill=BOTH,expand=TRUE)
         
@@ -177,13 +179,10 @@ class ImageLine(dataLine):
         self.image_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
-        if isinstance(self.target_object, engine.action.Action):
-            #need to update the changed actions
-            self.root.getChangedActions()[self.root.action_name] = self.target_object
-            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.image_data.get())
-    
+        dataLine.changeVariable(self)
+        
     def packChildren(self):
         dataLine.packChildren(self)
         self.image_entry.pack(side=LEFT,fill=BOTH)
@@ -221,13 +220,10 @@ class DirLine(dataLine):
         self.dir_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
-        if isinstance(self.target_object, engine.action.Action):
-            #need to update the changed actions
-            self.root.getChangedActions()[self.root.action_name] = self.target_object
-            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.dir_data.get())
-    
+        dataLine.changeVariable(self)
+        
     def packChildren(self):
         dataLine.packChildren(self)
         self.dir_entry.pack(side=LEFT,fill=BOTH)
@@ -265,13 +261,10 @@ class ModuleLine(dataLine):
         self.module_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
-        if isinstance(self.target_object, engine.action.Action):
-            #need to update the changed actions
-            self.root.getChangedActions()[self.root.action_name] = self.target_object
-            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.module_data.get())
-    
+        dataLine.changeVariable(self)
+        
     def packChildren(self):
         dataLine.packChildren(self)
         self.module_entry.pack(side=LEFT,fill=BOTH)
@@ -309,20 +302,15 @@ class NumLine(dataLine):
         self.num_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
-        if isinstance(self.target_object, engine.action.Action):
-            #need to update the changed actions
-            self.root.getChangedActions()[self.root.action_name] = self.target_object
-            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.num_data.get())
-            print(getattr(self.target_object,self.var_name))
-    
+        dataLine.changeVariable(self)
+        
     def packChildren(self):
         dataLine.packChildren(self)
         self.num_entry.pack(side=LEFT,fill=BOTH)
     
     def update(self):
-        print('Updating string panel')
         # If the object exists and has the attribute, set the variable
         if self.target_object and hasattr(self.target_object, self.var_name):
             self.num_data.set(getattr(self.target_object, self.var_name))
@@ -370,12 +358,9 @@ class SpriteLine(dataLine):
         self.update()
         
     def changeVariable(self,*args):
-        if isinstance(self.target_object, engine.action.Action):
-            #need to update the changed actions
-            self.root.getChangedActions()[self.root.action_name] = self.target_object
-            
         if self.target_object:
             setattr(self.target_object,self.var_name,self.sprite_data.get())
+        dataLine.changeVariable(self)
             
     def packChildren(self):
         dataLine.packChildren(self)
@@ -479,10 +464,11 @@ class GroupLine(dataLine):
         if self.expanded: #If we're expanded
             self.toggle_button.config(text='- '+self.display_name.get())
             self.toggle_button.config(relief=SUNKEN)
+            
         else: #If we're collapsed
             self.toggle_button.config(text='+ '+self.display_name.get())
             self.toggle_button.config(relief=RAISED)
-        
+            
         self.packChildren()
         
     def pack(self, cnf={}, **kw):
@@ -501,7 +487,25 @@ class GroupLine(dataLine):
         self.update()
         self.root.loadDataList()
 
-
+class NewSubactionLine(dataLine):
+    def __init__(self,_root,_parent):
+        dataLine.__init__(self, _root, _parent, 'Add Subaction...')
+        
+        self.button = Button(self,text='Add Subaction...',bg="aquamarine",command=self.addSubaction)
+        self.config(bg="aquamarine")
+        self.label.config(bg="aquamarine")
+        self.update()
+            
+    def update(self):
+        self.packChildren()
+        
+    def packChildren(self):
+        self.button.pack(side=LEFT,fill=BOTH,expand=TRUE)
+        
+    def addSubaction(self,*args):
+        #self.root.addAction()
+        pass
+        
 """"""""""""""""""""""""""""""""""""        
 class SubactionSelector(dataSelector):
     """
@@ -553,9 +557,3 @@ class PropertySelector(dataSelector):
         fielddata = ''
         if hasattr(self.owner, self.fieldname): fielddata = getattr(self.owner, self.fieldname)
         self.display_name.set(self.display_name+': '+ str(fielddata))
-        
-class NewSubactionLine(dataSelector):
-    """
-    Prompts the user with a subaction config panel when clicked. Adds to the proper group.
-    """
-    pass

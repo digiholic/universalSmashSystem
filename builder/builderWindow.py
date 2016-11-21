@@ -195,6 +195,10 @@ class MainFrame(Tk):
         global frame
         frame = self.frame.get()
     
+    def updateViewer(self):
+        self.viewer_pane.viewer_panel.reloadFrame()
+        self.viewer_pane.navigator_panel.changeFrameNumber(0)
+        
 class MenuBar(Menu):
     def __init__(self,_root):
         Menu.__init__(self, _root)
@@ -305,7 +309,6 @@ class CreateActionWindow(Toplevel):
         global changed_actions
         
         name = self.name.get()
-        print(name)
         if name:
             if not fighter.actions.hasAction(name): #if it doesn't already exist
                 if not changed_actions.has_key(name): #and we didn't already make one
@@ -322,7 +325,6 @@ class CreateActionWindow(Toplevel):
         if name:
             if not fighter.actions.hasAction(name): #if it doesn't already exist
                 if not changed_actions.has_key(name): #and we didn't already make one
-                    print('create action: ' + name)
                     if hasattr(engine.baseActions, name):
                         act = getattr(engine.baseActions, name)()
                         act.name = name
@@ -451,11 +453,7 @@ class ViewerPanel(BuilderPanel):
         pygame.mixer.init()
         _root.update()
         
-        print("Before!")
-        print (self.winfo_width())
-        print (self.winfo_height())
         self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
-        print("After!")
         self.center = (0,0)
         self.scale = 1.0
         
@@ -1157,7 +1155,6 @@ class ActionListPanel(dataPanel):
         self.root.deleteAction(action)
         
     def setAction(self,_actionName):
-        print('setting action ' + _actionName)
         self.root.action_string.set(_actionName)
         
 class ActionPanel(dataPanel):
@@ -1184,24 +1181,51 @@ class ActionPanel(dataPanel):
         
         """
         {'Current Frame': action.actions_at_frame[frame],
-                         'Transitions': action.state_transition_actions,
-                         'Before Frames': action.actions_before_frame,
-                         'After Frames': action.actions_after_frame,
-                         'Last Frame': action.actions_at_last_frame}
         """
         
         #Action Groups
         setUpGroup = dataSelector.GroupLine(self,self.interior,'Set Up')
-        setUpGroup.childElements.append(dataSelector.StringLine(self,self.interior,'Test Line 1',None,''))
-        setUpGroup.childElements.append(dataSelector.StringLine(self,self.interior,'Test Line 2',None,''))
-        
+        for subact in self.action.set_up_actions:
+            setUpGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        setUpGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
         self.data_list.append(setUpGroup)
         
-        setUpGroup = dataSelector.GroupLine(self,self.interior,'Tear Down')
-        setUpGroup.childElements.append(dataSelector.StringLine(self,self.interior,'Test Line 3',None,''))
-        setUpGroup.childElements.append(dataSelector.StringLine(self,self.interior,'Test Line 4',None,''))
+        tearDownGroup = dataSelector.GroupLine(self,self.interior,'Tear Down')
+        for subact in self.action.tear_down_actions:
+            tearDownGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        tearDownGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(tearDownGroup)
         
-        self.data_list.append(setUpGroup)
+        transitionsGroup = dataSelector.GroupLine(self,self.interior,'Transitions')
+        for subact in self.action.set_up_actions:
+            transitionsGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        transitionsGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(transitionsGroup)
+        
+        beforeGroup = dataSelector.GroupLine(self,self.interior,'Before Each Frame')
+        for subact in self.action.actions_before_frame:
+            beforeGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        beforeGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(beforeGroup)
+        
+        afterGroup = dataSelector.GroupLine(self,self.interior,'After Each Frame')
+        for subact in self.action.actions_after_frame:
+            afterGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        afterGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(afterGroup)
+        
+        lastGroup = dataSelector.GroupLine(self,self.interior,'Last Frame')
+        for subact in self.action.actions_at_last_frame:
+            lastGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        lastGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(lastGroup)
+        
+        for name,event in self.action.events.iteritems():
+            eventGroup = dataSelector.GroupLine(self,self.interior,'Event: '+name)
+            for subact in event:
+                eventGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+            eventGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+            self.data_list.append(eventGroup)
         
         self.loadDataList()
         
@@ -1214,8 +1238,7 @@ class ActionPanel(dataPanel):
     def changeFrame(self, *_args):
         if self.root.action_string.get() == self.action_name: #if our action is selected
             self.last_known_frame = self.root.frame.get() #update our last known frame
-            print(self.last_known_frame)
-        
+            
     def onVisibility(self, *args):
         dataPanel.onVisibility(self, *args)
         lastframe = self.last_known_frame

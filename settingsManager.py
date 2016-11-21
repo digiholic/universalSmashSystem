@@ -477,7 +477,6 @@ class sfx_library():
             fname, ext = os.path.splitext(f)
             if self.supported_file_types.count(ext):
                 self.sounds[_category + "_" + fname] = pygame.mixer.Sound(os.path.join(_path,f))
-                
     
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
