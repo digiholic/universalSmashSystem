@@ -918,7 +918,7 @@ class PropertiesPanel(BuilderPanel):
                           'Hitbox':[],
                           'Article':[]}
         
-        for name,subact in engine.subaction.subaction_dict.iteritems():
+        for name,subact in engine.subaction.SubactionFactory.subaction_dict.iteritems():
             if subact.subact_group in subact_windows.keys():
                 short_name = (name[:19] + '..') if len(name) > 22 else name
                 button = Button(subact_windows[subact.subact_group],text=short_name,command=lambda subaction=subact: self.addSubaction(subaction))

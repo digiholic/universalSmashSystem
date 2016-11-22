@@ -1,14 +1,17 @@
 import engine.subaction as subaction
+import pygame
+import xml.etree.ElementTree as ElementTree
 
-class Event(subactionSubAction):
+
+class Event(subaction.SubAction):
     subact_group = 'Control'
     
     def __init__(self,_eventSubactions):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.event_subactions = _eventSubactions
     
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         for subact in self.event_subactions:
             subact.execute(_action,_actor)
     
@@ -29,24 +32,24 @@ class Event(subactionSubAction):
         event_actions = []
         for subact in _node:
             if subaction_dict.has_key(subact.tag): 
-                event_actions.append(SubAction.buildFromXml(subact.tag,subact))
+                event_actions.append(subaction.SubAction.buildFromXml(subact.tag,subact))
         return Event(event_actions)
         
 ########################################################
 #                 CONDITIONALS                         #
 ########################################################
-class If(SubAction):
+class If(subaction.SubAction):
     subact_group = 'Control'
-    fields = [NodeMap('variable','string','if>variable',''),
-              NodeMap('source','string','if>variable|source','action'),
-              NodeMap('function','string','if|function','=='),
-              NodeMap('value','dynamic','if>value',True),
-              NodeMap('if_actions','string','if>pass',''),
-              NodeMap('else_actions','string','if>fail','')
+    fields = [subaction.NodeMap('variable','string','if>variable',''),
+              subaction.NodeMap('source','string','if>variable|source','action'),
+              subaction.NodeMap('function','string','if|function','=='),
+              subaction.NodeMap('value','dynamic','if>value',True),
+              subaction.NodeMap('if_actions','string','if>pass',''),
+              subaction.NodeMap('else_actions','string','if>fail','')
               ]
     
     def __init__(self,_variable='',_source='action',_function='==',_value='True',_ifActions='',_elseActions=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.variable = _variable
         self.source = _source
         self.function = _function
@@ -55,7 +58,7 @@ class If(SubAction):
         self.else_actions = _elseActions
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.variable == '': return
         if self.source == 'fighter' or self.source == 'actor':
             if hasattr(_actor, 'owner'):
@@ -127,11 +130,11 @@ class If(SubAction):
         
         return elem
 
-class ifButton(SubAction):
+class ifButton(subaction.SubAction):
     subact_group = 'Control'
     
     def __init__(self,_button='',_check='keyBuffered',_bufferFrom=0,_bufferTo=0,_threshold=0.1,_ifActions='',_elseActions='',_beyondAction=False):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.button = _button
         self.check = _check
         self.buffer_from = _bufferFrom
@@ -142,7 +145,7 @@ class ifButton(SubAction):
         self.beyond_action = _beyondAction
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.button == '': return
 
         if self.beyond_action:
@@ -252,12 +255,12 @@ class ifButton(SubAction):
             check = button.attrib['check']
         else: check = 'keyBuffered'
         button = button.text
-        buffer_from = int(loadNodeWithDefault(_node, 'from', 1))
-        buffer_to = int(loadNodeWithDefault(_node, 'to', 0))
-        threshold = float(loadNodeWithDefault(_node, 'threshold', 0.1))
+        buffer_from = int(subaction.loadNodeWithDefault(_node, 'from', 1))
+        buffer_to = int(subaction.loadNodeWithDefault(_node, 'to', 0))
+        threshold = float(subaction.loadNodeWithDefault(_node, 'threshold', 0.1))
         
-        if_actions = loadNodeWithDefault(_node, 'pass', None)
-        else_actions = loadNodeWithDefault(_node, 'fail', None)
+        if_actions = subaction.loadNodeWithDefault(_node, 'pass', None)
+        else_actions = subaction.loadNodeWithDefault(_node, 'fail', None)
         
         return ifButton(button, check, buffer_from, buffer_to, threshold, if_actions, else_actions, _node.attrib.has_key('beyondAction'))
                   
@@ -267,19 +270,19 @@ class ifButton(SubAction):
       
 # ChangeFighterSprite will change the sprite of the fighter (Who knew?)
 # Optionally pass it a subImage index to start at that frame instead of 0
-class changeFighterSprite(SubAction):
+class changeFighterSprite(subaction.SubAction):
     subact_group = 'Sprite'
-    fields = [NodeMap('sprite','string','changeSprite','idle'),
-              NodeMap('preserve_index','bool','changeSprite|preserve',False)
+    fields = [subaction.NodeMap('sprite','string','changeSprite','idle'),
+              subaction.NodeMap('preserve_index','bool','changeSprite|preserve',False)
               ]
     
     def __init__(self):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.sprite = 'idle' #default data
         self.preserve_index = False #default data
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.preserve_index: index = _actor.sprite.index
         else: index = 0
         _action.sprite_name = self.sprite
@@ -292,19 +295,19 @@ class changeFighterSprite(SubAction):
         return subactionSelector.ChangeSpriteProperties(_root,self)
     
 # ChangeFighterSubimage will change the subimage of a sheetSprite without changing the sprite.
-class changeFighterSubimage(SubAction):
+class changeFighterSubimage(subaction.SubAction):
     subact_group = 'Sprite'
-    fields = [NodeMap('index','int','changeSubimage',0),
-              NodeMap('relative','bool','changeSubimage|relative',False)
+    fields = [subaction.NodeMap('index','int','changeSubimage',0),
+              subaction.NodeMap('relative','bool','changeSubimage|relative',False)
               ]
     
     def __init__(self,_index=0,_relative=False):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.index = _index
         self.relative = _relative
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _action.sprite_rate = 0 #sprite_rate has been broken, so we have to ignore it from now on
         #TODO changeSpriteRate subaction
         if self.relative: _actor.changeSpriteImage(self.index+_actor.sprite.index)
@@ -316,14 +319,14 @@ class changeFighterSubimage(SubAction):
     def getPropertiesPanel(self, _root):
         return subactionSelector.ChangeSubimageProperties(_root,self)
 
-class flip(SubAction):
+class flip(subaction.SubAction):
     subact_group = 'Sprite'
     fields = []
     def __init__(self):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _actor.flip()
         
     def getDisplayName(self):
@@ -338,20 +341,20 @@ class flip(SubAction):
 
 # The preferred speed is what a fighter will accelerate/decelerate to. Use this action if you
 # want the fighter to gradually speed up to a point (for accelerating), or slow down to a point (for deccelerating)
-class changeFighterPreferredSpeed(SubAction):
+class changeFighterPreferredSpeed(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('speed_x','float','changeFighterPreferredSpeed>xSpeed',None),
-              NodeMap('x_relative','bool','changeFighterPreferredSpeed>xSpeed|relative',False),
-              NodeMap('speed_y','float','changeFighterPreferredSpeed>ySpeed',None)
+    fields = [subaction.NodeMap('speed_x','float','changeFighterPreferredSpeed>xSpeed',None),
+              subaction.NodeMap('x_relative','bool','changeFighterPreferredSpeed>xSpeed|relative',False),
+              subaction.NodeMap('speed_y','float','changeFighterPreferredSpeed>ySpeed',None)
               ]
     def __init__(self,_speedX = None, _speedY = None, _xRelative = False):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.speed_x = _speedX
         self.speed_y = _speedY
         self.x_relative = _xRelative
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.speed_x is not None:
             if type(self.speed_x) is tuple:
                 owner,value = self.speed_x
@@ -408,18 +411,18 @@ class changeFighterPreferredSpeed(SubAction):
         return elem
 
 # ChangeFighterSpeed changes the speed directly, with no acceleration/deceleration.
-class changeFighterSpeed(SubAction):
+class changeFighterSpeed(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('speed_x','float','changeFighterSpeed>xSpeed',None),
-              NodeMap('x_relative','bool','changeFighterSpeed>xSpeed|relative',False),
-              NodeMap('speed_y','float','changeFighterSpeed>ySpeed',None),
-              NodeMap('y_relative','bool','changeFighterSpeed>ySpeed|relative',False),
-              NodeMap('direction','int','changeFighterSpeed>direction',None),
-              NodeMap('magnitude','float','changeFighterSpeed>magnitude',None),
+    fields = [subaction.NodeMap('speed_x','float','changeFighterSpeed>xSpeed',None),
+              subaction.NodeMap('x_relative','bool','changeFighterSpeed>xSpeed|relative',False),
+              subaction.NodeMap('speed_y','float','changeFighterSpeed>ySpeed',None),
+              subaction.NodeMap('y_relative','bool','changeFighterSpeed>ySpeed|relative',False),
+              subaction.NodeMap('direction','int','changeFighterSpeed>direction',None),
+              subaction.NodeMap('magnitude','float','changeFighterSpeed>magnitude',None),
               ]
     
     def __init__(self,_speedX = None, _speedY = None, _xRelative = False, _yRelative = False, _direction = None, _magnitude = None):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.speed_x = _speedX
         self.speed_y = _speedY
         self.x_relative = _xRelative
@@ -428,7 +431,7 @@ class changeFighterSpeed(SubAction):
         self.magnitude = _magnitude
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.direction is not None and self.magnitude is not None:
             x,y = settingsManager.getXYFromDM(self.direction,self.magnitude)
             _actor.change_x = x
@@ -492,57 +495,57 @@ class changeFighterSpeed(SubAction):
             
         return elem
     
-class changeGravity(SubAction):
+class changeGravity(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('new_gravity','float','changeGravity',False)]
+    fields = [subaction.NodeMap('new_gravity','float','changeGravity',False)]
     
     def __init__(self,_newGrav=1):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.new_gravity = _newGrav
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if hasattr(_actor, 'owner'):
             _actor = _actor.owner
         _actor.calcGrav(self.new_gravity)
         
     def getPropertiesPanel(self, _root):
         #TODO Properties
-        return SubAction.getPropertiesPanel(self, _root)
+        return subaction.SubAction.getPropertiesPanel(self, _root)
     
     def getDisplayName(self):
         return 'Change Gravity Multiplier to '+self.new_gravity
 
-class dealDamage(SubAction):
+class dealDamage(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('damage', 'float', 'dealDamage', 0.0)]
+    fields = [subaction.NodeMap('damage', 'float', 'dealDamage', 0.0)]
 
     def __init__(self,_damage=0):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.damage = _damage
 
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if hasattr(_actor, 'owner'):
             _actor = _actor.owner
         _actor.dealDamage(self.damage)
 
     def getPropertiesPanel(self, _root):
-        return SubAction.getPropertiesPanel(self, _root)
+        return subaction.SubAction.getPropertiesPanel(self, _root)
 
     def getDisplayName(self):
         return 'Deal ' + self.damage + ' damage'
 
-class applyScaledKnockback(SubAction):
+class applyScaledKnockback(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('damage', 'float', 'applyScaledKnockback', 0.0),
-              NodeMap('base_knockback', 'float', 'applyScaledKnockback', 0.0),
-              NodeMap('knockback_growth', 'float', 'applyScaledKnockback', 0.0),
-              NodeMap('trajectory', 'float', 'applyScaledKnockback', 0.0),
-              NodeMap('weight_influence', 'float', 'applyScaledKnockback', 1.0)]
+    fields = [subaction.NodeMap('damage', 'float', 'applyScaledKnockback', 0.0),
+              subaction.NodeMap('base_knockback', 'float', 'applyScaledKnockback', 0.0),
+              subaction.NodeMap('knockback_growth', 'float', 'applyScaledKnockback', 0.0),
+              subaction.NodeMap('trajectory', 'float', 'applyScaledKnockback', 0.0),
+              subaction.NodeMap('weight_influence', 'float', 'applyScaledKnockback', 1.0)]
 
     def __init__(self, _damage=0, _baseKnockback=0, _knockbackGrowth=0, _trajectory=0, _weightInfluence=1):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.damage = _damage
         self.base_knockback = _baseKnockback
         self.knockback_growth = _knockbackGrowth
@@ -550,7 +553,7 @@ class applyScaledKnockback(SubAction):
         self.weight_influence = _weightInfluence
 
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if hasattr(_actor, 'owner'):
             _actor = _actor.owner
         percent_portion = (_actor.damage/10.0) + (_actor.damage*self.damage)/20.0
@@ -559,24 +562,24 @@ class applyScaledKnockback(SubAction):
         _actor.applyKnockback(scaled_kb+self.base_knockback, self.trajectory)
 
     def getPropertiesPanel(self, _root):
-        return SubAction.getPropertiesPanel(self, _root)
+        return subaction.SubAction.getPropertiesPanel(self, _root)
 
     def getDisplayName(self):
         #TODO better description
         return 'Apply scaled knockback'
 
-class applyHitstun(SubAction):
+class applyHitstun(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('damage', 'float', 'applyHitstun', 0.0),
-              NodeMap('base_knockback', 'float', 'applyHitstun', 0.0),
-              NodeMap('knockback_growth', 'float', 'applyHitstun', 0.0),
-              NodeMap('trajectory', 'float', 'applyHitstun', 0.0),
-              NodeMap('weight_influence', 'float', 'applyHitstun', 1.0),
-              NodeMap('base_hitstun', 'float', 'applyHitstun', 10.0),
-              NodeMap('hitstun_multiplier', 'float', 'applyHitstun', 2.0)]
+    fields = [subaction.NodeMap('damage', 'float', 'applyHitstun', 0.0),
+              subaction.NodeMap('base_knockback', 'float', 'applyHitstun', 0.0),
+              subaction.NodeMap('knockback_growth', 'float', 'applyHitstun', 0.0),
+              subaction.NodeMap('trajectory', 'float', 'applyHitstun', 0.0),
+              subaction.NodeMap('weight_influence', 'float', 'applyHitstun', 1.0),
+              subaction.NodeMap('base_hitstun', 'float', 'applyHitstun', 10.0),
+              subaction.NodeMap('hitstun_multiplier', 'float', 'applyHitstun', 2.0)]
 
     def __init__(self, _damage=0, _baseKnockback=0, _knockbackGrowth=0, _trajectory=0, _weightInfluence=1, _baseHitstun=10, _hitstunMultiplier=2):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.damage = _damage
         self.base_knockback = _baseKnockback
         self.knockback_growth = _knockbackGrowth
@@ -586,7 +589,7 @@ class applyHitstun(SubAction):
         self.hitstun_multiplier = _hitstunMultiplier
 
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if hasattr(_actor, 'owner'):
             _actor = _actor.owner
         percent_portion = (_actor.damage/10.0) + (_actor.damage*self.damage)/20.0
@@ -595,21 +598,21 @@ class applyHitstun(SubAction):
         _actor.applyHitstun(scaled_kb+self.base_knockback, self.hitstun_multiplier, self.base_hitstun, self.trajectory)
 
     def getPropertiesPanel(self, _root):
-        return SubAction.getPropertiesPanel(self, _root)
+        return subaction.SubAction.getPropertiesPanel(self, _root)
 
     def getDisplayName(self):
         return 'Apply hitstun'
 
-class compensateResistance(SubAction):
+class compensateResistance(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('frames', 'float', 'compensateResistance', 0.0)]
+    fields = [subaction.NodeMap('frames', 'float', 'compensateResistance', 0.0)]
         
     def __init__(self, _frames=0):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.frames = _frames
 
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if hasattr(_actor, 'owner'):
             _actor = _actor.owner    
         if _actor.change_x > 0:
@@ -622,32 +625,32 @@ class compensateResistance(SubAction):
             _actor.change_y += .5*_actor.stats['gravity']*settingsManager.getSetting('gravity')*self.frames
 
     def getPropertiesPanel(self, _root):
-        return SubAction.getPropertiesPanel(self, _root)
+        return subaction.SubAction.getPropertiesPanel(self, _root)
 
     def getDisplayName(self):
         return 'Compensate for ' + self.frames + ' frames of gravity and air resistance'
 
 
-class applyHitstop(SubAction):
+class applyHitstop(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('frames', 'int', 'applyHitstop', 0),
-              NodeMap('pushback', 'float', 'applyHitstop', 0.0),
-              NodeMap('trajectory', 'float', 'applyHitstop', 0.0)]
+    fields = [subaction.NodeMap('frames', 'int', 'applyHitstop', 0),
+              subaction.NodeMap('pushback', 'float', 'applyHitstop', 0.0),
+              subaction.NodeMap('trajectory', 'float', 'applyHitstop', 0.0)]
 
     def __init__(self, _frames=0, _pushback=0.0, _trajectory=0.0):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.frames = _frames
         self.pushback = _pushback
         self.trajectory = _trajectory
 
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if hasattr(_actor, 'owner'):
             _actor = _actor.owner
         _actor.applyPushback(self.pushback, self.trajectory, self.frames)
 
     def getPropertiesPanel(self, _root):
-        return SubAction.getPropertiesPanel(self, _root)
+        return subaction.SubAction.getPropertiesPanel(self, _root)
 
     def getDisplayName(self):
         return 'Apply hitstop'
@@ -656,37 +659,37 @@ class applyHitstop(SubAction):
 # takes a direction in degrees (0 being forward, 90 being straight up, 180 being backward, 270 being downward)
 # and a magnitude.
 # Set the "preferred" flag to make the vector affect preferred speed instead of directly changing speed.
-class applyForceVector(SubAction):
+class applyForceVector(subaction.SubAction):
     def __init__(self, _magnitude, _direction, _preferred = False):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.magnitude= _magnitude
         self.direction = _direction
         self.preferred = _preferred
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _actor.setSpeed(self.magnitude,self.direction,self.preferred)
 
 # ShiftFighterPositon directly changes the fighter's x and y coordinates without regard for wall checks, speed limites, or gravity.
 # Don't use this for ordinary movement unless you're totally sure what you're doing.
 # A good use for this is to jitter a hit opponent during hitlag, just make sure to put them back where they should be before actually launching.
-class shiftFighterPosition(SubAction):
+class shiftFighterPosition(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('new_x','int','shiftPosition>xPos',None),
-              NodeMap('x_relative','bool','shiftPosition>xPos|relative',False),
-              NodeMap('new_y','int','shiftPosition>yPos',None),
-              NodeMap('y_relative','bool','shiftPosition>yPos|relative',False)
+    fields = [subaction.NodeMap('new_x','int','shiftPosition>xPos',None),
+              subaction.NodeMap('x_relative','bool','shiftPosition>xPos|relative',False),
+              subaction.NodeMap('new_y','int','shiftPosition>yPos',None),
+              subaction.NodeMap('y_relative','bool','shiftPosition>yPos|relative',False)
               ]
     
     def __init__(self,_newX = None, _newY = None, _xRelative = False, _yRelative = False):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.new_x = _newX
         self.new_y = _newY
         self.x_relative = _xRelative
         self.y_relative = _yRelative
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.new_x:
             if self.x_relative: _actor.posx += self.new_x * _actor.facing
             else: _actor.posx = self.new_x
@@ -717,16 +720,16 @@ class shiftFighterPosition(SubAction):
             
         return elem
     
-class setInvulnerability(SubAction):
+class setInvulnerability(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('invuln_amt','int','setInvulnerability',0),
+    fields = [subaction.NodeMap('invuln_amt','int','setInvulnerability',0),
               ]
     
     def __init__(self,_amt=0):
         self.invuln_amt = _amt
     
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _actor.invulnerable = self.invuln_amt
     
     def getDisplayName(self):
@@ -736,21 +739,21 @@ class setInvulnerability(SubAction):
         #TODO add this
         return subactionSelector.BasePropertiesFrame(_root,self)
     
-class shiftSpritePosition(SubAction):
+class shiftSpritePosition(subaction.SubAction):
     subact_group = 'Sprite'
-    fields = [NodeMap('new_x','int','shiftSprite>xPos',None),
-              NodeMap('x_relative','bool','shiftSprite>xPos|relative',None),
-              NodeMap('new_y','int','shiftSprite>yPos',None)
+    fields = [subaction.NodeMap('new_x','int','shiftSprite>xPos',None),
+              subaction.NodeMap('x_relative','bool','shiftSprite>xPos|relative',None),
+              subaction.NodeMap('new_y','int','shiftSprite>yPos',None)
               ]
     
     def __init__(self,_newX = None, _newY = None, _xRelative = False):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.new_x = _newX
         self.new_y = _newY
         self.x_relative = _xRelative
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         (old_x,old_y) = _actor.sprite.spriteOffset
         if self.new_x is not None:
             old_x = self.new_x
@@ -783,19 +786,19 @@ class shiftSpritePosition(SubAction):
             
         return elem
         
-class updateLandingLag(SubAction):
+class updateLandingLag(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('new_lag','int','updateLandingLag',0),
-              NodeMap('reset','bool','updateLandingLag|reset',False)
+    fields = [subaction.NodeMap('new_lag','int','updateLandingLag',0),
+              subaction.NodeMap('reset','bool','updateLandingLag|reset',False)
               ]
     
     def __init__(self,_newLag=0,_reset = False):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.new_lag = _newLag
         self.reset = _reset
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if hasattr(_actor, 'owner'):
             _actor = _actor.owner
         _actor.updateLandingLag(self.new_lag,self.reset)
@@ -814,23 +817,23 @@ class updateLandingLag(SubAction):
 ########################################################
 
 # Change a fighter attribute, for example, weight or remaining jumps
-class modifyFighterVar(SubAction):
+class modifyFighterVar(subaction.SubAction):
     subact_group = 'Control'
-    fields = [NodeMap('attr','string','setFighterVar|var',''),
-              NodeMap('val','dynamic','setFighterVar>value',None),
-              NodeMap('relative','bool','setFighterVar>value|relative',False),
-              NodeMap('source','string','setFighterVar|source','object')
+    fields = [subaction.NodeMap('attr','string','setFighterVar|var',''),
+              subaction.NodeMap('val','dynamic','setFighterVar>value',None),
+              subaction.NodeMap('relative','bool','setFighterVar>value|relative',False),
+              subaction.NodeMap('source','string','setFighterVar|source','object')
               ]
               
     def __init__(self,_attr='',_val=None,_relative=False,_source='object'):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.attr = _attr
         self.val = _val
         self.relative = _relative
         self.source = _source
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.source == 'actor' and hasattr(_actor, 'owner'):
             _actor = _actor.owner
         if not self.attr =='':
@@ -852,23 +855,23 @@ class modifyFighterVar(SubAction):
         return 'Set '+self.source+' '+self.attr+' to '+str(self.val)
     
 # Modify a variable in the action or fighter, such as a conditional flag of some sort.
-class setVar(SubAction):
+class setVar(subaction.SubAction):
     subact_group = 'Control'
-    fields = [NodeMap('source','string','setVar|source',''),
-              NodeMap('attr','string','setVar>variable',''),
-              NodeMap('val','dynamic','setVar>value',None),
-              NodeMap('relative','bool','setVar>value|relative',False)
+    fields = [subaction.NodeMap('source','string','setVar|source',''),
+              subaction.NodeMap('attr','string','setVar>variable',''),
+              subaction.NodeMap('val','dynamic','setVar>value',None),
+              subaction.NodeMap('relative','bool','setVar>value|relative',False)
               ]
               
     def __init__(self,_source='action',_attr='',_val=None,_relative=False):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.attr = _attr
         self.source = _source
         self.val = _val
         self.relative = _relative
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.source == 'action': source = _action
         elif self.source == 'fighter': 
             if hasattr(_actor, 'owner'):
@@ -899,19 +902,19 @@ class setVar(SubAction):
         return 'Set '+self.source+' '+self.attr+' to '+str(self.val)
                    
 # Change the frame of the action to a value.
-class changeActionFrame(SubAction):
+class changeActionFrame(subaction.SubAction):
     subact_group = 'Control'
-    fields = [NodeMap('new_frame','int','setFrame',0),
-              NodeMap('relative','bool','setFrame|relative',None)
+    fields = [subaction.NodeMap('new_frame','int','setFrame',0),
+              subaction.NodeMap('relative','bool','setFrame|relative',None)
               ]
     
     def __init__(self,_newFrame=0,_relative=False):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.new_frame = _newFrame
         self.relative = _relative
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.relative: _action.frame += self.new_frame
         else: _action.frame = self.new_frame
     
@@ -926,29 +929,29 @@ class changeActionFrame(SubAction):
     
         
 # Go to the next frame in the action
-class nextFrame(SubAction):
+class nextFrame(subaction.SubAction):
     subact_group = 'Control'
     fields = []
     
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _action.frame += 1
     
     def getDisplayName(self):
         return 'Next Frame'
 
     
-class transitionState(SubAction):
+class transitionState(subaction.SubAction):
     subact_group = 'Control'
-    fields = [NodeMap('transition','string','transitionState','')
+    fields = [subaction.NodeMap('transition','string','transitionState','')
               ]
     
     def __init__(self,_transition=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.transition = _transition
     
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if baseActions.state_dict.has_key(self.transition):
             baseActions.state_dict[self.transition](_actor)
     
@@ -963,11 +966,11 @@ class transitionState(SubAction):
 ########################################################
 
 # Create a new hitbox
-class createHitbox(SubAction):
+class createHitbox(subaction.SubAction):
     subact_group = 'Hitbox'
     
     def __init__(self, _name='', _hitboxType='damage', _hitboxLock='', _variables={}, _owner_event = '', _other_event = ''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         
         self.hitbox_name = _name
         self.hitbox_type = _hitboxType if _hitboxType is not None else "damage"
@@ -977,7 +980,7 @@ class createHitbox(SubAction):
         self.other_event = _other_event
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
 
         if self.hitbox_name == '': return #Don't make a hitbox without a name or we'll lose it
         #Use an existing hitbox lock by name, or create a new one
@@ -1072,7 +1075,7 @@ class createHitbox(SubAction):
             elif tag == 'onHitOther':
                 other_event = val
             elif tag in tuple_type:
-                variables[tag] = make_tuple(val)
+                variables[tag] = subaction.make_tuple(val)
             elif tag in float_type:
                 variables[tag] = float(val)
             elif tag in int_type:
@@ -1083,22 +1086,22 @@ class createHitbox(SubAction):
         return createHitbox(name, hitbox_type, hitbox_lock, variables, owner_event, other_event)
         
 # Change the properties of an existing hitbox, such as position, or power
-class modifyHitbox(SubAction):
+class modifyHitbox(subaction.SubAction):
     subact_group = 'Hitbox'
     
     def __init__(self,_hitboxName='',_hitboxVars={}):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.hitbox_name = _hitboxName
         self.hitbox_vars = _hitboxVars
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if _action.hitboxes.has_key(self.hitbox_name):
             hitbox = _action.hitboxes[self.hitbox_name]
             if hitbox:
                 for name,value in self.hitbox_vars.iteritems():
                     if hasattr(hitbox, name):
-                        if isinstance(value, VarData) or isinstance(value, FuncData) or isinstance(value, EvalData):
+                        if isinstance(value, subaction.VarData) or isinstance(value, subaction.FuncData) or isinstance(value, subaction.EvalData):
                             setattr(hitbox, name, value.unpack(_action,_actor))
                             if name in hitbox.variable_dict:
                                 hitbox.variable_dict[name] = value.unpack(_action, _actor)
@@ -1148,22 +1151,22 @@ class modifyHitbox(SubAction):
             elif tag in boolean_type:
                 _type = 'bool'
             
-            val = parseData(child, _type, None)
+            val = subaction.parseData(child, _type, None)
             hitbox_vars[tag] = val
             
         return modifyHitbox(hitbox_name,hitbox_vars)
         
-class activateHitbox(SubAction):
+class activateHitbox(subaction.SubAction):
     subact_group = 'Hitbox'
-    fields = [NodeMap('hitbox_name','string','activateHitbox','')
+    fields = [subaction.NodeMap('hitbox_name','string','activateHitbox','')
               ]
     
     def __init__(self,_hitboxName=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.hitbox_name = _hitboxName
     
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if _action.hitboxes.has_key(self.hitbox_name):
             _actor.activateHitbox(_action.hitboxes[self.hitbox_name])
     
@@ -1174,17 +1177,17 @@ class activateHitbox(SubAction):
         return 'Activate Hitbox: ' + self.hitbox_name
     
 
-class deactivateHitbox(SubAction):
+class deactivateHitbox(subaction.SubAction):
     subact_group = 'Hitbox'
-    fields = [NodeMap('hitbox_name','string','deactivateHitbox','')
+    fields = [subaction.NodeMap('hitbox_name','string','deactivateHitbox','')
               ]
     
     def __init__(self,_hitboxName=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.hitbox_name = _hitboxName
     
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if _action.hitboxes.has_key(self.hitbox_name):
             _action.hitboxes[self.hitbox_name].kill()
     
@@ -1194,17 +1197,17 @@ class deactivateHitbox(SubAction):
     def getDisplayName(self):
         return 'Deactivate Hitbox: ' + self.hitbox_name
 
-class unlockHitbox(SubAction):
+class unlockHitbox(subaction.SubAction):
     subact_group = 'Hitbox'
-    fields = [NodeMap('hitbox_name','string','unlockHitbox','')
+    fields = [subaction.NodeMap('hitbox_name','string','unlockHitbox','')
               ]
     
     def __init__(self,_hitboxName=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.hitbox_name = _hitboxName
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if _action.hitboxes.has_key(self.hitbox_name):
             _action.hitboxes[self.hitbox_name].hitbox_lock = engine.hitbox.HitboxLock()
     
@@ -1214,17 +1217,17 @@ class unlockHitbox(SubAction):
     def getDisplayName(self):
         return 'Unlock Hitbox: ' + self.hitbox_name
 
-class charge(SubAction):
+class charge(subaction.SubAction):
     subact_group = 'Hitbox'
-    fields = [NodeMap('max_charge','int','charge|maxCharge',10),
-              NodeMap('start_charge_frame','int','charge',0),
-              NodeMap('supress_mask','bool','charge|noMask',False),
-              NodeMap('charge_deposit','string','charge|chargeDeposit','charge'),
-              NodeMap('button_check','string','charge|buttonCheck','attack')
+    fields = [subaction.NodeMap('max_charge','int','charge|maxCharge',10),
+              subaction.NodeMap('start_charge_frame','int','charge',0),
+              subaction.NodeMap('supress_mask','bool','charge|noMask',False),
+              subaction.NodeMap('charge_deposit','string','charge|chargeDeposit','charge'),
+              subaction.NodeMap('button_check','string','charge|buttonCheck','attack')
               ]
     
     def __init__(self,_max=10,_chargeFrame=0,_noMask=False,_chargeDeposit='charge',_buttonCheck='attack'):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.max_charge = _max
         self.start_charge_frame = _chargeFrame
         self.supress_mask = _noMask
@@ -1232,7 +1235,7 @@ class charge(SubAction):
         self.button_check = _buttonCheck
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if hasattr(_action, self.charge_deposit):
             setattr(_action, self.charge_deposit, getattr(_action, self.charge_deposit)+1)
         else:
@@ -1248,16 +1251,16 @@ class charge(SubAction):
             _actor.mask = None
 
 # Create a new hurtbox
-class createHurtbox(SubAction):
+class createHurtbox(subaction.SubAction):
     subact_group = 'Hurtbox'
     
     def __init__(self, _name='', _variables={}):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.hurtbox_name = _name
         self.hurtbox_vars = _variables
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.hurtbox_name == '': return 
         
         hurtbox = engine.hurtbox.Hurtbox(_actor,self.hurtbox_vars)
@@ -1296,7 +1299,7 @@ class createHurtbox(SubAction):
             if tag == 'name':
                 name = val
             elif tag in tuple_type:
-                variables[tag] = make_tuple(val)
+                variables[tag] = subaction.make_tuple(val)
             else:
                 print('string variable',tag,val)
                 variables[tag] = val
@@ -1304,22 +1307,22 @@ class createHurtbox(SubAction):
         return createHurtbox(name, variables)
 
 # Change the properties of an existing hurtbox
-class modifyHurtbox(SubAction):
+class modifyHurtbox(subaction.SubAction):
     subact_group = 'Hurtbox'
     
     def __init__(self,_hurtboxName='',_hurtboxVars={}):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.hurtbox_name = _hurtboxName
         self.hurtbox_vars = _hurtboxVars
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if _action.hurtboxes.has_key(self.hurtbox_name):
             hurtbox = _action.hurtboxes[self.hurtbox_name]
             if hurtbox:
                 for name,value in self.hurtbox_vars.iteritems():
                     if hasattr(hurtbox, name):
-                        if isinstance(value, VarData) or isinstance(value, FuncData) or isinstance(value, EvalData):
+                        if isinstance(value, subaction.VarData) or isinstance(value, subaction.FuncData) or isinstance(value, subaction.EvalData):
                             setattr(hurtbox, name, value.unpack(_action,_actor))
                         else: setattr(hurtbox, name, value)
         
@@ -1341,7 +1344,7 @@ class modifyHurtbox(SubAction):
     
     @staticmethod
     def customBuildFromXml(_node):
-        hurtbox_name = loadNodeWithDefault(_node, 'name', 'auto')
+        hurtbox_name = subaction.loadNodeWithDefault(_node, 'name', 'auto')
         hurtbox_vars = {}
         
         tuple_type = ['center','size','fix_size_multiplier','self_size_multiplier']
@@ -1354,22 +1357,22 @@ class modifyHurtbox(SubAction):
             if tag in tuple_type:
                 _type = 'tuple'
             else: _type = 'string'
-            val = parseData(child, _type, None)
+            val = subaction.parseData(child, _type, None)
             hurtbox_vars[tag] = val
             
         return modifyHurtbox(hurtbox_name,hurtbox_vars)
 
-class activateHurtbox(SubAction):
+class activateHurtbox(subaction.SubAction):
     subact_group = 'Hurtbox'
-    fields = [NodeMap('hurtbox_name','string','activateHurtbox','')
+    fields = [subaction.NodeMap('hurtbox_name','string','activateHurtbox','')
               ]
     
     def __init__(self,_hurtboxName=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.hurtbox_name = _hurtboxName
     
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if _action.hurtboxes.has_key(self.hurtbox_name):
             _actor.activateHurtbox(_action.hurtboxes[self.hurtbox_name])
     
@@ -1380,17 +1383,17 @@ class activateHurtbox(SubAction):
     def getDisplayName(self):
         return 'Activate Hurtbox: ' + self.hurtbox_name
     
-class deactivateHurtbox(SubAction):
+class deactivateHurtbox(subaction.SubAction):
     subact_group = 'Hurtbox'
-    fields = [NodeMap('hurtbox_name','string','deactivateHurtbox','')
+    fields = [subaction.NodeMap('hurtbox_name','string','deactivateHurtbox','')
               ]
     
     def __init__(self,_hurtboxName=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.urtbox_name = _hurtboxName
     
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if _action.hurtboxes.has_key(self.hurtbox_name):
             _action.hurtboxes[self.hurtbox_name].kill()
     
@@ -1401,19 +1404,19 @@ class deactivateHurtbox(SubAction):
     def getDisplayName(self):
         return 'Deactivate Hurtbox: ' + self.hurtbox_name
 
-class changeECB(SubAction):
+class changeECB(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('size','tuple','changeECB>size',(0,0)),
-              NodeMap('offset','tuple','changeECB>offset',(0,0))
+    fields = [subaction.NodeMap('size','tuple','changeECB>size',(0,0)),
+              subaction.NodeMap('offset','tuple','changeECB>offset',(0,0))
               ]
     
     def __init__(self,_size=[0,0],_ecbOffset=[0,0]):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.size = _size
         self.offset = _ecbOffset
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _action.ecb_size = self.size
         _action.ecb_offset = self.offset
     
@@ -1430,91 +1433,91 @@ class changeECB(SubAction):
             ecb_offset = map(int, _node.find('offset').text.split(','))
         return changeECB(size,ecb_offset)
 
-class loadArticle(SubAction):
+class loadArticle(subaction.SubAction):
     subact_group = 'Article'
-    fields = [NodeMap('article','string','loadArticle',None),
-              NodeMap('name','string','loadArticle|name','')
+    fields = [subaction.NodeMap('article','string','loadArticle',None),
+              subaction.NodeMap('name','string','loadArticle|name','')
               ]
     
     def __init__(self,_article=None,_name=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.article = _article
         self.name = _name
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.article:
             _action.articles[self.name] = _actor.loadArticle(self.article)
     
     def getDisplayName(self):
         return 'Load Article: ' + self.name
     
-class activateArticle(SubAction):
+class activateArticle(subaction.SubAction):
     subact_group = 'Article'
-    fields = [NodeMap('name','string','activateArticle','')
+    fields = [subaction.NodeMap('name','string','activateArticle','')
               ]
     
     def __init__(self,_name=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.name = _name
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if _action.articles.has_key(self.name):
             _action.articles[self.name].activate()
         
     def getDisplayName(self):
         return 'Activate Article: ' + self.name
     
-class deactivateArticle(SubAction):
+class deactivateArticle(subaction.SubAction):
     subact_group = 'Article'
-    fields = [NodeMap('name','string','deactivateArticle','')
+    fields = [subaction.NodeMap('name','string','deactivateArticle','')
               ]
     
     def __init__(self,_name=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.name = _name
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if _action.articles.has_key(self.name):
             _action.articles[self.name].deactivate()
     
     def getDisplayName(self):
         return 'Deactivate Article: ' + self.name
     
-class doAction(SubAction):
+class doAction(subaction.SubAction):
     subact_group = 'Control'
-    fields = [NodeMap('action','string','doAction','NeutralAction')
+    fields = [subaction.NodeMap('action','string','doAction','NeutralAction')
               ]
     
     def __init__(self,_action='NeutralAction'):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.action = _action
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _actor.doAction(self.action)
         
     def getDisplayName(self):
         return 'Change Action: ' + self.action
     
     
-class createMask(SubAction):
+class createMask(subaction.SubAction):
     subact_group = 'Behavior'
-    fields = [NodeMap('color','string','createMask>color','#FFFFFF'),
-              NodeMap('duration','int','createMask>duration',0),
-              NodeMap('pulse_length','int','createMask>pulse',0)
+    fields = [subaction.NodeMap('color','string','createMask>color','#FFFFFF'),
+              subaction.NodeMap('duration','int','createMask>duration',0),
+              subaction.NodeMap('pulse_length','int','createMask>pulse',0)
               ]
     
     def __init__(self,_color='#FFFFFF',_duration=0,_pulseLength=0):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.color = _color
         self.duration = _duration
         self.pulse_length = _pulseLength
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         pulse = True if self.pulse_length > 0 else False
         colorobj = pygame.color.Color(self.color)
         color = [colorobj.r,colorobj.g,colorobj.b]
@@ -1523,46 +1526,46 @@ class createMask(SubAction):
     def getDisplayName(self):
         return 'Create Color Mask: ' + str(self.color)
 
-class removeMask(SubAction):
+class removeMask(subaction.SubAction):
     subact_group = 'Behavior'
     fields = []
     
     def __init__(self):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
     
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _actor.mask = None
         
     def getDisplayName(self):
         return 'Remove Color Mask'
     
-class playSound(SubAction):
+class playSound(subaction.SubAction):
     subact_group = 'Control'
-    fields = [NodeMap('sound','string','playSound','')
+    fields = [subaction.NodeMap('sound','string','playSound','')
               ]
     
     def __init__(self,_sound=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.sound = _sound
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _actor.playSound(self.sound)
         
     def getDisplayName(self):
         return 'Play Sound: '+str(self.sound)
     
-class debugAction(SubAction):
-    fields = [NodeMap('statement','string','print','')
+class debugAction(subaction.SubAction):
+    fields = [subaction.NodeMap('statement','string','print','')
               ]
     
     def __init__(self,_statement=''):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.statement = _statement
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if isinstance(self.statement, tuple):
             source,name = self.statement
             if source == 'action':
@@ -1581,44 +1584,44 @@ class debugAction(SubAction):
 ######################################################################
 #                         Article Subactions                         #
 ######################################################################
-class deactivateSelf(SubAction):
+class deactivateSelf(subaction.SubAction):
     subact_group = 'Article'
     fields = []
     
     def __init__(self):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _actor.deactivate()
         
     def getDisplayName(self):
         return 'Deactivate Self'
     
-class recenterOnOrigin(SubAction):
+class recenterOnOrigin(subaction.SubAction):
     fields = []
     
     def __init__(self):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
     
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _actor.recenter()
         
     def getDisplayName(self):
         return 'Recenter On Origin'
     
-class executeCode(SubAction):
+class executeCode(subaction.SubAction):
     subact_group = 'Control'
-    fields = [NodeMap('codeString', 'string', 'exec', ''),
-              NodeMap('scope', 'string', 'exec|scope', 'action')]
+    fields = [subaction.NodeMap('codeString', 'string', 'exec', ''),
+              subaction.NodeMap('scope', 'string', 'exec|scope', 'action')]
     
     def __init__(self):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.codeString = ''
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         if self.scope == 'action':
             working_locals = {field: getattr(_action, field) for field in dir(_action)}
         elif self.scope == 'actor':
@@ -1644,27 +1647,27 @@ class executeCode(SubAction):
     def getDisplayName(self):
         return 'Execute ' + self.codeString + ' in the ' + self.scope + ' scope'
     
-class rotateSprite(SubAction):
+class rotateSprite(subaction.SubAction):
     subact_group = 'Sprite'
-    fields = [NodeMap('angle', 'int', 'rotateSprite', 0)]
+    fields = [subaction.NodeMap('angle', 'int', 'rotateSprite', 0)]
     
     def __init__(self):
-        SubAction.__init__(self)
+        subaction.SubAction.__init__(self)
         self.angle = 0
         
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _actor.rotateSprite(self.angle)
     
     def getDisplayName(self):
         return 'Rotate Sprite ' + self.angle + ' degrees'
             
-class unrotateSprite(SubAction):
+class unrotateSprite(subaction.SubAction):
     subact_group = 'Sprite'
     fields = []
     
     def execute(self, _action, _actor):
-        SubAction.execute(self, _action, _actor)
+        subaction.SubAction.execute(self, _action, _actor)
         _actor.unRotate()
         
     def getDisplayName(self):
