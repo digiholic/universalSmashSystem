@@ -1687,6 +1687,12 @@ class AirAttack(BaseAttack):
             _actor.preferred_xspeed = 0
             _actor.preferred_yspeed = _actor.stats['max_fall_speed']
             _actor.doAction('Land')
+        if self.frame >= self.last_frame:
+            if _actor.grounded:
+                _actor.doAction('NeutralAction')
+            else:
+                _actor.doAction('Fall')
+        
                 
     def update(self, _actor):
         BaseAttack.update(self, _actor)
