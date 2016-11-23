@@ -25,7 +25,7 @@ class SubactionFactory():
         from engine.subactions.armor import createArmor,modifyArmor,removeArmor
         from engine.subactions.articles import activateArticle,deactivateArticle,deactivateSelf,loadArticle,recenterOnOrigin
         from engine.subactions.behavior import applyHitstop,applyHitstun,applyScaledKnockback,changeECB,changeGravity,changePreferredSpeed,changeSpeed,compensateResistance,createMask,dealDamage,removeMask,setInvulnerability,shiftPosition,updateLandingLag
-        from engine.subactions.control import event,setFrame,nextFrame,conditional,ifButton,doTransition,doAction,setVar,executeCode,playSound,debugAction
+        from engine.subactions.control import event,setFrame,nextFrame,conditional,ifButton,doTransition,doAction,setVar,setFighterVar,executeCode,playSound,debugAction
         from engine.subactions.hitbox import activateHitbox,chargeHitbox,createHitbox,deactivateHitbox,modifyHitbox,unlockHitbox
         from engine.subactions.hurtbox import activateHurtbox,createHurtbox,deactivateHurtbox,modifyHurtbox
         from engine.subactions.sprite import changeSprite, changeSubimage, shiftSprite, flip, rotateSprite, unrotateSprite
@@ -41,6 +41,7 @@ class SubactionFactory():
                  'transitionState': doTransition.transitionState,
                  'doAction': doAction.doAction,
                  'setVar': setVar.setVar,
+                 'setFighterVar': setFighterVar.modifyFighterVar,
                  'exec': executeCode.executeCode,
                  'playSound': playSound.playSound,
                  'print': debugAction.debugAction,
@@ -113,7 +114,6 @@ class SubactionFactory():
             return self.name_dict[_subaction]
     
     def buildFromXml(self,_name,_node):
-        print('BUILDING SUBACTION',_name,_node)
         if hasattr(self.getSubaction(_name), 'customBuildFromXml'):
             return self.getSubaction(_name).customBuildFromXml(_node)
         
@@ -495,5 +495,4 @@ class SubAction():
     
     @staticmethod
     def buildFromXml(_name,_node):
-        print('BUILDING SUBACTION',_name,_node)
         subactionFactory.buildFromXml(_name, _node)

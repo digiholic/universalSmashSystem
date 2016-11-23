@@ -220,6 +220,7 @@ class AbstractFighter():
         self.article_path_short = loadNodeWithDefault('article_path', '')
         self.article_path = os.path.join(self.base_dir,self.article_path_short)
         self.article_loader_path = loadNodeWithDefault('articles', None)
+        print(self.article_loader_path)
         
         if self.article_loader_path == '':
             self.article_loader = None

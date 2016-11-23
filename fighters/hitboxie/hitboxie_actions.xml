@@ -1747,9 +1747,7 @@
 					<function>
 						<functionName>netDirection</functionName>
 						<args>
-							<_checkDirectionList type="tuple">
-								("up", "down", "left", "right")
-							</_checkDirectionList>
+							<_checkDirectionList type="tuple">("up", "down", "left", "right")</_checkDirectionList>
 						</args>
 					</function>
 				</value>

@@ -295,16 +295,15 @@ class ActionLoader():
                             subactions_at_frame[frame_num].append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
                 frames.remove(frame)
                     
-        conditional_actions = dict()
+        event_actions = dict()
         conds = action_xml.findall('conditional')
         for cond in conds:
             conditional_list = []
             for subact in cond:
                 if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
                     conditional_list.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
-            conditional_actions[cond.attrib['name']] = conditional_list
+            event_actions[cond.attrib['name']] = conditional_list
         
-        event_actions = dict()
         events = action_xml.findall('event')
         #Because we're merging events and conditionals, this checks for either.
         events.extend(action_xml.findall('conditional'))

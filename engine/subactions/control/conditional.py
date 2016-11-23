@@ -59,6 +59,11 @@ class If(SubAction):
             function = lambda var,val: not bool(var)
             
         cond = function(variable,self.value)
+        print(self.source,self.variable,self.value)
+        print('COND',cond)
+        print('EVENTS',_action.events)
+        print(self.if_actions,self.else_actions)
+        
         if cond:
             if self.if_actions and _action.events.has_key(self.if_actions):
                 for act in _action.events[self.if_actions]:

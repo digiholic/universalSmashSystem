@@ -121,9 +121,12 @@ class DynamicArticle():
         self.frame += 1 
 
     def updateAnimationOnly(self, *args): #Ignores actor
-        animation_actions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition,
-                            subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox)
-
+        from engine.subactions.sprite import changeSubimage,changeSprite,shiftSprite
+        from engine.subactions.hitbox import activateHitbox, deactivateHitbox, modifyHitbox
+        from engine.subactions.hurtbox import activateHurtbox, deactivateHurtbox, modifyHurtbox
+        animation_actions = (changeSubimage.changeFighterSubimage, changeSprite.changeFighterSprite, shiftSprite.shiftSpritePosition,
+                            activateHitbox.activateHitbox, deactivateHitbox.deactivateHitbox, modifyHitbox.modifyHitbox)
+        
         for hbox in self.active_hitboxes:
             hbox.owner = self.owner
             hbox.article = self
@@ -149,7 +152,7 @@ class DynamicArticle():
                 self.sprite.getImageAtIndex((self.frame // self.sprite_rate)-1)
             else:
                 self.sprite.getImageAtIndex(self.frame // self.sprite_rate)
-
+                
         for hitbox in self.hitboxes.values():
             hitbox.update()
                 

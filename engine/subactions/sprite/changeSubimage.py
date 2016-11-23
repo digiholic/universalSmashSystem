@@ -1,4 +1,5 @@
 from engine.subaction import *
+import engine.article
 
 # ChangeFighterSubimage will change the subimage of a sheetSprite without changing the sprite.
 class changeFighterSubimage(SubAction):
@@ -14,6 +15,10 @@ class changeFighterSubimage(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
+        
+        if isinstance(_action, engine.article.Article) or isinstance(_action, engine.article.DynamicArticle):
+            _actor = _action
+        print(_actor,_action,self.index)
         _action.sprite_rate = 0 #sprite_rate has been broken, so we have to ignore it from now on
         #TODO changeSpriteRate subaction
         if self.relative: _actor.changeSpriteImage(self.index+_actor.sprite.index)

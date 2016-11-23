@@ -68,11 +68,13 @@ class Action(object):
             hurtbox.update()
             
     def updateAnimationOnly(self,_actor):
-        import engine.subaction as subaction
-
-        animation_actions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition,
-                            subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox, 
-                            subaction.activateHurtbox, subaction.deactivateHurtbox, subaction.modifyHurtbox)
+        from engine.subactions.sprite import changeSubimage,changeSprite,shiftSprite
+        from engine.subactions.hitbox import activateHitbox, deactivateHitbox, modifyHitbox
+        from engine.subactions.hurtbox import activateHurtbox, deactivateHurtbox, modifyHurtbox
+        animation_actions = (changeSubimage.changeFighterSubimage, changeSprite.changeFighterSprite, shiftSprite.shiftSpritePosition,
+                            activateHitbox.activateHitbox, deactivateHitbox.deactivateHitbox, modifyHitbox.modifyHitbox, 
+                            activateHurtbox.activateHurtbox, deactivateHurtbox.deactivateHurtbox, modifyHurtbox.modifyHurtbox)
+        
         for act in self.actions_before_frame:
             if isinstance(act, animation_actions):
                 act.execute(self,_actor)
