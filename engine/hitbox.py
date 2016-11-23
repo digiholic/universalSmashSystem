@@ -136,12 +136,13 @@ class DamageHitbox(Hitbox):
         self.variable_dict['priority'] += self.damage
 
     def getOnHitSubactions(self, _other):
-        import engine.subaction as subaction
-        hitstun_subaction = subaction.applyHitstun(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
-        knockback_subaction = subaction.applyScaledKnockback(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence)
-        damage_subaction = subaction.dealDamage(self.damage+self.charge_damage*self.charge)
-        compensation_subaction = subaction.compensateResistance(self.base_hitstun/2.0)
-        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
+        from engine.subactions.behavior import applyHitstun,applyScaledKnockback,dealDamage,compensateResistance,applyHitstop
+        
+        hitstun_subaction = applyHitstun.applyHitstun(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
+        knockback_subaction = applyScaledKnockback.applyScaledKnockback(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence)
+        damage_subaction = dealDamage.dealDamage(self.damage+self.charge_damage*self.charge)
+        compensation_subaction = compensateResistance.compensateResistance(self.base_hitstun/2.0)
+        hitstop_subaction = applyHitstop.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
         return [hitstun_subaction,damage_subaction,knockback_subaction,compensation_subaction,hitstop_subaction]+self.other_on_hit_actions
         
     def onCollision(self,_other):
@@ -192,12 +193,13 @@ class SakuraiAngleHitbox(DamageHitbox):
             x_val = math.sqrt(knockback_ratio**2+1)/math.sqrt(2)
             y_val = math.sqrt(knockback_ratio**2-1)/math.sqrt(2)
             angle = math.atan2(y_val*math.sin(float(self.trajectory)/180*math.pi),x_val*math.cos(float(self.trajectory)/180*math.pi))/math.pi*180
-
-        hitstun_subaction = subaction.applyHitstun(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
-        knockback_subaction = subaction.applyScaledKnockback(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence)
-        damage_subaction = subaction.dealDamage(self.damage+self.charge_damage*self.charge)
-        compensation_subaction = subaction.compensateResistance(self.base_hitstun/2.0)
-        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
+        
+        from engine.subactions.behavior import applyHitstun,applyScaledKnockback,dealDamage,compensateResistance,applyHitstop
+        hitstun_subaction = applyHitstun.applyHitstun(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
+        knockback_subaction = applyScaledKnockback.applyScaledKnockback(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence)
+        damage_subaction = dealDamage.dealDamage(self.damage+self.charge_damage*self.charge)
+        compensation_subaction = compensateResistance.compensateResistance(self.base_hitstun/2.0)
+        hitstop_subaction = applyHitstop.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
         return [hitstun_subaction,damage_subaction,knockback_subaction,compensation_subaction,hitstop_subaction]+self.other_on_hit_actions
         
     def onCollision(self, _other):
@@ -234,12 +236,13 @@ class AutolinkHitbox(DamageHitbox):
             velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
             angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
             angle = getForwardWithOffset(self.article.facing*(angle+self.trajectory), self.article)
-
-        hitstun_subaction = subaction.applyHitstun(self.damage+self.charge_damage*self.charge, velocity*self.velocity_multiplier+self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
-        knockback_subaction = subaction.applyScaledKnockback(self.damage+self.charge_damage*self.charge, velocity*self.velocity_multiplier+self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence)
-        damage_subaction = subaction.dealDamage(self.damage+self.charge_damage*self.charge)
-        compensation_subaction = subaction.compensateResistance(self.base_hitstun/2.0)
-        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
+        
+        from engine.subactions.behavior import applyHitstun,applyScaledKnockback,dealDamage,compensateResistance,applyHitstop
+        hitstun_subaction = applyHitstun.applyHitstun(self.damage+self.charge_damage*self.charge, velocity*self.velocity_multiplier+self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
+        knockback_subaction = applyScaledKnockback.applyScaledKnockback(self.damage+self.charge_damage*self.charge, velocity*self.velocity_multiplier+self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence)
+        damage_subaction = dealDamage.dealDamage(self.damage+self.charge_damage*self.charge)
+        compensation_subaction = compensateResistance.compensateResistance(self.base_hitstun/2.0)
+        hitstop_subaction = applyHitstop.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
         return [hitstun_subaction,damage_subaction,knockback_subaction,compensation_subaction,hitstop_subaction]+self.other_on_hit_actions
 
     def getTrajectory(self):
@@ -285,12 +288,13 @@ class FunnelHitbox(DamageHitbox):
         y_vel = self.y_bias+self.y_draw*y_diff
         velocity = math.hypot(x_vel, y_vel)
         angle = self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory))
-
-        hitstun_subaction = subaction.applyHitstun(self.damage+self.charge_damage*self.charge, velocity*self.velocity_multiplier+self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
-        knockback_subaction = subaction.applyScaledKnockback(self.damage+self.charge_damage*self.charge, velocity*self.velocity_multiplier+self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence)
-        damage_subaction = subaction.dealDamage(self.damage+self.charge_damage*self.charge)
-        compensation_subaction = subaction.compensateResistance(self.base_hitstun/2.0)
-        hitstop_subaction = subaction.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
+        
+        from engine.subactions.behavior import applyHitstun,applyScaledKnockback,dealDamage,compensateResistance,applyHitstop
+        hitstun_subaction = applyHitstun.applyHitstun(self.damage+self.charge_damage*self.charge, velocity*self.velocity_multiplier+self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
+        knockback_subaction = applyScaledKnockback.applyScaledKnockback(self.damage+self.charge_damage*self.charge, velocity*self.velocity_multiplier+self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence)
+        damage_subaction = dealDamage.dealDamage(self.damage+self.charge_damage*self.charge)
+        compensation_subaction = compensateResistance.compensateResistance(self.base_hitstun/2.0)
+        hitstop_subaction = applyHitstop.applyHitstop(((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier, 0.0, 0.0)
         return [hitstun_subaction,damage_subaction,knockback_subaction,compensation_subaction,hitstop_subaction]+self.other_on_hit_actions
 
     def getTrajectory(self):
@@ -365,11 +369,11 @@ class ThrowHitbox(Hitbox):
     def activate(self):
         Hitbox.activate(self)
         if (self.owner == self.owner.grabbing.grabbed_by):
-            import engine.subaction as subaction
-            hitstun_subaction = subaction.applyHitstun(self.damage+self.charge_damage*self.charge,self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
-            knockback_subaction = subaction.applyScaledKnockback(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence)
-            damage_subaction = subaction.dealDamage(self.damage+self.charge_damage*self.charge)
-            compensation_subaction = subaction.compensateResistance(self.base_hitstun/2.0)
+            from engine.subactions.behavior import applyHitstun,applyScaledKnockback,dealDamage,compensateResistance,applyHitstop
+            hitstun_subaction = applyHitstun.applyHitstun(self.damage+self.charge_damage*self.charge,self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
+            knockback_subaction = applyScaledKnockback.applyScaledKnockback(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence)
+            damage_subaction = dealDamage.dealDamage(self.damage+self.charge_damage*self.charge)
+            compensation_subaction = compensateResistance.compensateResistance(self.base_hitstun/2.0)
             self.owner.grabbing.applySubactions([hitstun_subaction,damage_subaction,knockback_subaction,compensation_subaction]+self.other_on_hit_actions)
             self.owner.data_log.addToData('Damage Dealt',(self.damage+self.charge_damage*self.charge))
             self.owner.grabbing.trail_color = self.trail_color

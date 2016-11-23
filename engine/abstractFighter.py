@@ -436,6 +436,7 @@ class AbstractFighter():
         
         self.trail_color = settingsManager.getSetting('playerColor' + str(self.player_num))
         
+        self.facing = 1
         if self.sprite.flip == 'left': self.sprite.flipX()
         self.unRotate()   
         
@@ -1328,8 +1329,13 @@ class AbstractFighter():
                 smoothed_x += working_x
                 smoothed_y += working_y
         else:
-            smoothed_x = -self.keys_held['left']+self.keys_held['right']
-            smoothed_y = -self.keys_held['up']+self.keys_held['down']
+            left = self.keys_held['left'] if self.keys_held.has_key('left') else 0
+            right = self.keys_held['right'] if self.keys_held.has_key('right') else 0
+            up = self.keys_held['up'] if self.keys_held.has_key('up') else 0
+            down = self.keys_held['down'] if self.keys_held.has_key('down') else 0
+            smoothed_x = -left+right
+            smoothed_y = -up+down
+            
         final_magnitude = numpy.linalg.norm([smoothed_x, smoothed_y])
         if final_magnitude > _maxMagnitude:
             smoothed_x /= final_magnitude/_maxMagnitude
