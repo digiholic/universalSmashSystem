@@ -94,6 +94,18 @@ class dataSelector(dataLine):
         self.bg.set('white')
         self.root.selected = None
 
+class InfoLine(dataLine):
+    def __init__(self,_root,_parent,_name):
+        dataLine.__init__(self, _root, _parent, _name)
+        self.update()
+        
+    def packChildren(self):
+        dataLine.packChildren(self)
+        
+    def update(self):
+        self.packChildren()
+
+
 class StringLine(dataLine):
     def __init__(self,_root,_parent,_name,_target_object,_varname):
         dataLine.__init__(self, _root, _parent, _name)
