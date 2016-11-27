@@ -583,7 +583,7 @@ class ShieldArticle(Article):
                                                        'priority':float('inf')
                                                       })
         self.parry_hitbox.article = self
-        self.sprite.scale = (self.owner.shield_integrity*self.owner.stats['shield_size']/100.0)
+        self.sprite.scale = self.owner.shield_integrity*self.owner.stats['shield_size']/100.0
 
     def onPrevail(self, _actor, _hitbox, _other):
         if _hitbox == self.main_hitbox and self.frame > 2 and (isinstance(_other, hitbox.DamageHitbox) and not _other.ignore_shields):

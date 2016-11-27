@@ -455,6 +455,9 @@ class ShieldHitbox(Hitbox):
 
     def update(self):
         Hitbox.update(self)
+        if self.hp < 0:
+            self.owner.change_y = -15
+            self.owner.doStunned(400)
    
     def compareTo(self, _other):
         clank_state = Hitbox.compareTo(self, _other)
@@ -471,7 +474,6 @@ class ShieldHitbox(Hitbox):
             return 1
         elif clank_state == -1 or self.hp < 0:
             self.owner.change_y = -15
-            self.owner.invulnerable = 20
             self.owner.doStunned(400)
             return -1
         else:

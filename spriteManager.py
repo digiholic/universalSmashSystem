@@ -20,6 +20,7 @@ class Sprite(pygame.sprite.Sprite):
         #TODO: Check for bit depth first, inform user about alpha
         h = int(self.scale*self.rect.height * _scale)
         w = int(self.scale*self.rect.width * _scale)
+        if h <= 0 or w <= 0: return
         unit_vector = [math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle))]
         rotated_w = abs(w*unit_vector[0])+abs(h*unit_vector[1])
         rotated_h = abs(w*unit_vector[1])+abs(h*unit_vector[0])

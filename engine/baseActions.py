@@ -1184,7 +1184,9 @@ class Stunned(action.Action):
         action.Action.setUp(self, _actor)
     
     def tearDown(self, _actor, _nextAction):
-        action.Action.tearDown(self, _actor, _nextAction)    
+        action.Action.tearDown(self, _actor, _nextAction)   
+        if 'stun_invuln' in _actor.armor:
+            del _actor.armor['stun_invuln'] 
         _actor.mask = None
 
     def stateTransitions(self, _actor):
@@ -1196,6 +1198,10 @@ class Stunned(action.Action):
         action.Action.update(self, _actor)
         if self.frame == 0:
             _actor.createMask([255, 0, 255], 99999, True, 8)
+            _actor.armor['stun_invuln'] = hurtbox.Intangibility(_actor)
+        if self.frame == 40:
+            if 'stun_invuln' in _actor.armor:
+                del _actor.armor['stun_invuln']
         self.frame += 1
         
 class ForwardRoll(action.Action):
