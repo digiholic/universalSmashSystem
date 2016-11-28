@@ -163,6 +163,14 @@ class Settings():
         self.setting['showPlatformLines'] = getBoolean(self.parser, 'graphics', 'displayPlatformLines')
         self.setting['showECB']           = getBoolean(self.parser, 'graphics', "displayECB")
 
+        self.setting['networkEnabled']          = getBoolean(self.parser,'network','enabled')
+        self.setting['networkProtocol']         = getString(self.parser,'network','protocol')
+        self.setting['networkServerIP']         = getString(self.parser,'network','serverip')
+        self.setting['networkServerPort']       = getNumber(self.parser,'network','serverport')
+        self.setting['networkUDPClientPortMin'] = getNumber(self.parser,'network','udpclientportmin')
+        self.setting['networkUDPClientPortMax'] = getNumber(self.parser,'network','udpclientportmax')
+        self.setting['networkBufferSize']       = getNumber(self.parser,'network','buffersize')
+        
         self.setting['playerColor0'] = getString(self.parser, 'playerColors', 'player0')
         self.setting['playerColor1'] = getString(self.parser, 'playerColors', 'player1')
         self.setting['playerColor2'] = getString(self.parser, 'playerColors', 'player2')
