@@ -45,6 +45,7 @@ class Stage():
     and so it can be done after initializing both the base stage and the module.
     """
     def initializeCamera(self):
+        print(24,16,settingsManager.getSetting('windowWidth'),settingsManager.getSetting('windowHeight'))
         self.camera_position = pygame.Rect(24,16,settingsManager.getSetting('windowWidth'),settingsManager.getSetting('windowHeight'))
         self.camera_position.midtop = self.size.midtop
         

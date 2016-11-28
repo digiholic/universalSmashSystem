@@ -1,4 +1,3 @@
-import engine.subaction as subaction
 import xml.etree.ElementTree as ElementTree
 
 # The action class is used for creating attacks, movement options,
@@ -9,7 +8,7 @@ class Action(object):
         self.frame = 0
         self.last_frame = _length
         self.actor = None
-        self.var = {}
+        self.variables = dict()
         
         self.sprite_name = ""
         self.base_sprite_rate = 1
@@ -18,7 +17,6 @@ class Action(object):
         
         #These determine the size and shape of the fighter's ECB
         #Keep these at 0 to make it fit the sprite
-        self.ecb_center = [0,0]
         self.ecb_size = [0,0]
         self.ecb_offset = [0,0]
         
@@ -62,16 +60,21 @@ class Action(object):
         if self.sprite_rate is not 0:
             if self.sprite_rate < 0:
                 _actor.changeSpriteImage((self.frame // self.sprite_rate)-1, _loop=self.loop)
-            else:                 _actor.changeSpriteImage(self.frame // self.sprite_rate, _loop=self.loop)
+            else:
+                _actor.changeSpriteImage(self.frame // self.sprite_rate, _loop=self.loop)
         for hitbox in self.hitboxes.values():
             hitbox.update()
         for hurtbox in self.hurtboxes.values():
             hurtbox.update()
             
     def updateAnimationOnly(self,_actor):
-        animation_actions = (subaction.changeFighterSubimage, subaction.changeFighterSprite, subaction.shiftSpritePosition,
-                            subaction.activateHitbox, subaction.deactivateHitbox, subaction.modifyHitbox, 
-                            subaction.activateHurtbox, subaction.deactivateHurtbox, subaction.modifyHurtbox)
+        from engine.subactions.sprite import changeSubimage,changeSprite,shiftSprite
+        from engine.subactions.hitbox import activateHitbox, deactivateHitbox, modifyHitbox
+        from engine.subactions.hurtbox import activateHurtbox, deactivateHurtbox, modifyHurtbox
+        animation_actions = (changeSubimage.changeFighterSubimage, changeSprite.changeFighterSprite, shiftSprite.shiftSpritePosition,
+                            activateHitbox.activateHitbox, deactivateHitbox.deactivateHitbox, modifyHitbox.modifyHitbox, 
+                            activateHurtbox.activateHurtbox, deactivateHurtbox.deactivateHurtbox, modifyHurtbox.modifyHurtbox)
+        
         for act in self.actions_before_frame:
             if isinstance(act, animation_actions):
                 act.execute(self,_actor)
@@ -99,8 +102,7 @@ class Action(object):
             hurtbox.update()
                 
         self.frame += 1         
-    
-                
+                    
     def stateTransitions(self,_actor):
         for act in self.state_transition_actions:
             act.execute(self,_actor)

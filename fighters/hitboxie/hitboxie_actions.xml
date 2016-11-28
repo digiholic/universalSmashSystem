@@ -1,4 +1,8 @@
 <actionList>
+	<event name="test">
+		<print>Test Global Event</print>
+	</event>
+	
 	<NeutralAction>
 		<length>1</length>
 		<sprite>idle</sprite>
@@ -48,6 +52,52 @@
 		<length>1</length>
 		<sprite>jump</sprite>
 		<sprite_rate>0</sprite_rate>
+		<setUp>
+			<setVar source="action">
+				<variable>always</variable>
+				<value type="boolean">True</value>
+			</setVar>
+		</setUp>
+		<frame number="before">
+			<ifButton>
+				<button check="keysContain">forward</button>
+				<pass>check_cling</pass>
+				<fail>fast_fall</fail>
+			</ifButton>
+		</frame>
+		<tearDown>
+			<if function="true">
+				<variable source="action">always</variable>
+				<value type="boolean">True</value>
+				<pass>fast_fall</pass>
+			</if>
+		</tearDown>
+		<conditional name="slow_fall">
+			<changeFighterPreferredSpeed>
+				<ySpeed>1</ySpeed>
+			</changeFighterPreferredSpeed>
+		</conditional>
+		<conditional name="fast_fall">
+			<changeFighterPreferredSpeed>
+				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
+			</changeFighterPreferredSpeed>
+		</conditional>
+		<conditional name="check_cling">
+			<setVar source="action">
+				<variable>frontWalled</variable>
+				<value>
+					<function>
+						<functionName source="fighter">isFrontWalled</functionName>
+					</function>
+				</value>
+			</setVar>
+			<if function="true">
+				<variable source="action">frontWalled</variable>
+				<value type="boolean">True</value>
+				<pass>slow_fall</pass>
+				<fail>fast_fall</fail>
+			</if>
+		</conditional>
 	</Fall>
 	
 	<Jump>
@@ -360,7 +410,7 @@
 	</SlowGetup>
 
 	<Respawn>
-		<length>1</length>
+		<length>360</length>
 		<sprite>idle</sprite>
 		<sprite_rate>0</sprite_rate>
 		<setUp>
@@ -595,37 +645,39 @@
 		<sprite>neutral</sprite>
 		<sprite_rate>1</sprite_rate>
 		
+		<vars>
+			<doRepeat>True</doRepeat>
+			<doComplete>False</doComplete>
+		</vars>
 		<setUp>
 			<createHitbox type="funnel">
 				<name>jab</name>
 				<center>0,0</center>
 				<size>80,80</size>
-				<damage>3</damage>
-				<base_knockback>2</base_knockback>
+				<damage>2</damage>
+				<base_knockback>6.5</base_knockback>
 				<knockback_growth>0</knockback_growth>
 				<velocity_multiplier>0</velocity_multiplier>
 				<base_hitstun>20</base_hitstun>
-				<hitstun_growth>4</hitstun_growth>
-				<y_bias>-4</y_bias>
+				<hitstun_growth>2</hitstun_growth>
+				<y_bias>-16</y_bias>
 				<x_draw>-.1</x_draw>
 				<y_draw>-.1</y_draw>
+				<onHitOther>test</onHitOther>
 			</createHitbox>
 		</setUp>
 		
 		<transitions>
 			<transitionState>checkGrounded</transitionState>
 		</transitions>
-		
-		<frame number="4">
-			<setVar source="action">
-				<variable>doRepeat</variable>
-				<value>False</value>
-			</setVar>
+		<frame number="before">
 			<ifButton>
 				<button check="keysContain">attack</button>
-				<pass>setRepeat</pass>
-				<fail>doFinisher</fail>
+				<fail>setFinisher</fail>
 			</ifButton>
+		</frame>
+		
+		<frame number="4">
 			<playSound>jab</playSound>
 			<activateHitbox>jab</activateHitbox>
 			<unlockHitbox>jab</unlockHitbox>
@@ -650,18 +702,27 @@
 
 		<conditional name="repeatAttack">
 			<setFrame>0</setFrame>
+			<if function="==">
+				<variable source="action">doComplete</variable>
+				<value>True</value>
+				<pass>stopLoop</pass>
+			</if>
 		</conditional>
-		<conditional name="setRepeat">
+		<conditional name="setFinisher">
 			<setVar source="action">
-				<variable>doRepeat</variable>
+				<variable>doComplete</variable>
 				<value>True</value>
 			</setVar>
-		</conditional>
-		<conditional name="doFinisher">
 			<modifyHitbox name="jab">
 				<base_knockback>8</base_knockback>
-				<knockback_growth>0.06</knockback_growth>
+				<knockback_growth>0.04</knockback_growth>
 			</modifyHitbox>
+		</conditional>
+		<conditional name="stopLoop">
+			<setVar source="action">
+				<variable>doRepeat</variable>
+				<value>False</value>
+			</setVar>
 		</conditional>
 	</NeutralAttack>
 	
@@ -1524,7 +1585,7 @@
 		</setUp>
 		
 		<tearDown>
-			<exec scope="actor">rect.y += sprite.bounding_rect.height-64</exec>
+			<!--exec scope="actor">posy += sprite.bounding_rect.height-64</exec-->
 		</tearDown>
 		
 		<frame number="3">
@@ -1666,10 +1727,10 @@
 		<frame number="20">
 			<changeSubimage>8</changeSubimage>
 		</frame>
-		<frame number="22">
+		<frame number="22-36">
 			<ifButton>
 				<button check="keysContain">special</button>
-				<pass>repeatAttack</pass>
+				<pass>checkRepeat</pass>
 			</ifButton>
 		</frame>
 		<frame number="26">
@@ -1679,6 +1740,24 @@
 			<changeSubimage>10</changeSubimage>
 		</frame>
 		
+		<conditional name="checkRepeat">
+			<setVar source="action">
+				<variable>dir</variable>
+				<value>
+					<function>
+						<functionName>netDirection</functionName>
+						<args>
+							<_checkDirectionList type="tuple">("up", "down", "left", "right")</_checkDirectionList>
+						</args>
+					</function>
+				</value>
+			</setVar>
+			<if>
+				<variable source="action">dir</variable>
+				<value type="string">neutral</value>
+				<pass>repeatAttack</pass>
+			</if>
+		</conditional>
 		<conditional name="repeatAttack">
 			<doAction>NeutralGroundSpecial</doAction>
 		</conditional>
@@ -1714,7 +1793,7 @@
 			<changeSubimage>7</changeSubimage>
 		</frame>
 
-		<frame number="15">
+		<frame number="15-36">
 			<ifButton>
 				<button check="keysContain">special</button>
 				<pass>repeatAttack</pass>
@@ -1733,6 +1812,25 @@
 		<frame number="last">
 			<updateLandingLag reset="true">12</updateLandingLag>
 		</frame>
+		
+		<conditional name="checkRepeat">
+			<setVar source="action">
+				<variable>dir</variable>
+				<value>
+					<function>
+						<functionName>netDirection</functionName>
+						<args>
+							<_checkDirectionList type="tuple">("up", "down", "left", "right")</_checkDirectionList>
+						</args>
+					</function>
+				</value>
+			</setVar>
+			<if>
+				<variable source="action">dir</variable>
+				<value type="string">neutral</value>
+				<pass>repeatAttack</pass>
+			</if>
+		</conditional>
 		<conditional name="repeatAttack">
 			<doAction>NeutralAirSpecial</doAction>
 		</conditional>

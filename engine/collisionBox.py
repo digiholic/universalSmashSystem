@@ -7,83 +7,130 @@ import copy
 
 def checkGround(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
-    _object.grounded = False
     _object.ecb.current_ecb.rect.y += 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     ground_block = pygame.sprite.Group()
-    block_hit_list = pygame.sprite.spritecollide(_object.ecb.current_ecb, _objectList, False)
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
     _object.ecb.current_ecb.rect.y -= 4
     for block in block_hit_list:
         if block.solid or (_object.platform_phase <= 0):
             if _object.ecb.current_ecb.rect.bottom <= block.rect.top+4 and (not _checkVelocity or (hasattr(_object, 'change_y') and hasattr(block, 'change_y') and _object.change_y > block.change_y-1)):
-                _object.grounded = True
                 ground_block.add(block)
+            else:
+                print(_object.ecb.current_ecb.rect.bottom, block.rect.top+4)
     return ground_block
 
 def checkLeftWall(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
-    if _object.facing == 1:
-        _object.back_walled = False
-    else:
-        _object.front_walled = False
     _object.ecb.current_ecb.rect.x -= 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     wall_block = pygame.sprite.Group()
-    block_hit_list = pygame.sprite.spritecollide(_object.ecb.current_ecb, _objectList, False)
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
     _object.ecb.current_ecb.rect.x += 4
     for block in block_hit_list:
         if block.solid:
             if _object.ecb.current_ecb.rect.left >= block.rect.right-4 and (not _checkVelocity or (hasattr(_object, 'change_x') and hasattr(block, 'change_x') and _object.change_x < block.change_x+1)):
-                if _object.facing == 1:
-                    _object.back_walled = True
-                else:
-                    _object.front_walled = True
                 wall_block.add(block)
     return wall_block
 
 def checkRightWall(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
-    if _object.facing == 1:
-        _object.front_walled = False
-    else:
-        _object.back_walled = False
     _object.ecb.current_ecb.rect.x += 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     wall_block = pygame.sprite.Group()
-    block_hit_list = pygame.sprite.spritecollide(_object.ecb.current_ecb, _objectList, False)
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
     _object.ecb.current_ecb.rect.x -= 4
     for block in block_hit_list:
         if block.solid:
             if _object.ecb.current_ecb.rect.right <= block.rect.left+4 and (not _checkVelocity or (hasattr(_object, 'change_x') and hasattr(block, 'change_x') and _object.change_x > block.change_x-1)):
-                if _object.facing == 1:
-                    _object.front_walled = True
-                else:
-                    _object.back_walled = True
                 wall_block.add(block)
     return wall_block
 
 def checkBackWall(_object, _objectList, _checkVelocity=True):
     if _object.facing == 1:
-        _object.checkLeftWall(_object, _objectList, _checkVelocity)
+        return checkLeftWall(_object, _objectList, _checkVelocity)
     else:
-        _object.checkRightWall(_object, _objectList, _checkVelocity)
+        return checkRightWall(_object, _objectList, _checkVelocity)
 
 def checkFrontWall(_object, _objectList, _checkVelocity=True):
     if _object.facing == 1:
-        _object.checkRightWall(_object, _objectList, _checkVelocity)
+        return checkRightWall(_object, _objectList, _checkVelocity)
     else:
-        _object.checkLeftWall(_object, _objectList, _checkVelocity)
+        return checkLeftWall(_object, _objectList, _checkVelocity)
 
 def checkCeiling(_object, _objectList, _checkVelocity=True):
     _object.ecb.normalize()
-    _object.ceilinged = False
     _object.ecb.current_ecb.rect.y -= 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
     ceiling_block = pygame.sprite.Group()
-    block_hit_list = pygame.sprite.spritecollide(_object.ecb.current_ecb, _objectList, False)
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
     _object.ecb.current_ecb.rect.y += 4
     for block in block_hit_list:
         if block.solid:
             if _object.ecb.current_ecb.rect.top >= block.rect.bottom-4 and (not _checkVelocity or (hasattr(_object, 'change_y') and hasattr(block, 'change_y') and _object.change_y < block.change_y+1)):
-                _object.ceilinged = True
                 ceiling_block.add(block)
     return ceiling_block
+
+
+def isGrounded(_object, _objectList, _checkVelocity=True):
+    _object.ecb.normalize()
+    _object.ecb.current_ecb.rect.y += 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
+    _object.ecb.current_ecb.rect.y -= 4
+    for block in block_hit_list:
+        if block.solid or (_object.platform_phase <= 0):
+            if (_object.ecb.current_ecb.rect.bottom <= block.rect.top+4) and (not _checkVelocity or (hasattr(_object, 'change_y') and hasattr(block, 'change_y') and _object.change_y > block.change_y-1)):
+                return True
+    return False
+
+def isLeftWalled(_object, _objectList, _checkVelocity=True):
+    _object.ecb.normalize()
+    _object.ecb.current_ecb.rect.x -= 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
+    _object.ecb.current_ecb.rect.x += 4
+    for block in block_hit_list:
+        if block.solid:
+            if _object.ecb.current_ecb.rect.left >= block.rect.right-4 and (not _checkVelocity or (hasattr(_object, 'change_x') and hasattr(block, 'change_x') and _object.change_x < block.change_x+1)):
+                return True
+    return False
+
+def isRightWalled(_object, _objectList, _checkVelocity=True):
+    _object.ecb.normalize()
+    _object.ecb.current_ecb.rect.x += 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
+    _object.ecb.current_ecb.rect.x -= 4
+    for block in block_hit_list:
+        if block.solid:
+            if _object.ecb.current_ecb.rect.right <= block.rect.left+4 and (not _checkVelocity or (hasattr(_object, 'change_x') and hasattr(block, 'change_x') and _object.change_x > block.change_x-1)):
+                return True
+    return False
+
+def isBackWalled(_object, _objectList, _checkVelocity=True):
+    if _object.facing == 1:
+        return isLeftWalled(_object, _objectList, _checkVelocity)
+    else:
+        return isRightWalled(_object, _objectList, _checkVelocity)
+
+def isFrontWalled(_object, _objectList, _checkVelocity=True):
+    if _object.facing == 1:
+        return isRightWalled(_object, _objectList, _checkVelocity)
+    else:
+        return isLeftWalled(_object, _objectList, _checkVelocity)
+
+def isCeilinged(_object, _objectList, _checkVelocity=True):
+    _object.ecb.normalize()
+    _object.ecb.current_ecb.rect.y -= 4
+    collide_sprite = spriteManager.RectSprite(_object.ecb.current_ecb.rect.union(_object.ecb.previous_ecb.rect))
+    block_hit_list = pygame.sprite.spritecollide(collide_sprite, _objectList, False)
+    _object.ecb.current_ecb.rect.y += 4
+    for block in block_hit_list:
+        if block.solid:
+            if _object.ecb.current_ecb.rect.top >= block.rect.bottom-4 and (not _checkVelocity or (hasattr(_object, 'change_y') and hasattr(block, 'change_y') and _object.change_y < block.change_y+1)):
+                return True
+    return False
 
 ########################################################
 
@@ -110,38 +157,38 @@ def catchMovement(_object, _other, _platformPhase=False):
         v_vel = [_object.change_x-_other.change_x, _object.change_y-_other.change_y]
         return numpy.dot(contact[1], v_vel) < 0
     elif not _platformPhase:
-        return _object.ecb.interceptPlatform(check_rect, _dx=t*(_object.change_x), _dy=t*(_object.change_y), _yvel=_object.change_y)
+        return _object.ecb.interceptPlatform(check_rect, _dx=t*(_object.change_x), _dy=t*(_object.change_y), _yvel=_object.change_y-_other.change_y)
     else:
         return False
         
 #Prepare for article usage
 def eject(_object, _other, _platformPhase=False):
-    _object.updatePosition(_object.rect)
+    _object.updatePosition()
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
     
     if _other.solid:
         if _object.ecb.doesIntersect(check_rect):
             contact = _object.ecb.primaryEjection(check_rect)
-            _object.rect.x += contact[0][0]
-            _object.rect.y += contact[0][1]
+            _object.posx += contact[0][0]
+            _object.posy += contact[0][1]
             return reflect(_object, _other)
     else:
-        if not _platformPhase and _object.ecb.checkPlatform(check_rect, _object.change_y):
+        if not _platformPhase and _object.ecb.checkPlatform(check_rect, _object.change_y-_other.change_y):
             if _object.ecb.doesIntersect(check_rect):
                 contact = _object.ecb.primaryEjection(check_rect)
-                _object.rect.x += contact[0][0]
-                _object.rect.y += contact[0][1]
+                _object.posx += contact[0][0]
+                _object.posy += contact[0][1]
                 return reflect(_object, _other)
     return False
 
 #Prepare for article usage
 def reflect(_object, _other):
     if not hasattr(_object, 'elasticity'):
-        _object.elasticity = 0
+        _object.elasticity = 0.0
     if not hasattr(_object, 'ground_elasticity'):
-        _object.ground_elasticity = 0
-    _object.updatePosition(_object.rect)
+        _object.ground_elasticity = 0.0
+    _object.updatePosition()
     _object.ecb.normalize()
     check_rect = _other.rect.copy()
 
@@ -149,7 +196,7 @@ def reflect(_object, _other):
         contact = _object.ecb.primaryEjection(check_rect)
         #The contact vector is perpendicular to the axis over which the reflection should happen
         v_vel = [_object.change_x-_other.change_x, _object.change_y-_other.change_y]
-        if numpy.dot(v_vel, contact[1]) < 0:
+        if (numpy.dot(v_vel, contact[1]) < 0 or True):
             v_norm = [contact[1][1], -contact[1][0]]
             dot = numpy.dot(v_norm, v_vel)
             projection = [v_norm[0]*dot, v_norm[1]*dot] #Projection of v_vel onto v_norm
@@ -227,13 +274,12 @@ class ECB():
     def __init__(self,_actor):
         self.actor = _actor
 
-        if hasattr(self.actor, 'sprite'):
-            self.current_ecb = spriteManager.RectSprite(self.actor.sprite.bounding_rect.copy(), pygame.Color('#ECB134'))
-            self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
-        else:
-            self.current_ecb = spriteManager.RectSprite(self.actor.bounding_rect.copy(), pygame.Color('#ECB134'))
-            self.current_ecb.rect.center = self.actor.bounding_rect.center
+        self.current_ecb = spriteManager.RectSprite(self.actor.sprite.bounding_rect.copy(), pygame.Color('#ECB134'))
+        self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
+
         self.original_size = self.current_ecb.rect.size
+        self.tracking_rect = self.current_ecb.rect.copy()
+        self.game_state = self.actor.game_state
 
         self.previous_ecb = spriteManager.RectSprite(self.current_ecb.rect.copy(), pygame.Color('#EA6F1C'))
         
@@ -262,35 +308,30 @@ class ECB():
     """
     def store(self):
         self.previous_ecb = spriteManager.RectSprite(self.current_ecb.rect,pygame.Color('#EA6F1C'))
+        self.tracking_rect.center = self.actor.posx, self.actor.posy
     
     """
     Set the ECB's height and width to the sprite's, and centers it
     """
     def normalize(self):
-        #center = (self.actor.sprite.bounding_rect.centerx + self.actor.current_action.ecb_center[0],self.actor.sprite.bounding_rect.centery + self.actor.current_action.ecb_center[1])
-        sizes = self.actor.current_action.ecb_size
-        offsets = self.actor.current_action.ecb_offset
-        
+        if hasattr(self.actor, 'current_action'):
+            sizes = self.actor.current_action.ecb_size
+            offsets = self.actor.current_action.ecb_offset
+        else:
+            sizes = self.actor.ecb_size
+            offsets = self.actor.ecb_offset
         
         if sizes[0] == 0: 
-            if hasattr(self.actor, 'sprite'):
-                self.current_ecb.rect.width = self.actor.sprite.bounding_rect.width
-            else:
-                self.current_ecb.rect.width = self.actor.bounding_rect.width
+            self.current_ecb.rect.width = self.actor.sprite.bounding_rect.width
         else:
             self.current_ecb.rect.width = sizes[0]
         if sizes[1] == 0: 
-            if hasattr(self.actor, 'sprite'):
-                self.current_ecb.rect.height = self.actor.sprite.bounding_rect.height
-            else:
-                self.current_ecb.rect.height = self.actor.bounding_rect.height
+            self.current_ecb.rect.height = self.actor.sprite.bounding_rect.height
         else:
             self.current_ecb.rect.height = sizes[1]
         
-        if hasattr(self.actor, 'sprite'):
-            self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
-        else:
-            self.current_ecb.rect.center = self.actor.bounding_rect.center
+        self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
+
         self.current_ecb.rect.x += offsets[0]
         self.current_ecb.rect.y += offsets[1]
         
@@ -324,7 +365,7 @@ class ECB():
         working_list = filter(lambda e: numpy.dot(e[0], e[1]) >= 0, distances)
         reference_list = copy.deepcopy(working_list)
         for element in reference_list:
-            working_list = filter(lambda k: numpy.dot(k[0], element[1]) != numpy.dot(element[0], element[1]) or numpy.allclose(k[0], element[0]), working_list)
+            working_list = filter(lambda k: abs(numpy.dot(k[0], element[1]) - numpy.dot(element[0], element[1])) > 0.01 or numpy.allclose(k[0], element[0]), working_list)
         return working_list
 
     def primaryEjection(self, _other, _dx=0, _dy=0):
@@ -339,13 +380,13 @@ class ECB():
 
         intersect = min(distances, key=lambda x: x[0][0]*x[1][0]+x[0][1]*x[1][1])
 
-        if _platform.top >= self.previous_ecb.rect.bottom-4-_yvel and numpy.dot(intersect[0], intersect[1]) and intersect[1][1] < 0 and self.current_ecb.rect.bottom >= _platform.top:
+        if _platform.top >= self.previous_ecb.rect.bottom-4-_yvel and numpy.dot(intersect[0], intersect[1]) >= 0 and intersect[1][1] < 0 and self.current_ecb.rect.bottom >= _platform.top:
             return True
         return False
 
     def interceptPlatform(self, _platform, _dx, _dy, _yvel):
         intersect = self.intersectPoint(_platform, _dx, _dy)
-        if _platform.top >= self.current_ecb.rect.bottom-4-_yvel and numpy.dot(intersect[0], intersect[1]) and intersect[1][1] < 0 and self.current_ecb.rect.bottom+_dy >= _platform.top:
+        if _platform.top >= self.current_ecb.rect.bottom+_dy-4-_yvel and numpy.dot(intersect[0], intersect[1]) >= 0 and intersect[1][1] < 0 and self.current_ecb.rect.bottom+_dy >= _platform.top:
             return True
         return False
 

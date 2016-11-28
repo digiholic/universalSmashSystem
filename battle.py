@@ -21,6 +21,7 @@ import engine.network as network
 from collections import namedtuple
 
 from cgi import log
+from PIL.SpiderImagePlugin import isInt
 
 """
 The battle object actually creates the fight and plays it out on screen.
@@ -37,6 +38,7 @@ class Battle():
         self.players = _players
         self.controllers = []
         for player in _players:
+            player.game_state = _stage
             player.initialize()
             player.key_bindings.linkObject(player)
             self.controllers.append(player.key_bindings)
@@ -92,13 +94,14 @@ class Battle():
             gui_offset = self.screen.get_rect().width / (len(self.players) + 1)
             for fighter in self.current_fighters:
                 fighter.loadSpriteLibrary()
-                fighter.rect.midbottom = self.stage.spawn_locations[fighter.player_num]
-                fighter.sprite.updatePosition(fighter.rect)
+                fighter.posx = self.stage.spawn_locations[fighter.player_num][0]
+                fighter.posy = self.stage.spawn_locations[fighter.player_num][1]-200
+                fighter.updatePosition()
                 fighter.ecb.normalize()
                 fighter.ecb.store()
-                fighter.game_state = self.stage
+                fighter.posy += fighter.ecb.current_ecb.rect.height/2.0
                 fighter.players = self.players
-                self.stage.follows.append(fighter.rect)
+                self.stage.follows.append(fighter.ecb.tracking_rect)
                 log = DataLog()
                 self.data_logs.append(log)
                 fighter.data_log = log
@@ -146,7 +149,11 @@ class Battle():
                 traceback.print_exc()
             finally:
                 self.exit_status = -1
-            
+        
+        for fighter in self.current_fighters:
+            print('Fighter '+fighter.name+' Player '+str(fighter.player_num))
+            print(fighter.input_buffer.buffer)   
+             
         if self.exit_status == 1:
             musicManager.getMusicManager().stopMusic(1000)
             print("SUBMISSION")
@@ -225,24 +232,26 @@ class Battle():
                 self.active_hurtboxes.add(obj.active_hurtboxes)      
         self.checkHitboxClanks()
         self.checkHitboxHits()
-        self.checkHitboxBumps()
         self.network.processFighters(self.current_fighters)
         for fight in self.current_fighters:
-            if fight.rect.right < self.stage.blast_line.left or fight.rect.left > self.stage.blast_line.right or fight.rect.top > self.stage.blast_line.bottom or fight.rect.bottom < self.stage.blast_line.top:
+            if fight.ecb.current_ecb.rect.right < self.stage.blast_line.left or fight.ecb.current_ecb.rect.left > self.stage.blast_line.right or fight.ecb.current_ecb.rect.top > self.stage.blast_line.bottom or fight.ecb.current_ecb.rect.bottom < self.stage.blast_line.top:
                 if not self.track_stocks:
                     # Get score
                     fight.die()
                 else:
                     fight.stocks -= 1
+
+                    self.stage.follows.remove(fight.ecb.tracking_rect)
                     print(fight.stocks)
                     if fight.stocks == 0:
                         fight.die(False)
                         self.current_fighters.remove(fight)
-                        self.stage.follows.remove(fight.rect)
                         #If someone's eliminated and there's 1 or fewer people left
                         if len(self.current_fighters) < 2:
                             self.exit_status = 2 #Game set
-                    else: fight.die()
+                    else: 
+                        fight.die()
+                        self.stage.follows.append(fight.ecb.tracking_rect)
         # End object updates
         self.draw()
         pygame.display.update()
@@ -276,7 +285,7 @@ class Battle():
                     if other.article == None: other.owner.current_action.onPrevail(other.owner, other, hbox)
                     else: other.article.onPrevail(other.owner, other, hbox)
                 if hbox_clank == -1: other.owner.lockHitbox(hbox)
-                if other_clank == -1: hbox.owner.blockHitbox(other)
+                if other_clank == -1: hbox.owner.lockHitbox(other)
 
     def checkHitboxHits(self):
         hurtbox_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.active_hurtboxes, False, False)
@@ -285,16 +294,8 @@ class Battle():
             hitbox_collisions = hurtbox_hits[hbox]
             for hurtbox in hitbox_collisions:
                 if hbox.owner != hurtbox.owner:
-                    hbox.onCollision(hurtbox.owner)
-                    hurtbox.onHit(hbox)
-
-    def checkHitboxBumps(self):        
-        platform_hits = pygame.sprite.groupcollide(self.active_hitboxes, self.stage.platform_list, False, False)
-        for hbox in platform_hits:
-            #then platform collisions
-            platform_collisions = platform_hits[hbox]
-            for wall in platform_collisions:
-                hbox.onCollision(wall)      
+                    hbox.onCollision(hurtbox)
+                        
 
     def draw(self):
         self.screen.fill(self.stage.background_color)
@@ -307,19 +308,19 @@ class Battle():
             if hasattr(obj, 'articles'):
                 for art in obj.articles:
                     if art.draw_depth == -1:
-                        offset = self.stage.stageToScreen(art.rect)
+                        offset = self.stage.stageToScreen(art.sprite.rect)
                         scale =  self.stage.getScale()
                         draw_rect = art.draw(self.screen,offset,scale)
                         if draw_rect: self.dirty_rects.append(draw_rect)
                     else: foreground_articles.append(art)
 
-            offset = self.stage.stageToScreen(obj.rect)
+            offset = self.stage.stageToScreen(obj.sprite.rect)
             scale =  self.stage.getScale()
             draw_rect = obj.draw(self.screen,offset,scale)
             if draw_rect: self.dirty_rects.append(draw_rect)
             
             for art in foreground_articles:
-                offset = self.stage.stageToScreen(art.rect)
+                offset = self.stage.stageToScreen(art.sprite.rect)
                 scale =  self.stage.getScale()
                 draw_rect = art.draw(self.screen,offset,scale)
                 if draw_rect: self.dirty_rects.append(draw_rect)

@@ -11,7 +11,8 @@ class CPUplayer(controller.Controller):
         self.type = 'CPU'
         
     def getDistanceTo(self,_target):
-        sx,sy = self.fighter.rect.center
+        sx = self.fighter.posx
+        sy = self.fighter.posy
         tx,ty = _target.rect.center
         return (tx - sx, ty - sy)
 
@@ -65,8 +66,8 @@ class CPUplayer(controller.Controller):
 
     def ducklingTargeting(self):
         opposing_players = filter(lambda k: k != self.fighter, self.fighter.players)
-        opposing_dists = map(lambda x: self.getPathDistance(self.fighter.rect.center, x.rect.center), opposing_players)
-        return opposing_players[opposing_dists.index(min(opposing_dists))].rect.center
+        opposing_dists = map(lambda x: self.getPathDistance((self.fighter.posx, self.fighter.posy), x.sprite.rect.center), opposing_players)
+        return opposing_players[opposing_dists.index(min(opposing_dists))].sprite.rect.center
 
     def ledgeTargeting(self):
         ledge_points = map(lambda x: [x.rect.left-self.fighter.sprite.bounding_rect.width/2.0 if x.side == 'left' else x.rect.right+self.fighter.sprite.bounding_rect.width/2.0, x.rect.bottom+self.fighter.sprite.bounding_rect.height/2.0], self.fighter.game_state.platform_ledges)
@@ -85,7 +86,7 @@ class CPUplayer(controller.Controller):
             print("Can't find!")
             return
         if self.mode == 'duckling': #Follow the player
-            distance = self.getPathDistance(self.fighter.rect.center, self.ducklingTargeting())
+            distance = self.getPathDistance((self.fighter.posx, self.fighter.posy), self.ducklingTargeting())
             prev_distance = self.getPathDistance(self.fighter.ecb.current_ecb.rect.center, self.fighter.players[0].sprite.bounding_rect.center)
             #We offset by one so that simply running away doesn't trigger catchup behavior
             (dx, dy) = self.getDistanceTo(self.fighter.players[0])

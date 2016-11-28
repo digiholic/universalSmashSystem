@@ -1,6 +1,7 @@
 import os
 import pygame
 import sys
+from builder.dataSelector import dataLine
 sys.path.insert(0, '../')
 import settingsManager
 import inspect
@@ -12,7 +13,9 @@ from Tkinter import *
 from tkFileDialog import askopenfile
 from tkMessageBox import showinfo
 from shutil import copyfile
+import stages.training_stage.stage
 import ttk
+import builder.dataSelector as dataSelector
 from engine.abstractFighter import AbstractFighter
 
 """
@@ -64,6 +67,10 @@ class BuilderPanel(Frame):
     def getFrame(self):
         global frame
         return frame
+    
+    def getChangedActions(self):
+        global changed_actions
+        return changed_actions
 """
 The main window, that all the other panels are child objects of.
 """
@@ -93,12 +100,13 @@ class MainFrame(Tk):
         # Create and place subpanels
         self.config(menu=MenuBar(self))
         self.viewer_pane = LeftPane(self,self)
-        self.action_pane = RightPane(self,self)
+        self.action_pane = EditorPane(self)
         self.viewer_pane.grid(row=0,column=0,sticky=N+S+E+W)
         self.action_pane.grid(row=0,column=1,sticky=N+S+E+W)
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(0, weight=3, uniform="column")
-        self.grid_columnconfigure(1, weight=2, uniform="column")
+        self.grid_columnconfigure(0, weight=5, uniform="column")
+        self.grid_columnconfigure(1, weight=4, uniform="column")
+        
         self.fighter_string.trace('w',self.changeFighter)
         self.action_string.trace('w',self.changeAction)
         self.frame.trace('w',self.changeFrame)
@@ -132,12 +140,22 @@ class MainFrame(Tk):
         if _getRawXml:return fighter.actions.actions_xml.find(_actionName)
         else: return fighter.getAction(_actionName)
     
-    def addAction(self,_actionName):
+    def addAction(self,_action):
         global fighter
-        changed_actions[_actionName] = engine.action.Action(1)
-        fighter.actions.modifyAction(_actionName, changed_actions[_actionName])
-        self.action_pane.action_selector_panel.refreshDropdowns()
+        
+        changed_actions[_action.name] = _action
+        fighter.actions.modifyAction(_action.name, _action)
+        self.action_pane.data_panel.panel_windows['Actions'].changeFighter()
+        self.action_pane.data_panel.panel_windows['Actions'].scroll_frame.canvas.yview_moveto(1.0)
+        #self.action_pane.action_selector_panel.refreshDropdowns()
     
+    def deleteAction(self,_action):
+        global fighter
+        
+        changed_actions[_action.name] = None
+        fighter.actions.modifyAction(_action.name, None)
+        self.action_pane.data_panel.panel_windows['Actions'].changeFighter()
+        
     def changeFighter(self,*_args):
         global fighter
         dirname, _ = os.path.split(self.fighter_file.name)
@@ -153,7 +171,14 @@ class MainFrame(Tk):
             new_fighter = engine.abstractFighter.AbstractFighter(dirname,0)
         
         new_fighter.loadSpriteLibrary(0)
-        new_fighter.initialize()
+        new_fighter.current_action = new_fighter.getAction('NeutralAction')
+        new_fighter.init_boxes()
+        #stage = stages.training_stage.stage.getStage()
+        #new_fighter.game_state = stage
+        #new_fighter.initialize()
+        #stage.follows.append(new_fighter.ecb.tracking_rect)
+        #stage.initializeCamera()
+        new_fighter.doAction('NeutralAction')
         fighter = new_fighter
         self.wm_title('Legacy Editor - '+fighter.name)        
     
@@ -170,6 +195,10 @@ class MainFrame(Tk):
         global frame
         frame = self.frame.get()
     
+    def updateViewer(self):
+        self.viewer_pane.viewer_panel.reloadFrame()
+        self.viewer_pane.navigator_panel.changeFrameNumber(0)
+        
 class MenuBar(Menu):
     def __init__(self,_root):
         Menu.__init__(self, _root)
@@ -256,11 +285,10 @@ class CreateActionWindow(Toplevel):
         sep_text = Label(self,text="Or choose a Basic Action to implement:")
         
         basic_list = []
-        print(self.root.action_pane.action_selector_panel.act_list)
                     
         for name, obj in inspect.getmembers(sys.modules[engine.baseActions.__name__]):
             if inspect.isclass(obj):
-                if not name in self.root.action_pane.action_selector_panel.act_list:
+                if not name in self.root.action_pane.data_panel.panel_windows['Actions'].act_list:
                     #print(basic_list)
                     basic_list.append(name)
                     
@@ -281,12 +309,12 @@ class CreateActionWindow(Toplevel):
         global changed_actions
         
         name = self.name.get()
-        print(name)
         if name:
             if not fighter.actions.hasAction(name): #if it doesn't already exist
                 if not changed_actions.has_key(name): #and we didn't already make one
-                    print('create action: ' + name)
-                    self.root.addAction(name)
+                    act = engine.action.Action()
+                    act.name = name
+                    self.root.addAction(act)
                     self.destroy()
     
     def submitBasic(self,*_args):
@@ -297,9 +325,11 @@ class CreateActionWindow(Toplevel):
         if name:
             if not fighter.actions.hasAction(name): #if it doesn't already exist
                 if not changed_actions.has_key(name): #and we didn't already make one
-                    print('create action: ' + name)
-                    self.root.addAction(name)
-                    self.destroy()
+                    if hasattr(engine.baseActions, name):
+                        act = getattr(engine.baseActions, name)()
+                        act.name = name
+                        self.root.addAction(act)
+                        self.destroy()
                 
 class AddConditionalWindow(Toplevel):
     def __init__(self,_root):
@@ -418,12 +448,12 @@ class ViewerPanel(BuilderPanel):
             os.environ['SDL_VIDEODRIVER'] = 'windib'
         else:
             os.environ['SDL_VIDEODRIVER'] = 'x11'
+        
         pygame.display.init()
-        if not sys.platform == "win32":
-            print("X crashes after this")
+        pygame.mixer.init()
+        _root.update()
+        
         self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
-        if not sys.platform == "win32":
-            print("X crashes before this")
         self.center = (0,0)
         self.scale = 1.0
         
@@ -432,25 +462,26 @@ class ViewerPanel(BuilderPanel):
     def gameLoop(self):
         global fighter
         #TODO figure out that window snap thing that's messing up a lot
-        for event in pygame.event.get():
-            if event.type == pygame.VIDEORESIZE:
-                self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
-                if fighter: self.centerFighter()
+        self.screen = pygame.display.set_mode((self.winfo_width(), self.winfo_height()),pygame.RESIZABLE)
+        if fighter: self.centerFighter()
         
         self.screen.fill(pygame.Color("pink"))
         if fighter:
             fighter.mask = None #These don't work inside of the builder
-            fighter.draw(self.screen, fighter.rect.topleft, self.scale)
+            fighter.draw(self.screen, fighter.sprite.rect.topleft, self.scale)
             for hbox in fighter.active_hitboxes:
-                hbox.draw(self.screen,hbox.rect.topleft,self.scale)
-                
+                hbox.draw(self.screen,hbox.rect.topleft,self.scale)        
             
         pygame.display.flip()
-        self.after(5, self.gameLoop) #Loop every 5ms
-    
+        #self.after(5, self.gameLoop) #Loop every 5ms
+        
     def centerFighter(self):
-        fighter.rect.centerx = self.screen.get_rect().centerx + self.center[0]
-        fighter.rect.centery = self.screen.get_rect().centery + self.center[1]
+        global fighter
+        
+        if fighter:
+            fighter.posx = self.screen.get_rect().centerx + self.center[0]
+            fighter.posy = self.screen.get_rect().centery + self.center[1]
+            fighter.updatePosition()
     
     def reloadFrame(self):
         global fighter
@@ -463,28 +494,23 @@ class ViewerPanel(BuilderPanel):
             while action.frame <= frame:
                 action.updateAnimationOnly(fighter)
                 
+        self.gameLoop()
+                
     ####################
     # TRACER FUNCTIONS #
     ####################
     def changeFighter(self,*_args):
-        global fighter
         self.centerFighter()
+        self.reloadFrame()
         
     def changeFrame(self,*_args):
-        global fighter
-        global action
-        global frame
-        
-        if action:
-            fighter.changeAction(action)
-            action.frame = 0
-            while action.frame <= frame:
-                action.updateAnimationOnly(fighter)
+        self.reloadFrame()
             
     def changeAction(self,*_args):
         global action
         global fighter
         if action: fighter.changeAction(action)
+        self.reloadFrame()
         
 class NavigatorPanel(BuilderPanel):
     def __init__(self,_parent,_root):
@@ -522,7 +548,7 @@ class NavigatorPanel(BuilderPanel):
             self.current_frame.config(state=NORMAL)
             self.button_plus.config(state=NORMAL)
             self.button_plus_five.config(state=NORMAL)
-            
+            2
             #Disable ones that shouldn't be clicked anymore
             if frame == 0:
                 self.button_minus.config(state=DISABLED)
@@ -543,13 +569,16 @@ class NavigatorPanel(BuilderPanel):
         global action
         if action:
             self.root.frame.set(0)
-            self.changeFrameNumber(0)
+    
+    def changeFrame(self, *_args):
+        self.changeFrameNumber(0)
                 
 class RightPane(BuilderPanel):
     def __init__(self,_parent,_root):
         BuilderPanel.__init__(self, _parent, _root)
         self.action_selector_panel = SelectorPanel(self,_root)
         self.subaction_panel = Subaction_panel(self,_root)
+        
         self.subaction_property_panel = PropertiesPanel(self,_root)
         
         self.action_selector_panel.pack(fill=X)
@@ -616,7 +645,7 @@ class SelectorPanel(BuilderPanel):
         else:
             self.group_list = self.default_group_list[:]
             if action and isinstance(action, engine.action.Action):
-                for group in action.conditional_actions.keys():
+                for group in action.events.keys():
                     self.group_list.append('Cond: '+ group)
                             
         self.action.destroy()
@@ -673,7 +702,7 @@ class Subaction_panel(BuilderPanel):
     When displaying a modifiable subaction list instead of text,
     switch to the list.
     """
-    def showSubactionList(self):
+    def showSubactionList(self): 
         #Show subaction selector
         self.text_field.pack_forget()
         self.y_scroll_bar.pack_forget()
@@ -808,6 +837,8 @@ class Subaction_panel(BuilderPanel):
             
             self.showSubactionList()
             if self.group == 'Properties':
+                pass
+                """
                 length_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Length','int',action,'last_frame')],'Length: '+str(action.last_frame))
                 sprite_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Sprite','sprite',action,'sprite_name')],'Sprite Name: '+str(action.sprite_name))
                 sprite_rate_panel = subactionSelector.SubactionSelector(self.scroll_frame,[('Sprite Rate','int',action,'sprite_rate')],'Sprite Rate: '+str(action.sprite_rate))
@@ -822,6 +853,7 @@ class Subaction_panel(BuilderPanel):
                 #node = self.root.getFighterAction(new_action,True)
                 #self.loadText(ElementTree.tostring(node))
                 #self.showTextField()
+                """
                 
         else:
             self.loadText('Advanced action from '+str(fighter.actions))
@@ -886,7 +918,7 @@ class PropertiesPanel(BuilderPanel):
                           'Hitbox':[],
                           'Article':[]}
         
-        for name,subact in engine.subaction.subaction_dict.iteritems():
+        for name,subact in engine.subaction.SubactionFactory.subaction_dict.iteritems():
             if subact.subact_group in subact_windows.keys():
                 short_name = (name[:19] + '..') if len(name) > 22 else name
                 button = Button(subact_windows[subact.subact_group],text=short_name,command=lambda subaction=subact: self.addSubaction(subaction))
@@ -949,18 +981,18 @@ class VerticalScrolledFrame(Frame):
         # create a canvas object and a vertical scrollbar for scrolling it
         v_scroll_bar = Scrollbar(self, orient=VERTICAL)
         v_scroll_bar.pack(fill=Y, side=RIGHT, expand=FALSE)
-        canvas = Canvas(self, bd=0, highlightthickness=0,
+        self.canvas = Canvas(self, bd=0, highlightthickness=0,
                         yscrollcommand=v_scroll_bar.set,bg="blue")
-        canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
-        v_scroll_bar.config(command=canvas.yview)
+        self.canvas.pack(side=LEFT, fill=BOTH, expand=TRUE)
+        v_scroll_bar.config(command=self.canvas.yview)
 
         # reset the view
-        canvas.xview_moveto(0)
-        canvas.yview_moveto(0)
+        self.canvas.xview_moveto(0)
+        self.canvas.yview_moveto(0)
 
         # create a frame inside the canvas which will be scrolled with it
-        self.interior = interior = Frame(canvas)
-        interior_id = canvas.create_window(0, 0, window=interior,
+        self.interior = interior = Frame(self.canvas)
+        interior_id = self.canvas.create_window(0, 0, window=interior,
                                            anchor=NW)
 
         # track changes to the canvas and frame width and sync them,
@@ -968,16 +1000,247 @@ class VerticalScrolledFrame(Frame):
         def _configure_interior(_event):
             # update the scrollbars to match the size of the inner frame
             size = (interior.winfo_reqwidth(), interior.winfo_reqheight())
-            canvas.config(scrollregion="0 0 %s %s" % size)
-            if interior.winfo_reqwidth() != canvas.winfo_width():
+            self.canvas.config(scrollregion="0 0 %s %s" % size)
+            if interior.winfo_reqwidth() != self.canvas.winfo_width():
                 # update the canvas's width to fit the inner frame
-                canvas.config(width=interior.winfo_reqwidth())
+                self.canvas.config(width=interior.winfo_reqwidth())
         interior.bind('<Configure>', _configure_interior)
 
         def _configure_canvas(_event):
-            if interior.winfo_reqwidth() != canvas.winfo_width():
+            if interior.winfo_reqwidth() != self.canvas.winfo_width():
                 # update the inner frame's width to fill the canvas
-                canvas.itemconfigure(interior_id, width=canvas.winfo_width())
-        canvas.bind('<Configure>', _configure_canvas)
+                self.canvas.itemconfigure(interior_id, width=self.canvas.winfo_width())
+        self.canvas.bind('<Configure>', _configure_canvas)
 
         return
+
+
+class EditorPane(Frame):
+    def __init__(self,_parent):
+        Frame.__init__(self, _parent, bg="blue")
+        self.root = _parent
+        
+        self.data_panel = SidePanel(self,self.root)
+        
+        self.data_panel.pack(fill=BOTH,expand=TRUE)
+        
+class SidePanel(ttk.Notebook):
+    """
+    The tabbed panel (Notebook) that will contain the side panel of the builder.
+    """
+    def __init__(self,_parent,_root):
+        ttk.Notebook.__init__(self, _parent)
+        self.root = _root
+        
+        fighter_properties = FighterPropertiesPanel(self,_root)
+        fighter_actions = ActionListPanel(self,_root)
+        
+        
+        self.panel_windows = {
+            'Properties': fighter_properties,
+            'Actions': fighter_actions
+            }
+        
+        for name,window in self.panel_windows.iteritems():
+            self.add(window,text=name,sticky=N+S+E+W)
+        
+    def addActionPane(self,_actionName):
+        if not _actionName in self.panel_windows.keys():
+            actionPanel = ActionPanel(self,self.root,_actionName)
+            self.panel_windows[_actionName] = actionPanel
+            self.add(actionPanel,text=_actionName,sticky=N+S+E+W)
+            self.select(actionPanel)
+        else:
+            self.select(self.panel_windows[_actionName])
+            
+    def closeActionPane(self,_actionName):
+        self.forget(self.panel_windows[_actionName])
+        self.panel_windows.pop(_actionName,None)
+    
+class dataPanel(BuilderPanel):
+    def __init__(self,_parent,_root):
+        BuilderPanel.__init__(self, _parent, _root)
+        
+        # A list of dataLines to draw
+        self.data_list = []
+        
+        self.scroll_frame = VerticalScrolledFrame(self,bg="red")
+        self.interior = self.scroll_frame.interior
+        self.bind("<Visibility>", self.onVisibility)
+        
+        self.selected_string = StringVar(self)
+        self.selected = None
+        
+        
+    def loadDataList(self):
+        for data in self.data_list:
+            data.pack_forget()
+        self.scroll_frame.pack(fill=BOTH,expand=TRUE)
+        for data in self.data_list:
+            data.pack(fill=X) #the data line will hide itself if it's not expanded
+            
+    def changeFighter(self, *_args):
+        global fighter
+        
+        for panel in self.data_list:
+            panel.target_object = fighter
+            panel.update()
+            
+    def onVisibility(self, *args):
+        pass
+        
+class FighterPropertiesPanel(dataPanel):
+    def __init__(self,_parent,_root):
+        dataPanel.__init__(self, _parent, _root)
+        self.config(bg="green")
+        
+        self.panels = [
+            dataSelector.StringLine(self,self.interior,'Name:',None,'name'),
+            dataSelector.ImageLine(self,self.interior,'Franchise Icon:',None,'franchise_icon_path'),
+            dataSelector.ImageLine(self,self.interior,'CSS Icon:',None,'css_icon_path'),
+            dataSelector.ImageLine(self,self.interior,'CSS Portrait:',None,'css_portrait_path'),
+            dataSelector.DirLine(self,self.interior,'Sprite Path:',None,'sprite_directory'),
+            dataSelector.StringLine(self,self.interior,'Sprite Prefix:',None,'sprite_prefix'),
+            dataSelector.NumLine(self,self.interior,'Sprite Width:',None,'sprite_width'),
+            dataSelector.NumLine(self,self.interior,'Sprite Scale:',None,'scale'),
+            dataSelector.StringLine(self,self.interior,'Default Sprite:',None,'default_sprite'),
+            dataSelector.DirLine(self,self.interior,'Article Path:',None,'article_path'),
+            dataSelector.ModuleLine(self,self.interior,'Articles:',None,'article_file'),
+            dataSelector.DirLine(self,self.interior,'Sound Path:',None,'sound_path'),
+            dataSelector.ModuleLine(self,self.interior,'Actions:',None,'action_file')
+            ]
+        
+        for panel in self.panels:
+            self.data_list.append(panel)
+            
+        self.loadDataList()
+        
+class ActionListPanel(dataPanel):
+    def __init__(self,_parent,_root):
+        dataPanel.__init__(self, _parent, _root)
+        self.config(bg="teal")
+        self.act_list = []
+        
+    def changeFighter(self, *_args):
+        global fighter
+        for data in self.data_list:
+            data.pack_forget()
+        
+        self.data_list = []
+        self.act_list = []
+        
+        self.scroll_frame.canvas.yview_moveto(0.0)
+        
+        if isinstance(fighter.actions, engine.actionLoader.ActionLoader):
+            self.act_list.extend(fighter.actions.getAllActions())
+        else:
+            for name,_ in inspect.getmembers(fighter.actions, inspect.isclass):
+                self.act_list.append(name)
+        
+        for action in self.act_list:
+            #Once we have action selector lines, replace this
+            dataLine = dataSelector.ActionLine(self,self.interior,action,fighter)
+            self.data_list.append(dataLine)
+        self.data_list.append(dataSelector.NewActionLine(self,self.interior,fighter))
+        self.loadDataList()
+        
+        dataPanel.changeFighter(self, *_args)
+    
+    def addAction(self):
+        CreateActionWindow(self.root)
+        
+    def deleteAction(self,_actionName):
+        global fighter
+        action = fighter.getAction(_actionName)
+        self.root.deleteAction(action)
+        
+    def setAction(self,_actionName):
+        self.root.action_string.set(_actionName)
+        
+class ActionPanel(dataPanel):
+    def __init__(self,_parent,_root,_actionName):
+        global fighter
+        global changed_actions
+        
+        dataPanel.__init__(self, _parent, _root)
+        self.config(bg="light coral")
+        
+        if changed_actions.has_key(_actionName):
+            self.action = changed_actions[_actionName]
+        else: self.action = fighter.getAction(_actionName)
+        
+        self.action_name = _actionName
+        self.data_list.append(dataSelector.CloseActionLine(self,self.interior))
+        self.last_known_frame = 0
+        
+        #Action Properties
+        self.data_list.append(dataSelector.NumLine(self,self.interior,'Length: ',self.action,'last_frame'))
+        self.data_list.append(dataSelector.SpriteLine(self,self.interior,'Sprite: ',self.action,'sprite_name'))
+        self.data_list.append(dataSelector.NumLine(self,self.interior,'Sprite Rate: ',self.action,'sprite_rate'))
+        self.data_list.append(dataSelector.BoolLine(self,self.interior,'Loop',self.action,'loop'))
+        
+        """
+        {'Current Frame': action.actions_at_frame[frame],
+        """
+        
+        #Action Groups
+        setUpGroup = dataSelector.GroupLine(self,self.interior,'Set Up')
+        for subact in self.action.set_up_actions:
+            setUpGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        setUpGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(setUpGroup)
+        
+        tearDownGroup = dataSelector.GroupLine(self,self.interior,'Tear Down')
+        for subact in self.action.tear_down_actions:
+            tearDownGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        tearDownGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(tearDownGroup)
+        
+        transitionsGroup = dataSelector.GroupLine(self,self.interior,'Transitions')
+        for subact in self.action.set_up_actions:
+            transitionsGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        transitionsGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(transitionsGroup)
+        
+        beforeGroup = dataSelector.GroupLine(self,self.interior,'Before Each Frame')
+        for subact in self.action.actions_before_frame:
+            beforeGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        beforeGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(beforeGroup)
+        
+        afterGroup = dataSelector.GroupLine(self,self.interior,'After Each Frame')
+        for subact in self.action.actions_after_frame:
+            afterGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        afterGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(afterGroup)
+        
+        lastGroup = dataSelector.GroupLine(self,self.interior,'Last Frame')
+        for subact in self.action.actions_at_last_frame:
+            lastGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+        lastGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(lastGroup)
+        
+        for name,event in self.action.events.iteritems():
+            eventGroup = dataSelector.GroupLine(self,self.interior,'Event: '+name)
+            for subact in event:
+                eventGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+            eventGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+            self.data_list.append(eventGroup)
+        
+        self.loadDataList()
+        
+    def loadDataList(self):
+        dataPanel.loadDataList(self)
+        
+    def closeTab(self):
+        self.parent.closeActionPane(self.action_name)
+    
+    def changeFrame(self, *_args):
+        if self.root.action_string.get() == self.action_name: #if our action is selected
+            self.last_known_frame = self.root.frame.get() #update our last known frame
+            
+    def onVisibility(self, *args):
+        dataPanel.onVisibility(self, *args)
+        lastframe = self.last_known_frame
+        self.root.action_string.set(self.action_name)
+        self.root.frame.set(lastframe)

@@ -893,21 +893,25 @@ class bgSpace(spriteManager.ImageSprite):
         self.image = pygame.surface.Surface(tuple(settingsManager.getSetting('windowSize')))
         self.rect = pygame.rect.Rect((0,0),self.image.get_size())
         
-        self.stars = pygame.sprite.Group()
+        self.stars = list()
+        self.sprites = pygame.sprite.Group()
         self.star_color = [float(random.randint(0,100))/100,1.0,1.0]
         self.star_timer = 3
         
         for i in range(0,30):
             st = bgStar(random.randint(1,10))
-            st.rect.x = random.randint(1,settingsManager.getSetting('windowSize')[0])
+            st.sprite.rect.x = random.randint(1,settingsManager.getSetting('windowSize')[0])
             st.changeColor(self.star_color)
-            self.stars.add(st)
+            self.stars.append(st)
+            self.sprites.add(st.sprite)
             
     def update(self,_screen):
         # create more stars
         self.star_timer -= 1
         if self.star_timer == 0:
-            self.stars.add(bgStar(random.randint(1,10)))
+            new_bg_star = bgStar(random.randint(1,10))
+            self.stars.append(new_bg_star)
+            self.sprites.add(new_bg_star.sprite)
             self.star_timer = 3
             
         # recolor stars
@@ -917,6 +921,8 @@ class bgSpace(spriteManager.ImageSprite):
         for star in self.stars:
             star.changeColor(self.star_color)
             star.update()
+            if star.sprite not in self.sprites:
+                self.stars.remove(star)
         
         self.image.fill([0,0,0])
     
@@ -925,7 +931,7 @@ class bgSpace(spriteManager.ImageSprite):
         
     def draw(self, _screen, _offset, _scale):
         _screen.blit(self.image,self.rect.topleft)
-        self.stars.draw(_screen)
+        self.sprites.draw(_screen)
         
 class bgStar(engine.article.Article):
     def __init__(self,_dist):
@@ -934,11 +940,12 @@ class bgStar(engine.article.Article):
         self.dist = _dist
         self.color = [0,0,1]
         
-        self.image = pygame.transform.scale(self.image, (9*(11-_dist)//10,9*(11-_dist)//10))
+        self.sprite.image = pygame.transform.scale(self.sprite.image, (9*(11-_dist)//10,9*(11-_dist)//10))
         
     def update(self):
-        self.rect.x -= 11 - self.dist
-        if self.rect.right <= 0: self.kill()
+        self.sprite.rect.x -= 11 - self.dist
+        if self.sprite.rect.right <= 0: 
+            self.sprite.kill()
     
     def hsvtorgb(self,_hsv):
         return tuple(i * 255 for i in colorsys.hsv_to_rgb(_hsv[0],_hsv[1],_hsv[2]))
@@ -947,7 +954,7 @@ class bgStar(engine.article.Article):
         from_color = self.hsvtorgb(self.color)
         true_color = self.hsvtorgb(_toColor)
         
-        self.recolor(self.image, from_color, true_color)
+        self.sprite.recolor(self.sprite.image, from_color, true_color)
         self.color = [_toColor[0],_toColor[1],_toColor[2]]
         
 

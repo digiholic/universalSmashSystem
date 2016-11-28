@@ -57,8 +57,6 @@ def importFromURI(_filePath, _uri, _absl=False, _suffix=""):
     mname, ext = os.path.splitext(fname)
     
     no_ext = os.path.join(path, mname)
-
-    #print ((mname + _suffix), no_ext + '.py')
     
     if os.path.exists(no_ext + '.py'):
         try:
@@ -76,7 +74,6 @@ def getSetting(_key = None):
     global settings
     if settings == None:
         settings = Settings()
-        return settings
     if _key:
         return settings.setting[_key]
     else:
@@ -222,6 +219,10 @@ class Settings():
         self.setting['ledgeInvincibilityTime'] = getNumber(preset_parser, preset, 'ledgeInvincibilityTime')
         self.setting['regrabInvincibility'] = getBoolean(preset_parser, preset, 'regrabInvincibility')
         self.setting['slowLedgeWakeupThreshold'] = getNumber(preset_parser, preset, 'slowLedgeWakeupThreshold')
+
+        self.setting['respawnDowntime'] = int(getNumber(preset_parser, preset, 'respawnDowntime'))
+        self.setting['respawnLifetime'] = int(getNumber(preset_parser, preset, 'respawnLifetime'))
+        self.setting['respawnInvincibility'] = int(getNumber(preset_parser, preset, 'respawnInvincibility'))
         
         self.setting['airDodgeType'] = getString(preset_parser, preset, 'airDodgeType')
         self.setting['freeDodgeSpecialFall'] = getBoolean(preset_parser, preset, 'freeDodgeSpecialFall')
@@ -482,7 +483,6 @@ class sfx_library():
             fname, ext = os.path.splitext(f)
             if self.supported_file_types.count(ext):
                 self.sounds[_category + "_" + fname] = pygame.mixer.Sound(os.path.join(_path,f))
-                
     
 ########################################################
 #             STATIC HELPER FUNCTIONS                  #
