@@ -39,6 +39,7 @@ class AbstractFighter():
     sprite_width = 64
     default_sprite = 'sandbag_idle'
     sprite = None
+    sprite_flip = 'right'
     
     article_sprite_path = ''
     article_file = ''
@@ -46,11 +47,6 @@ class AbstractFighter():
     sound_path = ''
     
     action_file = baseActions.__file__
-    
-    try:
-        self.sprite_flip = self.xml_data.find('facing').text
-    except:
-        self.sprite_flip = "right"
         
     default_stats = {
                 'weight': 100,
@@ -210,6 +206,10 @@ class AbstractFighter():
         self.sprite_prefix = loadNodeWithDefault('sprite_prefix', self.sprite_prefix)
         self.sprite_width = int(loadNodeWithDefault('sprite_width', self.sprite_width))
         self.default_sprite = loadNodeWithDefault('default_sprite', self.default_sprite)
+        try:
+            self.sprite_flip = self.xml_data.find('facing').text
+        except:
+            self.sprite_flip = "right"
         
         #Load the article info
         self.article_sprite_path = loadNodeWithDefault('article_path', self.article_sprite_path)
