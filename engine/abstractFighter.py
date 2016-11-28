@@ -47,6 +47,11 @@ class AbstractFighter():
     
     action_file = baseActions.__file__
     
+    try:
+        self.sprite_flip = self.xml_data.find('facing').text
+    except:
+        self.sprite_flip = "right"
+        
     default_stats = {
                 'weight': 100,
                 'gravity': .5,
@@ -363,6 +368,15 @@ class AbstractFighter():
             the game's color choice to load up a different palette.
         """
         directory = os.path.join(self.base_dir,self.sprite_directory)
+<<<<<<< HEAD
+=======
+        try:
+            scale = float(self.xml_data.find('scale').text)
+        except:
+            scale = 1.0
+
+            
+>>>>>>> upstream_master
         if _color == None: _color = self.current_color
         
         self.sprite = spriteManager.SpriteHandler(str(directory),
@@ -370,7 +384,13 @@ class AbstractFighter():
                                                   self.default_sprite,
                                                   self.sprite_width,
                                                   self.color_palettes[_color % len(self.color_palettes)],
+<<<<<<< HEAD
                                                   self.scale)
+=======
+                                                  scale,
+                                                  self.sprite_flip)
+        self.rect = self.sprite.rect
+>>>>>>> upstream_master
     
     def initialize(self):
         """ This method is called when shit gets real. It creates the collision box, sprite library,
@@ -436,7 +456,15 @@ class AbstractFighter():
         
         self.trail_color = settingsManager.getSetting('playerColor' + str(self.player_num))
         
+<<<<<<< HEAD
         if self.sprite.flip == 'left': self.sprite.flipX()
+=======
+        #facing right = 1, left = -1
+        self.facing = 1
+        if self.sprite_flip == 'left': self.facing = -1
+        
+        print('sprite flip',self.sprite_flip)
+>>>>>>> upstream_master
         self.unRotate()   
         
         self.current_action = self.getAction('NeutralAction')
