@@ -15,12 +15,17 @@ class Move(action.Action):
     def setUp(self,_actor):
         if self.sprite_name=="": self.sprite_name = "move"
         action.Action.setUp(self, _actor)
-        self.accel = True
         self.direction = _actor.facing
+        self.accel = True
         
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        _actor.facing = self.direction
+        if hasattr(_nextAction, 'direction'):
+            _nextAction.direction *= self.direction*_actor.facing
+        else:
+            _actor.facing = self.direction
+            if (_actor.facing == 1 and _actor.sprite.flip == "left") or (_actor.facing == -1 and _actor.sprite.flip == "right"):
+                _actor.sprite.flipX()
         _actor.preferred_xspeed = 0
         
     def update(self, _actor):
@@ -31,15 +36,10 @@ class Move(action.Action):
         if not (_actor.change_x < -_actor.stats['max_ground_speed'] and _actor.facing == -1) or not (_actor.change_x > _actor.stats['max_ground_speed'] and _actor.facing == 1):
              _actor.accel(_actor.stats['static_grip'])
 
-        (key,invkey) = _actor.getForwardBackwardKeys()
-        if self.direction == _actor.facing:
-            if _actor.keysContain(invkey):
-                _actor.sprite.flipX()
-                self.direction *= -1
-        else:
-            if not _actor.keysContain(invkey):
-                _actor.sprite.flipX()
-                self.direction *= -1
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        self.direction = -_actor.facing if _actor.keysContain(invkey) else _actor.facing
+        if (self.direction == 1 and _actor.sprite.flip == "left") or (self.direction == -1 and _actor.sprite.flip == "right"):
+            _actor.sprite.flipX()
         
         self.frame += 1
         
@@ -51,8 +51,10 @@ class Move(action.Action):
         (key,invkey) = _actor.getForwardBackwardKeys()
         if self.frame > 0 and _actor.keyBuffered(invkey, _state = 1):
             _actor.doDash(-_actor.getFacingDirection())
+            _actor.current_action.accel = False
         elif self.frame > 0 and _actor.keyBuffered(key, _state = 1):
             _actor.doDash(_actor.getFacingDirection())
+            _actor.current_action.accel = False
 
 class Dash(action.Action):
     def __init__(self,_length=1,_runStartFrame=0): 
@@ -63,28 +65,28 @@ class Dash(action.Action):
         if self.sprite_name=="": self.sprite_name = "dash"
         action.Action.setUp(self, _actor)
         self.direction = _actor.facing
+        self.accel = True
 
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        _actor.facing = self.direction
+        if hasattr(_nextAction, 'direction'):
+            _nextAction.direction *= self.direction*_actor.facing
+        else:
+            _actor.facing = self.direction
+            if (_actor.facing == 1 and _actor.sprite.flip == "left") or (_actor.facing == -1 and _actor.sprite.flip == "right"):
+                _actor.sprite.flipX()
         _actor.preferred_xspeed = 0
 
     def update(self, _actor):
         action.Action.update(self, _actor)
         if self.frame == 0:
             _actor.preferred_xspeed = _actor.stats['run_speed']*_actor.facing
-        (key,invkey) = _actor.getForwardBackwardKeys()
         checkGrounded(_actor)
 
-        (key,invkey) = _actor.getForwardBackwardKeys()
-        if self.direction == _actor.facing:
-            if _actor.keysContain(invkey):
-                _actor.sprite.flipX()
-                self.direction *= -1
-        else:
-            if not _actor.keysContain(invkey):
-                _actor.sprite.flipX()
-                self.direction *= -1
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        self.direction = -_actor.facing if _actor.keysContain(invkey) else _actor.facing
+        if (self.direction == 1 and _actor.sprite.flip == "left") or (self.direction == -1 and _actor.sprite.flip == "right"):
+            _actor.sprite.flipX()
 
         if not (_actor.change_x < -_actor.stats['max_ground_speed'] and _actor.facing == -1) or not (_actor.change_x > _actor.stats['max_ground_speed'] and _actor.facing == 1):
              _actor.accel(_actor.stats['static_grip'])
@@ -106,6 +108,7 @@ class Pivot(action.Action):
         if self.sprite_name=="": self.sprite_name = "pivot"
         action.Action.setUp(self, _actor)
         num_frames = int(_actor.change_x*_actor.facing/float(_actor.stats['pivot_grip']))
+        self.direction = _actor.facing
         if num_frames < self.last_frame:
             self.frame = min(self.last_frame-num_frames, self.last_frame-1)
         else:
@@ -113,15 +116,23 @@ class Pivot(action.Action):
         
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        if isinstance(_nextAction, Move):
-            _nextAction.accel = False
+        if hasattr(_nextAction, 'direction'):
+            _nextAction.direction *= self.direction*_actor.facing
+        else:
+            _actor.facing = self.direction
+            if (_actor.facing == 1 and _actor.sprite.flip == "left") or (_actor.facing == -1 and _actor.sprite.flip == "right"):
+                _actor.sprite.flipX()
 
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
         stopState(_actor)
         checkGrounded(_actor)
+
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if (self.direction == 1 and _actor.sprite.flip == "left") or (self.direction == -1 and _actor.sprite.flip == "right"):
+            _actor.sprite.flipX()
+
         if self.frame == self.last_frame:
-            (key, _) = _actor.getForwardBackwardKeys()
             if _actor.keysContain(key):
                 if _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1), 1, 0):
                     if _actor.facing == 1:
@@ -143,6 +154,10 @@ class Pivot(action.Action):
             _actor.flip()
         if self.frame != self.last_frame:
             self.frame += 1
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if _actor.keysContain(key) and _actor.keysContain(invkey):
+            _actor.preferred_xspeed = _actor.stats['max_ground_speed']*_actor.facing
+        else:
             _actor.preferred_xspeed = 0
           
 class Stop(action.Action):
@@ -152,6 +167,7 @@ class Stop(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name = "stop"
         action.Action.setUp(self, _actor)
+        self.direction = _actor.facing
         num_frames = int(_actor.change_x*_actor.facing/float(_actor.stats['pivot_grip']))
         if num_frames < self.last_frame:
             self.frame = min(self.last_frame-num_frames, self.last_frame-1)
@@ -161,18 +177,32 @@ class Stop(action.Action):
     def update(self, _actor):
         action.Action.update(self, _actor)
         _actor.accel(_actor.stats['pivot_grip'])
-        _actor.preferred_xspeed = 0
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if _actor.keysContain(key) and _actor.keysContain(invkey):
+            _actor.preferred_xspeed = _actor.stats['max_ground_speed']*_actor.facing
+        else:
+            _actor.preferred_xspeed = 0
         self.frame += 1
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
         stopState(_actor)
         checkGrounded(_actor)
+        (key, invkey) = _actor.getForwardBackwardKeys()
+
+        if (self.direction == 1 and _actor.sprite.flip == "left") or (self.direction == -1 and _actor.sprite.flip == "right"):
+            _actor.sprite.flipX()
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
 
-    def tearDown(self, _actor, nextAction):
-        action.Action.tearDown(self, _actor, nextAction)
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        if hasattr(_nextAction, 'direction'):
+            _nextAction.direction *= self.direction*_actor.facing
+        else:
+            _actor.facing = self.direction
+            if (_actor.facing == 1 and _actor.sprite.flip == "left") or (_actor.facing == -1 and _actor.sprite.flip == "right"):
+                _actor.sprite.flipX()
             
 class RunPivot(action.Action):
     def __init__(self,length=1):
@@ -181,22 +211,32 @@ class RunPivot(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="runPivot" 
         action.Action.setUp(self, _actor)
-        num_frames = int(_actor.change_x*_actor.facing/float(_actor.stats['pivot_grip']))
+        self.direction = _actor.facing
+        num_frames = int(_actor.change_x*_actor.facing/float(_actor.stats['static_grip']))
         if num_frames < self.last_frame:
             self.frame = min(self.last_frame-num_frames, self.last_frame-1)
         else:
             self.last_frame = num_frames
         
-    def tearDown(self, _actor, nextAction):
-        action.Action.tearDown(self, _actor, nextAction)
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        if hasattr(_nextAction, 'direction'):
+            _nextAction.direction *= self.direction*_actor.facing
+        else:
+            _actor.facing = self.direction
+            if (_actor.facing == 1 and _actor.sprite.flip == "left") or (_actor.facing == -1 and _actor.sprite.flip == "right"):
+                _actor.sprite.flipX()
         _actor.preferred_xspeed = 0
-        if isinstance(nextAction, Dash):
-            nextAction.accel = False
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
         runStopState(_actor)
         checkGrounded(_actor)
+
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if (self.direction == 1 and _actor.sprite.flip == "left") or (self.direction == -1 and _actor.sprite.flip == "right"):
+            _actor.sprite.flipX()
+
         if self.frame == self.last_frame:
             (key, _) = _actor.getForwardBackwardKeys()
             if _actor.keysContain(key):
@@ -209,12 +249,16 @@ class RunPivot(action.Action):
         
     def update(self,_actor):
         action.Action.update(self, _actor)
-        _actor.accel(_actor.stats['pivot_grip'])
+        _actor.accel(_actor.stats['static_grip'])
         if self.frame == 0:
             _actor.flip()
         if self.frame != self.last_frame:
             self.frame += 1
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if _actor.keysContain(key) and _actor.keysContain(invkey):
             _actor.preferred_xspeed = _actor.stats['run_speed']*_actor.facing
+        else:
+            _actor.preferred_xspeed = 0
 
 class RunStop(action.Action):
     def __init__(self,_length=1):
@@ -223,7 +267,8 @@ class RunStop(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="runStop"
         action.Action.setUp(self, _actor)
-        num_frames = int(_actor.change_x*_actor.facing/float(_actor.stats['pivot_grip']))
+        self.direction = _actor.facing
+        num_frames = int(_actor.change_x*_actor.facing/float(_actor.stats['static_grip']))
         if num_frames < self.last_frame:
             self.frame = min(self.last_frame-num_frames, self.last_frame-1)
         else:
@@ -231,17 +276,34 @@ class RunStop(action.Action):
         
     def update(self, _actor):
         action.Action.update(self, _actor)
-        _actor.preferred_xspeed = 0
-        _actor.accel(_actor.stats['pivot_grip'])
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if _actor.keysContain(key) and _actor.keysContain(invkey):
+            _actor.preferred_xspeed = _actor.stats['run_speed']*_actor.facing
+        else:
+            _actor.preferred_xspeed = 0
+        _actor.accel(_actor.stats['static_grip'])
         self.frame += 1
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
         runStopState(_actor)
         checkGrounded(_actor)
+
+        (key, invkey) = _actor.getForwardBackwardKeys()
+        if (self.direction == 1 and _actor.sprite.flip == "left") or (self.direction == -1 and _actor.sprite.flip == "right"):
+            _actor.sprite.flipX()
+
         if self.frame == self.last_frame:
             _actor.doAction('NeutralAction')
 
+    def tearDown(self, _actor, _nextAction):
+        action.Action.tearDown(self, _actor, _nextAction)
+        if hasattr(_nextAction, 'direction'):
+            _nextAction.direction *= self.direction*_actor.facing
+        else:
+            _actor.facing = self.direction
+            if (_actor.facing == 1 and _actor.sprite.flip == "left") or (_actor.facing == -1 and _actor.sprite.flip == "right"):
+                _actor.sprite.flipX()
                 
 class NeutralAction(action.Action):
     def __init__(self,_length=1):
@@ -309,7 +371,6 @@ class Crouch(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="crouch"
         action.Action.setUp(self, _actor)
-        self.direction = _actor.getForwardWithOffset(0)
         _actor.armor['crouch_cancel'] = hurtbox.CrouchCancel(_actor)
 
     def stateTransitions(self, _actor):
@@ -614,7 +675,7 @@ class Released(action.Action):
 class HitStun(action.Action):
     def __init__(self,_hitstun=1,_direction=0):
         action.Action.__init__(self, _hitstun)
-        self.direction = _direction
+        self.angle = _direction
         self.do_slow_getup = False
         self.feet_planted = True #A variable to check if we ever leave the ground
 
@@ -693,7 +754,7 @@ class HitStun(action.Action):
             if direct != 0 and direct != 180:
                 _actor.grounded = False
                 if mag > 10:
-                    _actor.rotateSprite(self.direction)
+                    _actor.rotateSprite(self.angle)
             
         if self.frame % max(1,int(100.0/max(math.hypot(_actor.change_x, _actor.change_y), 1))) == 0 and self.frame < self.last_frame:
             import engine.article as article
@@ -2098,6 +2159,7 @@ def stopState(_actor):
         _actor.doAction('Jump')
     elif _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
         _actor.doDash(_actor.getFacingDirection())
+        _actor.current_action.accel = False
     elif _actor.keyHeld(invkey) and not _actor.keysContain(key):
         print("pivot")
         _actor.doAction('Pivot')
@@ -2118,6 +2180,7 @@ def runStopState(_actor):
     elif _actor.keyHeld(key, max(min(int(_actor.key_bindings.timing_window['repeat_window'])+1, _actor.last_input_frame), 1)):
         print("run")
         _actor.doDash(_actor.getFacingDirection())
+        _actor.current_action.accel = False
     elif _actor.keyHeld(invkey) and not _actor.keysContain(key):
         print("run pivot")
         _actor.doAction('RunPivot')
