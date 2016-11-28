@@ -1565,10 +1565,10 @@ class AbstractFighter():
                 self.articles.append(next_hit_article)
             self.onRespawn()
             (self.posx, self.posy) = self.game_state.spawn_locations[self.player_num]
-            self.posy += self.ecb.current_ecb.rect.height/2.0
             self.posy -= 200
             self.updatePosition()
             self.ecb.normalize()
+            self.posy += self.ecb.current_ecb.rect.height/2.0
             self.ecb.store()
             self.createMask([255,255,255], 480, True, 12)
             self.respawn_invulnerable = 480

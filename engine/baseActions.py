@@ -1518,6 +1518,7 @@ class BaseLedge(action.Action):
             _nextAction.ledge = self.ledge
         else:
             if self.ledge: self.ledge.fighterLeaves(_actor)
+            _actor.preferred_yspeed = _actor.stats['max_fall_speed']
         print(_nextAction)
             
     def setUp(self, _actor):
@@ -1525,6 +1526,8 @@ class BaseLedge(action.Action):
         if not hasattr(self, 'ledge'): self.ledge = None
         if not hasattr(self, 'sweetspot_x'): self.sweetspot_x = 0
         if not hasattr(self, 'sweetspot_y'): self.sweetspot_y = 0
+        _actor.change_x = 0
+        _actor.change_y = 0
         
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
@@ -1533,6 +1536,8 @@ class BaseLedge(action.Action):
             
     def update(self, _actor):
         action.Action.update(self, _actor)
+        _actor.preferred_xspeed = 0
+        _actor.preferred_yspeed = 0
         
 class LedgeGrab(BaseLedge):
     def __init__(self,_ledge=None,_length=1):
@@ -1564,7 +1569,6 @@ class LedgeGrab(BaseLedge):
         else:
             if _actor.facing == 1:
                 _actor.flip()
-        _actor.setSpeed(0, _actor.getFacingDirection())
 
         if self.frame == settingsManager.getSetting('ledgeInvincibilityTime'):
             if 'ledge_invuln' in _actor.armor:
@@ -1572,6 +1576,8 @@ class LedgeGrab(BaseLedge):
         
         _actor.posx = self.ledge.rect.centerx + (self.sweetspot_x * -_actor.facing)
         _actor.posy = self.ledge.rect.centery + (self.sweetspot_y)
+        _actor.change_x = 0
+        _actor.change_y = 0
         
         self.frame += 1
         
@@ -1583,16 +1589,20 @@ class BaseLedgeGetup(BaseLedge):
         
     def setUp(self, _actor):
         BaseLedge.setUp(self, _actor)
-        _actor.preferred_xspeed = 0
-        _actor.preferred_yspeed = 0
         _actor.armor['ledge_getup_invuln'] = hurtbox.Intangibility(_actor)
         if not hasattr(self, 'up_frame'): self.up_frame = 1
         if not hasattr(self, 'side_frame'): self.side_frame = 2
         if self.ledge:
+            if self.ledge.side == 'left':
+                if _actor.facing == -1:
+                    _actor.flip()
+            else:
+                if _actor.facing == 1:
+                    _actor.flip()
             self.target_height = self.ledge.platform.rect.top
-            if self.ledge.side == 'left': self.target_x = self.ledge.platform.rect.left
-            else: self.target_x = self.ledge.platform.rect.right
-            self.diff = self.target_height - _actor.posx + _actor.ecb.current_ecb.rect.height/2.0
+            if self.ledge.side == 'left': self.target_x = self.ledge.platform.rect.left + _actor.ecb.current_ecb.rect.width/2.0
+            else: self.target_x = self.ledge.platform.rect.right - _actor.ecb.current_ecb.rect.width/2.0
+            self.diff = self.ledge.platform.rect.top - _actor.ecb.current_ecb.rect.height/2.0 - _actor.posy
             print(self.diff)
 
     def tearDown(self, _actor, _nextAction):
@@ -1601,11 +1611,8 @@ class BaseLedgeGetup(BaseLedge):
             del _actor.armor['ledge_getup_invuln']
         _actor.invulnerable = 0
         _actor.mask = None
-        _actor.preferred_xspeed = 0
-        _actor.preferred_yspeed = _actor.stats['max_fall_speed']
-        if _actor.grounded:
-            _actor.change_x = 0
-            _actor.change_y = 0
+        _actor.change_x = 0
+        _actor.change_y = 0
 
     def stateTransitions(self, _actor):
         BaseLedge.stateTransitions(self, _actor)
@@ -1616,19 +1623,20 @@ class BaseLedgeGetup(BaseLedge):
         BaseLedge.update(self, _actor)
         if self.frame == 0:
             _actor.createMask([255,255,255], _actor.invulnerable, True, 24)
+        if self.frame < self.up_frame:
             _actor.preferred_yspeed = float(self.diff)/self.up_frame
             _actor.change_y = float(self.diff)/self.up_frame
 
-        if self.frame == self.up_frame:
+        if self.frame >= self.up_frame and self.frame < self.side_frame:
             _actor.preferred_yspeed = 0
             _actor.change_y = 0
             _actor.posy = self.target_height - _actor.ecb.current_ecb.rect.height/2.0
             if self.ledge.side == 'left':
-                _actor.change_x = _actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
-                _actor.preferred_xspeed = _actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
+                _actor.change_x = _actor.ecb.current_ecb.rect.width/(self.side_frame-self.up_frame)
+                _actor.preferred_xspeed = _actor.ecb.current_ecb.rect.width/(self.side_frame-self.up_frame)
             else:
-                _actor.change_x = -_actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
-                _actor.preferred_xspeed = -_actor.ecb.current_ecb.rect.width/2.0/(self.side_frame-self.up_frame)
+                _actor.change_x = -_actor.ecb.current_ecb.rect.width/(self.side_frame-self.up_frame)
+                _actor.preferred_xspeed = -_actor.ecb.current_ecb.rect.width/(self.side_frame-self.up_frame)
         
         if self.frame == self.side_frame:
             _actor.posx = self.target_x
