@@ -370,7 +370,7 @@
 	</Prone>
 	
 	<SlowGetup>
-		<length>40</length>
+		<length>20</length>
 		<sprite>idle</sprite>
 		<frame number="before">
 			<ifButton>

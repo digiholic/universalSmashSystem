@@ -394,7 +394,7 @@
 	</Prone>
 	
 	<SlowGetup>
-		<length>50</length>
+		<length>20</length>
 		<sprite>land</sprite>
 		<sprite_rate>2</sprite_rate>
 		

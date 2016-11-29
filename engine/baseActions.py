@@ -759,6 +759,8 @@ class HitStun(action.Action):
         if self.last_frame > 15 and _actor.keyBuffered('shield', 5) and self.tech_cooldown == 0 and not _actor.grounded:
             print('Try tech')
             _actor.tech_window = 12
+            anti_grab = statusEffect.TemporaryHitFilter(_actor,hurtbox.GrabImmunity(_actor), 10)
+            anti_grab.activate()
             self.tech_cooldown = 40
         if _actor.tech_window > 0:
             _actor.elasticity = 0
@@ -767,6 +769,8 @@ class HitStun(action.Action):
         self.feet_planted = _actor.grounded
         if self.tech_cooldown > 0: self.tech_cooldown -= 1
         if self.frame == 0:
+            anti_grab = statusEffect.TemporaryHitFilter(_actor,hurtbox.GrabImmunity(_actor), max(10, self.tech_cooldown+5))
+            anti_grab.activate()
             (direct,mag) = _actor.getDirectionMagnitude()
             print("direction:", direct)
             if direct != 0 and direct != 180:
@@ -824,6 +828,8 @@ class Tumble(action.Action):
         if _actor.keyBuffered('shield', 5) and self.tech_cooldown == 0 and not _actor.grounded:
             print('Try tech')
             _actor.tech_window = 20
+            anti_grab = statusEffect.TemporaryHitFilter(_actor,hurtbox.GrabImmunity(_actor), 10)
+            anti_grab.activate()
             self.tech_cooldown = 40
 
         if _actor.tech_window > 0:
@@ -840,7 +846,8 @@ class Prone(action.Action):
     def setUp(self, _actor):
         if self.sprite_name == "": self.sprite_name = "prone"
         action.Action.setUp(self, _actor)
-        _actor.tech_window = 10
+        anti_grab = statusEffect.TemporaryHitFilter(_actor,hurtbox.GrabImmunity(_actor), 30)
+        anti_grab.activate()
 
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, _actor.checkGround(), None)
         if not block is None:
@@ -855,7 +862,6 @@ class Prone(action.Action):
 
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        _actor.tech_window = 0
         if isinstance(_nextAction, HitStun):
             _nextAction.do_slow_getup = True
         
@@ -879,11 +885,11 @@ class Getup(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="getup"
         action.Action.setUp(self, _actor)  
-        _actor.tech_window = 10
+        anti_grab = statusEffect.TemporaryHitFilter(_actor,hurtbox.GrabImmunity(_actor), 10)
+        anti_grab.activate()
 
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        _actor.tech_window = 0
 
     def stateTransitions(self, _actor):
         action.Action.stateTransitions(self, _actor)
@@ -897,13 +903,13 @@ class Getup(action.Action):
 
 class SlowGetup(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 50)
+        action.Action.__init__(self, 20)
         
     def setUp(self, _actor):
         if self.sprite_name == "": self.sprite_name = "prone"
         action.Action.setUp(self, _actor)
         
-        if self.last_frame < 50: self.last_frame = 50 #slow getups must be this long
+        if self.last_frame < 20: self.last_frame = 20 #slow getups must be this long
         
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, _actor.checkGround(), None)
         if not block is None:
@@ -1501,6 +1507,8 @@ class BaseTech(action.Action):
         self.start_invuln_frame = -1
         self.end_invuln_frame = -1
         block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, _actor.checkGround(), None)
+        anti_grab = statusEffect.TemporaryHitFilter(_actor,hurtbox.GrabImmunity(_actor), 10)
+        anti_grab.activate()
         if not block is None:
             _actor.change_y = block.change_y
             _actor.posy = block.rect.top - _actor.ecb.previous_ecb.rect.height/2.0
@@ -1519,7 +1527,6 @@ class BaseTech(action.Action):
             del _actor.armor['dodge_invuln']
         _actor.mask = None
         _actor.preferred_xspeed = 0
-        _actor.tech_window = 0
 
     def update(self, _actor):
         action.Action.update(self,_actor)
@@ -1587,7 +1594,6 @@ class NormalTech(BaseTech):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name="getup"
         BaseTech.setUp(self, _actor)
-        _actor.tech_window = 10
         
 class BaseLedge(action.Action):
     def __init__(self, _ledge=None,_length=1):
@@ -2009,6 +2015,8 @@ class DownAirSpecial(AirAttack):
 class GetupAttack(BaseAttack):
     def __init__(self,_length=0):
         BaseAttack.__init__(self, _length)
+        anti_grab = statusEffect.TemporaryHitFilter(_actor,hurtbox.GrabImmunity(_actor), 10)
+        anti_grab.activate()
 
 class LedgeGetup(BaseLedgeGetup):
     def __init__(self, _length=3):

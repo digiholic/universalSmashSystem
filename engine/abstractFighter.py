@@ -1529,6 +1529,7 @@ class AbstractFighter():
             #If the current action is not hitstun or you're in hitstun, but there's not much of it left
             if not isinstance(self.current_action, baseActions.HitStun) or (self.current_action.last_frame-self.current_action.frame)/float(settingsManager.getSetting('hitstun')) <= hitstun_frames+15:
                 self.doHitStun(hitstun_frames*settingsManager.getSetting('hitstun'), _trajectory)
+                self.current_action.tech_cooldown = (_total_kb*_hitstunMultiplier)//6
         
     def applyPushback(self, _kb, _trajectory, _hitlag):
         """ Pushes back the fighter when they hit a foe. This is the corollary to applyKnockback,
