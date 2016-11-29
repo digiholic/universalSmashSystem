@@ -118,15 +118,15 @@ class HyperArmor(Armor):
         
     def filterHits(self, _hitbox, _subactions, _forward):
         if isinstance(_hitbox, hitbox.DamageHitbox) and not _hitbox.ignore_armor:
-            import engine.subaction as subaction
-            _subactions = filter(lambda k: not isinstance(k, subaction.applyHitstop) and not isinstance(k, subaction.dealDamage) and not isinstance(k, subaction.ApplyScaledKnockback) and not isinstance(k, subaction.CompensateResistance), _subactions)
+            from engine.subactions import behavior
+            _subactions = filter(lambda k: not isinstance(k, behavior.applyHitstop.applyHitstop) and not isinstance(k, behavior.dealDamage.dealDamage) and not isinstance(k, behavior.applyScaledKnockback.applyScaledKnockback) and not isinstance(k, behavior.compensateResistance.compensateResistance), _subactions)
             for subact in _subactions:
-                if isinstance(subact, subaction.dealDamage):
+                if isinstance(subact, behavior.dealDamage.dealDamage):
                     subact.damage *= self.armor_damage_multiplier
-                if isinstance(subact, subaction.applyScaledKnockback):
+                if isinstance(subact, behavior.applyScaledKnockback.applyScaledKnockback):
                     subact.base_knockback *= self.armor_knockback_multiplier
                     subact.knockback_growth *= self.armor_knockback_multiplier
-                if isinstance(subact, subaction.compensateResistance):
+                if isinstance(subact, behavior.compensateResistance.compensateResistance):
                     subact.frames *= self.armor_knockback_multiplier
         return _forward(_hitbox, _subactions)
     
@@ -140,15 +140,15 @@ class SuperArmor(Armor):
 
     def filterHits(self, _hitbox, _subactions, _forward):
         if isinstance(_hitbox, hitbox.DamageHitbox) and self.num_hits > 0 and not _hitbox.ignore_armor:
-            import engine.subaction as subaction
-            _subactions = filter(lambda k: not isinstance(k, subaction.applyHitstop) and not isinstance(k, subaction.dealDamage) and not isinstance(k, subaction.ApplyScaledKnockback) and not isinstance(k, subaction.CompensateResistance), _subactions)
+            from engine.subactions import behavior
+            _subactions = filter(lambda k: not isinstance(k, behavior.applyHitstop.applyHitstop) and not isinstance(k, behavior.dealDamage.dealDamage) and not isinstance(k, behavior.applyScaledKnockback.applyScaledKnockback) and not isinstance(k, behavior.compensateResistance.compensateResistance), _subactions)
             for subact in _subactions:
-                if isinstance(subact, subaction.dealDamage):
+                if isinstance(subact, behavior.dealDamage.dealDamage):
                     subact.damage *= self.armor_damage_multiplier
-                if isinstance(subact, subaction.applyScaledKnockback):
+                if isinstance(subact, behavior.applyScaledKnockback.applyScaledKnockback):
                     subact.base_knockback *= self.armor_knockback_multiplier
                     subact.knockback_growth *= self.armor_knockback_multiplier
-                if isinstance(subact, subaction.compensateResistance):
+                if isinstance(subact, behavior.compensateResistance.compensateResistance):
                     subact.frames *= self.armor_knockback_multiplier
             self.num_hits -= 1
         return _forward(_hitbox, _subactions)
@@ -161,31 +161,31 @@ class HeavyArmor(Armor):
     def filterHits(self, _hitbox, _subactions, _forward):
         if isinstance(_hitbox, hitbox.DamageHitbox) and not _hitbox.ignore_armor:
 
+            from engine.subactions import behavior
             # Calculate knockback
             percent_portion = (self.owner.damage/10.0) + (self.owner.damage*_hitbox.damage)/20.0
             weight_portion = 200.0/(self.owner.stats['weight']*settingsManager.getSetting('weight')*_hitbox.weight_influence+100)
             total_kb = (((percent_portion * weight_portion *1.4) + 5) * _hitbox.knockback_growth) + _hitbox.base_knockback
             if self.damage_threshold > _hitbox.damage and self.knockback_threshold > total_kb:
-                import engine.subaction as subaction
-                _subactions = filter(lambda k: not isinstance(k, subaction.applyHitstop) and not isinstance(k, subaction.dealDamage) and not isinstance(k, subaction.ApplyScaledKnockback) and not isinstance(k, subaction.CompensateResistance), _subactions)
+                _subactions = filter(lambda k: not isinstance(k, behavior.applyHitstop.applyHitstop) and not isinstance(k, behavior.dealDamage.dealDamage) and not isinstance(k, behavior.applyScaledKnockback.applyScaledKnockback) and not isinstance(k, behavior.compensateResistance.compensateResistance), _subactions)
                 for subact in _subactions:
-                    if isinstance(subact, subaction.dealDamage):
+                    if isinstance(subact, behavior.dealDamage.dealDamage):
                         subact.damage *= self.armor_damage_multiplier
-                    if isinstance(subact, subaction.applyScaledKnockback):
+                    if isinstance(subact, behavior.applyScaledKnockback.applyScaledKnockback):
                         subact.base_knockback *= self.armor_knockback_multiplier
                         subact.knockback_growth *= self.armor_knockback_multiplier
-                    if isinstance(subact, subaction.compensateResistance):
+                    if isinstance(subact, behavior.compensateResistance.compensateResistance):
                         subact.frames *= self.armor_knockback_multiplier
             else:
                 for subact in _subactions:
-                    if isinstance(subact, subaction.dealDamage):
+                    if isinstance(subact, behavior.dealDamage.dealDamage):
                         subact.damage *= self.overflow_damage_multiplier
-                    if isinstance(subact, subaction.applyScaledKnockback):
+                    if isinstance(subact, behavior.applyScaledKnockback.applyScaledKnockback):
                         subact.base_knockback *= self.overflow_knockback_multiplier
                         subact.knockback_growth *= self.overflow_knockback_multiplier
-                    if isinstance(subact, subaction.compensateResistance):
+                    if isinstance(subact, behavior.compensateResistance.compensateResistance):
                         subact.frames *= self.overflow_knockback_multiplier
-                    if isinstance(subact, subaction.applyHitstun):
+                    if isinstance(subact, behavior.applyHitstun.applyHitstun):
                         subact.base_knockback *= self.overflow_knockback_multiplier
                         subact.knockback_growth *= self.overflow_knockback_multiplier
         return _forward(_hitbox, _subactions)
@@ -198,8 +198,8 @@ class Invulnerability(Armor):
         self.armor_type = 'invulnerable'
 
     def filterHits(self, _hitbox, _subactions, _forward):
-        import engine.subaction as subaction
-        _subactions = filter(lambda k: not isinstance(k, subaction.applyHitstop), _subactions)
+        from engine.subactions import behavior
+        _subactions = filter(lambda k: not isinstance(k, behavior.applyHitstop.applyHitstop), _subactions)
         return _forward(_hitbox, _subactions)
 
 class Intangibility(Armor):
@@ -224,51 +224,62 @@ class CumulativeArmor(Armor):
             total_kb = (((percent_portion * weight_portion *1.4) + 5) * _hitbox.knockback_growth) + _hitbox.base_knockback
             self.damage_threshold -= _hitbox.damage
             self.knockback_threshold -= total_kb
+            from engine.subactions import behavior
             if self.damage_threshold > _hitbox.damage and self.knockback_threshold > total_kb:
-                import engine.subaction as subaction
-                _subactions = filter(lambda k: not isinstance(k, subaction.applyHitstop) and not isinstance(k, subaction.dealDamage) and not isinstance(k, subaction.ApplyScaledKnockback) and not isinstance(k, subaction.CompensateResistance), _subactions)
+                _subactions = filter(lambda k: not isinstance(k, behavior.applyHitstop.applyHitstop) and not isinstance(k, behavior.dealDamage.dealDamage) and not isinstance(k, behavior.applyScaledKnockback.applyScaledKnockback) and not isinstance(k, behavior.compensateResistance.compensateResistance), _subactions)
                 for subact in _subactions:
-                    if isinstance(subact, subaction.dealDamage):
+                    if isinstance(subact, behavior.dealDamage.dealDamage):
                         subact.damage *= self.armor_damage_multiplier
-                    if isinstance(subact, subaction.applyScaledKnockback):
+                    if isinstance(subact, behavior.applyScaledKnockback.applyScaledKnockback):
                         subact.base_knockback *= self.armor_knockback_multiplier
                         subact.knockback_growth *= self.armor_knockback_multiplier
-                    if isinstance(subact, subaction.compensateResistance):
+                    if isinstance(subact, behavior.compensateResistance.compensateResistance):
                         subact.frames *= self.armor_knockback_multiplier
             else:
                 for subact in _subactions:
-                    if isinstance(subact, subaction.dealDamage):
+                    if isinstance(subact, behavior.dealDamage.dealDamage):
                         subact.damage *= self.overflow_damage_multiplier
-                    if isinstance(subact, subaction.applyScaledKnockback):
+                    if isinstance(subact, behavior.applyScaledKnockback.applyScaledKnockback):
                         subact.base_knockback *= self.overflow_knockback_multiplier
                         subact.knockback_growth *= self.overflow_knockback_multiplier
-                    if isinstance(subact, subaction.compensateResistance):
+                    if isinstance(subact, behavior.compensateResistance.compensateResistance):
                         subact.frames *= self.overflow_knockback_multiplier
-                    if isinstance(subact, subaction.applyHitstun):
+                    if isinstance(subact, behavior.applyHitstun.applyHitstun):
                         subact.base_knockback *= self.overflow_knockback_multiplier
                         subact.knockback_growth *= self.overflow_knockback_multiplier
         return _forward(_hitbox, _subactions)
+
+class GrabImmunity(Armor):
+    def __init__(self, _owner, _variables=dict()):
+        Armor.__init__(self, _owner, _variables)
+        self.armor_type = 'grabImmunity'
+        
+    def filterHits(self, _hitbox, _subactions, _forward):
+        if isinstance(_hitbox, hitbox.GrabHitbox) and not _hitbox.ignore_armor:
+            return False
+        else:
+            return _forward(_hitbox, _subactions)
 
 class CrouchCancel(Armor):
     """ Crouch cancelling reduces knockback and hitstun values while crouching. """
     def __init__(self, _owner, _variables=dict()):
         Armor.__init__(self, _owner, _variables=dict())
-        self.armor_type = 'crouch_cancel'
+        self.armor_type = 'crouchCancel'
 
     def filterHits(self, _hitbox, _subactions, _forward):
-        import engine.subaction as subaction
+        from engine.subactions import behavior
         for subact in _subactions:
-            if isinstance(subact, subaction.applyScaledKnockback):
+            if isinstance(subact, behavior.applyScaledKnockback.applyScaledKnockback):
                 subact.base_knockback *= 0.5
                 subact.knockback_growth *= 0.8
-            if isinstance(subact, subaction.applyHitstun):
+            if isinstance(subact, behavior.applyHitstun.applyHitstun):
                 subact.base_knockback *= 0.5
                 subact.knockback_growth *= 0.8
                 subact.base_hitstun *= 0.6
                 subact.hitstun_multiplier *= 0.9
-            if isinstance(subact, subaction.compensateResistance):
+            if isinstance(subact, behavior.compensateResistance.compensateResistance):
                 subact.frames *= 0.5
-            if isinstance(subact, subaction.applyHitstop):
+            if isinstance(subact, behavior.applyHitstop.applyHitstop):
                 subact.pushback = 0
         print(_hitbox)
         print(_subactions)

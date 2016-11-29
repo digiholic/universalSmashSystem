@@ -700,7 +700,7 @@ class HitStun(action.Action):
     def setUp(self, _actor):
         if self.sprite_name=="": self.sprite_name ="hitStun"
         action.Action.setUp(self, _actor)
-        self.tech_cooldown = 5
+        self.tech_cooldown = 0
         if not hasattr(self, 'do_slow_getup'):
             self.do_slow_getup = False
         
@@ -756,7 +756,7 @@ class HitStun(action.Action):
         
     def update(self,_actor):
         action.Action.update(self, _actor)
-        if self.last_frame > 15 and _actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not _actor.grounded:
+        if self.last_frame > 15 and _actor.keyBuffered('shield', 5) and self.tech_cooldown == 0 and not _actor.grounded:
             print('Try tech')
             _actor.tech_window = 12
             self.tech_cooldown = 40
@@ -821,7 +821,7 @@ class Tumble(action.Action):
     def update(self, _actor):
         action.Action.update(self, _actor)
         
-        if _actor.keyBuffered('shield', 1) and self.tech_cooldown == 0 and not _actor.grounded:
+        if _actor.keyBuffered('shield', 5) and self.tech_cooldown == 0 and not _actor.grounded:
             print('Try tech')
             _actor.tech_window = 20
             self.tech_cooldown = 40
@@ -1853,12 +1853,12 @@ class GroundGrab(BaseAttack):
 
     def setUp(self, _actor):
         BaseAttack.setUp(self, _actor)
-        from engine import subaction
+        from engine import subactions
         for hitbox in self.hitboxes.values():
             if not hitbox.owner_on_hit_actions: 
-                if _actor.hasAction('GrabReeling'): hitbox.owner_on_hit_actions.append(subaction.doAction('GrabReeling'))
-                else: hitbox.owner_on_hit_actions.append(subaction.doAction('Grabbing'))
-            if not hitbox.other_on_hit_actions: hitbox.other_on_hit_actions.append(subaction.doAction('Grabbed'))
+                if _actor.hasAction('GrabReeling'): hitbox.owner_on_hit_actions.append(subactions.control.doAction.doAction('GrabReeling'))
+                else: hitbox.owner_on_hit_actions.append(subactions.control.doAction.doAction('Grabbing'))
+            if not hitbox.other_on_hit_actions: hitbox.other_on_hit_actions.append(subactions.control.doAction.doAction('Grabbed'))
 
 class DashGrab(BaseAttack):
     def __init__(self,_length=0):
@@ -1866,12 +1866,12 @@ class DashGrab(BaseAttack):
 
     def setUp(self, _actor):
         BaseAttack.setUp(self, _actor)
-        from engine import subaction
+        from engine import subactions
         for hitbox in self.hitboxes.values():
             if not hitbox.owner_on_hit_actions: 
-                if _actor.hasAction('GrabReeling'): hitbox.owner_on_hit_actions.append(subaction.doAction('GrabReeling'))
-                else: hitbox.owner_on_hit_actions.append(subaction.doAction('Grabbing'))
-            if not hitbox.other_on_hit_actions:  hitbox.other_on_hit_actions.append(subaction.doAction('Grabbed'))
+                if _actor.hasAction('GrabReeling'): hitbox.owner_on_hit_actions.append(subactions.control.doAction.doAction('GrabReeling'))
+                else: hitbox.owner_on_hit_actions.append(subactions.control.doAction.doAction('Grabbing'))
+            if not hitbox.other_on_hit_actions:  hitbox.other_on_hit_actions.append(subactions.control.doAction.doAction('Grabbed'))
 
 class AirGrab(AirAttack):
     def __init__(self, _length=0):
