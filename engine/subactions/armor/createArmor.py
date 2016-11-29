@@ -29,6 +29,10 @@ class createArmor(SubAction):
             armor = engine.hurtbox.Intangibility(_actor,self.armor_vars)
         elif self.armor_type == "cumulative":
             armor = engine.hurtbox.CumulativeArmor(_actor,self.armor_vars)
+        elif self.armor_type == "grabImmunity":
+            armor = engine.hurtbox.GrabImmunity(_actor,self.armor_vars)
+        elif self.armor_type == "crouchCancel":
+            armor = engine.hurtbox.CrouchCancel(_actor,self.armor_vars)
             
         if self.hurtbox is not '' and _action is not None:
             _action.hurtbox[self.hurtbox_name].armor[self.armor_name] = armor
