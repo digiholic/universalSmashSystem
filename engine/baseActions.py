@@ -769,7 +769,7 @@ class HitStun(action.Action):
         self.feet_planted = _actor.grounded
         if self.tech_cooldown > 0: self.tech_cooldown -= 1
         if self.frame == 0:
-            anti_grab = statusEffect.TemporaryHitFilter(_actor,hurtbox.GrabImmunity(_actor), max(10, self.tech_cooldown+5))
+            anti_grab = statusEffect.TemporaryHitFilter(_actor,hurtbox.GrabImmunity(_actor), 10)
             anti_grab.activate()
             (direct,mag) = _actor.getDirectionMagnitude()
             print("direction:", direct)
