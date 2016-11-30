@@ -903,19 +903,13 @@ class Getup(action.Action):
 
 class SlowGetup(action.Action):
     def __init__(self):
-        action.Action.__init__(self, 20)
+        action.Action.__init__(self, 30)
         
     def setUp(self, _actor):
         if self.sprite_name == "": self.sprite_name = "prone"
         action.Action.setUp(self, _actor)
         
-        if self.last_frame < 20: self.last_frame = 20 #slow getups must be this long
-        
-        block = reduce(lambda x, y: y if x is None or y.rect.top <= x.rect.top else x, _actor.checkGround(), None)
-        if not block is None:
-            _actor.change_y = block.change_y
-
-        _actor.posy = _actor.ecb.current_ecb.rect.bottom - _actor.ecb.current_ecb.rect.height/2.0
+        if self.last_frame < 30: self.last_frame = 30 #slow getups must be this long
         _actor.unRotate()
         
     def update(self, _actor):
@@ -1181,12 +1175,12 @@ class Shield(action.Action):
             _actor.doAction('NeutralAction')
         if self.frame == 4:
             if not _actor.keysContain('shield'):
-                if self.new_shield:
+                if self.new_shield and _actor.shield_integrity > 20:
                     _actor.doAction('Parry')
    
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        if not isinstance(_nextAction, ShieldStun) and not isinstance(_nextAction, Parry):
+        if not isinstance(_nextAction, ShieldStun):
             _actor.shield = False
        
     def update(self, _actor):
@@ -1220,7 +1214,7 @@ class ShieldStun(action.Action):
 
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        if not isinstance(_nextAction, Shield) and not isinstance(_nextAction, ShieldStun) and not isinstance(_nextAction, Parry):
+        if not isinstance(_nextAction, Shield) and not isinstance(_nextAction, ShieldStun):
             _actor.shield = False
 
     def stateTransitions(self, _actor):
@@ -1243,12 +1237,25 @@ class Parry(action.Action):
         action.Action.__init__(self, _length)
 
     def setUp(self, _actor):
+        from engine.subactions import control
         if self.sprite_name=="": self.sprite_name="parry"
+        _actor.grabbing = None
+        self.takedown_hitbox = hitbox.ThrowHitbox(_actor, hitbox.HitboxLock(), 
+                                                  {
+                                                   'base_knockback': 10,
+                                                   'knockback_growth': 0,
+                                                   'trajectory': 270,
+                                                   'hitstun_multiplier': 0,
+                                                   'base_hitstun': 15
+                                                  })
+        self.takedown_hitbox.other_on_hit_actions.append(control.setVar.setVar(_source="action", _attr="do_slow_getup", _val=True))
         action.Action.setUp(self, _actor)
 
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
         _actor.shield = False
+        if 'parry_invuln' in _actor.armor:
+            del _actor.armor['parry_invuln']
 
     def stateTransitions(self, _actor):
         action.Action.update(self, _actor)
@@ -1260,8 +1267,14 @@ class Parry(action.Action):
 
     def update(self, _actor):
         action.Action.update(self, _actor)
-        if self.frame > 2:
+        if self.frame == 0:
+            _actor.shield = True
+            _actor.startParry()
+        elif self.frame == 5:
             _actor.shield = False
+        elif self.frame == self.last_frame - 1:
+            self.takedown_hitbox.activate()
+                
         self.frame += 1
 
 class Stunned(action.Action):

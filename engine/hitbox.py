@@ -352,7 +352,7 @@ class ThrowHitbox(Hitbox):
     
     def activate(self):
         Hitbox.activate(self)
-        if (self.owner == self.owner.grabbing.grabbed_by):
+        if (self.owner.grabbing is not None and self.owner == self.owner.grabbing.grabbed_by):
             import engine.subactions as subactions
             hitstun_subaction = subactions.behavior.applyHitstun.applyHitstun(self.damage+self.charge_damage*self.charge,self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
             knockback_subaction = subactions.behavior.applyScaledKnockback.applyScaledKnockback(self.damage+self.charge_damage*self.charge, self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, self.trajectory, self.weight_influence)

@@ -1775,8 +1775,12 @@ class AbstractFighter():
         return True
     
     def startShield(self):
-        """ Creates a shield particle and adds it to your active articles list """
+        """ Creates a shield article and adds it to your active articles list """
         self.articles.append(article.ShieldArticle(settingsManager.createPath("sprites/melee_shield.png"),self))
+
+    def startParry(self):
+        """ Creates a parry article and adds it to your active articles list """
+        self.articles.append(article.ParryArticle(settingsManager.createPath("sprites/melee_shield.png"),self))
                     
 def test():
     fight = AbstractFighter('',0)
