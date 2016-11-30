@@ -728,9 +728,6 @@ class HitStun(action.Action):
                     _actor.ground_elasticity = _actor.stats['hitstun_elasticity']/2
             elif self.last_frame <= 15:
                 _actor.ground_elasticity = 0
-                if _actor.grounded and self.do_slow_getup:
-                    print("Successful jab reset")
-                    _actor.doAction('SlowGetup')
             else:
                 _actor.ground_elasticity = _actor.stats['hitstun_elasticity']
 
@@ -741,7 +738,11 @@ class HitStun(action.Action):
                 else: _actor.doAction('Tumble')
             else:
                 if _actor.grounded:
-                    _actor.doAction('NeutralAction')
+                    if self.do_slow_getup:
+                        print("Successful jab reset")
+                        _actor.doAction('SlowGetup')
+                    else:
+                        _actor.doAction('NeutralAction')
                 else:
                     _actor.landing_lag = _actor.stats['heavy_land_lag']
                     _actor.doAction('Fall')
