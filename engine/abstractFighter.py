@@ -132,7 +132,7 @@ class AbstractFighter():
     
     #Adding a move to the disabled moves list prevents it from activating.
     #If told to switch to it, the fighter will ignore the request.
-    disabled_moves = []
+    disabled_moves = set()
     
     invulnerable = 0
     respawn_invulnerable = 0
@@ -433,6 +433,7 @@ class AbstractFighter():
         self.keys_held = dict()
         self.stats = self.default_stats.copy()
         self.variables = self.default_vars.copy()
+        self.disabled_moves.clear()
     
         # Evironmental Collision Box
         self.ecb = collisionBox.ECB(self)

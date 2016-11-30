@@ -73,6 +73,6 @@
 	</stats>
 	
 	<variables>
-		<sideSpecialUses type="int">1</sideSpecialUses>
+		<!-- Nothing here, but a placeholder so newbies know where to put vars -->
 	</variables>
 </fighter>

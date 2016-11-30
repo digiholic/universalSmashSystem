@@ -9,9 +9,7 @@
 		<sprite_rate>0</sprite_rate>
 
 		<setUp>
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
+			<exec scope="actor">disabled_moves.discard("ForwardSpecial")</exec>
 		</setUp>
 		<frame number="1">
 			<setFrame>1</setFrame>
@@ -135,9 +133,7 @@
 		<sprite>land</sprite>
 		<sprite_rate>3</sprite_rate>
 		<setUp>
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
+			<exec scope="actor">disabled_moves.discard("ForwardSpecial")</exec>
 		</setUp>
 	</Land>
 	
@@ -146,9 +142,7 @@
 		<sprite>land</sprite>
 		<sprite_rate>3</sprite_rate>
 		<setUp>
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
+			<exec scope="actor">disabled_moves.discard("ForwardSpecial")</exec>
 		</setUp>
 	</HelplessLand>
 	
@@ -372,9 +366,7 @@
 		<length>1</length>
 		<sprite>jump</sprite>
 		<setUp>
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
+			<exec scope="actor">disabled_moves.discard("ForwardSpecial")</exec>
 		</setUp>
 	</Tumble>
 	
@@ -383,9 +375,7 @@
 		<sprite>land</sprite>
 		<sprite_rate>2</sprite_rate>
 		<setUp>
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
+			<exec scope="actor">disabled_moves.discard("ForwardSpecial")</exec>
 		</setUp>
 		
 		<frame number="6">
@@ -399,9 +389,7 @@
 		<sprite_rate>2</sprite_rate>
 		
 		<setUp>
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
+			<exec scope="actor">disabled_moves.discard("ForwardSpecial")</exec>
 		</setUp>
 		
 		<frame number="6">
@@ -413,11 +401,6 @@
 		<length>360</length>
 		<sprite>idle</sprite>
 		<sprite_rate>0</sprite_rate>
-		<setUp>
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
-		</setUp>
 	</Respawn>
 	
 	<Stunned>
@@ -463,9 +446,7 @@
 		<sprite_rate>0</sprite_rate>
 
 		<setUp>
-			<setFighterVar var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVar>
+			<exec scope="actor">disabled_moves.discard("ForwardSpecial")</exec>
 		</setUp>
 	</Trapped>
 	
@@ -475,9 +456,7 @@
 		<sprite_rate>0</sprite_rate>
 		
 		<setUp>
-			<setFighterVariable var="sideSpecialUses">
-				<value type="int">1</value>
-			</setFighterVariable>
+			<exec scope="actor">disabled_moves.discard("ForwardSpecial")</exec>
 		</setUp>
 	</Grabbed>
 	
@@ -2278,6 +2257,7 @@
 		<vars>
 			<loopCount type="int">30</loopCount>
 			<charge type="int">0</charge>
+			<isGrounded type="bool">True</isGrounded>
 		</vars>
 		
 		<setUp>
@@ -2320,12 +2300,21 @@
 
 		</setUp>
 		
+		<transitions>
+			<if function="false">
+				<variable source="action">isGrounded</variable>
+				<value type="bool">false</value>
+				<pass>attemptLedge</pass>
+			</if>
+		</transitions>
+		
 		<tearDown>
 			<changeFighterPreferredSpeed>
 				<xSpeed>0</xSpeed>
 				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
 			</changeFighterPreferredSpeed>
 			<removeArmor>chargeArmor</removeArmor>
+			<exec scope="actor">disabled_moves.add("ForwardSpecial")</exec>
 		</tearDown>
 
 		<frame number="before">
@@ -2417,6 +2406,15 @@
 				<pass>go_back</pass>
 			</if>
 			<exec scope="actor">accel(stats['air_control'])</exec>
+
+			<setVar source="action">
+				<variable>isGrounded</variable>
+				<value>
+					<function>
+						<functionName source="actor">isGrounded</functionName>
+					</function>
+				</value>
+			</setVar>
 		</frame>
 
 		<frame number="18">
@@ -2428,6 +2426,10 @@
 			<updateLandingLag>25</updateLandingLag>
 			<doAction>Fall</doAction>
 		</frame>
+
+		<conditional name="attemptLedge">
+			<transitionState>grabLedges</transitionState>
+		</conditional>
 
 		<conditional name="go_back">
 			<setFrame>16</setFrame>
