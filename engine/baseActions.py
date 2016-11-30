@@ -1175,7 +1175,8 @@ class Shield(action.Action):
             _actor.doAction('NeutralAction')
         if self.frame == 4:
             if not _actor.keysContain('shield'):
-                if self.new_shield and _actor.shield_integrity > 20:
+                if self.new_shield:
+                    print(_actor.shield_integrity)
                     _actor.doAction('Parry')
    
     def tearDown(self, _actor, _nextAction):

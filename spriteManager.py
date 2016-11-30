@@ -369,10 +369,10 @@ class RectSprite(Sprite):
         
         self.color = _color  
         
-        self.image = pygame.Surface(_rect.size)
+        self.image = pygame.Surface((max(0,_rect.width), max(0,_rect.height)))
         self.image.fill(self.color)
         
-        self.rect = self.image.get_rect()
+        self.rect = pygame.Rect([0,0], _rect.size)
         self.rect.topleft = _rect.topleft    
         self.bounding_rect = self.getBoundingBox()
         
