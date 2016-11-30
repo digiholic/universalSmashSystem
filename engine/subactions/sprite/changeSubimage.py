@@ -21,8 +21,8 @@ class changeFighterSubimage(SubAction):
         print(_actor,_action,self.index)
         _action.sprite_rate = 0 #sprite_rate has been broken, so we have to ignore it from now on
         #TODO changeSpriteRate subaction
-        if self.relative: _actor.changeSpriteImage(self.index+_actor.sprite.index)
-        else: _actor.changeSpriteImage(self.index)
+        if self.relative: _actor.changeSpriteImage(self.index+_actor.sprite.index, _action.loop)
+        else: _actor.changeSpriteImage(self.index, _action.loop)
         
     def getDisplayName(self):
         return 'Change Subimage: '+str(self.index)

@@ -661,8 +661,8 @@
 				<base_hitstun>20</base_hitstun>
 				<hitstun_growth>2</hitstun_growth>
 				<y_bias>-16</y_bias>
-				<x_draw>-.1</x_draw>
-				<y_draw>-.1</y_draw>
+				<x_multiplier>-.1</x_multiplier>
+				<y_multiplier>-.1</y_multiplier>
 				<onHitOther>test</onHitOther>
 			</createHitbox>
 		</setUp>
@@ -1043,8 +1043,8 @@
 				<damage>1</damage>
                                 <y_bias>-2</y_bias>
 				<hitstun_multiplier>4</hitstun_multiplier>
-				<x_draw>0.05</x_draw>
-				<y_draw>0</y_draw>
+				<x_multiplier>0.05</x_multiplier>
+				<y_multiplier>0</y_multiplier>
 				<base_hitstun>8</base_hitstun>
 			</createHitbox>
 			
@@ -2220,6 +2220,9 @@
 		<sprite_rate>2</sprite_rate>
 		<loop>True</loop>
 		
+		<vars>
+			<angle type="int">90</angle>
+		</vars>
 		<setUp>
 			<createHitbox>
 				<name>flyingHitbox</name>
@@ -2267,6 +2270,218 @@
 		
 	</UpSpecialFlight>
 	
+	<ForwardSpecial>
+		<length>19</length>
+		<sprite>nair</sprite>
+		<sprite_rate>0</sprite_rate>
+		<loop>True</loop>
+		<vars>
+			<loopCount type="int">30</loopCount>
+			<charge type="int">0</charge>
+		</vars>
+		
+		<setUp>
+			<createHitbox type="autolink">
+				<name>loopHitbox</name>
+				<center>0,0</center>
+				<size>44,44</size>
+				<damage>1</damage>
+				<x_bias>6.75</x_bias>
+				<y_bias>.5</y_bias>
+				<x_multiplier>0</x_multiplier>
+				<base_hitstun>12</base_hitstun>
+				<hitstun_multiplier>0</hitstun_multiplier>
+				<transcendence>5</transcendence>
+				<hitlag_multiplier>0.5</hitlag_multiplier>
+			</createHitbox>
+
+			<createHitbox>
+				<name>finalHitbox</name>
+				<center>0,0</center>
+				<size>44,44</size>
+				<damage>6</damage>
+				<base_knockback>4</base_knockback>
+				<knockback_growth>0.15</knockback_growth>
+				<trajectory>300</trajectory>
+				<shield_multiplier>10</shield_multiplier>
+				<charge_damage>0.083333</charge_damage>
+				<charge_base_knockback>0.0416667</charge_base_knockback>
+				<hitlag_multiplier>2</hitlag_multiplier>
+				<!--onHitOther>groundedTopple</onHitOther-->
+				<!--When nesting tags becomes better, uncomment the above and the event it references-->
+			</createHitbox>
+
+			<createArmor>
+				<type>heavy</type>
+				<name>chargeArmor</name>
+				<damageThreshold>999</damageThreshold>
+				<knockbackThreshold>6</knockbackThreshold>
+			</createArmor>
+
+		</setUp>
+		
+		<tearDown>
+			<changeFighterPreferredSpeed>
+				<xSpeed>0</xSpeed>
+				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
+			</changeFighterPreferredSpeed>
+			<removeArmor>chargeArmor</removeArmor>
+		</tearDown>
+
+		<frame number="before">
+			<modifyHurtbox>
+				<center>0,0</center>
+				<size>64,64</size>
+				<fix_rect>bounding_rect</fix_rect>
+			</modifyHurtbox>
+			<changeECB>
+				<offset>0,7</offset>
+				<size>64,78</size>
+			</changeECB>
+			<changeSubimage relative="True">1</changeSubimage>
+		</frame>
+
+		<frame number="0">
+			<changeFighterSpeed>
+				<xSpeed>0</xSpeed>
+				<ySpeed>0</ySpeed>
+			</changeFighterSpeed>
+			<changeFighterPreferredSpeed>
+				<xSpeed>0</xSpeed>
+				<ySpeed>2</ySpeed>
+			</changeFighterPreferredSpeed>
+		</frame>
+
+		<frame number="15">
+			<charge maxCharge="240" chargeDeposit="loopCount" noMask="True" buttonCheck="special">14</charge>
+		</frame>
+
+		<frame number="16">
+			<removeArmor>chargeArmor</removeArmor>
+			<changeFighterSpeed>
+				<xSpeed relative="True">9</xSpeed>
+				<ySpeed>-12</ySpeed>
+			</changeFighterSpeed>
+			<changeFighterPreferredSpeed>
+				<xSpeed relative="True">9</xSpeed>
+				<ySpeed><var from="actor">max_fall_speed</var></ySpeed>
+			</changeFighterPreferredSpeed>
+			<activateHitbox>loopHitbox</activateHitbox>
+		</frame>
+		
+		<frame number="17">
+			<setVar source="action">
+				<variable>charge</variable>
+				<value type="int" relative="True">1</value>
+			</setVar>
+			<ifButton>
+				<button check="keysContain">down</button>
+				<pass>accel_down</pass>
+			</ifButton>
+			<setVar source="action">
+				<variable>dir</variable>
+				<value>
+					<function>
+						<functionName>netDirection</functionName>
+						<args>
+							<_checkDirectionList type="tuple">("left", "right")</_checkDirectionList>
+						</args>
+					</function>
+				</value>
+			</setVar>
+			<if function="==">
+				<variable source="action">dir</variable>
+				<value type="string">left</value>
+				<pass>accel_left</pass>
+			</if>
+			<if function="==">
+				<variable source="action">dir</variable>
+				<value type="string">neutral</value>
+				<pass>accel_neutral</pass>
+			</if>
+			<if function="==">
+				<variable source="action">dir</variable>
+				<value type="string">right</value>
+				<pass>accel_right</pass>
+			</if>
+			<if function="==">
+				<variable source="action">charge</variable>
+				<value>
+					<eval scope="action">(charge//6)*6</eval>
+				</value>
+				<pass>set_loopbox</pass>
+			</if>
+			<if function=">">
+				<variable source="action">loopCount</variable>
+				<value type="int">0</value>
+				<pass>go_back</pass>
+			</if>
+			<exec scope="actor">accel(stats['air_control'])</exec>
+		</frame>
+
+		<frame number="18">
+			<deactivateHitbox>loopHitbox</deactivateHitbox>
+			<activateHitbox>finalHitbox</activateHitbox>
+		</frame>
+
+		<frame number="last">
+			<updateLandingLag>25</updateLandingLag>
+			<doAction>Fall</doAction>
+		</frame>
+
+		<conditional name="go_back">
+			<setFrame>16</setFrame>
+		</conditional>
+
+		<conditional name="accel_down">
+			<changeGravity>2</changeGravity>
+		</conditional>
+
+		<conditional name="accel_left">
+			<changeFighterPreferredSpeed>
+				<xSpeed relative="True">4.5</xSpeed>
+			</changeFighterPreferredSpeed>
+			<setVar source="action">
+				<variable>loopCount</variable>
+				<value><eval scope="action">max(loopCount-3, 0)</eval></value>
+			</setVar>
+		</conditional>
+
+		<conditional name="accel_neutral">
+			<changeFighterPreferredSpeed>
+				<xSpeed relative="True">6.75</xSpeed>
+			</changeFighterPreferredSpeed>
+			<setVar source="action">
+				<variable>loopCount</variable>
+				<value><eval scope="action">max(loopCount-2, 0)</eval></value>
+			</setVar>
+		</conditional>
+
+		<conditional name="accel_right">
+			<changeFighterPreferredSpeed>
+				<xSpeed relative="True">9</xSpeed>
+			</changeFighterPreferredSpeed>
+			<setVar source="action">
+				<variable>loopCount</variable>
+				<value><eval scope="action">max(loopCount-1, 0)</eval></value>
+			</setVar>
+		</conditional>
+
+		<conditional name="set_loopbox">
+			<unlockHitbox>loopHitbox</unlockHitbox>
+		</conditional>
+
+		<!--event name="groundedTopple">
+			<if function="==">
+				<variable source="actor">grounded</variable>
+				<value>True</value>
+				<pass>
+					<doAction>slowGetup</doAction>
+				</pass>
+			</if>
+		</event-->
+	</ForwardSpecial>
+	
 	<GroundGrab>
 		<length>30</length>
 		<sprite>pivot</sprite>
@@ -2309,13 +2524,6 @@
 			<changeSubimage>0</changeSubimage>
 		</frame>
 	</GroundGrab>
-	
-	<ForwardSpecial>
-		<loadCodeAction>
-			<file>hitboxie_actions.py</file>
-			<action>ForwardSpecial</action>
-		</loadCodeAction>
-	</ForwardSpecial>
 	
 	<DashGrab>
 		<length>35</length>

@@ -1054,7 +1054,7 @@ class createHitbox(subaction.SubAction):
         tuple_type = ['center','size']
         float_type = ['damage','base_knockback','knockback_growth','hitsun','damage_multiplier','velocity_multiplier',
                      'weight_influence','shield_multiplier','priority_diff','charge_damage','charge_base_knockback','charge_knockback_growth',
-                     'x_bias','y_bias','x_draw','y_draw','hitlag_multiplier','hitstun_multiplier']
+                     'x_bias','y_bias','x_multiplier','y_multiplier','hitlag_multiplier','hitstun_multiplier']
         int_type = ['trajectory','hp','transcendence','base_hitstun']
         boolean_type = ['ignore_shields', 'ignore_armor']
         hitbox_lock = None
@@ -1133,7 +1133,7 @@ class modifyHitbox(subaction.SubAction):
         tuple_type = ['center','size','color']
         float_type = ['damage','base_knockback','knockback_growth','hitsun','damageMultiplier','velocityMultiplier',
                      'weightInfluence','shieldMultiplier','priorityDiff','charge_damage','charge_base_knockback','charge_knockback_growth',
-                     'x_bias','y_bias','x_draw','y_draw','hitlag_multiplier']
+                     'x_bias','y_bias','x_multiplier','y_multiplier','hitlag_multiplier']
         int_type = ['trajectory','hp','transcendence','base_hitstun','x_offset','y_offset','width','height']
         boolean_type = ['ignore_shields', 'ignore_armor']
         

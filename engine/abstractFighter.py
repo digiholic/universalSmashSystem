@@ -180,7 +180,7 @@ class AbstractFighter():
             The string value of the Node, or the given default if it is not valid
             """
             
-            if self.xml_data:
+            if self.xml_data is not None:
                 if self.xml_data.find(_tag) is not None:
                     if self.xml_data.find(_tag).text is None:
                         return _default

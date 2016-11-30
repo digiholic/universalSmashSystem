@@ -70,6 +70,7 @@ class createArmor(SubAction):
         #these lists let the code know which keys should be which types.
         float_type = ['num_hits', 'damage_threshold', 'knockback_threshold', 'armor_damage_multiplier', 'armor_knockback_multiplier', 'overflow_damage_multiplier', 'overflow_knockback_multiplier']
             
+        hurtbox = ''
         for child in _node:
             tag = child.tag
             val = child.text
@@ -81,12 +82,12 @@ class createArmor(SubAction):
                 name = val
             elif tag == 'hurtbox':
                 hurtbox = val
-            elif tag in tuple_type:
-                variables[tag] = make_tuple(val)
+            #elif tag in tuple_type:
+            #    variables[tag] = make_tuple(val)
             elif tag in float_type:
                 variables[tag] = float(val)
-            elif tag in int_type:
-                variables[tag] = int(val)
+            #elif tag in int_type:
+            #    variables[tag] = int(val)
             else:
                 variables[tag] = val
             

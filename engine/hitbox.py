@@ -44,8 +44,8 @@ class Hitbox(spriteManager.RectSprite):
                        'velocity_multiplier': 1,
                        'x_bias': 0,
                        'y_bias': 0,
-                       'x_draw': 0.1,
-                       'y_draw': 0.1,
+                       'x_multiplier': 1,
+                       'y_multiplier': 1,
                        'hp': 50,
                        'ignore_shields': False,
                        'ignore_armor': False, 
@@ -227,12 +227,16 @@ class AutolinkHitbox(DamageHitbox):
     def getOnHitSubactions(self, _other):
         import engine.subactions as subactions
         if self.article is None:
-            velocity = math.sqrt((self.owner.change_x+self.x_bias) ** 2 + (self.owner.change_y+self.y_bias) ** 2)
-            angle = -math.atan2((self.owner.change_y+self.y_bias), (self.owner.change_x+self.x_bias))*180/math.pi
+            x_vel = self.x_multiplier*self.owner.change_x+self.x_bias*self.owner.facing
+            y_vel = self.y_multiplier*self.owner.change_y+self.y_bias
+            velocity = math.sqrt(x_vel ** 2 + y_vel ** 2)
+            angle = -math.atan2(y_vel, x_vel)*180/math.pi
             angle = self.owner.getForwardWithOffset(self.owner.facing*(angle+self.trajectory))
         elif hasattr(self.article, 'change_x') and hasattr(self.article, 'change_y'):
-            velocity = math.sqrt((self.article.change_x+self.x_bias)**2 + (self.article.change_y+self.y_bias)**2)
-            angle = -math.atan2((self.article.change_y+self.y_bias), (self.article.change_x+self.x_bias))*180/math.pi
+            x_vel = self.x_multiplier*self.article.change_x+self.x_bias*self.article.facing
+            y_vel = self.y_multiplier*self.article.change_y+self.y_bias
+            velocity = math.sqrt(x_vel**2 + y_vel**2)
+            angle = -math.atan2(y_vel, x_vel)*180/math.pi
             angle = getForwardWithOffset(self.article.facing*(angle+self.trajectory), self.article)
 
         hitstun_subaction = subactions.behavior.applyHitstun.applyHitstun(self.damage+self.charge_damage*self.charge, velocity*self.velocity_multiplier+self.base_knockback+self.charge_base_knockback*self.charge, self.knockback_growth+self.charge_knockback_growth*self.charge, angle, self.weight_influence, self.base_hitstun, self.hitstun_multiplier)
@@ -243,7 +247,7 @@ class AutolinkHitbox(DamageHitbox):
         return [hitstun_subaction,damage_subaction,knockback_subaction,compensation_subaction,hitstop_subaction]+self.other_on_hit_actions
 
     def getTrajectory(self):
-        if self.owner.change_y+self.y_bias == 0 and self.owner.change_x + self.x_bias == 0:
+        if self.owner.change_y*self.y_multiplier+self.y_bias == 0 and self.owner.change_x*self.x_multiplier + self.x_bias == 0:
             return self.trajectory + 90
         else: 
             return self.trajectory-math.atan2(self.y_bias, self.x_bias)*180/math.pi
@@ -281,8 +285,8 @@ class FunnelHitbox(DamageHitbox):
             x_diff = self.article.rect.centerx - _other.owner.posx
             y_diff = self.article.rect.centery - _other.owner.posy
 
-        x_vel = self.x_bias+self.x_draw*x_diff
-        y_vel = self.y_bias+self.y_draw*y_diff
+        x_vel = self.x_bias+self.x_multiplier*x_diff
+        y_vel = self.y_bias+self.y_multiplier*y_diff
         velocity = math.hypot(x_vel, y_vel)
         angle = self.owner.getForwardWithOffset(self.owner.facing*(math.degrees(-math.atan2(y_vel,x_vel))+self.trajectory))
 
@@ -383,8 +387,8 @@ class ReflectorHitbox(InertHitbox):
                     else:
                         x_diff = self.article.rect.centerx - _other.article.rect.centerx
                         y_diff = self.article.rect.centery - _other.article.rect.centery
-                    x_vel = self.x_bias+self.x_draw*x_diff
-                    y_vel = self.y_bias+self.y_draw*y_diff
+                    x_vel = self.x_bias+self.x_multiplier*x_diff
+                    y_vel = self.y_bias+self.y_multiplier*y_diff
                     reflect_deviation = math.degrees(math.atan2(-y_vel,x_vel))+self.owner.getForwardWithOffset(self.trajectory)*(1 if _other.article.facing == -1 else -1)
                     reflect_angle = math.degrees(math.atan2(_other.article.change_y, _other.article.change_x*(-1 if _other.article.facing == -1 else 1)))+180+reflect_deviation
                     reflect_speed = math.hypot(_other.article.change_x, _other.article.change_y)
