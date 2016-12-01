@@ -1,4 +1,53 @@
 <actionList>
+	<TestEverything>
+		<length>1</length>
+		<sprite>idle</sprite>
+		<sprite_rate>0</sprite_rate>
+
+		<setUp>
+			<!-- The non-params -->
+			<removeMask />
+			<nextFrame />
+			<flip />
+			<unrotate />
+			<!-- The numLines -->
+			<changeGravity>2.0</changeGravity>
+			<dealDamage>5</dealDamage>
+			<setInvulnerability>10</setInvulnerability>
+			<updateLandingLag>5</updateLandingLag>
+			<changeFighterSpeed>
+				<xSpeed>0</xSpeed>
+				<ySpeed>0</ySpeed>
+			</changeFighterSpeed>
+			<changeFighterPreferredSpeed>
+				<xSpeed>0</xSpeed>
+				<ySpeed>0</ySpeed>
+			</changeFighterPreferredSpeed>
+			<shiftPosition>
+				<xPos>0</xPos>
+				<yPos>0</yPos>
+			</shiftPosition>
+			<shiftSprite>
+				<xPos>0</xPos>
+				<yPos>0</yPos>
+			</shiftSprite>
+			
+			<createMask />
+			
+			<applyHitstop>
+				<frames>10</frames>
+				<pushback>5.0</pushback>
+				<trajectory>80</trajectory>
+			</applyHitstop>
+			
+			<changeECB>
+				<size>0,0</size>
+				<offset>0,0</offset>
+			</changeECB>
+			
+		</setUp>
+	</TestEverything>
+	
 	<event name="test">
 		<print>Test Global Event</print>
 	</event>
@@ -2392,5 +2441,4 @@
 			<changeSubimage relative="True">1</changeSubimage>
 		</frame>
 	</Pummel>
-	
 </actionList>
