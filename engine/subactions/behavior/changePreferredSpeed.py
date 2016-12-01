@@ -70,3 +70,6 @@ class changeFighterPreferredSpeed(SubAction):
             y_elem.text = str(self.speed_y)
             elem.append(y_elem)
         return elem
+    
+    def getDataLine(self, _parent):
+        return dataSelector.XYDataLine(_parent, _parent.interior, 'Change Preferred Speed: ', self, 'speed_x', 'speed_y', 'x_relative')

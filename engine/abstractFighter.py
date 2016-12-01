@@ -283,7 +283,10 @@ class AbstractFighter():
         
         self.stats = self.default_stats.copy()
         self.variables = self.default_vars.copy()
-    
+        
+        self.status_effects = list()
+        self.data_log = None
+        
         self.game_state = None
         
     def saveFighter(self,_path=None):
@@ -385,7 +388,6 @@ class AbstractFighter():
         self.key_bindings.linkObject(self)
         
         self.articles = list()
-        self.status_effects = list()
     
         if self.sound_path:
             settingsManager.getSfx().addSoundsFromDirectory(os.path.join(self.base_dir,self.sound_path), self.name)

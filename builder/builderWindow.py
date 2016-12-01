@@ -1077,6 +1077,7 @@ class dataPanel(BuilderPanel):
             data.pack_forget()
         self.scroll_frame.pack(fill=BOTH,expand=TRUE)
         for data in self.data_list:
+            data.update()
             data.pack(fill=X) #the data line will hide itself if it's not expanded
             
     def changeFighter(self, *_args):

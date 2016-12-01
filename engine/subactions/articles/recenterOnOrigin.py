@@ -12,3 +12,6 @@ class recenterOnOrigin(SubAction):
         
     def getDisplayName(self):
         return 'Recenter On Origin'
+    
+    def getDataLine(self, _parent):
+        return SubAction.getDataLine(self, _parent)

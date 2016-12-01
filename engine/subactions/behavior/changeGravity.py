@@ -1,4 +1,5 @@
 from engine.subaction import *
+import builder.dataSelector as dataSelector
 
 class changeGravity(SubAction):
     subact_group = 'Behavior'
@@ -20,3 +21,6 @@ class changeGravity(SubAction):
     
     def getDisplayName(self):
         return 'Change Gravity Multiplier to '+self.new_gravity
+
+    def getDataLine(self, _parent):
+        return dataSelector.NumLine(_parent, _parent.interior, 'Change Gravity: ', self, 'new_gravity')

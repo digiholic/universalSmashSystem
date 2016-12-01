@@ -49,3 +49,6 @@ class shiftFighterPosition(SubAction):
             elem.append(y_elem)
             
         return elem
+    
+    def getDataLine(self, _parent):
+        return dataSelector.XYDataLine(_parent, _parent.interior, 'Shift Position: ', self, 'new_x', 'new_y', 'x_relative', 'y_relative')

@@ -14,3 +14,5 @@ class deactivateSelf(SubAction):
     def getDisplayName(self):
         return 'Deactivate Self'
     
+    def getDataLine(self, _parent):
+        return SubAction.getDataLine(self, _parent)
