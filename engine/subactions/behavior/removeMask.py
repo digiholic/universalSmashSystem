@@ -13,3 +13,6 @@ class removeMask(SubAction):
         
     def getDisplayName(self):
         return 'Remove Color Mask'
+
+    def getDataLine(self, _parent):
+        return SubAction.getDataLine(self, _parent)

@@ -7,6 +7,7 @@ import builder.subactionSelector as subactionSelector
 import xml.etree.ElementTree as ElementTree
 from ast import literal_eval as make_tuple
 import settingsManager
+import builder.dataSelector as dataSelector
 
 """
 TODO -
@@ -106,13 +107,15 @@ class SubactionFactory():
             self.initialize()
         if self.subaction_dict.has_key(_name):
             return self.subaction_dict[_name]
+        else: return None
         
     def getName(self,_subaction):
         if not self.initialized:
             self.initialize()
         if self.name_dict.has_key(_subaction):
             return self.name_dict[_subaction]
-    
+        else: return None
+        
     def buildFromXml(self,_name,_node):
         if hasattr(self.getSubaction(_name), 'customBuildFromXml'):
             return self.getSubaction(_name).customBuildFromXml(_node)
@@ -482,6 +485,9 @@ class SubAction():
                 
     def getDisplayName(self):
         return ''
+    
+    def getDataLine(self,_parent):
+        return dataSelector.InfoLine(_parent,_parent.interior,self.getDisplayName())
     
     def getPropertiesPanel(self,_root):
         return subactionSelector.BasePropertiesFrame(_root,self)

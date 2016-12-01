@@ -209,33 +209,33 @@ class ActionLoader():
         if action_xml.find('setUp') is not None:
             for subact in action_xml.find('setUp'):
                 print('loading setup actions',subaction.subactionFactory, subact, subact.tag)
-                if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                if subaction.subactionFactory.getSubaction(subact.tag):
                     set_up_actions.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
-                    
+        print('loading set up actions',set_up_actions)         
         #Load the tearDown subactions
         tear_down_actions = []
         if action_xml.find('tearDown') is not None:
             for subact in action_xml.find('tearDown'):
-                if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                if subaction.subactionFactory.getSubaction(subact.tag): #Subactions string to class dict
                     tear_down_actions.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
         
         #Load the stateTransition subactions
         state_transition_actions = []
         if action_xml.find('transitions') is not None:
             for subact in action_xml.find('transitions'):
-                if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                if subaction.subactionFactory.getSubaction(subact.tag): #Subactions string to class dict
                     state_transition_actions.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
         
         actions_on_clank = []
         if action_xml.find('onClank') is not None:
             for subact in action_xml.find('onClank'):
-                if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                if subaction.subactionFactory.getSubaction(subact.tag): #Subactions string to class dict
                     actions_on_clank.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
 
         actions_on_prevail = []
         if action_xml.find('onPrevail') is not None:
             for subact in action_xml.find('onPrevail'):
-                if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                if subaction.subactionFactory.getSubaction(subact.tag): #Subactions string to class dict
                     actions_on_prevail.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
         
         #Load all of the frames
@@ -247,17 +247,17 @@ class ActionLoader():
         for frame in frames:
             if frame.attrib['number'] == 'before':
                 for subact in frame:
-                    if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                    if subaction.subactionFactory.getSubaction(subact.tag): #Subactions string to class dict
                         subactions_before_frame.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
                 frames.remove(frame)
             if frame.attrib['number'] == 'after':
                 for subact in frame:
-                    if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                    if subaction.subactionFactory.getSubaction(subact.tag): #Subactions string to class dict
                         subactions_after_frame.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
                 frames.remove(frame)
             if frame.attrib['number'] == 'last':
                 for subact in frame:
-                    if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                    if subaction.subactionFactory.getSubaction(subact.tag): #Subactions string to class dict
                         subactions_at_last_frame.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
                 frames.remove(frame)
 
@@ -270,7 +270,7 @@ class ActionLoader():
                 for frame in frames:
                     if frame.attrib['number'] == str(frame_number): #If this frame matches the number we're on
                         for subact in frame:
-                            if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                            if subaction.subactionFactory.getSubaction(subact.tag): #Subactions string to class dict
                                 sublist.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
                                 
                         frames.remove(frame) #Done with this one
@@ -281,7 +281,7 @@ class ActionLoader():
         for frame in frames:
             if "," in frame.attrib['number'] and frame.attrib['number'].replace(",","").replace(" ","").isdigit():
                 for subact in frame:
-                    if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                    if subaction.subactionFactory.getSubaction(subact.tag): #Subactions string to class dict
                         for frame_num in make_tuple(frame.attrib['number']):
                             subactions_at_frame[frame_num].append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
                 frames.remove(frame)
@@ -290,7 +290,7 @@ class ActionLoader():
             if "-" in frame.attrib['number'] and frame.attrib['number'].replace("-","").replace(" ","").isdigit():
                 ends = frame.attrib['number'].split("-")
                 for subact in frame:
-                    if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                    if subaction.subactionFactory.getSubaction(subact.tag): #Subactions string to class dict
                         for frame_num in range(int(ends[0]), int(ends[1])+1):
                             subactions_at_frame[frame_num].append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
                 frames.remove(frame)
@@ -300,7 +300,7 @@ class ActionLoader():
         for cond in conds:
             conditional_list = []
             for subact in cond:
-                if subaction.subactionFactory.subaction_dict.has_key(subact.tag): #Subactions string to class dict
+                if subaction.subactionFactory.getSubaction(subact.tag): #Subactions string to class dict
                     conditional_list.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
             event_actions[cond.attrib['name']] = conditional_list
         
@@ -310,7 +310,7 @@ class ActionLoader():
         for event in events:
             event_list = []
             for subact in event:
-                if subaction.subactionFactory.subaction_dict.has_key(subact.tag):
+                if subaction.subactionFactory.getSubaction(subact.tag):
                     event_list.append(subaction.subactionFactory.buildFromXml(subact.tag,subact))
             event_actions[event.attrib['name']] = event_list
             

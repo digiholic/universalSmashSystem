@@ -39,6 +39,13 @@ class dataLine(Frame):
         self.target_object = None
         self.var_name = None
         
+        #Use this to validate number fields
+        self.validateFloat = (_parent.register(self.validateFloat),
+                '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+        
+        self.validateInt = (_parent.register(self.validateInt),
+                '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+        
     def changebg(self,*args):
         self.config(bg=self.bg.get())
         self.label.config(bg=self.bg.get())
@@ -62,7 +69,39 @@ class dataLine(Frame):
             #need to update the changed actions
             self.root.getChangedActions()[self.root.action_name] = self.target_object
             self.root.root.updateViewer()
+    
+    """Validate method for numbers"""
+    def validateFloat(self, action, index, value_if_allowed,
+        prior_value, text, validation_type, trigger_type, widget_name):
+        allowed_chars = '0123456789.-+'
+        # action=1 -> insert
+        if(action=='1'):
+            if text in allowed_chars:
+                try:
+                    float(value_if_allowed)
+                    return True
+                except ValueError:
+                    return False
+            else:
+                return False
+        else:
+            return True
              
+    def validateInt(self, action, index, value_if_allowed,
+        prior_value, text, validation_type, trigger_type, widget_name):
+        allowed_chars = '0123456789-+'
+        # action=1 -> insert
+        if(action=='1'):
+            if text in allowed_chars:
+                try:
+                    int(value_if_allowed)
+                    return True
+                except ValueError:
+                    return False
+            else:
+                return False
+        else:
+            return True    
 class dataSelector(dataLine):
     """
     Data Selector is a dataLine that can be selected. These will usually open up a config window.
@@ -94,6 +133,17 @@ class dataSelector(dataLine):
         self.bg.set('white')
         self.root.selected = None
 
+class InfoLine(dataLine):
+    def __init__(self,_root,_parent,_name):
+        dataLine.__init__(self, _root, _parent, _name)
+        
+    def packChildren(self):
+        dataLine.packChildren(self)
+        
+    def update(self):
+        self.packChildren()
+
+
 class StringLine(dataLine):
     def __init__(self,_root,_parent,_name,_target_object,_varname):
         dataLine.__init__(self, _root, _parent, _name)
@@ -103,8 +153,6 @@ class StringLine(dataLine):
         
         self.string_data = StringVar()
         self.string_entry = Entry(self,textvariable=self.string_data)
-        
-        self.update()
         
         self.string_data.trace('w', self.changeVariable)
         
@@ -137,8 +185,6 @@ class BoolLine(dataLine):
         self.bool_data = IntVar()
         self.bool_button = Checkbutton(self,text=_name,variable=self.bool_data,anchor="w")
         self.bool_button.config(bg=self.bg.get())
-        
-        self.update()
         
         self.bool_data.trace('w', self.changeVariable)
         
@@ -173,8 +219,6 @@ class ImageLine(dataLine):
         self.image_entry = Entry(self,textvariable=self.image_data)
         self.image_button = Button(self,text='...',command=self.loadImage)
         self.image_entry.config(state=DISABLED)
-        
-        self.update()
         
         self.image_data.trace('w', self.changeVariable)
         
@@ -215,8 +259,6 @@ class DirLine(dataLine):
         self.dir_button = Button(self,text='...',command=self.loadDir)
         self.dir_entry.config(state=DISABLED)
         
-        self.update()
-        
         self.dir_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
@@ -256,8 +298,6 @@ class ModuleLine(dataLine):
         self.module_button = Button(self,text='...',command=self.loadImage)
         self.module_entry.config(state=DISABLED)
         
-        self.update()
-        
         self.module_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
@@ -286,24 +326,25 @@ class ModuleLine(dataLine):
             self.module_data.set(os.path.relpath(modulefile.name, self.target_object.base_dir))
 
 class NumLine(dataLine):
-    def __init__(self,_root,_parent,_name,_target_object,_varname):
+    def __init__(self,_root,_parent,_name,_target_object,_varname,_int=False):
         dataLine.__init__(self, _root, _parent, _name)
         
         self.target_object = _target_object
         self.var_name = _varname
+        self.int_only = _int
         
         self.num_data = StringVar()
-        vcmd = (_parent.register(self.validate),
-                '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
-        self.num_entry = Entry(self,textvariable=self.num_data,validate='key',validatecommand=vcmd)
-        
-        self.update()
+        validate = self.validateFloat
+        if _int: validate = self.validateInt
+        self.num_entry = Entry(self,textvariable=self.num_data,validate='key',validatecommand=validate)
         
         self.num_data.trace('w', self.changeVariable)
         
     def changeVariable(self,*args):
         if self.target_object:
-            setattr(self.target_object,self.var_name,self.num_data.get())
+            if self.int_only: num = int(self.num_data.get())
+            else: num = float(self.num_data.get())
+            setattr(self.target_object,self.var_name,num)
         dataLine.changeVariable(self)
         
     def packChildren(self):
@@ -319,21 +360,6 @@ class NumLine(dataLine):
             self.num_entry.config(state=DISABLED)
         
         self.packChildren()
-
-    def validate(self, action, index, value_if_allowed,
-        prior_value, text, validation_type, trigger_type, widget_name):
-        # action=1 -> insert
-        if(action=='1'):
-            if text in '0123456789.-+':
-                try:
-                    float(value_if_allowed)
-                    return True
-                except ValueError:
-                    return False
-            else:
-                return False
-        else:
-            return True
 
 class SpriteLine(dataLine):
     def __init__(self,_root,_parent,_name,_target_object,_varname):
@@ -354,8 +380,6 @@ class SpriteLine(dataLine):
         self.sprite_data.trace('w', self.changeVariable)
         
         self.sprite_data.set(getattr(self.target_object, self.var_name))
-            
-        self.update()
         
     def changeVariable(self,*args):
         if self.target_object:
@@ -385,8 +409,6 @@ class ActionLine(dataSelector):
         
         self.edit_button = Button(self,text='Edit',command=self.editAction)
         self.delete_button = Button(self,text='Delete',command=self.deleteAction)
-        
-        self.update()
     
     def select(self):
         dataSelector.select(self)    
@@ -418,7 +440,6 @@ class NewActionLine(dataLine):
         self.button = Button(self,text='Create New Action...',bg="aquamarine",command=self.addAction)
         self.config(bg="aquamarine")
         self.label.config(bg="aquamarine")
-        self.update()
             
     def update(self):
         self.packChildren()
@@ -434,7 +455,6 @@ class CloseActionLine(dataLine):
         dataLine.__init__(self, _root, _parent, 'Close Tab')
         
         self.button = Button(self,text='Close Tab',bg="light coral",command=self.closeTab)
-        self.update()
         
     def update(self):
         self.packChildren()
@@ -458,7 +478,6 @@ class GroupLine(dataLine):
         self.toggle_button = Button(self,text='- '+_name,command=self.toggleCollapse,anchor="w")
         
         self.childElements = []
-        self.update()
         
     def update(self):
         if self.expanded: #If we're expanded
@@ -477,6 +496,7 @@ class GroupLine(dataLine):
         dataLine.pack(self, cnf=cnf, **kw)
         if self.expanded:
             for child in self.childElements:
+                child.update()
                 child.pack(cnf=cnf,**kw)
         
     def packChildren(self):
@@ -494,7 +514,6 @@ class NewSubactionLine(dataLine):
         self.button = Button(self,text='Add Subaction...',bg="aquamarine",command=self.addSubaction)
         self.config(bg="aquamarine")
         self.label.config(bg="aquamarine")
-        self.update()
             
     def update(self):
         self.packChildren()
@@ -505,55 +524,112 @@ class NewSubactionLine(dataLine):
     def addSubaction(self,*args):
         #self.root.addAction()
         pass
-        
-""""""""""""""""""""""""""""""""""""        
-class SubactionSelector(dataSelector):
-    """
-    The Data Selector for subactions.
-    """
-    def __init__(self,_root,_subaction):
-        dataSelector.__init__(self, _root,_subaction.getDisplayName())
-        
-        self.subaction = _subaction
-        
-        self.delete_image = PhotoImage(file=settingsManager.createPath('sprites/icons/red-x.gif'))
-        self.confirm_button = PhotoImage(file=settingsManager.createPath('sprites/icons/green-check.gif'))
-        self.delete_button = Button(self,image=self.delete_image,command=self.deleteSubaction)
-        
-        self.delete_button.pack(side=RIGHT)
-            
-    def deleteSubaction(self,*_args):
-        action = self.root.getAction()
-        groupMap = {"Current Frame": action.actions_at_frame[self.root.getFrame()],
-                    "Set Up": action.set_up_actions,
-                    "Tear Down": action.tear_down_actions,
-                    "Transitions": action.state_transition_actions,
-                    "Before Frames": action.actions_before_frame,
-                    "After Frames": action.actions_after_frame,
-                    "Last Frame": action.actions_at_last_frame}
-        groupMap[self.root.group].remove(self.data)
-        self.pack_forget()
-        self.root.root.actionModified()
 
-    def updateName(self,_string=None):
-        dataSelector.updateName(self, _string)
-        self.display_name.set(self.data.getDisplayName())
-
-class PropertySelector(dataSelector):
-    """
-    The data selector for properties, such as fighter stats
-    """
-    def __init__(self, _root, _owner, _fieldname, _displayName, _vartype):
-        dataSelector.__init__(self, _root)
-
-        self.owner = _owner
-        self.fieldname = _fieldname
-        self.display_name = _displayName
-        self.vartype = _vartype
+class XYDataLine(dataLine):
+    def __init__(self,_root,_parent,_name,_target_object,_xvarname,_yvarname,_xrelvarname=None,_yrelvarname=None):
+        dataLine.__init__(self, _root, _parent, _name)
         
-        self.updateName()
+        self.target_object = _target_object
         
-    def updateName(self, _string=None):
-        fielddata = ''
-        if hasattr(self.owner, self.fieldname): fielddata = getattr(self.owner, self.fieldname)
-        self.display_name.set(self.display_name+': '+ str(fielddata))
+        self.x_var_name = _xvarname
+        self.y_var_name = _yvarname
+        self.x_rel_var_name = _xrelvarname
+        self.y_rel_var_name = _yrelvarname
+        
+        self.enable_label = Label(self,text='Edit',bg=self.bg.get())
+        self.relative_label = Label(self,text='Relative?',bg=self.bg.get())
+        
+        self.x_enabled_data = IntVar()
+        self.x_enabled_button = Checkbutton(self,variable=self.x_enabled_data,anchor="w",bg=self.bg.get())
+        
+        self.x_label = Label(self,text='X: ',bg=self.bg.get())
+        self.x_data = StringVar()
+        self.x_entry = Entry(self,textvariable=self.x_data,validate='key',validatecommand=self.validateInt)
+        
+        if self.x_rel_var_name:
+            self.x_relative_data = IntVar()
+            self.x_relative_button = Checkbutton(self,variable=self.x_relative_data,anchor="w",bg=self.bg.get())
+        
+        self.y_enabled_data = IntVar()
+        self.y_enabled_button = Checkbutton(self,variable=self.y_enabled_data,anchor="w",bg=self.bg.get())
+        
+        self.y_label = Label(self,text='Y: ',bg=self.bg.get())
+        self.y_data = StringVar()
+        self.y_entry = Entry(self,textvariable=self.y_data,validate='key',validatecommand=self.validateInt)
+        
+        if self.y_rel_var_name:
+            self.y_relative_data = IntVar()
+            self.y_relative_button = Checkbutton(self,variable=self.x_relative_data,anchor="w",bg=self.bg.get())
+        
+        self.x_data.set(getattr(self.target_object, self.x_var_name))
+        self.y_data.set(getattr(self.target_object, self.y_var_name))
+        
+        self.x_data.trace('w', self.changeVariable)
+        self.y_data.trace('w', self.changeVariable)
+        if self.x_rel_var_name:
+            self.x_relative_data.trace('w',self.changeVariable)
+        if self.y_rel_var_name:
+            self.y_relative_data.trace('w',self.changeVariable)
+        
+        self.x_enabled_data.trace('w', self.changeEnabled)
+        self.y_enabled_data.trace('w', self.changeEnabled)
+        
+    def changeVariable(self, *args):
+        if hasattr(self.target_object, self.x_var_name):
+            if bool(self.x_enabled_data.get()): #if it's disabled, set it to None
+                setattr(self.target_object, self.x_var_name, None)
+            else:
+                setattr(self.target_object, self.x_var_name, self.x_data.get())
+        if hasattr(self.target_object, self.y_var_name):
+            if bool(self.y_enabled_data.get()):
+                setattr(self.target_object, self.y_var_name, None)
+            else:
+                setattr(self.target_object, self.y_var_name, self.y_data.get())
+        if self.x_rel_var_name and hasattr(self.target_object, self.x_rel_var_name):
+            setattr(self.target_object, self.x_rel_var_name, self.x_relative_data.get())
+        if self.y_rel_var_name and hasattr(self.target_object, self.y_rel_var_name):
+            setattr(self.target_object, self.y_rel_var_name, self.x_relative_data.get())
+        
+    def packChildren(self):
+        self.label.grid(row=0,column=0,columnspan=2)
+        self.enable_label.grid(row=0,column=2)
+        if self.x_rel_var_name or self.y_rel_var_name:
+            self.relative_label.grid(row=0,column=3)
+        #x row
+        self.x_label.grid(row=1,column=0)
+        self.x_entry.grid(row=1,column=1)
+        self.x_enabled_button.grid(row=1,column=2)
+        if self.x_rel_var_name:
+            self.x_relative_button.grid(row=1,column=3)
+        
+        #y row
+        self.y_label.grid(row=2,column=0)
+        self.y_entry.grid(row=2,column=1)
+        self.y_enabled_button.grid(row=2,column=2)
+        if self.y_rel_var_name:
+            self.y_relative_button.grid(row=2,column=3)
+    
+    def update(self):
+        self.changeEnabled()
+        self.packChildren()
+        
+    def changeEnabled(self,*args):
+        if bool(self.x_enabled_data.get()):
+            self.x_entry.config(state=NORMAL)
+            if self.x_rel_var_name:
+                self.x_relative_button.config(state=NORMAL)
+        else:
+            self.x_entry.config(state=DISABLED)
+            if self.x_rel_var_name:
+                self.x_relative_button.config(state=DISABLED)
+        
+        if bool(self.y_enabled_data.get()):
+            self.y_entry.config(state=NORMAL)
+            if self.y_rel_var_name:
+                self.y_relative_button.config(state=NORMAL)
+        else:
+            self.y_entry.config(state=DISABLED)
+            if self.y_rel_var_name:
+                self.y_relative_button.config(state=DISABLED)
+                
+        self.changeVariable()

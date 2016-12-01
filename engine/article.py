@@ -119,7 +119,7 @@ class DynamicArticle():
         if self.frame == self.last_frame:
             self.deactivate()
         self.frame += 1 
-
+        
     def updateAnimationOnly(self, *args): #Ignores actor
         from engine.subactions.sprite import changeSubimage,changeSprite,shiftSprite
         from engine.subactions.hitbox import activateHitbox, deactivateHitbox, modifyHitbox
@@ -152,7 +152,7 @@ class DynamicArticle():
                 self.sprite.getImageAtIndex((self.frame // self.sprite_rate)-1)
             else:
                 self.sprite.getImageAtIndex(self.frame // self.sprite_rate)
-                
+            
         for hitbox in self.hitboxes.values():
             hitbox.update()
                 
@@ -186,7 +186,8 @@ class DynamicArticle():
         for act in self.tear_down_actions:
             act.execute(self,self)
         self.ecb = None
-        self.sprite.kill()
+        if self.sprite: #This makes deactivating a deactive article safe
+            self.sprite.kill()
         self.sprite = None
         if self in self.owner.articles:
             self.owner.articles.remove(self)
@@ -604,6 +605,7 @@ class ShieldArticle(Article):
         self.frame += 1       
    
     def draw(self,_screen,_offset,_scale):
+        print(self)
         return Article.draw(self, _screen, _offset, _scale)
 
 class ParryArticle(Article):

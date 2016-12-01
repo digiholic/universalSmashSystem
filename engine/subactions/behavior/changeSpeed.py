@@ -1,4 +1,5 @@
 from engine.subaction import *
+import builder.dataSelector as dataSelector
 
 # ChangeFighterSpeed changes the speed directly, with no acceleration/deceleration.
 class changeFighterSpeed(SubAction):
@@ -84,3 +85,6 @@ class changeFighterSpeed(SubAction):
             elem.append(y_elem)
             
         return elem
+
+    def getDataLine(self, _parent):
+        return dataSelector.XYDataLine(_parent, _parent.interior, 'Change Speed: ', self, 'speed_x', 'speed_y', 'x_relative', 'y_relative')

@@ -19,3 +19,6 @@ class dealDamage(SubAction):
 
     def getDisplayName(self):
         return 'Deal ' + self.damage + ' damage'
+
+    def getDataLine(self, _parent):
+        return dataSelector.NumLine(_parent, _parent.interior, 'Deal Damage: ', self, 'damage')

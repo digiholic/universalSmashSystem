@@ -24,3 +24,6 @@ class updateLandingLag(SubAction):
         if self.reset: start_str = 'Reset '
         else: start_str = 'Update '
         return start_str+'Landing Lag: ' + str(self.new_lag)
+    
+    def getDataLine(self, _parent):
+        return dataSelector.NumLine(_parent, _parent.interior, 'Set Landing Lag: ', self, 'new_lag',_int=True)

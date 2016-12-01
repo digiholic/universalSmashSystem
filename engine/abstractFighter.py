@@ -288,7 +288,10 @@ class AbstractFighter():
         
         self.stats = self.default_stats.copy()
         self.variables = self.default_vars.copy()
-    
+        
+        self.status_effects = list()
+        self.data_log = None
+        
         self.game_state = None
         
     def saveFighter(self,_path=None):
@@ -397,7 +400,6 @@ class AbstractFighter():
         self.key_bindings.linkObject(self)
         
         self.articles = list()
-        self.status_effects = list()
     
         if self.sound_path:
             settingsManager.getSfx().addSoundsFromDirectory(os.path.join(self.base_dir,self.sound_path), self.name)
@@ -449,11 +451,8 @@ class AbstractFighter():
         
         self.trail_color = settingsManager.getSetting('playerColor' + str(self.player_num))
         
-        #facing right = 1, left = -1
         self.facing = 1
-        if self.sprite_flip == 'left': self.facing = -1
-        
-        print('sprite flip',self.sprite_flip)
+        if self.sprite.flip == 'left': self.sprite.flipX()
         self.unRotate()   
         
         self.current_action = self.getAction('NeutralAction')
@@ -1345,8 +1344,13 @@ class AbstractFighter():
                 smoothed_x += working_x
                 smoothed_y += working_y
         else:
-            smoothed_x = -self.keys_held['left']+self.keys_held['right']
-            smoothed_y = -self.keys_held['up']+self.keys_held['down']
+            left = self.keys_held['left'] if self.keys_held.has_key('left') else 0
+            right = self.keys_held['right'] if self.keys_held.has_key('right') else 0
+            up = self.keys_held['up'] if self.keys_held.has_key('up') else 0
+            down = self.keys_held['down'] if self.keys_held.has_key('down') else 0
+            smoothed_x = -left+right
+            smoothed_y = -up+down
+            
         final_magnitude = numpy.linalg.norm([smoothed_x, smoothed_y])
         if final_magnitude > _maxMagnitude:
             smoothed_x /= final_magnitude/_maxMagnitude

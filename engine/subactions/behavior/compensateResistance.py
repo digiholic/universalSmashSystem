@@ -26,3 +26,6 @@ class compensateResistance(SubAction):
 
     def getDisplayName(self):
         return 'Compensate for ' + self.frames + ' frames of gravity and air resistance'
+    
+    def getDataLine(self, _parent):
+        return dataSelector.NumLine(_parent, _parent.interior, 'Compensate gravity/air resistance frames: ', self, 'new_gravity')

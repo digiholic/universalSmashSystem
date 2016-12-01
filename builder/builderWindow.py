@@ -1077,6 +1077,7 @@ class dataPanel(BuilderPanel):
             data.pack_forget()
         self.scroll_frame.pack(fill=BOTH,expand=TRUE)
         for data in self.data_list:
+            data.update()
             data.pack(fill=X) #the data line will hide itself if it's not expanded
             
     def changeFighter(self, *_args):
@@ -1138,7 +1139,6 @@ class ActionListPanel(dataPanel):
                 self.act_list.append(name)
         
         for action in self.act_list:
-            #Once we have action selector lines, replace this
             dataLine = dataSelector.ActionLine(self,self.interior,action,fighter)
             self.data_list.append(dataLine)
         self.data_list.append(dataSelector.NewActionLine(self,self.interior,fighter))
@@ -1186,44 +1186,44 @@ class ActionPanel(dataPanel):
         #Action Groups
         setUpGroup = dataSelector.GroupLine(self,self.interior,'Set Up')
         for subact in self.action.set_up_actions:
-            setUpGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+            setUpGroup.childElements.append(subact.getDataLine(self))
         setUpGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
         self.data_list.append(setUpGroup)
         
         tearDownGroup = dataSelector.GroupLine(self,self.interior,'Tear Down')
         for subact in self.action.tear_down_actions:
-            tearDownGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+            tearDownGroup.childElements.append(subact.getDataLine(self))
         tearDownGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
         self.data_list.append(tearDownGroup)
         
         transitionsGroup = dataSelector.GroupLine(self,self.interior,'Transitions')
         for subact in self.action.set_up_actions:
-            transitionsGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+            transitionsGroup.childElements.append(subact.getDataLine(self))
         transitionsGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
         self.data_list.append(transitionsGroup)
         
         beforeGroup = dataSelector.GroupLine(self,self.interior,'Before Each Frame')
         for subact in self.action.actions_before_frame:
-            beforeGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+            beforeGroup.childElements.append(subact.getDataLine(self))
         beforeGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
         self.data_list.append(beforeGroup)
         
         afterGroup = dataSelector.GroupLine(self,self.interior,'After Each Frame')
         for subact in self.action.actions_after_frame:
-            afterGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+            afterGroup.childElements.append(subact.getDataLine(self))
         afterGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
         self.data_list.append(afterGroup)
         
         lastGroup = dataSelector.GroupLine(self,self.interior,'Last Frame')
         for subact in self.action.actions_at_last_frame:
-            lastGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+            lastGroup.childElements.append(subact.getDataLine(self))
         lastGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
         self.data_list.append(lastGroup)
         
         for name,event in self.action.events.iteritems():
             eventGroup = dataSelector.GroupLine(self,self.interior,'Event: '+name)
             for subact in event:
-                eventGroup.childElements.append(dataSelector.StringLine(self,self.interior,subact.getDisplayName(),None,''))
+                eventGroup.childElements.append(subact.getDataLine(self))
             eventGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
             self.data_list.append(eventGroup)
         
