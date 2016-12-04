@@ -200,33 +200,31 @@ class KeyboardController(BaseController):
         BaseController.__init__(self, _bindings, _windows)
         self.type = 'Keyboard'
         self.state = self.init_state_dict
-        self.movement_hor = 0
-        self.movement_vert = 0
-        self.action_hor = 0
-        self.action_vert = 0
+        self.smoothed = self.init_state_dict
 
     def flushInputs(self):
         BaseController.flushInputs(self)
         self.state = self.init_state_dict
-        self.move_hor = 0
-        self.move_vert = 0
-        self.act_hor = 0
-        self.act_vert = 0
+        self.smoothed = self.init_state_dict
 
     def pumpBuffer(self):
         BaseController.pumpBuffer(self)
-        if abs(self.state['moveHor']) > abs(self.move_hor): 
-            self.move_hor = addFrom(self.move_hor, -self.windows['onDecay'])
-        else: self.move_hor = addFrom(self.move_hor, -self.windows['offDecay'])
-        if abs(self.state['moveVert']) > abs(self.move_vert): 
-            self.move_vert = addFrom(self.move_vert, -self.windows['onDecay'])
-        else: self.move_vert = addFrom(self.move_vert, -self.windows['offDecay'])
-        if abs(self.state['actHor']) > abs(self.act_hor): 
-            self.act_hor = addFrom(self.act_hor, -self.windows['onDecay'])
-        else: self.act_hor = addFrom(self.act_hor, -self.windows['offDecay'])
-        if abs(self.state['actVert']) > abs(self.act_vert): 
-            self.act_vert = addFrom(self.act_vert, -self.windows['onDecay'])
-        else: self.act_vert = addFrom(self.act_vert, -self.windows['offDecay'])
+        self.decay('moveHor')
+        self.decay('moveVert')
+        self.decay('actHor')
+        self.decay('actVert')
+        self.pushPrimitive('moveHor', self.smoothed['moveHor'])
+        self.pushPrimitive('moveVert', self.smoothed['moveVert'])
+        self.pushPrimitive('actHor', self.smoothed['actHor'])
+        self.pushPrimitive('actVert', self.smoothed['actVert'])
+
+    def decay(self, _primitive):
+        if abs(self.state[_primitive]) > abs(self.smoothed[_primitive]):
+            if math.copysign(self.state[_primitive], self.smoothed[_primitive]) == self.state[_primitive]):
+                self.smoothed[_primitive] = addFrom(self.smoothed[_primitive], -self.windows['onDecay'])
+            else:
+                self.smoothed[_primitive] = addFrom(self.smoothed[_primitive], -self.windows['againstDecay'])
+        else: self.smoothed[_primitive] = addFrom(self.smoothed[_primitive[, -self.windows['offDecay'])
     
     def pushInput(self,_event):
         if _event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
@@ -237,11 +235,19 @@ class KeyboardController(BaseController):
             if _event.type == pygame.KEYDOWN:
                 for key in k[0]:
                     self.state[key[0]] = key[1]
-                    self.pushPrimitive(key[0], key[1])
+                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
+                        self.smoothed[key[0]] = max(-1, min(1, self.smoothed[key[0]] + key[1]))
+                        self.pushPrimitive(key[0], self.smoothed[key[0]]
+                    else: 
+                        self.pushPrimitive(key[0], key[1])
             elif _event.type == pygame.KEYUP:
                 for key in k[1]:
                     self.state[key[0]] = key[1]
-                    self.pushPrimitive(key[0], key[1])
+                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
+                        self.smoothed[key[0]] = max(-1, min(1, self.smoothed[key[0]] + key[1]))
+                        self.pushPrimitive(key[0], self.smoothed[key[0]]
+                    else: 
+                        self.pushPrimitive(key[0], key[1])
 
     init_state_dict = {
         'moveHor': 0,
