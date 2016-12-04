@@ -1,94 +1,75 @@
 import settingsManager
 import pygame
 import re
+from global_functions import *
 
 class BaseController():
-    init_dict = {
-                 'MoveHor': '(-1, \'MoveHor\', 0)',
-                 'MoveVert': '(-1, \'MoveVert\', 0)',
-                 'ActHor': '(-1, \'ActHor\', 0)',
-                 'ActVert': '(-1, \'ActVert\', 0)',
-                 'attack': '(-1, \'attack\', 0)',
-                 'special': '(-1, \'special\', 0)',
-                 'jump': '(-1, \'jump\', 0)',
-                 'shield': '(-1, \'shield\', 0)',
-                 'taunt': '(-1, \'taunt\', 0)'
-                }
-    current_dict = {
-                    'MoveHor': 0,
-                    'MoveVert': 0,
-                    'ActHor': 0,
-                    'ActVert': 0,
-                    'attack': 0,
-                    'special': 0,
-                    'jump': 0,
-                    'shield': 0,
-                    'taunt': 0
-                   }
     def __init__(self,_bindings,_windows):
         self.key_bindings = _bindings
         self.windows = _windows
         self.type = 'Base'
-        self.current_state = self.current_dict
+        self.current = self.init_dict
         self.initials = self.init_dict
         self.buffer = list()
-        self.action_num = 0
-        self.frame_num = 0
+        self.frame_count = 0
     
     def flushInputs(self):
-        self.current_state = self.current_dict
+        self.current = self.init_dict
         self.initials = self.init_dict
         self.buffer = list()
-        self.action_num = 0
-        self.frame_num = 0
+        self.frame_count = 0
 
-    # Please call every time a primitive input state gets modified
+    def thresholdBucket(self,_primitive,_state):
+        if _state < -self.windows[_primitive + 'Threshold6']: return -6
+        elif _state < -self.windows[_primitive + 'Threshold5']: return -5
+        elif _state < -self.windows[_primitive + 'Threshold4']: return -4
+        elif _state < -self.windows[_primitive + 'Threshold3']: return -3
+        elif _state < -self.windows[_primitive + 'Threshold2']: return -2
+        elif _state < -self.windows[_primitive + 'Threshold1']: return -1
+        elif _state <= self.windows[_primitive + 'Threshold1']: return 0
+        elif _state <= self.windows[_primitive + 'Threshold2']: return 1
+        elif _state <= self.windows[_primitive + 'Threshold3']: return 2
+        elif _state <= self.windows[_primitive + 'Threshold4']: return 3
+        elif _state <= self.windows[_primitive + 'Threshold5']: return 4
+        elif _state <= self.windows[_primitive + 'Threshold6']: return 5
+        else: return 6
+
+    # Please call every time a primitive input state changes
     def pushPrimitive(self,_primitive,_state):
-        last_state = self.current_state[_primitive]
-        if _primitive in ('MoveHor', 'MoveVert', 'ActHor', 'ActVert'):
-            if _state < -self.windows['tap_threshold']: state_num = -4
-            elif _state < -self.windows['press_threshold']: state_num = -3
-            elif _state < -self.windows['tilt_threshold']: state_num = -2
-            elif _state < -self.windows['nudge_threshold']: state_num = -1
-            elif _state <= self.windows['nudge_threshold']: state_num = 0
-            elif _state <= self.windows['tilt_threshold']: state_num = 1
-            elif _state <= self.windows['press_threshold']: state_num = 2
-            elif _state <= self.windows['tap_threshold']: state_num = 3
-            else: state_num = 4
-            
-            if last_state < -self.windows['tap_threshold']: last_num = -4
-            elif last_state < -self.windows['press_threshold']: last_num = -3
-            elif last_state < -self.windows['tilt_threshold']: last_num = -2
-            elif last_state < -self.windows['nudge_threshold']: last_num = -1
-            elif last_state <= self.windows['nudge_threshold']: last_num = 0
-            elif last_state <= self.windows['tilt_threshold']: last_num = 1
-            elif last_state <= self.windows['press_threshold']: last_num = 2
-            elif last_state <= self.windows['tap_threshold']: last_num = 3
-            else: last_num = 4
+        if _primitive in ('moveHor', 'moveVert', 'actHor', 'actVert'):
+            state_num = self.thresholdBucket(_primitive, _state)
         elif _primitive in ('attack', 'special', 'jump', 'shield', 'taunt'):
-            if _state > 0: state_num = 1
-            else: state_num = 0
+            state_num = 1 if _state > self.windows[_primitive+'Threshold'] else 0
+        else:
+            print("Primitive input does not exist: " + _primitive)
+            return
+        if state_num != self.current[_primitive]:
+            self.buffer.append(self.states[(_primitive, state_num)])
+            self.current[_primitive] = state_num
 
-            if last_state > 0: last_num = 1
-            else: last_num = 0
-
-        if state_num != last_num:
-            self.buffer.append(0, (action_num, str((self.action_num, _primitive, state_num))))
-        self.current_state[_primitive] = _state
-        self.action_num += 1
-
-    def pumpInput(self):
-        self.buffer.append(0, (action_num, str((self.action_num, 'frame', self.frame_num))))
-        self.frame_num += 1
-        self.action_num += 1
+    def pumpBuffer(self):
+        if 'bufferLength' in self.windows and self.frame_count > self.windows['bufferLength']:
+            buffer_portion = list()
+            try:
+                while len(self.buffer) > 0:
+                    checkval = self.buffer.pop(0)
+                    buffer_portion.append(checkval)
+                    if checkval == ' ': break
+            except IndexError:
+                pass
+            else:
+                self.frame_count -= 1
+            self.initials = self.getInit(buffer_portion, self.initials)
+        self.buffer.append(' ')
+        self.frame_count += 1
 
     def pushInput(self,_event,_outputOnRelease=True):
         raise NotImplementedError
     
-    def getKeyAction(self,_key):
+    def getKeyaction(self,_key):
         return self.key_bindings.get(_key)
 
-    def getActionKeys(self,_action):
+    def getactionKeys(self,_action):
         list_of_bindings = []
         for binding,name in self.key_bindings.items():
             if name == _action:
@@ -99,60 +80,182 @@ class BaseController():
         return self.windows.get(_key)
 
     def getState(self,_key):
-        return self.current_state.get(_key)
+        return self.current.get(_key)
+
+    def getInit(self,_removedBufferPortion,_init):
+        actions_to_find = {'moveHor', 'moveVert', 'actHor', 'actVert', 'attack', 'special', 'jump', 'shield', 'taunt'}
+        initials = _init.copy()
+        for entry in _removedBufferPortion:
+            if entry in self.codes:
+                vals = self.codes[entry]
+                if vals[0] in actions_to_find:
+                    initials[vals[0]] = vals[1]
+                    actions_to_find.remove(vals[0])
+            if len(actions_to_find) == 0: break
+        return initials
         
-    def parseBuffer(self,_compiledRegexList):
-        buffer_list = list()
-        for primitive_change in reversed(self.buffer):
-            buffer_list.append(primitive_change[1])
-        for primitive in self.initials:
-            buffer_list.append(self.initials[primitive])
-        search_str = ''.join(buffer_list)
-        matches = {rex: rex.search(search_str) for rex in _compiledRegexList}
-        matches = filter(None, matches)
-        if len(matches) == 0:
-            return -1 # No match
-        earliest_regex = min(matches, key=lambda k: matches[k].start())
-        # Find the most recent action referenced by the match, and remove earlier actions
-        check_string = matches[earliest_regex].group()
+    def parseBuffer(self,_compiledRegexList,_from=None,_to=None):
+        # Prune the buffer string so it meets our specifications 
+        # The most recent is at the end, and the oldest is at the beginning
+        buffer_list = self.buffer.copy()
+        after_portion = list()
+        to_count = 0
+        if _to > 0:
+            while len(buffer_list) > 0:
+                if self.buffer_list.pop() == ' ': to_count += 1
+                if to_count >= _to: break
+        from_count = self.frame_count
+        if _from < self.frame_count
+            while len(buffer_list) > 0:
+                check_val = self.buffer_list.pop(0)
+                after_portion.append(check_val)
+                if check_val == ' ': from_count -= 1
+                if _from >= from_count: break
+
+        # Construct the working initials
+        working_initials = self.getInit(after_portion, self.initials)
+
+        # Construct the matching string and match
+        checkstring = ''.join(working_initials.values()) + '\n' + ''.join(buffer_list)
+        matches = filter(None, map(lambda regex: regex.search(checkstring), _compiledRegexList))
+        if len(matches) == 0: return -1 # No match
         
-        act_string = check_string[1:check_string.find(',')-1]
+        # Modify buffer to remove the applicable match
+        longest_match = max(matches, key=lambda match: match.end())
+        max_len = longest_match.end() - 10 - len(after_portion)
+        removed_portion = list()
         try:
-            act_num = int(act_string)
-            for index in range(len(self.buffer)):
-                reverse_index = len(self.buffer)-1-index
-                if act_num > self.buffer[reverse_index][0]:
-                    init_dict[self.buffer[reverse_index][1][1]] = self.buffer[reverse_index][1]
-                    del self.buffer[reverse_index]
-                else:
-                    break # Going on won't do us any good
-        except ValueError:
-            print("Buffer not pruned, as an action number could not be determined. This most likely means the regex match didn't align to an input tuple. ")
+            for i in range(0, max_len):
+                check_val = self.buffer.pop(0)
+                removed_portion.append(check_val)
+                if checkval == ' ': self.frame_count -= 1
+        except IndexError:
             pass
-        return _compiledRegexList.index(earliest_regex)
+        self.initials = self.getInit(removed_portion, self.initials)
+        return _compiledRegexList.index(longest_match.re)
+
+    init_dict = {
+        'moveHor': 'G',
+        'moveVert': 'T',
+        'actHor': 'g',
+        'actVert': 't',
+        'attack': '0',
+        'special': '2',
+        'jump': '4',
+        'shield': '6',
+        'taunt': '8'
+    }
+
+    # Static dictionaries for lookups: 
+    states = {
+        ('attack', 0): '0', ('attack', 1): '1', ('special', 0): '2', ('special', 1): '3', ('jump', 0): '4', 
+        ('jump', 1): '5', ('shield', 0): '6', ('shield', 1): '7', ('taunt', 0): '8', ('taunt', 1): '9', 
+
+        ('moveHor', -6): 'A', ('moveHor', -5): 'B', ('moveHor', -4): 'C', ('moveHor', -3): 'D', 
+        ('moveHor', -2): 'E', ('moveHor', -1): 'F', ('moveHor', 0): 'G', ('moveHor', 1): 'H', ('moveHor', 2): 'I', 
+        ('moveHor', 3): 'J', ('moveHor', 4): 'K', ('moveHor', 5): 'L', ('moveHor', 6): 'M', 
+
+        ('moveVert', -6): 'N', ('moveVert', -5): 'O', ('moveVert', -4): 'P', ('moveVert', -3): 'Q', 
+        ('moveVert', -2): 'R', ('moveVert', -1): 'S', ('moveVert', 0): 'T', ('moveVert', 1): 'U', ('moveVert', 2): 'V', 
+        ('moveVert', 3): 'W', ('moveVert', 4): 'X', ('moveVert', 5): 'Y', ('moveVert', 6): 'Z', 
+
+        ('actHor', -6): 'a', ('actHor', -5): 'b', ('actHor', -4): 'c', ('actHor', -3): 'd', 
+        ('actHor', -2): 'e', ('actHor', -1): 'f', ('actHor', 0): 'g', ('actHor', 1): 'h', ('actHor', 2): 'i', 
+        ('actHor', 3): 'j', ('actHor', 4): 'k', ('actHor', 5): 'l', ('actHor', 6): 'm', 
+
+        ('actVert', -6): 'n', ('actVert', -5): 'o', ('actVert', -4): 'p', ('actVert', -3): 'q', 
+
+        ('actVert', -2): 'r', ('actVert', -1): 's', ('actVert', 0): 't', ('actVert', 1): 'u', ('actVert', 2): 'v', 
+        ('actVert', 3): 'w', ('actVert', 4): 'x', ('actVert', 5): 'y', ('actVert', 6): 'z', 
+
+        ('frame', 0): ' ', ('preframe', 0): '\n' #Just for completeness; this won't actually be looked up
+    }
+
+    codes = {
+        '0': ('attack', 0), '1': ('attack', 1), '2': ('special', 0), '3': ('special', 1), '4': ('jump', 0), 
+        '5': ('jump', 1), '6': ('shield', 0), '7': ('shield', 1), '8': ('taunt', 0), '9': ('taunt', 1), 
+
+        'A': ('moveHor', -6), 'B': ('moveHor', -5), 'C': ('moveHor', -4), 'D': ('moveHor', -3), 
+        'E': ('moveHor', -2), 'F': ('moveHor', -1), 'G': ('moveHor', 0), 'H': ('moveHor', 1), 'I': ('moveHor', 2), 
+        'J': ('moveHor', 3), 'K': ('moveHor', 4), 'L': ('moveHor', 5), 'M': ('moveHor', 6), 
+
+        'N': ('moveVert', -6), 'O': ('moveVert', -5), 'P': ('moveVert', -4), 'Q': ('moveVert', -3), 
+        'R': ('moveVert', -2), 'S': ('moveVert', -1), 'T': ('moveVert', 0), 'U': ('moveVert', 1), 'V': ('moveVert', 2), 
+        'W': ('moveVert', 3), 'X': ('moveVert', 4), 'Y': ('moveVert', 5), 'Z': ('moveVert', 6), 
+
+        'a': ('actHor', -6), 'b': ('actHor', -5), 'c': ('actHor', -4), 'd': ('actHor', -3), 
+        'e': ('actHor', -2), 'f': ('actHor', -1), 'g': ('actHor', 0), 'h': ('actHor', 1), 'i': ('actHor', 2), 
+        'j': ('actHor', 3), 'k': ('actHor', 4), 'l': ('actHor', 5), 'm': ('actHor', 6), 
+
+        'n': ('actVert', -6), 'o': ('actVert', -5), 'p': ('actVert', -4), 'q': ('actVert', -3), 
+        'r': ('actVert', -2), 's': ('actVert', -1), 't': ('actVert', 0), 'u': ('actVert', 1), 'v': ('actVert', 2), 
+        'w': ('actVert', 3), 'x': ('actVert', 4), 'y': ('actVert', 5), 'z': ('actVert', 6), 
+
+        ' ': ('frame', 0), '\n': ('preframe', 0) #Just for completeness; this won't actually be looked up
+    }
     
-class Controller(BaseController):
-    def __init__(self,_bindings,_timing_window = dict()):
-        BaseController.__init__(self, _bindings)
-        self.timing_window = _timing_window
-        print(self.timing_window)
+# This controller has no analog sticks, so it smooths its directional inputs. 
+class KeyboardController(BaseController):
+    def __init__(self,_bindings,_windows):
+        BaseController.__init__(self, _bindings, _windows)
+        self.type = 'Keyboard'
+        self.state = self.init_state_dict
+        self.movement_hor = 0
+        self.movement_vert = 0
+        self.action_hor = 0
+        self.action_vert = 0
+
+    def flushInputs(self):
+        BaseController.flushInputs(self)
+        self.state = self.init_state_dict
+        self.move_hor = 0
+        self.move_vert = 0
+        self.act_hor = 0
+        self.act_vert = 0
+
+    def pumpBuffer(self):
+        BaseController.pumpBuffer(self)
+        if abs(self.state['moveHor']) > abs(self.move_hor): 
+            self.move_hor = addFrom(self.move_hor, -self.windows['onDecay'])
+        else: self.move_hor = addFrom(self.move_hor, -self.windows['offDecay'])
+        if abs(self.state['moveVert']) > abs(self.move_vert): 
+            self.move_vert = addFrom(self.move_vert, -self.windows['onDecay'])
+        else: self.move_vert = addFrom(self.move_vert, -self.windows['offDecay'])
+        if abs(self.state['actHor']) > abs(self.act_hor): 
+            self.act_hor = addFrom(self.act_hor, -self.windows['onDecay'])
+        else: self.act_hor = addFrom(self.act_hor, -self.windows['offDecay'])
+        if abs(self.state['actVert']) > abs(self.act_vert): 
+            self.act_vert = addFrom(self.act_vert, -self.windows['onDecay'])
+        else: self.act_vert = addFrom(self.act_vert, -self.windows['offDecay'])
     
-    def getInputs(self,_event,_push = True, _outputOnRelease = True):
+    def pushInput(self,_event):
         if _event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
             return None
-        output = True
+        return_key = None
         k = self.key_bindings.get(_event.key)
         if k:
             if _event.type == pygame.KEYDOWN:
-                if _push: self.keys_to_pass.append(k)
-                if k not in self.keys_held: self.keys_held.append(k)
+                for key in k[0]:
+                    self.state[key[0]] = key[1]
+                    self.pushPrimitive(key[0], key[1])
             elif _event.type == pygame.KEYUP:
-                output = _outputOnRelease and output
-                if _push: self.keys_to_release.append(k)
-                if k in self.keys_held: self.keys_held.remove(k)
-        if output: return k
-        return None
+                for key in k[1]:
+                    self.state[key[0]] = key[1]
+                    self.pushPrimitive(key[0], key[1])
+
+    init_state_dict = {
+        'moveHor': 0,
+        'moveVert': 0,
+        'actHor': 0,
+        'actVert': 0,
+        'attack': 0,
+        'special': 0,
+        'jump': 0,
+        'shield': 0,
+        'taunt': 0
+    }
     
+# This controller has analog sticks. 
 class GamepadController(BaseController):
     def __init__(self,_padBindings):
         BaseController.__init__(self, _padBindings)
@@ -198,8 +301,8 @@ class GamepadController(BaseController):
         if output: return k
         return None
     
-    def getKeysForAction(self,_action):
-        return self.key_bindings.getKeysForAction(_action)
+    def getKeysForaction(self,_action):
+        return self.key_bindings.getKeysForaction(_action)
     
 class PadBindings():
     def __init__(self,_joyName,_joystick,_axisBindings,_buttonBindings):
@@ -228,7 +331,7 @@ class PadBindings():
             return None
         return self.button_bindings.get(_button)
     
-    def getKeysForAction(self,_action):
+    def getKeysForaction(self,_action):
         list_of_bindings = []
         for button,name in self.button_bindings.items():
             if name == _action:
@@ -279,4 +382,3 @@ class InputBuffer():
     """
     def append(self,_key):
         self.working_buff.append(_key)
-

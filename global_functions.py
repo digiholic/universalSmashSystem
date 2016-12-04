@@ -43,3 +43,47 @@ def hasClass(_object, _class):
         The name of the class we are checking for
     """
     return _class in list(map(lambda x :x.__name__,_object.__class__.__bases__)) + [_object.__class__.__name__]
+
+def subtractTowards(_value, _difference, _base=0):
+    """ Returns the median value of _base, _value, and _value-_difference. The behavior of this 
+    function is not immediately obvious from this description, but think of it as a subtraction that 
+    acts differently if the resulting difference passes or goes away from the base value. 
+
+    Parameters
+    -----------
+    _value : float
+        The value to be subtracted from. 
+    _difference : float
+        The value to subtract. 
+    _base : float
+        The value against which to compare the difference. 
+    """
+    if _difference == 0: return _value
+    sign = math.copysign(1, _difference)
+    if sign*(_value-_difference-_base) > 0: return _value-_difference
+    else: return min(_base, _value, key=lambda k: sign*k) 
+    """
+    if _difference > 0:
+        if _base < _value-_difference: return _value-_difference
+        else: return min(_base, _value)
+    elif _difference < 0:
+        if _base > _value-_difference: return _value-_difference
+        else return max(_base, _value)
+    else: 
+        return _value
+    """
+    
+def addFrom(_value, _amount, _base=0):
+    """ Returns the sum of _amount multiplied by the sign of (_value - _base) to _value. 
+    
+    Parameters
+    -----------
+    _value : float
+        The value to be added to/subtracted from. 
+    _difference : float
+        The value to add/subtract. Add to go away from _base, subtract to approach it. 
+    _base : float
+        The value to approach or recede from. 
+    """
+    sign = math.copysign(1, _value-_base)
+    return _amount*sign + _value
