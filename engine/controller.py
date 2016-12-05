@@ -3,6 +3,23 @@ import pygame
 import re
 from global_functions import *
 
+# This is the base class of Project TUSSLE's controller abstraction. Each controller is reduced to 
+# ten "primitive inputs", four that can take on integer values from -6 to 6, and six that can take 
+# on integer values from 0 to 3. These are the values that are returned in state queries, and the 
+# values that are parsed over in buffer queries. 
+#
+# Applicable windows:
+#
+#     (.+)Threshold[1-6]: Analog input thresholds. The parenthesized group is the name of the 
+#         input. This is used as the threshold of bucket division when divvying up the named 
+#         analog input. Not all threshold windows need to exist for a particular input, but any 
+#         particular bucket is possible only if the corresponding window is set. This means that 
+#         an analog input with no thresholds set can only return zero. 
+#     
+#     bufferLength: The maximum frame length of the buffer. Smaller buffers may (and probably 
+#         will) be queried if applicable, but automatic buffer pruning ensures that the buffer can 
+#         be no longer than the max buffer length. 
+
 class BaseController():
     def __init__(self,_bindings,_windows):
         self.key_bindings = _bindings
@@ -201,8 +218,28 @@ class BaseController():
 
         ' ': ('frame', 0), '\n': ('preframe', 0) #Just for completeness; this won't actually be looked up
     }
-    
-# Base controller, but with widgets to make stuff easier
+
+# This is a class for abstractions of physical controllers, derived from the base controller 
+# class. On top of the base controller, it provides input addition, input smoothing, and input 
+# decay, all of which may be helpful with physical controllers. 
+#
+# Applicable windows:
+#     
+#     (.+)((OffDecay)|(OnDecay)|(AgainstDecay)): The per-frame decays. The first parenthesized 
+#         group is the name of the primitive to be decayed, and the second parenthesized group 
+#         is the type of decay. Each turn, the primitive input is added to or subtracted from to 
+#         make it closer to zero. This value is OnDecay if the input is in the same direction as 
+#         the currently held input and stronger, OffDecay if the input is zero or in the same 
+#         direction but weaker, or againstDecay if the input is in the opposite direction and 
+#         weaker. (If the input is in the opposite direction and stronger, the current state 
+#         immediately changes to that of the input.) All three must be set for a particular 
+#         primitive to cause the input to decay. 
+#     
+#     (.+)(.+)Smoothed: Whether a given input is smoothed. The first parenthesized group is the 
+#         name of the input, while the second is the name of the primitive. Smoothing happens if 
+#         and only if this entry is in the windows dict; the value it maps to is irrelevant. 
+#         
+
 class PhysicalController(BaseController):
     def __init__(self,_bindings,_windows):
         BaseController.__init__(self, _bindings, _windows)
@@ -217,11 +254,12 @@ class PhysicalController(BaseController):
     def pumpBuffer(self):
         BaseController.pumpBuffer(self)
         for primitive in smoothed:
-            if all(lambda k: primitive+k+'Decay' in self.windows for k in ['Off', 'On', 'Against'])
             self.decay(primitive)
 
     def decay(self, _primitive):
-        if self.inputs[_primitive] == 0: 
+        if not all(lambda k: _primitive+k+'Decay' in self.windows for k in ['Off', 'On', 'Against']):
+            self.smoothed[_primitive] = self.inputs[_primitive]
+        elif self.inputs[_primitive] == 0: 
             # Case one: current input is zero
             self.smoothed[_primitive] = addFrom(self.smoothed[_primitive], -self.windows[_primitive+'OffDecay'])
         elif self.smoothed[_primitive] == 0:
@@ -304,7 +342,7 @@ class KeyboardController(PhysicalController):
     
 class GamepadController(PhysicalController):
     def __init__(self,_padBindings,_windows):
-        BaseController.__init__(self, _padBindings)
+        PhysicalController.__init__(self, _padBindings,_windows)
         self.type = 'Gamepad'
 
     def pushInput(self,_event):
