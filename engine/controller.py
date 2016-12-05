@@ -10,12 +10,14 @@ class BaseController():
         self.type = 'Base'
         self.current = self.init_dict
         self.initials = self.init_dict
+        self.state = self.init_state_dict
         self.buffer = list()
         self.frame_count = 0
     
     def flushInputs(self):
         self.current = self.init_dict
         self.initials = self.init_dict
+        self.state = self.init_state_dict
         self.buffer = list()
         self.frame_count = 0
 
@@ -63,8 +65,21 @@ class BaseController():
         self.buffer.append(' ')
         self.frame_count += 1
 
-    def pushInput(self,_event,_outputOnRelease=True):
-        raise NotImplementedError
+    def pushInput(self,_event):
+        if _event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
+            return None
+        k = self.key_bindings.get(_event.key)
+        if k:
+            if _event.type == pygame.KEYDOWN:
+                for key in k[0]:
+                    self.state[key[0]] = key[1]
+                    self.pushPrimitive(key[0], key[1])
+                return k
+            elif _event.type == pygame.KEYUP:
+                for key in k[1]:
+                    self.state[key[0]] = key[1]
+                    self.pushPrimitive(key[0], key[1])
+        else: return None
     
     def getKeyaction(self,_key):
         return self.key_bindings.get(_key)
@@ -80,7 +95,7 @@ class BaseController():
         return self.windows.get(_key)
 
     def getState(self,_key):
-        return self.current.get(_key)
+        raise self.state.get(_key)
 
     def getInit(self,_removedBufferPortion,_init):
         actions_to_find = {'moveHor', 'moveVert', 'actHor', 'actVert', 'attack', 'special', 'jump', 'shield', 'taunt'}
@@ -146,6 +161,18 @@ class BaseController():
         'taunt': '8'
     }
 
+    init_state_dict = {
+        'moveHor': 0,
+        'moveVert': 0,
+        'actHor': 0,
+        'actVert': 0,
+        'attack': 0,
+        'special': 0,
+        'jump': 0,
+        'shield': 0,
+        'taunt': 0
+    }
+
     # Static dictionaries for lookups: 
     states = {
         ('attack', 0): '0', ('attack', 1): '1', ('special', 0): '2', ('special', 1): '3', ('jump', 0): '4', 
@@ -194,18 +221,17 @@ class BaseController():
         ' ': ('frame', 0), '\n': ('preframe', 0) #Just for completeness; this won't actually be looked up
     }
     
-# This controller has no analog sticks, so it smooths its directional inputs. 
+# This controller class is for keyboards. 
+# To help players perform angled inputs, this controller smooths directional inputs automatically. 
 class KeyboardController(BaseController):
     def __init__(self,_bindings,_windows):
         BaseController.__init__(self, _bindings, _windows)
         self.type = 'Keyboard'
-        self.state = self.init_state_dict
-        self.smoothed = self.init_state_dict
+        self.inputted = self.init_state_dict
 
     def flushInputs(self):
         BaseController.flushInputs(self)
-        self.state = self.init_state_dict
-        self.smoothed = self.init_state_dict
+        self.inputted = self.init_state_dict
 
     def pumpBuffer(self):
         BaseController.pumpBuffer(self)
@@ -213,41 +239,186 @@ class KeyboardController(BaseController):
         self.decay('moveVert')
         self.decay('actHor')
         self.decay('actVert')
-        self.pushPrimitive('moveHor', self.smoothed['moveHor'])
-        self.pushPrimitive('moveVert', self.smoothed['moveVert'])
-        self.pushPrimitive('actHor', self.smoothed['actHor'])
-        self.pushPrimitive('actVert', self.smoothed['actVert'])
 
     def decay(self, _primitive):
-        if abs(self.state[_primitive]) > abs(self.smoothed[_primitive]):
-            if math.copysign(self.state[_primitive], self.smoothed[_primitive]) == self.state[_primitive]):
-                self.smoothed[_primitive] = addFrom(self.smoothed[_primitive], -self.windows['onDecay'])
+        if self.inputted[_primitive] == 0: 
+            # Case one: current input is zero
+            self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['offDecay'])
+        elif self.state[_primitive] == 0:
+            # Case two: smoothed input is zero
+            pass
+        elif math.copysign(1, self.inputted[_primitive]) == math.copysign(1, self.state[_primitive]):
+            if abs(self.inputted[_primitive]) > abs(self.state[_primitive]):
+                # Case three: same direction, state is weaker
+                self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['onDecay'])
             else:
-                self.smoothed[_primitive] = addFrom(self.smoothed[_primitive], -self.windows['againstDecay'])
-        else: self.smoothed[_primitive] = addFrom(self.smoothed[_primitive[, -self.windows['offDecay'])
+                # Case four: same direction, state is stronger
+                self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['offDecay'])
+        elif abs(self.inputted[_primitive]) > abs(self.state[_primitive]):
+            # Case five: opposite directions, state is weaker
+            self.state[_primitive] = self.inputted[_primitive]
+            self.pushPrimitive(_primitive, self.state[_primitive])
+        else:
+            # Case six: opposite directions, state is stronger
+            self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['againstDecay'])
+
+    def acceptDirection(self, _primitive, _value):
+        if _value == 0: 
+            # Case one: current input is zero
+            self.inputted[_primitive] = 0
+            self.pushPrimitive(_primitive, 0)
+        elif self.state[_primitive] == 0:
+            # Case two: smoothed input is zero
+            self.inputted[_primitive] = _value
+            self.state[_primitive] = _value
+            self.pushPrimitive(_primitive, _value)
+        elif math.copysign(1, _value) == math.copysign(1, self.state[_primitive]):
+            if abs(_value) > abs(self.state[_primitive]):
+                # Case three: same direction, state is weaker
+                self.inputted[_primitive] = _value+self.state[_primitive]
+                self.state[_primitive] = self.inputted[_primitive]
+                self.pushPrimitive(_primitive, self.state[_primitive])
+            else:
+                # Case four: same direction, state is stronger
+                self.inputted[_primitive] = _value
+                self.pushPrimitive(_primitive, _value)
+        elif abs(_value) > abs(self.state[_primitive]):
+            # Case five: opposite directions, state is weaker
+            self.inputted[_primitive] = _value
+            self.state[_primitive] = _value
+            self.pushPrimitive(_primitive, _value)
+        else:
+            # Case six: opposite directions, state is stronger
+            self.inputted[_primitive] = _value
+            self.pushPrimitive(_primitive, _value)
     
     def pushInput(self,_event):
         if _event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
             return None
-        return_key = None
         k = self.key_bindings.get(_event.key)
         if k:
             if _event.type == pygame.KEYDOWN:
                 for key in k[0]:
-                    self.state[key[0]] = key[1]
                     if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
-                        self.smoothed[key[0]] = max(-1, min(1, self.smoothed[key[0]] + key[1]))
-                        self.pushPrimitive(key[0], self.smoothed[key[0]]
+                        self.acceptDirection(key[0], key[1])
                     else: 
+                        self.state[key[0]] = key[1]
                         self.pushPrimitive(key[0], key[1])
+                return k
             elif _event.type == pygame.KEYUP:
                 for key in k[1]:
-                    self.state[key[0]] = key[1]
                     if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
-                        self.smoothed[key[0]] = max(-1, min(1, self.smoothed[key[0]] + key[1]))
-                        self.pushPrimitive(key[0], self.smoothed[key[0]]
+                        self.acceptDirection(key[0], key[1])
                     else: 
+                        self.state[key[0]] = key[1]
                         self.pushPrimitive(key[0], key[1])
+        return None
+
+    init_state_dict = {
+        'moveHor': 0,
+        'moveVert': 0,
+        'actHor': 0,
+        'actVert': 0,
+        'attack': 0,
+        'special': 0,
+        'jump': 0,
+        'shield': 0,
+        'taunt': 0
+    }
+
+# This controller class is for controllers that have no analog inputs, such as arcade controllers. 
+# To help players perform angled inputs, this controller smooths directional inputs automatically. 
+class ArcadeController(BaseController):
+    def __init__(self,_bindings,_windows):
+        BaseController.__init__(self, _bindings, _windows)
+        self.type = 'Arcade'
+        self.inputted = self.init_state_dict
+
+    def flushInputs(self):
+        BaseController.flushInputs(self)
+
+        self.inputted = self.init_state_dict
+
+    def pumpBuffer(self):
+        BaseController.pumpBuffer(self)
+        self.decay('moveHor')
+        self.decay('moveVert')
+        self.decay('actHor')
+        self.decay('actVert')
+
+    def decay(self, _primitive):
+        if self.inputted[_primitive] == 0: 
+            # Case one: current input is zero
+            self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['offDecay'])
+        elif self.state[_primitive] == 0:
+            # Case two: smoothed input is zero
+            pass
+        elif math.copysign(1, self.inputted[_primitive]) == math.copysign(1, self.state[_primitive]):
+            if abs(self.inputted[_primitive]) > abs(self.state[_primitive]):
+                # Case three: same direction, state is weaker
+                self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['onDecay'])
+            else:
+                # Case four: same direction, state is stronger
+                self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['offDecay'])
+        elif abs(self.inputted[_primitive]) > abs(self.state[_primitive]):
+            # Case five: opposite directions, state is weaker
+            self.state[_primitive] = self.inputted[_primitive]
+            self.pushPrimitive(_primitive, self.state[_primitive])
+        else:
+            # Case six: opposite directions, state is stronger
+            self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['againstDecay'])
+
+    def acceptDirection(self, _primitive, _value):
+        if _value == 0: 
+            # Case one: current input is zero
+            self.inputted[_primitive] = 0
+            self.pushPrimitive(_primitive, 0)
+        elif self.state[_primitive] == 0:
+            # Case two: smoothed input is zero
+            self.inputted[_primitive] = _value
+            self.state[_primitive] = _value
+            self.pushPrimitive(_primitive, _value)
+        elif math.copysign(1, _value) == math.copysign(1, self.state[_primitive]):
+            if abs(_value) > abs(self.state[_primitive]):
+                # Case three: same direction, state is weaker
+                self.inputted[_primitive] = _value+self.state[_primitive]
+                self.state[_primitive] = self.inputted[_primitive]
+                self.pushPrimitive(_primitive, self.state[_primitive])
+            else:
+                # Case four: same direction, state is stronger
+                self.inputted[_primitive] = _value
+                self.pushPrimitive(_primitive, _value)
+        elif abs(_value) > abs(self.state[_primitive]):
+            # Case five: opposite directions, state is weaker
+            self.inputted[_primitive] = _value
+            self.state[_primitive] = _value
+            self.pushPrimitive(_primitive, _value)
+        else:
+            # Case six: opposite directions, state is stronger
+            self.inputted[_primitive] = _value
+            self.pushPrimitive(_primitive, _value)
+    
+    def pushInput(self,_event):
+        if _event.type not in [pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
+            return None
+        k = self.key_bindings.getButtonInput(_event.joy,_event.button)
+        if k:
+            if _event.type == pygame.JOYBUTTONDOWN:
+                for key in k[0]:
+                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
+                        self.acceptDirection(key[0], key[1])
+                    else: 
+                        self.state[key[0]] = key[1]
+                        self.pushPrimitive(key[0], key[1])
+                return k
+            elif _event.type == pygame.JOYBUTTONUP:
+                for key in k[1]:
+                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
+                        self.acceptDirection(key[0], key[1])
+                    else: 
+                        self.state[key[0]] = key[1]
+                        self.pushPrimitive(key[0], key[1])
+        return None
 
     init_state_dict = {
         'moveHor': 0,
@@ -261,50 +432,39 @@ class KeyboardController(BaseController):
         'taunt': 0
     }
     
-# This controller has analog sticks. 
+# This controller class is for controllers that have analog inputs, such as most home console 
+# game controllers. Since analog sticks are available, this controller handles analog inputs 
+# directly. Mapping buttons to directional inputs is possible, but no smoothing happens. 
 class GamepadController(BaseController):
     def __init__(self,_padBindings):
         BaseController.__init__(self, _padBindings)
         self.type = 'Gamepad'
-    
-    def getInputs(self,_event,_push = True, _outputOnRelease = True):
+
+    def pushInput(self,_event):
         if _event.type not in [pygame.JOYAXISMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
             return None
-        k = None
-        output = True
-        if _event.type == pygame.JOYAXISMOTION:
+        if _event.type == pygame.JOYAXISMOTION: 
             #getJoystickInput will get a pad and an axis, and return the value of that stick
             #by checking it along with the other axis of that joystick, if there is one.
             k = self.key_bindings.getJoystickInput(_event.joy,_event.axis,_event.value)
-            if k and k in self.keys_held: k = None
-            if k and k not in self.keys_held:
-                self.keys_held.append(k)
-            if k and _push:
-                self.keys_to_pass.append(k)
-                
-            if k == 0:
-                output = output and _outputOnRelease
-                a, b = self.key_bindings.axis_bindings.get(_event.axis)
-                if a in self.keys_held: self.keys_held.remove(a)
-                if b in self.keys_held: self.keys_held.remove(b)
-                if _push:
-                    self.keys_to_release.extend([a,b])
+            if k:
+                for key in k[0]:
+                    self.state[key[0]] = key[1]
+                    self.pushPrimitive(key[0], key[1])
+                return k
         elif _event.type == pygame.JOYBUTTONDOWN:
-            #getButtonInput is much more simple. It gets the key that button is mapped to
             k = self.key_bindings.getButtonInput(_event.joy,_event.button)
-        elif _event.type == pygame.JOYBUTTONUP:
-            output = output and _outputOnRelease
+            if k: 
+                for key in k[0]:
+                    self.state[key[0]] = key[1]
+                    self.pushPrimitive(key[0], key[1])
+                return k
+        elif _event.type == pygame.JOYBUTTONUP: 
             k = self.key_bindings.getButtonInput(_event.joy,_event.button)
-        
-        if k:
-            if _event.type == pygame.JOYBUTTONDOWN:
-                if k not in self.keys_held: self.keys_held.append(k)
-                if _push: self.keys_to_pass.append(k)
-                
-            elif _event.type == pygame.JOYBUTTONUP:
-                if k in self.keys_held: self.keys_held.remove(k)
-                if _push: self.keys_to_release.append(k)
-        if output: return k
+            if k: 
+                for key in k[1]:
+                    self.state[key[0]] = key[1]
+                    self.pushPrimitive(key[0], key[1])
         return None
     
     def getKeysForaction(self,_action):

@@ -44,34 +44,40 @@ def hasClass(_object, _class):
     """
     return _class in list(map(lambda x :x.__name__,_object.__class__.__bases__)) + [_object.__class__.__name__]
 
-def subtractTowards(_value, _difference, _base=0):
-    """ Returns the median value of _base, _value, and _value-_difference. The behavior of this 
-    function is not immediately obvious from this description, but think of it as a subtraction that 
+def addTowards(_value, _addend, _base=0):
+    """ Returns the median value of _base, _value, and _value+_addend. The behavior of this 
+    function is not immediately obvious from this description, but think of it as an addition that 
     acts differently if the resulting difference passes or goes away from the base value. 
 
     Parameters
     -----------
     _value : float
-        The value to be subtracted from. 
-    _difference : float
-        The value to subtract. 
+        The value to be added to. 
+    _addend : float
+        The value to add. 
     _base : float
-        The value against which to compare the difference. 
+        The value against which to compare the sum. 
     """
-    if _difference == 0: return _value
-    sign = math.copysign(1, _difference)
-    if sign*(_value-_difference-_base) > 0: return _value-_difference
-    else: return min(_base, _value, key=lambda k: sign*k) 
+    if _addend == 0: return _value
+    sign = math.copysign(1, _addend)
+    if sign*(_base-_value-_addend) > 0: return _value+_addend
+    else: return max(_base, _value, key=lambda k: sign*k) 
+
+def addAway (_value, _addend, _base=0):
+    """ Returns the sum of _value and _addend if the sum would go away from _base, otherwise 
+    returns _value.  
+
+    Parameters
+    -----------
+    _value : float
+        The value to be added to. 
+    _addend : float
+        The value to add. 
+    _base : float
+        The value against which to compare the sum. 
     """
-    if _difference > 0:
-        if _base < _value-_difference: return _value-_difference
-        else: return min(_base, _value)
-    elif _difference < 0:
-        if _base > _value-_difference: return _value-_difference
-        else return max(_base, _value)
-    else: 
-        return _value
-    """
+    if _addend*(_base-_value) <= 0: return _value+_addend
+    else: return _value
     
 def addFrom(_value, _amount, _base=0):
     """ Returns the sum of _amount multiplied by the sign of (_value - _base) to _value. 
@@ -85,5 +91,23 @@ def addFrom(_value, _amount, _base=0):
     _base : float
         The value to approach or recede from. 
     """
-    sign = math.copysign(1, _value-_base)
-    return _amount*sign + _value
+    if _amount < 0 and -abs(_value-_base) > _amount: return _base
+    else: return _amount*math.copysign(1, _value-_base) + _value
+
+def bounded(_value, _min, _max):
+    """ Returns _value is _value is between _min and _max, _min if _value is less than _min, 
+    and _max is _value is greater than _max. This function assumes that _min < _max, and will 
+    probably act strange otherwise. 
+    
+    Parameters
+    -----------
+    _value : float
+        The value to be bounded. 
+    _min : float
+        The lower bounding value. 
+    _max : float
+        The upper bounding value. 
+    """
+    if _value < _min: return _min
+    elif _value > _max: return _max
+    else: return _value
