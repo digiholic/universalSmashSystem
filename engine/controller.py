@@ -21,7 +21,7 @@ class BaseController():
         self.buffer = list()
         self.frame_count = 0
 
-    def thresholdBucket(self,_primitive,_state):
+    def thresholdBucket(self,_input,_state):
         if _state < -self.windows[_primitive + 'Threshold6']: return -6
         elif _state < -self.windows[_primitive + 'Threshold5']: return -5
         elif _state < -self.windows[_primitive + 'Threshold4']: return -4
@@ -427,6 +427,13 @@ class GamepadController(BaseController):
         BaseController.__init__(self, _padBindings)
         self.type = 'Gamepad'
 
+    def axisLimit(self,_value,_bounds):
+        if abs(_value) < abs(_bounds[0]):
+            return 0
+        elif abs(_value) > abs(_bounds[1]):
+            return math.copysign(_bounds[1], _value)
+        else: return _value
+
     def pushInput(self,_event):
         if _event.type not in [pygame.JOYAXISMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
             return None
@@ -435,23 +442,35 @@ class GamepadController(BaseController):
             #by checking it along with the other axis of that joystick, if there is one.
             k = self.key_bindings.getAxisInput(_event.joy,_event.axis)
             if k:
-                for key in k[0]:
-                    self.state[key[0]] = key[1]
-                    self.pushPrimitive(key[0], key[1])
+                for key in k:
+                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
+                        self.state[key[0]] = self.axisLimit(_event.value, key[1])
+                        self.pushPrimitive(key[0], self.state[key[0]])
+                    else: 
+                        self.state[key[0]] = key[1]
+                        self.pushPrimitive(key[0], key[1])
                 return k
         elif _event.type == pygame.JOYBALLMOTION: 
             k = self.key_bindings.getBallInput(_event.joy,_event.ball)
             if k:
-                for key in k[0]:
-                    self.state[key[0]] = key[1]
-                    self.pushPrimitive(key[0], key[1])
+                for key in k:
+                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
+                        self.state[key[0]] = self.axisLimit(_event.rel, key[1])
+                        self.pushPrimitive(key[0], self.state[key[0]])
+                    else: 
+                        self.state[key[0]] = key[1]
+                        self.pushPrimitive(key[0], key[1])
                 return k
         elif _event.type == pygame.JOYHATMOTION: 
             k = self.key_bindings.getHatInput(_event.joy,_event.hat)
             if k:
-                for key in k[0]:
-                    self.state[key[0]] = key[1]
-                    self.pushPrimitive(key[0], key[1])
+                for key in k:
+                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
+                        self.state[key[0]] = self.axisLimit(_event.value, key[1])
+                        self.pushPrimitive(key[0], self.state[key[0]])
+                    else: 
+                        self.state[key[0]] = key[1]
+                        self.pushPrimitive(key[0], key[1])
                 return k
         elif _event.type == pygame.JOYBUTTONDOWN:
             k = self.key_bindings.getButtonInput(_event.joy,_event.button)

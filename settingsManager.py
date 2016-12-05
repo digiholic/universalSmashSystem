@@ -147,9 +147,6 @@ class Settings():
         # Getting the window information
         
         self.setting['windowName']    = getString(self.parser,'window','windowName')
-        #self.setting['windowSize']    = getNumber(self.parser, 'window', 'windowSize',True)
-        #self.setting['windowWidth']   = self.setting['windowSize'][0]
-        #self.setting['windowHeight']  = self.setting['windowSize'][1]
         self.setting['windowWidth']   = getNumber(self.parser, 'window', 'windowWidth')
         self.setting['windowHeight']  = getNumber(self.parser, 'window', 'windowHeight')
         self.setting['frameCap']      = getNumber(self.parser, 'window', 'frameCap')
@@ -179,7 +176,6 @@ class Settings():
         
         # The "preset" lets users define custom presets to switch between.
         # The "custom" preset is one that is modified in-game.
-        
         
         presets = []
         for f in os.listdir(os.path.join(self.datadir.replace('main.exe','').replace('main.exe',''),'settings/rules')):
