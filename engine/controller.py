@@ -431,9 +431,23 @@ class GamepadController(BaseController):
         if _event.type not in [pygame.JOYAXISMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
             return None
         if _event.type == pygame.JOYAXISMOTION: 
-            #getJoystickInput will get a pad and an axis, and return the value of that stick
+            #getAxiInput will get a pad and an axis, and return the value of that stick
             #by checking it along with the other axis of that joystick, if there is one.
-            k = self.key_bindings.getJoystickInput(_event.joy,_event.axis,_event.value)
+            k = self.key_bindings.getAxisInput(_event.joy,_event.axis)
+            if k:
+                for key in k[0]:
+                    self.state[key[0]] = key[1]
+                    self.pushPrimitive(key[0], key[1])
+                return k
+        elif _event.type == pygame.JOYBALLMOTION: 
+            k = self.key_bindings.getBallInput(_event.joy,_event.ball)
+            if k:
+                for key in k[0]:
+                    self.state[key[0]] = key[1]
+                    self.pushPrimitive(key[0], key[1])
+                return k
+        elif _event.type == pygame.JOYHATMOTION: 
+            k = self.key_bindings.getHatInput(_event.joy,_event.hat)
             if k:
                 for key in k[0]:
                     self.state[key[0]] = key[1]
@@ -458,32 +472,46 @@ class GamepadController(BaseController):
         return self.key_bindings.getKeysForaction(_action)
     
 class PadBindings():
-    def __init__(self,_joyName,_joystick,_axisBindings,_buttonBindings):
+    def __init__(self,_joyName,_joystick,_axisBindings,_buttonBindings,_ballBindings,_hatBindings):
         self.name = _joyName
         self.joystick = _joystick
-        #Each axis is bound to a tuple of what a negative value is, and what a positive value is.
-        #So, in this hard-coded example, axis 0 is left when negative, right when positive.
         self.axis_bindings = _axisBindings
         self.button_bindings = _buttonBindings
+        self.ball_bindings = _ballBindings
+        self.hat_bindings = _hatBindings
         
-    def getJoystickInput(self,_joy,_axis,_value):
+    def getAxisInput(self,_joy,_axis):
         if not _joy == self.joystick:
             return None
-        return self.axis_bindings.get(_axis) 
+        return self.axis_bindings.get(_axis)
             
     def getButtonInput(self,_joy,_button):
         if not _joy == self.joystick:
             return None
         return self.button_bindings.get(_button)
+
+    def getBallInput(self,_joy,_ball):
+        if not _joy == self.joystick:
+            return None
+        return self.ball_bindings.get(_ball)
+
+    def getHatInput(self,_joy,_hat):
+        if not _joy == self.joystick:
+            Return None
+        return self.hat_bindings.get(_hat)
     
     def getKeysForaction(self,_action):
         list_of_bindings = []
         for button,actions in self.button_bindings.items():
             if _action in actions:
                 list_of_bindings.append('Button ' + str(button))
-        for axis,name in self.axis_bindings.items():
+        for axis,actions in self.axis_bindings.items():
             if _action in actions:
                 list_of_bindings.append('Axis ' + str(axis))
+        for ball,actions in self.ball_bindings.items():
+            if _action in actions:
+                list_of_bindings.append('Ball ' + str(ball))
+        for hat,actions in self.hat_bindings.items():
+            if _action in actions:
+                list_of_bindigns.append('Hat ' + str(hat))
         return list_of_bindings
-
-
