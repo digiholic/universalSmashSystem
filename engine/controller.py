@@ -66,20 +66,7 @@ class BaseController():
         self.frame_count += 1
 
     def pushInput(self,_event):
-        if _event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
-            return None
-        k = self.key_bindings.get(_event.key)
-        if k:
-            if _event.type == pygame.KEYDOWN:
-                for key in k[0]:
-                    self.state[key[0]] = key[1]
-                    self.pushPrimitive(key[0], key[1])
-                return k
-            elif _event.type == pygame.KEYUP:
-                for key in k[1]:
-                    self.state[key[0]] = key[1]
-                    self.pushPrimitive(key[0], key[1])
-        else: return None
+        raise NotImplementedError
     
     def getKeyaction(self,_key):
         return self.key_bindings.get(_key)
@@ -482,15 +469,7 @@ class PadBindings():
     def getJoystickInput(self,_joy,_axis,_value):
         if not _joy == self.joystick:
             return None
-        axis_tuple = self.axis_bindings.get(_axis) 
-        if axis_tuple:
-            #if the value is above deadzone
-            if _value > 0.2750:
-                return axis_tuple[1]
-            elif _value < -0.2750:
-                return axis_tuple[0]
-            else:
-                return 0
+        return self.axis_bindings.get(_axis) 
             
     def getButtonInput(self,_joy,_button):
         if not _joy == self.joystick:
@@ -499,52 +478,12 @@ class PadBindings():
     
     def getKeysForaction(self,_action):
         list_of_bindings = []
-        for button,name in self.button_bindings.items():
-            if name == _action:
+        for button,actions in self.button_bindings.items():
+            if _action in actions:
                 list_of_bindings.append('Button ' + str(button))
-        for axis,(neg,pos) in self.axis_bindings.items():
-            if pos == _action:
-                list_of_bindings.append('Axis ' + str(axis) + ' Positive')
-            if neg == _action:
-                list_of_bindings.append('Axis ' + str(axis) + ' Negative')
+        for axis,name in self.axis_bindings.items():
+            if _action in actions:
+                list_of_bindings.append('Axis ' + str(axis))
         return list_of_bindings
-    
-    
-"""
-The input buffer is a list of all of the buttons pressed and released,
-and the frames they're put in on. It's used to check for buttons that
-were pressed in the past, such as for a wall tech, or a buffered jump,
-but can also be used to re-create the entire battle (once a replay manager
-is set up)
-"""
-class InputBuffer():
-    def __init__(self):
-        self.buffer = [[]]
-        self.working_buff = []
-        self.last_index = 0
-      
-    """
-    Pushes the buttons for the frame into the buffer, then extends the index by one.
-    """
-    def push(self):
-        self.buffer.append(dict(self.working_buff))
-        self.working_buff = []
-        self.last_index += 1
-        
-    """
-    Get a sub-buffer of N frames
-    """
-    def getLastNFrames(self,_from,_to=0):
-        ret_buffer = []
-        if _from > self.last_index: _from = self.last_index
-        if _to > self.last_index: _to = self.last_index
-        for i in range(self.last_index - _to,self.last_index - _from,-1):
-            ret_buffer.append(self.buffer[i - _to])
-        return ret_buffer
-    
-    """
-    put a key into the current working buffer. The working buffer is all of the inputs for
-    one frame, before the frame is actually executed.
-    """
-    def append(self,_key):
-        self.working_buff.append(_key)
+
+
