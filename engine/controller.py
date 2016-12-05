@@ -7,45 +7,43 @@ class BaseController():
     def __init__(self,_bindings,_windows):
         self.key_bindings = _bindings
         self.windows = _windows
-        self.type = 'Base'
         self.current = self.init_dict
         self.initials = self.init_dict
-        self.state = self.init_state_dict
+        self.state = self.init_dict
         self.buffer = list()
         self.frame_count = 0
     
     def flushInputs(self):
         self.current = self.init_dict
         self.initials = self.init_dict
-        self.state = self.init_state_dict
+        self.state = self.init_dict
         self.buffer = list()
         self.frame_count = 0
 
-    def thresholdBucket(self,_input,_state):
-        if _state < -self.windows[_primitive + 'Threshold6']: return -6
-        elif _state < -self.windows[_primitive + 'Threshold5']: return -5
-        elif _state < -self.windows[_primitive + 'Threshold4']: return -4
-        elif _state < -self.windows[_primitive + 'Threshold3']: return -3
-        elif _state < -self.windows[_primitive + 'Threshold2']: return -2
-        elif _state < -self.windows[_primitive + 'Threshold1']: return -1
-        elif _state <= self.windows[_primitive + 'Threshold1']: return 0
-        elif _state <= self.windows[_primitive + 'Threshold2']: return 1
-        elif _state <= self.windows[_primitive + 'Threshold3']: return 2
-        elif _state <= self.windows[_primitive + 'Threshold4']: return 3
-        elif _state <= self.windows[_primitive + 'Threshold5']: return 4
-        elif _state <= self.windows[_primitive + 'Threshold6']: return 5
-        else: return 6
+    def analogBucket(self,_input,_state):
+        if _input +'Threshold6' in self.windows:
+            if _state < -self.windows[_input + 'Threshold6']: return -6
+            elif _state > self.windows[_input + 'Threshold6']: return 6
+        if _input +'Threshold5' in self.windows:
+            if _state < -self.windows[_input + 'Threshold5']: return -5
+            elif _state > self.windows[_input + 'Threshold5']: return 5
+        if _input +'Threshold4' in self.windows:
+            if _state < -self.windows[_input + 'Threshold4']: return -4
+            elif _state > self.windows[_input + 'Threshold4']: return 4
+        if _input +'Threshold3' in self.windows:
+            if _state < -self.windows[_input + 'Threshold3']: return -3
+            elif _state > self.windows[_input + 'Threshold3']: return 3
+        if _input +'Threshold2' in self.windows:
+            if _state < -self.windows[_input + 'Threshold2']: return -2
+            elif _state > self.windows[_input + 'Threshold2']: return 2
+        if _input +'Threshold1' in self.windows:
+            if _state < -self.windows[_input + 'Threshold1']: return -1
+            elif _state > self.windows[_input + 'Threshold1']: return 1
+        return 0
 
     # Please call every time a primitive input state changes
     def pushPrimitive(self,_primitive,_state):
-        if _primitive in ('moveHor', 'moveVert', 'actHor', 'actVert'):
-            state_num = self.thresholdBucket(_primitive, _state)
-        elif _primitive in ('attack', 'special', 'jump', 'shield', 'taunt'):
-            state_num = 1 if _state > self.windows[_primitive+'Threshold'] else 0
-        else:
-            print("Primitive input does not exist: " + _primitive)
-            return
-        if state_num != self.current[_primitive]:
+        if _primitive in self.current and _state != self.current[_primitive]:
             self.buffer.append(self.states[(_primitive, state_num)])
             self.current[_primitive] = state_num
 
@@ -85,7 +83,7 @@ class BaseController():
         raise self.state.get(_key)
 
     def getInit(self,_removedBufferPortion,_init):
-        actions_to_find = {'moveHor', 'moveVert', 'actHor', 'actVert', 'attack', 'special', 'jump', 'shield', 'taunt'}
+        actions_to_find = {'moveHor', 'moveVert', 'actHor', 'actVert', 'attack', 'special', 'jump', 'shield', 'taunt', 'pause'}
         initials = _init.copy()
         for entry in _removedBufferPortion:
             if entry in self.codes:
@@ -141,12 +139,136 @@ class BaseController():
         'moveVert': 'T',
         'actHor': 'g',
         'actVert': 't',
-        'attack': '0',
-        'special': '2',
-        'jump': '4',
-        'shield': '6',
-        'taunt': '8'
+        'attack': '!',
+        'special': '&',
+        'jump': '/',
+        'shield': '3',
+        'taunt': '7',
+        'pause': ';'
     }
+
+    # Static dictionaries for lookups: 
+    states = {
+        ('attack', 0): '!',  ('attack', 1): '"',   ('attack', 2): '#',  ('attack', 3): '%',  
+        ('special', 0): '&', ('special', 1): '\'', ('special', 2): ',', ('special', 3): '-'
+        ('jump', 0): '/',    ('jump', 1): '0',     ('jump', 2): '1',    ('jump', 3): '2', 
+        ('shield', 0): '3',  ('shield', 1): '4',   ('shield', 2): '5',  ('shield', 3): '6', 
+        ('taunt', 0): '7',   ('taunt', 1): '8',    ('taunt', 2): '9',   ('taunt', 3): ':', 
+        ('pause', 0): ';',   ('pause', 1): '<',    ('pause', 2): '=',   ('pause', 3): '>', 
+
+        ('moveHor', -6): 'A', ('moveHor', -5): 'B', ('moveHor', -4): 'C', ('moveHor', -3): 'D', 
+        ('moveHor', -2): 'E', ('moveHor', -1): 'F', ('moveHor', 0): 'G',  ('moveHor', 1): 'H',  ('moveHor', 2): 'I', 
+        ('moveHor', 3): 'J',  ('moveHor', 4): 'K',  ('moveHor', 5): 'L',  ('moveHor', 6): 'M', 
+
+        ('moveVert', -6): 'N', ('moveVert', -5): 'O', ('moveVert', -4): 'P', ('moveVert', -3): 'Q', 
+        ('moveVert', -2): 'R', ('moveVert', -1): 'S', ('moveVert', 0): 'T',  ('moveVert', 1): 'U',  ('moveVert', 2): 'V', 
+        ('moveVert', 3): 'W',  ('moveVert', 4): 'X',  ('moveVert', 5): 'Y',  ('moveVert', 6): 'Z', 
+
+        ('actHor', -6): 'a', ('actHor', -5): 'b', ('actHor', -4): 'c', ('actHor', -3): 'd', 
+        ('actHor', -2): 'e', ('actHor', -1): 'f', ('actHor', 0): 'g',  ('actHor', 1): 'h',  ('actHor', 2): 'i', 
+        ('actHor', 3): 'j',  ('actHor', 4): 'k',  ('actHor', 5): 'l',  ('actHor', 6): 'm', 
+
+        ('actVert', -6): 'n', ('actVert', -5): 'o', ('actVert', -4): 'p', ('actVert', -3): 'q', 
+        ('actVert', -2): 'r', ('actVert', -1): 's', ('actVert', 0): 't',  ('actVert', 1): 'u',  ('actVert', 2): 'v', 
+        ('actVert', 3): 'w',  ('actVert', 4): 'x',  ('actVert', 5): 'y',  ('actVert', 6): 'z', 
+
+        ('frame', 0): ' ', ('preframe', 0): '\n' #Just for completeness; this won't actually be looked up
+    }
+
+    codes = {
+        '!': ('attack', 0),  '"': ('attack', 1),   '#': ('attack', 2),  '%': ('attack', 3),  
+        '&': ('special', 0), '\'': ('special', 1), ',': ('special', 2), '-': ('special', 3), 
+        '/': ('jump', 0),    '0': ('jump', 1),     '1': ('jump', 2),    '2': ('jump', 3), 
+        '3': ('shield', 0),  '4': ('shield', 1),   '5': ('shield', 2),  '6': ('shield', 3), 
+        '7': ('taunt', 0),   '8': ('taunt', 1),    '9': ('taunt', 2),   ':': ('taunt', 3), 
+        ';': ('pause', 0),   '<': ('pause', 1),    '=': ('pause', 2),   '>': ('pause', 3), 
+
+        'A': ('moveHor', -6), 'B': ('moveHor', -5), 'C': ('moveHor', -4), 'D': ('moveHor', -3), 
+        'E': ('moveHor', -2), 'F': ('moveHor', -1), 'G': ('moveHor', 0), 'H':  ('moveHor', 1),  'I': ('moveHor', 2), 
+        'J': ('moveHor', 3), 'K':  ('moveHor', 4), 'L':  ('moveHor', 5), 'M':  ('moveHor', 6), 
+
+        'N': ('moveVert', -6), 'O': ('moveVert', -5), 'P': ('moveVert', -4), 'Q': ('moveVert', -3), 
+        'R': ('moveVert', -2), 'S': ('moveVert', -1), 'T': ('moveVert', 0),  'U': ('moveVert', 1),  'V': ('moveVert', 2), 
+        'W': ('moveVert', 3),  'X': ('moveVert', 4),  'Y': ('moveVert', 5),  'Z': ('moveVert', 6), 
+
+        'a': ('actHor', -6), 'b': ('actHor', -5), 'c': ('actHor', -4), 'd': ('actHor', -3), 
+        'e': ('actHor', -2), 'f': ('actHor', -1), 'g': ('actHor', 0),  'h': ('actHor', 1),  'i': ('actHor', 2), 
+        'j': ('actHor', 3),  'k': ('actHor', 4),  'l': ('actHor', 5),  'm': ('actHor', 6), 
+
+        'n': ('actVert', -6), 'o': ('actVert', -5), 'p': ('actVert', -4), 'q': ('actVert', -3), 
+        'r': ('actVert', -2), 's': ('actVert', -1), 't': ('actVert', 0),  'u': ('actVert', 1),  'v': ('actVert', 2), 
+        'w': ('actVert', 3),  'x': ('actVert', 4),  'y': ('actVert', 5),  'z': ('actVert', 6), 
+
+        ' ': ('frame', 0), '\n': ('preframe', 0) #Just for completeness; this won't actually be looked up
+    }
+    
+# Base controller, but with widgets to make stuff easier
+class PhysicalController(BaseController):
+    def __init__(self,_bindings,_windows):
+        BaseController.__init__(self, _bindings, _windows)
+        self.smoothed = self.init_state_dict
+        self.inputs = self.init_state_dict
+
+    def flushInputs(self):
+        BaseController.flushInputs(self)
+        self.smoothed = self.init_state_dict
+        self.inputs = self.init_state_dict
+
+    def pumpBuffer(self):
+        BaseController.pumpBuffer(self)
+        for primitive in smoothed:
+            if all(lambda k: primitive+k+'Decay' in self.windows for k in ['Off', 'On', 'Against'])
+            self.decay(primitive)
+
+    def decay(self, _primitive):
+        if self.inputs[_primitive] == 0: 
+            # Case one: current input is zero
+            self.smoothed[_primitive] = addFrom(self.smoothed[_primitive], -self.windows[_primitive+'OffDecay'])
+        elif self.smoothed[_primitive] == 0:
+            # Case two: smoothed input is zero
+            pass
+        elif math.copysign(1, self.inputs[_primitive]) == math.copysign(1, self.smoothed[_primitive]):
+            if abs(self.inputs[_primitive]) > abs(self.inputs[_primitive]):
+                # Case three: same direction, state is weaker
+                self.smoothed[_primitive] = addFrom(self.smoothed[_primitive], -self.windows[_primitive+'OnDecay'])
+            else:
+                # Case four: same direction, state is stronger
+                self.smoothed[_primitive] = addFrom(self.smoothed[_primitive], -self.windows[_primitive+'OffDecay'])
+        elif abs(self.inputs[_primitive]) > abs(self.smoothed[_primitive]):
+            # Case five: opposite directions, state is weaker
+            self.smoothed[_primitive] = self.inputs[_primitive]
+        else:
+            # Case six: opposite directions, state is stronger
+            self.smoothed[_primitive] = addFrom(self.smoothed[_primitive], -self.windows[_primitive+'AgainstDecay'])
+        self.pushPrimitive(_primitive, self.analogBucket('decay'+_primitive, self.smoothed[_primitive]))
+
+    def acceptInput(self, _primitive, _input, _value):
+        if not _input+_primitive+'Smoothed' in self.windows:
+            self.inputs[_primitive] = _value
+            self.smoothed[_primitive] = _value
+        elif _value == 0: 
+            # Case one: current input is zero
+            self.inputs[_primitive] = 0
+        elif self.smoothed[_primitive] == 0:
+            # Case two: smoothed input is zero
+            self.inputs[_primitive] = _value
+            self.smoothed[_primitive] = _value
+        elif math.copysign(1, _value) == math.copysign(1, self.smoothed[_primitive]):
+            if abs(_value) > abs(self.state[_primitive]):
+                # Case three: same direction, state is weaker
+                self.inputs[_primitive] = _value+self.smoothed[_primitive]
+                self.smoothed[_primitive] = self.inputs[_primitive]
+            else:
+                # Case four: same direction, state is stronger
+                self.inputs[_primitive] = _value
+        elif abs(_value) > abs(self.smoothed[_primitive]):
+            # Case five: opposite directions, state is weaker
+            self.inputs[_primitive] = _value
+            self.smoothed[_primitive] = _value
+        else:
+            # Case six: opposite directions, state is stronger
+            self.inputs[_primitive] = _value
+        self.pushPrimitive(_primitive, self.analogBucket(_input+_primitive, self.smoothed[_primitive]))
 
     init_state_dict = {
         'moveHor': 0,
@@ -157,127 +279,14 @@ class BaseController():
         'special': 0,
         'jump': 0,
         'shield': 0,
-        'taunt': 0
+        'taunt': 0,
+        'pause': 0
     }
 
-    # Static dictionaries for lookups: 
-    states = {
-        ('attack', 0): '0', ('attack', 1): '1', ('special', 0): '2', ('special', 1): '3', ('jump', 0): '4', 
-        ('jump', 1): '5', ('shield', 0): '6', ('shield', 1): '7', ('taunt', 0): '8', ('taunt', 1): '9', 
-
-        ('moveHor', -6): 'A', ('moveHor', -5): 'B', ('moveHor', -4): 'C', ('moveHor', -3): 'D', 
-        ('moveHor', -2): 'E', ('moveHor', -1): 'F', ('moveHor', 0): 'G', ('moveHor', 1): 'H', ('moveHor', 2): 'I', 
-        ('moveHor', 3): 'J', ('moveHor', 4): 'K', ('moveHor', 5): 'L', ('moveHor', 6): 'M', 
-
-        ('moveVert', -6): 'N', ('moveVert', -5): 'O', ('moveVert', -4): 'P', ('moveVert', -3): 'Q', 
-        ('moveVert', -2): 'R', ('moveVert', -1): 'S', ('moveVert', 0): 'T', ('moveVert', 1): 'U', ('moveVert', 2): 'V', 
-        ('moveVert', 3): 'W', ('moveVert', 4): 'X', ('moveVert', 5): 'Y', ('moveVert', 6): 'Z', 
-
-        ('actHor', -6): 'a', ('actHor', -5): 'b', ('actHor', -4): 'c', ('actHor', -3): 'd', 
-        ('actHor', -2): 'e', ('actHor', -1): 'f', ('actHor', 0): 'g', ('actHor', 1): 'h', ('actHor', 2): 'i', 
-        ('actHor', 3): 'j', ('actHor', 4): 'k', ('actHor', 5): 'l', ('actHor', 6): 'm', 
-
-        ('actVert', -6): 'n', ('actVert', -5): 'o', ('actVert', -4): 'p', ('actVert', -3): 'q', 
-
-        ('actVert', -2): 'r', ('actVert', -1): 's', ('actVert', 0): 't', ('actVert', 1): 'u', ('actVert', 2): 'v', 
-        ('actVert', 3): 'w', ('actVert', 4): 'x', ('actVert', 5): 'y', ('actVert', 6): 'z', 
-
-        ('frame', 0): ' ', ('preframe', 0): '\n' #Just for completeness; this won't actually be looked up
-    }
-
-    codes = {
-        '0': ('attack', 0), '1': ('attack', 1), '2': ('special', 0), '3': ('special', 1), '4': ('jump', 0), 
-        '5': ('jump', 1), '6': ('shield', 0), '7': ('shield', 1), '8': ('taunt', 0), '9': ('taunt', 1), 
-
-        'A': ('moveHor', -6), 'B': ('moveHor', -5), 'C': ('moveHor', -4), 'D': ('moveHor', -3), 
-        'E': ('moveHor', -2), 'F': ('moveHor', -1), 'G': ('moveHor', 0), 'H': ('moveHor', 1), 'I': ('moveHor', 2), 
-        'J': ('moveHor', 3), 'K': ('moveHor', 4), 'L': ('moveHor', 5), 'M': ('moveHor', 6), 
-
-        'N': ('moveVert', -6), 'O': ('moveVert', -5), 'P': ('moveVert', -4), 'Q': ('moveVert', -3), 
-        'R': ('moveVert', -2), 'S': ('moveVert', -1), 'T': ('moveVert', 0), 'U': ('moveVert', 1), 'V': ('moveVert', 2), 
-        'W': ('moveVert', 3), 'X': ('moveVert', 4), 'Y': ('moveVert', 5), 'Z': ('moveVert', 6), 
-
-        'a': ('actHor', -6), 'b': ('actHor', -5), 'c': ('actHor', -4), 'd': ('actHor', -3), 
-        'e': ('actHor', -2), 'f': ('actHor', -1), 'g': ('actHor', 0), 'h': ('actHor', 1), 'i': ('actHor', 2), 
-        'j': ('actHor', 3), 'k': ('actHor', 4), 'l': ('actHor', 5), 'm': ('actHor', 6), 
-
-        'n': ('actVert', -6), 'o': ('actVert', -5), 'p': ('actVert', -4), 'q': ('actVert', -3), 
-        'r': ('actVert', -2), 's': ('actVert', -1), 't': ('actVert', 0), 'u': ('actVert', 1), 'v': ('actVert', 2), 
-        'w': ('actVert', 3), 'x': ('actVert', 4), 'y': ('actVert', 5), 'z': ('actVert', 6), 
-
-        ' ': ('frame', 0), '\n': ('preframe', 0) #Just for completeness; this won't actually be looked up
-    }
-    
-# This controller class is for keyboards. 
-# To help players perform angled inputs, this controller smooths directional inputs automatically. 
-class KeyboardController(BaseController):
+class KeyboardController(PhysicalController):
     def __init__(self,_bindings,_windows):
-        BaseController.__init__(self, _bindings, _windows)
-        self.type = 'Keyboard'
-        self.inputted = self.init_state_dict
-
-    def flushInputs(self):
-        BaseController.flushInputs(self)
-        self.inputted = self.init_state_dict
-
-    def pumpBuffer(self):
-        BaseController.pumpBuffer(self)
-        self.decay('moveHor')
-        self.decay('moveVert')
-        self.decay('actHor')
-        self.decay('actVert')
-
-    def decay(self, _primitive):
-        if self.inputted[_primitive] == 0: 
-            # Case one: current input is zero
-            self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['offDecay'])
-        elif self.state[_primitive] == 0:
-            # Case two: smoothed input is zero
-            pass
-        elif math.copysign(1, self.inputted[_primitive]) == math.copysign(1, self.state[_primitive]):
-            if abs(self.inputted[_primitive]) > abs(self.state[_primitive]):
-                # Case three: same direction, state is weaker
-                self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['onDecay'])
-            else:
-                # Case four: same direction, state is stronger
-                self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['offDecay'])
-        elif abs(self.inputted[_primitive]) > abs(self.state[_primitive]):
-            # Case five: opposite directions, state is weaker
-            self.state[_primitive] = self.inputted[_primitive]
-            self.pushPrimitive(_primitive, self.state[_primitive])
-        else:
-            # Case six: opposite directions, state is stronger
-            self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['againstDecay'])
-
-    def acceptDirection(self, _primitive, _value):
-        if _value == 0: 
-            # Case one: current input is zero
-            self.inputted[_primitive] = 0
-            self.pushPrimitive(_primitive, 0)
-        elif self.state[_primitive] == 0:
-            # Case two: smoothed input is zero
-            self.inputted[_primitive] = _value
-            self.state[_primitive] = _value
-            self.pushPrimitive(_primitive, _value)
-        elif math.copysign(1, _value) == math.copysign(1, self.state[_primitive]):
-            if abs(_value) > abs(self.state[_primitive]):
-                # Case three: same direction, state is weaker
-                self.inputted[_primitive] = _value+self.state[_primitive]
-                self.state[_primitive] = self.inputted[_primitive]
-                self.pushPrimitive(_primitive, self.state[_primitive])
-            else:
-                # Case four: same direction, state is stronger
-                self.inputted[_primitive] = _value
-                self.pushPrimitive(_primitive, _value)
-        elif abs(_value) > abs(self.state[_primitive]):
-            # Case five: opposite directions, state is weaker
-            self.inputted[_primitive] = _value
-            self.state[_primitive] = _value
-            self.pushPrimitive(_primitive, _value)
-        else:
-            # Case six: opposite directions, state is stronger
-            self.inputted[_primitive] = _value
-            self.pushPrimitive(_primitive, _value)
+        DigitalController.__init__(self, _bindings, _windows)
+        self.type = "Keyboard"
     
     def pushInput(self,_event):
         if _event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
@@ -285,206 +294,60 @@ class KeyboardController(BaseController):
         k = self.key_bindings.get(_event.key)
         if k:
             if _event.type == pygame.KEYDOWN:
-                for key in k[0]:
-                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
-                        self.acceptDirection(key[0], key[1])
-                    else: 
-                        self.state[key[0]] = key[1]
-                        self.pushPrimitive(key[0], key[1])
-                return k
+                for key in k[1]:
+                    self.acceptInput(key[0], key[1])
+                return k[1][0] # Return the first associated primitive input
             elif _event.type == pygame.KEYUP:
-                for key in k[1]:
-                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
-                        self.acceptDirection(key[0], key[1])
-                    else: 
-                        self.state[key[0]] = key[1]
-                        self.pushPrimitive(key[0], key[1])
-        return None
-
-    init_state_dict = {
-        'moveHor': 0,
-        'moveVert': 0,
-        'actHor': 0,
-        'actVert': 0,
-        'attack': 0,
-        'special': 0,
-        'jump': 0,
-        'shield': 0,
-        'taunt': 0
-    }
-
-# This controller class is for controllers that have no analog inputs, such as arcade controllers. 
-# To help players perform angled inputs, this controller smooths directional inputs automatically. 
-class ArcadeController(BaseController):
-    def __init__(self,_bindings,_windows):
-        BaseController.__init__(self, _bindings, _windows)
-        self.type = 'Arcade'
-        self.inputted = self.init_state_dict
-
-    def flushInputs(self):
-        BaseController.flushInputs(self)
-
-        self.inputted = self.init_state_dict
-
-    def pumpBuffer(self):
-        BaseController.pumpBuffer(self)
-        self.decay('moveHor')
-        self.decay('moveVert')
-        self.decay('actHor')
-        self.decay('actVert')
-
-    def decay(self, _primitive):
-        if self.inputted[_primitive] == 0: 
-            # Case one: current input is zero
-            self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['offDecay'])
-        elif self.state[_primitive] == 0:
-            # Case two: smoothed input is zero
-            pass
-        elif math.copysign(1, self.inputted[_primitive]) == math.copysign(1, self.state[_primitive]):
-            if abs(self.inputted[_primitive]) > abs(self.state[_primitive]):
-                # Case three: same direction, state is weaker
-                self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['onDecay'])
-            else:
-                # Case four: same direction, state is stronger
-                self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['offDecay'])
-        elif abs(self.inputted[_primitive]) > abs(self.state[_primitive]):
-            # Case five: opposite directions, state is weaker
-            self.state[_primitive] = self.inputted[_primitive]
-            self.pushPrimitive(_primitive, self.state[_primitive])
-        else:
-            # Case six: opposite directions, state is stronger
-            self.state[_primitive] = addFrom(self.state[_primitive], -self.windows['againstDecay'])
-
-    def acceptDirection(self, _primitive, _value):
-        if _value == 0: 
-            # Case one: current input is zero
-            self.inputted[_primitive] = 0
-            self.pushPrimitive(_primitive, 0)
-        elif self.state[_primitive] == 0:
-            # Case two: smoothed input is zero
-            self.inputted[_primitive] = _value
-            self.state[_primitive] = _value
-            self.pushPrimitive(_primitive, _value)
-        elif math.copysign(1, _value) == math.copysign(1, self.state[_primitive]):
-            if abs(_value) > abs(self.state[_primitive]):
-                # Case three: same direction, state is weaker
-                self.inputted[_primitive] = _value+self.state[_primitive]
-                self.state[_primitive] = self.inputted[_primitive]
-                self.pushPrimitive(_primitive, self.state[_primitive])
-            else:
-                # Case four: same direction, state is stronger
-                self.inputted[_primitive] = _value
-                self.pushPrimitive(_primitive, _value)
-        elif abs(_value) > abs(self.state[_primitive]):
-            # Case five: opposite directions, state is weaker
-            self.inputted[_primitive] = _value
-            self.state[_primitive] = _value
-            self.pushPrimitive(_primitive, _value)
-        else:
-            # Case six: opposite directions, state is stronger
-            self.inputted[_primitive] = _value
-            self.pushPrimitive(_primitive, _value)
-    
-    def pushInput(self,_event):
-        if _event.type not in [pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
-            return None
-        k = self.key_bindings.getButtonInput(_event.joy,_event.button)
-        if k:
-            if _event.type == pygame.JOYBUTTONDOWN:
                 for key in k[0]:
-                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
-                        self.acceptDirection(key[0], key[1])
-                    else: 
-                        self.state[key[0]] = key[1]
-                        self.pushPrimitive(key[0], key[1])
-                return k
-            elif _event.type == pygame.JOYBUTTONUP:
-                for key in k[1]:
-                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
-                        self.acceptDirection(key[0], key[1])
-                    else: 
-                        self.state[key[0]] = key[1]
-                        self.pushPrimitive(key[0], key[1])
+                    self.acceptInput(key[0], key[1])
         return None
-
-    init_state_dict = {
-        'moveHor': 0,
-        'moveVert': 0,
-        'actHor': 0,
-        'actVert': 0,
-        'attack': 0,
-        'special': 0,
-        'jump': 0,
-        'shield': 0,
-        'taunt': 0
-    }
     
-# This controller class is for controllers that have analog inputs, such as most home console 
-# game controllers. Since analog sticks are available, this controller handles analog inputs 
-# directly. Mapping buttons to directional inputs is possible, but no smoothing happens. 
-class GamepadController(BaseController):
-    def __init__(self,_padBindings):
+class GamepadController(PhysicalController):
+    def __init__(self,_padBindings,_windows):
         BaseController.__init__(self, _padBindings)
         self.type = 'Gamepad'
 
-    def axisLimit(self,_value,_bounds):
-        if abs(_value) < abs(_bounds[0]):
-            return 0
-        elif abs(_value) > abs(_bounds[1]):
-            return math.copysign(_bounds[1], _value)
-        else: return _value
-
     def pushInput(self,_event):
-        if _event.type not in [pygame.JOYAXISMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
+        if _event.type not in [pygame.JOYAXISMOTION, pygame.JOYBALLMOTION, pygame.JOYHATMOTION, \
+        pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
             return None
         if _event.type == pygame.JOYAXISMOTION: 
             #getAxiInput will get a pad and an axis, and return the value of that stick
             #by checking it along with the other axis of that joystick, if there is one.
             k = self.key_bindings.getAxisInput(_event.joy,_event.axis)
             if k:
-                for key in k:
-                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
-                        self.state[key[0]] = self.axisLimit(_event.value, key[1])
-                        self.pushPrimitive(key[0], self.state[key[0]])
-                    else: 
-                        self.state[key[0]] = key[1]
-                        self.pushPrimitive(key[0], key[1])
-                return k
+                bucket = self.analogBucket(_event.axis,_event.value)
+                for key in k[bucket]:
+                    self.acceptInput(key[0], key[1])
+                if bucket != 0:
+                    return k[bucket][0]
         elif _event.type == pygame.JOYBALLMOTION: 
             k = self.key_bindings.getBallInput(_event.joy,_event.ball)
             if k:
-                for key in k:
-                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
-                        self.state[key[0]] = self.axisLimit(_event.rel, key[1])
-                        self.pushPrimitive(key[0], self.state[key[0]])
-                    else: 
-                        self.state[key[0]] = key[1]
-                        self.pushPrimitive(key[0], key[1])
-                return k
+                bucket = self.analogBucket(_event.ball,_event.rel)
+                for key in k[bucket]:
+                    self.acceptInput(key[0], key[1])
+                if bucket != 0:
+                    return k[bucket][0]
         elif _event.type == pygame.JOYHATMOTION: 
             k = self.key_bindings.getHatInput(_event.joy,_event.hat)
             if k:
-                for key in k:
-                    if key[0] in ('moveHor', 'moveVert', 'actHor', 'actVert'):
-                        self.state[key[0]] = self.axisLimit(_event.value, key[1])
-                        self.pushPrimitive(key[0], self.state[key[0]])
-                    else: 
-                        self.state[key[0]] = key[1]
-                        self.pushPrimitive(key[0], key[1])
-                return k
+                bucket = self.analogBucket(_event.hat,_event.value)
+                for key in k[bucket]:
+                    self.acceptInput(key[0], key[1])
+                if bucket != 0:
+                    return k[bucket][0]
         elif _event.type == pygame.JOYBUTTONDOWN:
             k = self.key_bindings.getButtonInput(_event.joy,_event.button)
             if k: 
-                for key in k[0]:
-                    self.state[key[0]] = key[1]
-                    self.pushPrimitive(key[0], key[1])
-                return k
+                for key in k[1]:
+                    self.acceptInput(key[0], key[1])
+                return k[1][0]
         elif _event.type == pygame.JOYBUTTONUP: 
             k = self.key_bindings.getButtonInput(_event.joy,_event.button)
             if k: 
-                for key in k[1]:
-                    self.state[key[0]] = key[1]
-                    self.pushPrimitive(key[0], key[1])
+                for key in k[0]:
+                    self.acceptInput(key[0], key[1])
         return None
     
     def getKeysForaction(self,_action):
