@@ -234,10 +234,6 @@ class BaseController():
 #         weaker. (If the input is in the opposite direction and stronger, the current state 
 #         immediately changes to that of the input.) All three must be set for a particular 
 #         primitive to cause the input to decay. 
-#     
-#     (.+)(.+)Smoothed: Whether a given input is smoothed. The first parenthesized group is the 
-#         name of the input, while the second is the name of the primitive. Smoothing happens if 
-#         and only if this entry is in the windows dict; the value it maps to is irrelevant. 
 #         
 
 class PhysicalController(BaseController):
@@ -280,8 +276,8 @@ class PhysicalController(BaseController):
             self.smoothed[_primitive] = addFrom(self.smoothed[_primitive], -self.windows[_primitive+'AgainstDecay'])
         self.pushPrimitive(_primitive, self.analogBucket('decay'+_primitive, self.smoothed[_primitive]))
 
-    def acceptInput(self, _primitive, _input, _value):
-        if not _input+_primitive+'Smoothed' in self.windows:
+    def acceptInput(self, _primitive, _input, _value, _smoothed=False):
+        if not _smoothed:
             self.inputs[_primitive] = _value
             self.smoothed[_primitive] = _value
         elif _value == 0: 
@@ -333,11 +329,13 @@ class KeyboardController(PhysicalController):
         if k:
             if _event.type == pygame.KEYDOWN:
                 for key in k[1]:
-                    self.acceptInput(key[0], key[1])
+                    if len(key) == 3: self.acceptInput(key[0], _event.key.name(), key[1], key[2])
+                    else: self.acceptInput(key[0], _event.key.name(), key[1])
                 return k[1][0] # Return the first associated primitive input
             elif _event.type == pygame.KEYUP:
                 for key in k[0]:
-                    self.acceptInput(key[0], key[1])
+                    if len(key) == 3: self.acceptInput(key[0], _event.key.name(), key[1], key[2])
+                    else: self.acceptInput(key[0], _event.key.name(), key[1])
         return None
     
 class GamepadController(PhysicalController):
@@ -356,7 +354,8 @@ class GamepadController(PhysicalController):
             if k:
                 bucket = self.analogBucket(_event.axis,_event.value)
                 for key in k[bucket]:
-                    self.acceptInput(key[0], key[1])
+                    if len(key) == 3: self.acceptInput(key[0], _event.axis, key[1], key[2])
+                    else: self.acceptInput(key[0], _event.axis, key[1])
                 if bucket != 0:
                     return k[bucket][0]
         elif _event.type == pygame.JOYBALLMOTION: 
@@ -364,7 +363,8 @@ class GamepadController(PhysicalController):
             if k:
                 bucket = self.analogBucket(_event.ball,_event.rel)
                 for key in k[bucket]:
-                    self.acceptInput(key[0], key[1])
+                    if len(key) == 3: self.acceptInput(key[0], _event.ball, key[1], key[2])
+                    else: self.acceptInput(key[0], _event.ball, key[1])
                 if bucket != 0:
                     return k[bucket][0]
         elif _event.type == pygame.JOYHATMOTION: 
@@ -372,20 +372,23 @@ class GamepadController(PhysicalController):
             if k:
                 bucket = self.analogBucket(_event.hat,_event.value)
                 for key in k[bucket]:
-                    self.acceptInput(key[0], key[1])
+                    if len(key) == 3: self.acceptInput(key[0], _event.hat, key[1], key[2])
+                    else: self.acceptInput(key[0], _event.hat, key[1])
                 if bucket != 0:
                     return k[bucket][0]
         elif _event.type == pygame.JOYBUTTONDOWN:
             k = self.key_bindings.getButtonInput(_event.joy,_event.button)
             if k: 
                 for key in k[1]:
-                    self.acceptInput(key[0], key[1])
+                    if len(key) == 3: self.acceptInput(key[0], _event.button, key[1], key[2])
+                    else: self.acceptInput(key[0], _event.button, key[1])
                 return k[1][0]
         elif _event.type == pygame.JOYBUTTONUP: 
             k = self.key_bindings.getButtonInput(_event.joy,_event.button)
             if k: 
                 for key in k[0]:
-                    self.acceptInput(key[0], key[1])
+                    if len(key) == 3: self.acceptInput(key[0], _event.button, key[1], key[2])
+                    else: self.acceptInput(key[0], _event.button, key[1])
         return None
     
     def getKeysForaction(self,_action):
