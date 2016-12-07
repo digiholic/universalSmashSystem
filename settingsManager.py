@@ -11,7 +11,6 @@ try:
 except ImportError:
     from ConfigParser import SafeConfigParser
 
-
 settings = None
 sfx_lib = None
 
@@ -92,20 +91,26 @@ def getControls(_playerNum):
     controls = None
     
     control_type = settings.setting['controlType_'+str(_playerNum)]  
-    if not control_type == 'Keyboard':
+    if control_type == 'Keyboard':
+        try: 
+            controls = settings.setting['controls_' + str(_playerNum)]
+        except:
+            controls = engine.controller.KeyboardController({})
+    elif control_type == 'Gamepad':
         try:
             controls = settings.setting[control_type]
-            #Move the timing windows from the default controls to the new one
-            controls.timing_window = settings.setting['controls_' + str(_playerNum)].timing_window
+            controls.windows = settings.setting['controls_' + str(_playerNum)].windows
         except:
-            pass #Can't find controller, gonna load normal
-    
-    if not controls:
+            try: 
+                controls = settings.setting['controls_' + str(_playerNum)]
+            except: 
+                controls = engine.controller.GamepadController({})
+    else: # Add more controller types as applicable
         try:
             controls = settings.setting['controls_' + str(_playerNum)]
         except:
-            controls = engine.controller.Controller({})
-    
+            controls = engine.controller.KeyboardController({})
+
     return controls
 
 """
@@ -242,6 +247,44 @@ class Settings():
                 self.setting[control_type]
             except:
                 self.setting['controlType_'+str(player_num)] = 'Keyboard'
+
+            essential_entries = {
+                'bufferLength': 8, 
+                'moveHorThreshold1': 0.5, 'moveHorThreshold2': 1.5, 'moveHorThreshold3': 2.5, 
+                'moveHorThreshold4': 3.5, 'moveHorThreshold5': 4.5, 'moveHorThreshold6': 5.5, 
+                'moveVertThreshold1': 0.5, 'moveVertThreshold2': 1.5, 'moveVertThreshold3': 2.5, 
+                'moveVertThreshold4': 3.5, 'moveVertThreshold5': 4.5, 'moveVertThreshold6': 5.5, 
+                'actHorThreshold1': 0.5, 'actHorThreshold2': 1.5, 'actHorThreshold3': 2.5, 
+                'actHorThreshold4': 3.5, 'actHorThreshold5': 4.5, 'actHorThreshold6': 5.5, 
+                'actVertThreshold1': 0.5, 'actVertThreshold2': 1.5, 'actVertThreshold3': 2.5, 
+                'actVertThreshold4': 3.5, 'actVertThreshold5': 4.5, 'actVertThreshold6': 5.5, 
+                'attackThreshold1': 0.5, 'attackThreshold2': 1.5, 'attackThreshold3': 2.5, 
+                'specialThreshold1': 0.5, 'specialThreshold2': 1.5, 'specialThreshold3': 2.5, 
+                'jumpThreshold1': 0.5, 'jumpThreshold2': 1.5, 'jumpThreshold3': 2.5, 
+                'shieldThreshold1': 0.5, 'shieldThreshold2': 1.5, 'shieldThreshold3': 2.5, 
+                'tauntThreshold1': 0.5, 'tauntThreshold2': 1.5, 'tauntThreshold3': 2.5, 
+                'pauseThreshold1': 0.5, 'pauseThreshold2': 1.5, 'pauseThreshold3': 2.5, 
+            }
+
+            keyboard_recommended_windows = {
+                'moveHorOffDecay': .1, 'moveHorOnDecay': .02, 'moveHorAgainstDecay': .5, 
+                'moveVertOffDecay': .1, 'moveVertOnDecay': .02, 'moveVertAgainstDecay': .5, 
+                'actHorOffDecay': .1, 'actHorOnDecay': .02, 'actHorAgainstDecay': .5, 
+                'actVertOffDecay': .1, 'actVertOnDecay': .02, 'actVertAgainstDecay': .5, 
+            }
+
+            controller_recommended_windows = {
+                'a1Threshold1': 0.2, 'a1Threshold2': 0.3, 'a1Threshold3': 0.5, 
+                'a1Threshold4': 0.7, 'a1Threshold5': 0.8, 'a1Threshold6': 0.9, 
+                'a2Threshold1': 0.2, 'a2Threshold2': 0.3, 'a2Threshold3': 0.5, 
+                'a2Threshold4': 0.7, 'a2Threshold5': 0.8, 'a2Threshold6': 0.9, 
+                'a3Threshold1': 0.2, 'a3Threshold2': 0.3, 'a3Threshold3': 0.5, 
+                'a3Threshold4': 0.7, 'a3Threshold5': 0.8, 'a3Threshold6': 0.9, 
+                'a4Threshold1': 0.2, 'a4Threshold2': 0.3, 'a4Threshold3': 0.5, 
+                'a4Threshold4': 0.7, 'a4Threshold5': 0.8, 'a4Threshold6': 0.9, 
+                'a5Threshold1': 0.2, 'a5Threshold2': 0.3, 'a5Threshold3': 0.5, 
+                'a5Threshold4': 0.7, 'a5Threshold5': 0.8, 'a5Threshold6': 0.9, 
+            }
             
             timing_window = {'smash_window': 4,
                              'repeat_window': 8,
