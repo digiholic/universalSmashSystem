@@ -9,12 +9,6 @@ from global_functions import *
 # values that are parsed over in buffer queries. 
 #
 # Applicable windows:
-#
-#     (.+)Threshold[1-6]: Analog input thresholds. The parenthesized group is the name of the 
-#         input. This is used as the threshold of bucket division when divvying up the named 
-#         analog input. Not all threshold windows need to exist for a particular input, but any 
-#         particular bucket is possible only if the corresponding window is set. This means that 
-#         an analog input with no thresholds set can only return zero. 
 #     
 #     bufferLength: The maximum frame length of the buffer. Smaller buffers may (and probably 
 #         will) be queried if applicable, but automatic buffer pruning ensures that the buffer can 
@@ -36,27 +30,6 @@ class BaseController():
         self.state = self.init_dict
         self.buffer = list()
         self.frame_count = 0
-
-    def analogBucket(self,_input,_state):
-        if _input +'Threshold6' in self.windows:
-            if _state < -self.windows[_input + 'Threshold6']: return -6
-            elif _state > self.windows[_input + 'Threshold6']: return 6
-        if _input +'Threshold5' in self.windows:
-            if _state < -self.windows[_input + 'Threshold5']: return -5
-            elif _state > self.windows[_input + 'Threshold5']: return 5
-        if _input +'Threshold4' in self.windows:
-            if _state < -self.windows[_input + 'Threshold4']: return -4
-            elif _state > self.windows[_input + 'Threshold4']: return 4
-        if _input +'Threshold3' in self.windows:
-            if _state < -self.windows[_input + 'Threshold3']: return -3
-            elif _state > self.windows[_input + 'Threshold3']: return 3
-        if _input +'Threshold2' in self.windows:
-            if _state < -self.windows[_input + 'Threshold2']: return -2
-            elif _state > self.windows[_input + 'Threshold2']: return 2
-        if _input +'Threshold1' in self.windows:
-            if _state < -self.windows[_input + 'Threshold1']: return -1
-            elif _state > self.windows[_input + 'Threshold1']: return 1
-        return 0
 
     # Please call every time a primitive input state changes
     def pushPrimitive(self,_primitive,_state):
@@ -224,6 +197,12 @@ class BaseController():
 # decay, all of which may be helpful with physical controllers. 
 #
 # Applicable windows:
+#
+#     (.+)Threshold[1-6]: Analog input thresholds. The parenthesized group is the name of the 
+#         input. This is used as the threshold of bucket division when divvying up the named 
+#         analog input. Not all threshold windows need to exist for a particular input, but any 
+#         particular bucket is possible only if the corresponding window is set. This means that 
+#         an analog input with no thresholds set can only return zero. 
 #     
 #     (.+)((OffDecay)|(OnDecay)|(AgainstDecay)): The per-frame decays. The first parenthesized 
 #         group is the name of the primitive to be decayed, and the second parenthesized group 
@@ -252,6 +231,27 @@ class PhysicalController(BaseController):
         for primitive in smoothed:
             self.decay(primitive)
 
+    def analogBucket(self,_input,_state):
+        if _input +'Threshold6' in self.windows:
+            if _state < -self.windows[_input + 'Threshold6']: return -6
+            elif _state > self.windows[_input + 'Threshold6']: return 6
+        if _input +'Threshold5' in self.windows:
+            if _state < -self.windows[_input + 'Threshold5']: return -5
+            elif _state > self.windows[_input + 'Threshold5']: return 5
+        if _input +'Threshold4' in self.windows:
+            if _state < -self.windows[_input + 'Threshold4']: return -4
+            elif _state > self.windows[_input + 'Threshold4']: return 4
+        if _input +'Threshold3' in self.windows:
+            if _state < -self.windows[_input + 'Threshold3']: return -3
+            elif _state > self.windows[_input + 'Threshold3']: return 3
+        if _input +'Threshold2' in self.windows:
+            if _state < -self.windows[_input + 'Threshold2']: return -2
+            elif _state > self.windows[_input + 'Threshold2']: return 2
+        if _input +'Threshold1' in self.windows:
+            if _state < -self.windows[_input + 'Threshold1']: return -1
+            elif _state > self.windows[_input + 'Threshold1']: return 1
+        return 0
+
     def decay(self, _primitive):
         if not all(lambda k: _primitive+k+'Decay' in self.windows for k in ['Off', 'On', 'Against']):
             self.smoothed[_primitive] = self.inputs[_primitive]
@@ -276,8 +276,8 @@ class PhysicalController(BaseController):
             self.smoothed[_primitive] = addFrom(self.smoothed[_primitive], -self.windows[_primitive+'AgainstDecay'])
         self.pushPrimitive(_primitive, self.analogBucket('decay'+_primitive, self.smoothed[_primitive]))
 
-    def acceptInput(self, _primitive, _input, _value, _smoothed=False):
-        if not _smoothed:
+    def acceptInput(self, _primitive, _input, _value, _maxValue = None):
+        if _maxValue is None:
             self.inputs[_primitive] = _value
             self.smoothed[_primitive] = _value
         elif _value == 0: 
@@ -290,7 +290,7 @@ class PhysicalController(BaseController):
         elif math.copysign(1, _value) == math.copysign(1, self.smoothed[_primitive]):
             if abs(_value) > abs(self.state[_primitive]):
                 # Case three: same direction, state is weaker
-                self.inputs[_primitive] = _value+self.smoothed[_primitive]
+                self.inputs[_primitive] = bounded(_value+self.smoothed[_primitive], -_maxValue, _maxValue)
                 self.smoothed[_primitive] = self.inputs[_primitive]
             else:
                 # Case four: same direction, state is stronger
@@ -354,7 +354,7 @@ class GamepadController(PhysicalController):
             if k:
                 bucket = self.analogBucket(_event.axis,_event.value)
                 for key in k[bucket]:
-                    if len(key) == 3: self.acceptInput(key[0], _event.axis, key[1], key[2])
+                    if len(key) == 3: self.acceptInput(key[0], 'axis'+_event.axis, key[1], key[2])
                     else: self.acceptInput(key[0], _event.axis, key[1])
                 if bucket != 0:
                     return k[bucket][0]
@@ -363,7 +363,7 @@ class GamepadController(PhysicalController):
             if k:
                 bucket = self.analogBucket(_event.ball,_event.rel)
                 for key in k[bucket]:
-                    if len(key) == 3: self.acceptInput(key[0], _event.ball, key[1], key[2])
+                    if len(key) == 3: self.acceptInput(key[0], 'ball'+_event.ball, key[1], key[2])
                     else: self.acceptInput(key[0], _event.ball, key[1])
                 if bucket != 0:
                     return k[bucket][0]
@@ -372,7 +372,7 @@ class GamepadController(PhysicalController):
             if k:
                 bucket = self.analogBucket(_event.hat,_event.value)
                 for key in k[bucket]:
-                    if len(key) == 3: self.acceptInput(key[0], _event.hat, key[1], key[2])
+                    if len(key) == 3: self.acceptInput(key[0], 'hat'+_event.hat, key[1], key[2])
                     else: self.acceptInput(key[0], _event.hat, key[1])
                 if bucket != 0:
                     return k[bucket][0]
@@ -380,14 +380,14 @@ class GamepadController(PhysicalController):
             k = self.key_bindings.getButtonInput(_event.joy,_event.button)
             if k: 
                 for key in k[1]:
-                    if len(key) == 3: self.acceptInput(key[0], _event.button, key[1], key[2])
+                    if len(key) == 3: self.acceptInput(key[0], 'button'+_event.button, key[1], key[2])
                     else: self.acceptInput(key[0], _event.button, key[1])
                 return k[1][0]
         elif _event.type == pygame.JOYBUTTONUP: 
             k = self.key_bindings.getButtonInput(_event.joy,_event.button)
             if k: 
                 for key in k[0]:
-                    if len(key) == 3: self.acceptInput(key[0], _event.button, key[1], key[2])
+                    if len(key) == 3: self.acceptInput(key[0], 'button'+_event.button, key[1], key[2])
                     else: self.acceptInput(key[0], _event.button, key[1])
         return None
     
