@@ -15,3 +15,6 @@ class doAction(SubAction):
         
     def getDisplayName(self):
         return 'Change Action: ' + self.action
+    
+    def getDataLine(self, _parent):
+        return dataSelector.ActionSelectorLine(_parent,_parent.interior,'Change Action:',self,'action')

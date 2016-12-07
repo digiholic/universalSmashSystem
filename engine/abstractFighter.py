@@ -288,6 +288,7 @@ class AbstractFighter():
         
         self.stats = self.default_stats.copy()
         self.variables = self.default_vars.copy()
+        self.keys_held = dict()
         
         self.status_effects = list()
         self.data_log = None

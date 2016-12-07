@@ -5,6 +5,7 @@ from tkFileDialog import askopenfile,askdirectory
 import os
 import tkMessageBox
 import engine.action
+import inspect
 
 class dataLine(Frame):
     """
@@ -102,6 +103,7 @@ class dataLine(Frame):
                 return False
         else:
             return True    
+        
 class dataSelector(dataLine):
     """
     Data Selector is a dataLine that can be selected. These will usually open up a config window.
@@ -633,3 +635,75 @@ class XYDataLine(dataLine):
                 self.y_relative_button.config(state=DISABLED)
                 
         self.changeVariable()
+        
+class ActionSelectorLine(dataLine):
+    def __init__(self,_root,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _root, _parent, _name)
+        
+        self.target_object = _target_object
+        self.var_name = _varname
+        
+        self.act_list = []
+        
+        if self.root.getFighter():
+            fighter = self.root.getFighter()
+            if isinstance(fighter.actions, engine.actionLoader.ActionLoader):
+                self.act_list.extend(fighter.actions.getAllActions())
+            else:
+                for name,_ in inspect.getmembers(fighter.actions, inspect.isclass):
+                    self.act_list.append(name)
+        
+        self.action_data = StringVar()
+        self.action_entry = OptionMenu(self,self.action_data,*self.act_list)
+        
+        self.action_data.trace('w', self.changeVariable)
+       
+    def changeVariable(self,*args):
+        if self.target_object:
+            setattr(self.target_object,self.var_name,self.action_data.get())
+        dataLine.changeVariable(self)
+        
+    def packChildren(self):
+        dataLine.packChildren(self)
+        self.action_entry.pack(side=LEFT,fill=BOTH)
+    
+    def update(self):
+        if self.root.getFighter():
+            fighter = self.root.getFighter()
+            if isinstance(fighter.actions, engine.actionLoader.ActionLoader):
+                self.act_list.extend(fighter.actions.getAllActions())
+            else:
+                for name,_ in inspect.getmembers(fighter.actions, inspect.isclass):
+                    self.act_list.append(name)
+        if self.target_object:            
+            self.action_data.set(getattr(self.target_object, self.var_name))
+        
+        self.packChildren()
+        
+class TransitionLine(dataLine):
+    def __init__(self,_root,_parent,_name,_target_object,_varname):
+        dataLine.__init__(self, _root, _parent, _name)
+        
+        self.target_object = _target_object
+        self.var_name = _varname
+        
+        self.tran_list = engine.baseActions.state_dict.keys()
+        
+        self.tran_data = StringVar()
+        self.tran_entry = OptionMenu(self,self.tran_data,*self.tran_list)
+        
+        self.tran_data.trace('w', self.changeVariable)
+       
+    def changeVariable(self,*args):
+        if self.target_object:
+            setattr(self.target_object,self.var_name,self.tran_data.get())
+        dataLine.changeVariable(self)
+        
+    def packChildren(self):
+        dataLine.packChildren(self)
+        self.tran_entry.pack(side=LEFT,fill=BOTH)
+    
+    def update(self):
+        if self.target_object:            
+            self.tran_data.set(getattr(self.target_object, self.var_name))
+        self.packChildren()

@@ -24,3 +24,6 @@ class debugAction(SubAction):
     
     def getDisplayName(self):
         return 'Print Debug'
+    
+    def getDataLine(self, _parent):
+        return dataSelector.StringLine(_parent, _parent.interior, 'Print:', self, 'statement')

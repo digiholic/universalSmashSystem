@@ -19,3 +19,6 @@ class transitionState(SubAction):
     
     def getDisplayName(self):
         return 'Apply Transition State: ' + str(self.transition)
+
+    def getDataLine(self, _parent):
+        return dataSelector.TransitionLine(_parent,_parent.interior,'Transition State:',self,'transition')

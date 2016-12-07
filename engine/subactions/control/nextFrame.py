@@ -11,3 +11,6 @@ class nextFrame(SubAction):
     
     def getDisplayName(self):
         return 'Next Frame'
+
+    def getDataLine(self, _parent):
+        return SubAction.getDataLine(self, _parent)
