@@ -105,7 +105,7 @@ def getControls(_playerNum):
                 controls = settings.setting['controls_' + str(_playerNum)]
             except: 
                 controls = engine.controller.GamepadController({})
-    else: # Add more controller types as applicable
+    else: # Add more controller types before this one as applicable
         try:
             controls = settings.setting['controls_' + str(_playerNum)]
         except:
@@ -266,14 +266,14 @@ class Settings():
                 'pauseThreshold1': 0.5, 'pauseThreshold2': 1.5, 'pauseThreshold3': 2.5, 
             }
 
-            keyboard_recommended_windows = {
-                'moveHorOffDecay': .1, 'moveHorOnDecay': .02, 'moveHorAgainstDecay': .5, 
-                'moveVertOffDecay': .1, 'moveVertOnDecay': .02, 'moveVertAgainstDecay': .5, 
-                'actHorOffDecay': .1, 'actHorOnDecay': .02, 'actHorAgainstDecay': .5, 
-                'actVertOffDecay': .1, 'actVertOnDecay': .02, 'actVertAgainstDecay': .5, 
+            keyboard_entries = {
+                'horLaggerZeroDecay': 2, 'horLaggerStrongDecay': 0, 'horLaggerWeakDecay': 0, 
+                'horLaggerOverrideDecay': 2, 'horLaggerAgainstDecay': 0, 
+                'horLeaderZeroDecay': 0, 'horLeaderStrongDecay': 0, 'horLeaderWeakDecay': 0,
+                'horLeaderOverrideDecay': 2, 'horLeaderAgainstDecay': 2, 
             }
 
-            controller_recommended_windows = {
+            controller_entries = {
                 'a1Threshold1': 0.2, 'a1Threshold2': 0.3, 'a1Threshold3': 0.5, 
                 'a1Threshold4': 0.7, 'a1Threshold5': 0.8, 'a1Threshold6': 0.9, 
                 'a2Threshold1': 0.2, 'a2Threshold2': 0.3, 'a2Threshold3': 0.5, 
@@ -286,15 +286,17 @@ class Settings():
                 'a5Threshold4': 0.7, 'a5Threshold5': 0.8, 'a5Threshold6': 0.9, 
             }
             
-            timing_window = {'smash_window': 4,
-                             'repeat_window': 8,
-                             'buffer_window': 8,
-                             'smoothing_window': 64
-                             }
-            
-            for key in timing_window.keys():
+            for key in essential_entries.keys():
                 if self.parser.has_option(group_name, key):
-                    timing_window[key] = int(self.parser.get(group_name,key))
+                    windows[key] = int(self.parser.get(group_name,key))
+            if control_type == 'Keyboard':
+                for key in keyboard_entries.keys():
+                    if self.parser.has_option(group_name, key):
+                        windows[key] = int(self.parser.get(group_name,key))
+            if control_type == 'Gamepad':
+                for key in controller_entries.keys():
+                    if self.parser.has_option(group_name, key):
+                        windows[key] = int(self.parser.get(group_name,key))
             
             for opt in self.parser.options(group_name):
                 if self.key_name_map.has_key(opt):

@@ -252,15 +252,12 @@ class BaseController():
 #
 # Applicable windows:
 #     
-#     (.+)((OffDecay)|(OnDecay)|(AgainstDecay)): The per-frame decays. The first parenthesized 
-#         group is the name of the primitive to be decayed, and the second parenthesized group 
-#         is the type of decay. Each turn, the primitive input is added to or subtracted from to 
-#         make it closer to zero. This value is OnDecay if the input is in the same direction as 
-#         the currently held input and stronger, OffDecay if the input is zero or in the same 
-#         direction but weaker, or againstDecay if the input is in the opposite direction and 
-#         weaker. (If the input is in the opposite direction and stronger, the current state 
-#         immediately changes to that of the input.) All three must be set for a particular 
-#         primitive to cause the input to decay. 
+#     (.+)((Zero)|(Strong)|(Weak)|(Override)|(Against))Decay: The per-frame decays. The first 
+#         parenthesized group is the name of the input to be decayed, and the second parenthesized 
+#         group is the type of decay. Each turn, the input is added to or subtracted from to make 
+#         it closer to zero, or in certain cases, the current input. This value depends on the 
+#         current state of the inputs dict. All five decays must be set for a particular primitive 
+#         to cause the input to decay. 
 #         
 
 class PhysicalController(BaseController):
@@ -288,13 +285,13 @@ class PhysicalController(BaseController):
             # Case two: smoothed input is zero
             pass
         elif math.copysign(1, self.inputs[_input]) == math.copysign(1, self.state[_input]):
-            if abs(self.inputs[_input]) > abs(self.inputs[_input]):
+            if abs(self.inputs[_input]) >= abs(self.inputs[_input]):
                 # Case three: same direction, state is weaker
                 self.state[_input] = addFrom(self.state[_input], -self.windows[_input+'StrongDecay'])
             else:
                 # Case four: same direction, state is stronger
                 self.state[_input] = addFrom(self.state[_input], -self.windows[_input+'WeakDecay'])
-        elif abs(self.inputs[_input]) > abs(self.state[_input]):
+        elif abs(self.inputs[_input]) >= abs(self.state[_input]):
             # Case five: opposite directions, state is weaker
             self.state[_input] = addFrom(self.state[_input], -self.windows[_input+'OverrideDecay'], self.inputs[_input])
         else:
@@ -346,14 +343,20 @@ class KeyboardController(PhysicalController):
         if k:
             if _event.type == pygame.KEYDOWN:
                 for key in k[1]:
-                    if len(key) == 3: self.acceptInput(key[0], key[1], key[2])
-                    else: self.acceptInput(key[0], key[1])
+                    for bounds, act in key:
+                        if inIntervals(self.state, bounds):
+                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
+                            else: self.acceptInput(act[0], act[1])
+                            break
                 if len(k[1]) > 0:
                     return k[1][0] # Return the first associated primitive input
             elif _event.type == pygame.KEYUP:
                 for key in k[0]:
-                    if len(key) == 3: self.acceptInput(key[0], key[1], key[2])
-                    else: self.acceptInput(key[0], key[1])
+                    for bounds, act in key:
+                        if inIntervals(self.state, bounds):
+                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
+                            else: self.acceptInput(act[0], act[1])
+                            break
         return None
     
 class GamepadController(PhysicalController):
@@ -373,8 +376,11 @@ class GamepadController(PhysicalController):
             if k:
                 bucket = self.analogBucket(_event.axis,_event.value)
                 for key in k[bucket]:
-                    if len(key) == 3: self.acceptInput(key[0], key[1], key[2])
-                    else: self.acceptInput(key[0], key[1])
+                    for bounds, act in key:
+                        if inIntervals(self.state, bounds):
+                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
+                            else: self.acceptInput(act[0], act[1])
+                            break
                 if bucket != 0 and len(k[bucket]) > 0:
                     return k[bucket][0]
         elif _event.type == pygame.JOYBALLMOTION: 
@@ -383,37 +389,44 @@ class GamepadController(PhysicalController):
             if k:
                 bucket = self.analogBucket(_event.ball,_event.rel)
                 for key in k[bucket]:
-                    if len(key) == 3: self.acceptInput(key[0], key[1], key[2])
-                    else: self.acceptInput(key[0], key[1])
+                    for bounds, act in key:
+                        if inIntervals(self.state, bounds):
+                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
+                            else: self.acceptInput(act[0], act[1])
+                            break
                 if bucket != 0 and len(k[bucket]) > 0:
                     return k[bucket][0]
         elif _event.type == pygame.JOYHATMOTION: 
             k = self.key_bindings.get('hat'+str(_event.hat))
             if k:
-                for key in k[0][_event.value[0]]:
-                    if len(key) == 3: self.acceptInput(key[0], key[1], key[2])
-                    else: self.acceptInput(key[0], key[1])
-                for key in k[1][_event.value[1]]:
-                    if len(key) == 3: self.acceptInput(key[0], key[1], key[2])
-                    else: self.acceptInput(key[0], key[1])
-                if abs(bucket_x) > abs(bucket_y) and len(k[0][_event.value[0]]) > 0:
-                    return k[0][bucket_x][0]
-                elif abs(bucket_y) >= abs(bucket_x) and len(k[1][_event.value[1]]) > 0:
-                    return k[1][bucket_y][0]
+                for key in k[_event.value]:
+                    for bounds, act in key:
+                        if inIntervals(self.state, bounds):
+                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
+                            else: self.acceptInput(act[0], act[1])
+                            break
+                if len(k[_event.value]) > 0:
+                    return k[_event.value][0]
         elif _event.type == pygame.JOYBUTTONDOWN:
             k = self.key_bindings.get('button'+str(_event.button))
             if k: 
                 for key in k[1]:
-                    if len(key) == 3: self.acceptInput(key[0], key[1], key[2])
-                    else: self.acceptInput(key[0], key[1])
+                    for bounds, act in key:
+                        if inIntervals(self.state, bounds):
+                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
+                            else: self.acceptInput(act[0], act[1])
+                            break
                 if len(k[1]) > 0:
                     return k[1][0]
         elif _event.type == pygame.JOYBUTTONUP: 
             k = self.key_bindings.get('button'+str(_event.button))
             if k: 
                 for key in k[0]:
-                    if len(key) == 3: self.acceptInput(key[0], key[1], key[2])
-                    else: self.acceptInput(key[0], key[1])
+                    for bounds, act in key:
+                        if inIntervals(self.state, bounds):
+                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
+                            else: self.acceptInput(act[0], act[1])
+                            break
         return None
     
     def getKeysForaction(self,_action):
