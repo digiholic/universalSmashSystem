@@ -563,8 +563,11 @@ class XYDataLine(dataLine):
             self.y_relative_data = IntVar()
             self.y_relative_button = Checkbutton(self,variable=self.x_relative_data,anchor="w",bg=self.bg.get())
         
-        self.x_data.set(getattr(self.target_object, self.x_var_name))
-        self.y_data.set(getattr(self.target_object, self.y_var_name))
+        x_value = getattr(self.target_object, self.x_var_name)
+        y_value = getattr(self.target_object, self.y_var_name)
+        
+        self.x_data.set(x_value)
+        self.y_data.set(y_value)
         
         self.x_data.trace('w', self.changeVariable)
         self.y_data.trace('w', self.changeVariable)
@@ -576,17 +579,26 @@ class XYDataLine(dataLine):
         self.x_enabled_data.trace('w', self.changeEnabled)
         self.y_enabled_data.trace('w', self.changeEnabled)
         
+        if x_value is not None:
+            self.x_enabled_data.set(1)
+        if y_value is not None:
+            self.y_enabled_data.set(1)
+            
     def changeVariable(self, *args):
         if hasattr(self.target_object, self.x_var_name):
             if bool(self.x_enabled_data.get()): #if it's disabled, set it to None
-                setattr(self.target_object, self.x_var_name, None)
+                x = float(self.x_data.get()) if not self.x_data.get() == '' else 0
+                setattr(self.target_object, self.x_var_name, x)
             else:
-                setattr(self.target_object, self.x_var_name, self.x_data.get())
+                setattr(self.target_object, self.x_var_name, None)
+                
         if hasattr(self.target_object, self.y_var_name):
             if bool(self.y_enabled_data.get()):
-                setattr(self.target_object, self.y_var_name, None)
+                y = float(self.y_data.get()) if not self.y_data.get() == '' else 0
+                setattr(self.target_object, self.y_var_name, y)
             else:
-                setattr(self.target_object, self.y_var_name, self.y_data.get())
+                setattr(self.target_object, self.y_var_name, None)
+                
         if self.x_rel_var_name and hasattr(self.target_object, self.x_rel_var_name):
             setattr(self.target_object, self.x_rel_var_name, self.x_relative_data.get())
         if self.y_rel_var_name and hasattr(self.target_object, self.y_rel_var_name):
@@ -622,6 +634,7 @@ class XYDataLine(dataLine):
                 self.x_relative_button.config(state=NORMAL)
         else:
             self.x_entry.config(state=DISABLED)
+            self.x_data.set(0)
             if self.x_rel_var_name:
                 self.x_relative_button.config(state=DISABLED)
         
@@ -631,6 +644,7 @@ class XYDataLine(dataLine):
                 self.y_relative_button.config(state=NORMAL)
         else:
             self.y_entry.config(state=DISABLED)
+            self.y_data.set(0)
             if self.y_rel_var_name:
                 self.y_relative_button.config(state=DISABLED)
                 

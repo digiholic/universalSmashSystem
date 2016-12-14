@@ -26,7 +26,8 @@ class Sprite(pygame.sprite.Sprite):
         rotated_h = abs(w*unit_vector[1])+abs(h*unit_vector[0])
         dx = (rotated_w-w)/2.0
         dy = (rotated_h-h)/2.0
-        new_off = (int((_offset[0]+self.spriteOffset[0]*self.scale) * _scale - dx - (self.scale-1)*_scale*self.rect.width*.5), int((_offset[1]+self.spriteOffset[1]*self.scale) * _scale - dy - (self.scale-1)*_scale*self.rect.height*.5))
+        new_off = (int((_offset[0]+self.spriteOffset[0]*self.scale) * _scale - dx - (self.scale-1)*_scale*self.rect.width*.5), 
+                   int((_offset[1]+self.spriteOffset[1]*self.scale) * _scale - dy - (self.scale-1)*_scale*self.rect.height*.5))
         w = max(0,w)
         h = max(0,h)
         try:

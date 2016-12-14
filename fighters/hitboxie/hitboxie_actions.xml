@@ -28,7 +28,6 @@
 				<yPos>0</yPos>
 			</shiftPosition>
 			<shiftSprite>
-				<xPos>0</xPos>
 				<yPos>0</yPos>
 			</shiftSprite>
 			
@@ -52,6 +51,18 @@
 			
 			<setFrame>0</setFrame>
 			<transitionState>airControl</transitionState>
+			
+			<createHitbox>
+				<name>dashHitbox</name>
+				<center>0,0</center>
+				<size>70,70</size>
+				<damage>2</damage>
+				<base_knockback>10</base_knockback>
+				<knockback_growth>0.1</knockback_growth>
+				<trajectory>20</trajectory>
+			</createHitbox>
+			
+			
 		</setUp>
 	</TestEverything>
 	
