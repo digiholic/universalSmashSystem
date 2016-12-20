@@ -435,5 +435,35 @@ class GamepadController(PhysicalController):
             if _action in actions:
                 list_of_bindings.append(str(key))
         return list_of_bindings
+    
+
+class RangeCheckTree():
+    def __init__(self, _entryName=None, _default=None):
+        self.entry_name = _entryName
+        self.default = _default
+        self.entries = list()
+        
+    def addEntry(self, _range, _entry):
+        self.entries.append((_range, _entry))
+
+    def lookup(self, _dict):
+        return_node = None
+        if self.entry_name in _dict:
+            for entry in self.entries:
+                val = _dict[self.entry_name]
+                if val >= entry[0][0] and val < entry[0][1]:
+                    return_node = entry
+                    break
+        if return_node is None: return_node = self.default
+        if isinstance(return_node, RangeCheckTree): 
+            return return_node.lookup(_dict)
+        else: return return_node
+
+
+
+
+
+
+
 
 

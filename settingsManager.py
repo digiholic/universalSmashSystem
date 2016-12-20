@@ -6,6 +6,7 @@ import sys
 import imp
 import engine.controller
 import math
+import xml.etree.ElementTree as ElementTree
 try:
     from configparser import SafeConfigParser
 except ImportError:
@@ -267,23 +268,9 @@ class Settings():
             }
 
             keyboard_entries = {
-                'horLaggerZeroDecay': 2, 'horLaggerStrongDecay': 0, 'horLaggerWeakDecay': 0, 
-                'horLaggerOverrideDecay': 2, 'horLaggerAgainstDecay': 0, 
-                'horLeaderZeroDecay': 0, 'horLeaderStrongDecay': 0, 'horLeaderWeakDecay': 0,
-                'horLeaderOverrideDecay': 2, 'horLeaderAgainstDecay': 2, 
             }
 
             controller_entries = {
-                'a1Threshold1': 0.2, 'a1Threshold2': 0.3, 'a1Threshold3': 0.5, 
-                'a1Threshold4': 0.7, 'a1Threshold5': 0.8, 'a1Threshold6': 0.9, 
-                'a2Threshold1': 0.2, 'a2Threshold2': 0.3, 'a2Threshold3': 0.5, 
-                'a2Threshold4': 0.7, 'a2Threshold5': 0.8, 'a2Threshold6': 0.9, 
-                'a3Threshold1': 0.2, 'a3Threshold2': 0.3, 'a3Threshold3': 0.5, 
-                'a3Threshold4': 0.7, 'a3Threshold5': 0.8, 'a3Threshold6': 0.9, 
-                'a4Threshold1': 0.2, 'a4Threshold2': 0.3, 'a4Threshold3': 0.5, 
-                'a4Threshold4': 0.7, 'a4Threshold5': 0.8, 'a4Threshold6': 0.9, 
-                'a5Threshold1': 0.2, 'a5Threshold2': 0.3, 'a5Threshold3': 0.5, 
-                'a5Threshold4': 0.7, 'a5Threshold5': 0.8, 'a5Threshold6': 0.9, 
             }
             
             for key in essential_entries.keys():
