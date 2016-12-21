@@ -1,6 +1,5 @@
 import settingsManager
 import pygame
-import re
 from global_functions import *
 
 # This is the base class of Project TUSSLE's controller abstraction. Each controller is reduced to 
@@ -13,14 +12,9 @@ from global_functions import *
 #     bufferLength: The maximum frame length of the buffer. Smaller buffers may (and probably 
 #         will) be queried if applicable, but automatic buffer pruning ensures that the buffer can 
 #         be no longer than the max buffer length. 
-#
-#     (.+)Threshold[1-6]: Analog input thresholds. The parenthesized group is the name of the 
-#         input. This is used as the threshold of bucket division when divvying up the named 
-#         analog input. Not all threshold windows need to exist for a particular input, but any 
-#         particular bucket is possible only if the corresponding window is set. This means that 
-#         an analog input with no thresholds set can only return zero. 
+# 
 
-class BaseController():
+class BaseController:
     def __init__(self,_bindings,_windows):
         self.key_bindings = _bindings
         self.windows = _windows
@@ -35,43 +29,24 @@ class BaseController():
         self.buffer = list()
         self.frame_count = 0
 
-    def analogBucket(self,_input,_state):
-        if _input +'Threshold6' in self.windows:
-            if _state < -self.windows[_input + 'Threshold6']: return -6
-            elif _state > self.windows[_input + 'Threshold6']: return 6
-        if _input +'Threshold5' in self.windows:
-            if _state < -self.windows[_input + 'Threshold5']: return -5
-            elif _state > self.windows[_input + 'Threshold5']: return 5
-        if _input +'Threshold4' in self.windows:
-            if _state < -self.windows[_input + 'Threshold4']: return -4
-            elif _state > self.windows[_input + 'Threshold4']: return 4
-        if _input +'Threshold3' in self.windows:
-            if _state < -self.windows[_input + 'Threshold3']: return -3
-            elif _state > self.windows[_input + 'Threshold3']: return 3
-        if _input +'Threshold2' in self.windows:
-            if _state < -self.windows[_input + 'Threshold2']: return -2
-            elif _state > self.windows[_input + 'Threshold2']: return 2
-        if _input +'Threshold1' in self.windows:
-            if _state < -self.windows[_input + 'Threshold1']: return -1
-            elif _state > self.windows[_input + 'Threshold1']: return 1
-        return 0
-
-    def digitalBucket(self, _input, _state):
-        if _input + 'Threshold3' in self.windows:
-            if _state > self.windows[_input + 'Threshold3']: return 3
-        if _input + 'Threshold2' in self.windows:
-            if _state > self.windows[_input + 'Threshold2']: return 2
-        if _input + 'Threshold1' in self.windows:
-            if _state > self.windows[_input + 'Threshold1']: return 1
-        return 0
+    def bucket(self,_input,_state):
+        key_candidates = sorted(filter(lambda k: k is not None, self.key_bindings[_input].keys()))
+        for candidate in key_candidates:
+            if _state <= candidate:
+                return candidate
+        return None
 
     # Please call every time a primitive input state changes
     def pushState(self,_input,_state):
-        if _input in self.state:
-            if self.analogBucket(_input, _state) != self.analogBucket(_input, self.state[_input]) and \
-                    _input in {'moveHor', 'moveVert', 'actHor', 'actVert', 'attack', \
-                    'special', 'jump', 'shield', 'taunt', 'pause'}: 
-                self.buffer.append(self.states[(_input, self.analogBucket(_input, _state))])
+        now_state = self.bucket(_input,_state)
+        if self.bucket(_input,self.state[_input]) != now_state and now_state is not None: 
+            push_states = self.key_bindings[_input][now_state].lookup(self.bucket(_input, _state))
+            if push_states is not None:
+                for key,val in push_states:
+                    self.pushState(key,val)
+            if _input in {'moveHor', 'moveVert', 'actHor', 'actVert', 
+                    'attack', 'special', 'jump', 'shield', 'taunt', 'pause'}:
+                self.buffer.append(states[(_input, now_state)])
         self.state[_input] = _state
 
     def pumpBuffer(self):
@@ -79,16 +54,25 @@ class BaseController():
             buffer_portion = list()
             try:
                 while len(self.buffer) > 0:
-                    checkval = self.buffer.pop(0)
-                    buffer_portion.append(checkval)
-                    if checkval == ' ': break
+                    check_val = self.buffer.pop(0)
+                    buffer_portion.append(check_val)
+                    if check_val == ' ': break
             except IndexError:
                 pass
-            else:
-                self.frame_count -= 1
+            else: self.frame_count -= 1
             self.initials = self.getInit(buffer_portion, self.initials)
         self.buffer.append(' ')
         self.frame_count += 1
+        for input_val in self.state:
+            self.decay(input_val)
+
+    def decay(self, _input):
+        if 'decay' not in self.key_bindings[_input]:
+            return
+        scale = self.key_bindings[_input]['decay'].lookup(self.state)
+        if scale is None: 
+            return
+        self.pushState(_input, addFrom(self.state[_input], scale[0], scale[1]))
 
     def pushInput(self,_event):
         raise NotImplementedError
@@ -106,19 +90,16 @@ class BaseController():
     def getWindow(self,_key):
         return self.windows.get(_key)
 
-    def getState(self,_action):
-        if _action in {'moveHor', 'moveVert', 'actHor', 'actVert'}:
-            return self.analogBucket(_action, self.state.get(_action))
-        elif _action in {'attack', 'special', 'jump', 'shield', 'taunt', 'pause'}:
-            return self.digitalBucket(_action, self.state.get(_action))
-        else: return self.state.get(_action)
+    def getBucketedState(self,_action):
+        return self.bucket(_action, self.state.get(_action))
 
     def getInit(self,_removedBufferPortion,_init):
-        actions_to_find = {'moveHor', 'moveVert', 'actHor', 'actVert', 'attack', 'special', 'jump', 'shield', 'taunt', 'pause'}
+        actions_to_find = {'moveHor', 'moveVert', 'actHor', 'actVert', 
+                'attack', 'special', 'jump', 'shield', 'taunt', 'pause'}
         initials = _init.copy()
         for entry in _removedBufferPortion:
-            if entry in self.codes:
-                vals = self.codes[entry]
+            if entry in codes:
+                vals = codes[entry]
                 if vals[0] in actions_to_find:
                     initials[vals[0]] = vals[1]
                     actions_to_find.remove(vals[0])
@@ -133,12 +114,12 @@ class BaseController():
         to_count = 0
         if _to > 0:
             while len(buffer_list) > 0:
-                if self.buffer_list.pop() == ' ': to_count += 1
+                if buffer_list.pop() == ' ': to_count += 1
                 if to_count >= _to: break
         from_count = self.frame_count
-        if _from < self.frame_count
+        if _from < self.frame_count:
             while len(buffer_list) > 0:
-                check_val = self.buffer_list.pop(0)
+                check_val = buffer_list.pop(0)
                 after_portion.append(check_val)
                 if check_val == ' ': from_count -= 1
                 if _from >= from_count: break
@@ -159,7 +140,7 @@ class BaseController():
             for i in range(0, max_len):
                 check_val = self.buffer.pop(0)
                 removed_portion.append(check_val)
-                if checkval == ' ': self.frame_count -= 1
+                if check_val == ' ': self.frame_count -= 1
         except IndexError:
             pass
         self.initials = self.getInit(removed_portion, self.initials)
@@ -191,243 +172,31 @@ class BaseController():
         'pause': 0
     }
 
-    # Static dictionaries for lookups: 
-    states = {
-        ('attack', 0): '!',  ('attack', 1): '"',   ('attack', 2): '#',  ('attack', 3): '%',  
-        ('special', 0): '&', ('special', 1): '\'', ('special', 2): ',', ('special', 3): '-'
-        ('jump', 0): '/',    ('jump', 1): '0',     ('jump', 2): '1',    ('jump', 3): '2', 
-        ('shield', 0): '3',  ('shield', 1): '4',   ('shield', 2): '5',  ('shield', 3): '6', 
-        ('taunt', 0): '7',   ('taunt', 1): '8',    ('taunt', 2): '9',   ('taunt', 3): ':', 
-        ('pause', 0): ';',   ('pause', 1): '<',    ('pause', 2): '=',   ('pause', 3): '>', 
-
-        ('moveHor', -6): 'A', ('moveHor', -5): 'B', ('moveHor', -4): 'C', ('moveHor', -3): 'D', 
-        ('moveHor', -2): 'E', ('moveHor', -1): 'F', ('moveHor', 0): 'G',  ('moveHor', 1): 'H',  ('moveHor', 2): 'I', 
-        ('moveHor', 3): 'J',  ('moveHor', 4): 'K',  ('moveHor', 5): 'L',  ('moveHor', 6): 'M', 
-
-        ('moveVert', -6): 'N', ('moveVert', -5): 'O', ('moveVert', -4): 'P', ('moveVert', -3): 'Q', 
-        ('moveVert', -2): 'R', ('moveVert', -1): 'S', ('moveVert', 0): 'T',  ('moveVert', 1): 'U',  ('moveVert', 2): 'V', 
-        ('moveVert', 3): 'W',  ('moveVert', 4): 'X',  ('moveVert', 5): 'Y',  ('moveVert', 6): 'Z', 
-
-        ('actHor', -6): 'a', ('actHor', -5): 'b', ('actHor', -4): 'c', ('actHor', -3): 'd', 
-        ('actHor', -2): 'e', ('actHor', -1): 'f', ('actHor', 0): 'g',  ('actHor', 1): 'h',  ('actHor', 2): 'i', 
-        ('actHor', 3): 'j',  ('actHor', 4): 'k',  ('actHor', 5): 'l',  ('actHor', 6): 'm', 
-
-        ('actVert', -6): 'n', ('actVert', -5): 'o', ('actVert', -4): 'p', ('actVert', -3): 'q', 
-        ('actVert', -2): 'r', ('actVert', -1): 's', ('actVert', 0): 't',  ('actVert', 1): 'u',  ('actVert', 2): 'v', 
-        ('actVert', 3): 'w',  ('actVert', 4): 'x',  ('actVert', 5): 'y',  ('actVert', 6): 'z', 
-
-        ('frame', 0): ' ', ('preframe', 0): '\n' #Just for completeness; this won't actually be looked up
-    }
-
-    codes = {
-        '!': ('attack', 0),  '"': ('attack', 1),   '#': ('attack', 2),  '%': ('attack', 3),  
-        '&': ('special', 0), '\'': ('special', 1), ',': ('special', 2), '-': ('special', 3), 
-        '/': ('jump', 0),    '0': ('jump', 1),     '1': ('jump', 2),    '2': ('jump', 3), 
-        '3': ('shield', 0),  '4': ('shield', 1),   '5': ('shield', 2),  '6': ('shield', 3), 
-        '7': ('taunt', 0),   '8': ('taunt', 1),    '9': ('taunt', 2),   ':': ('taunt', 3), 
-        ';': ('pause', 0),   '<': ('pause', 1),    '=': ('pause', 2),   '>': ('pause', 3), 
-
-        'A': ('moveHor', -6), 'B': ('moveHor', -5), 'C': ('moveHor', -4), 'D': ('moveHor', -3), 
-        'E': ('moveHor', -2), 'F': ('moveHor', -1), 'G': ('moveHor', 0), 'H':  ('moveHor', 1),  'I': ('moveHor', 2), 
-        'J': ('moveHor', 3), 'K':  ('moveHor', 4), 'L':  ('moveHor', 5), 'M':  ('moveHor', 6), 
-
-        'N': ('moveVert', -6), 'O': ('moveVert', -5), 'P': ('moveVert', -4), 'Q': ('moveVert', -3), 
-        'R': ('moveVert', -2), 'S': ('moveVert', -1), 'T': ('moveVert', 0),  'U': ('moveVert', 1),  'V': ('moveVert', 2), 
-        'W': ('moveVert', 3),  'X': ('moveVert', 4),  'Y': ('moveVert', 5),  'Z': ('moveVert', 6), 
-
-        'a': ('actHor', -6), 'b': ('actHor', -5), 'c': ('actHor', -4), 'd': ('actHor', -3), 
-        'e': ('actHor', -2), 'f': ('actHor', -1), 'g': ('actHor', 0),  'h': ('actHor', 1),  'i': ('actHor', 2), 
-        'j': ('actHor', 3),  'k': ('actHor', 4),  'l': ('actHor', 5),  'm': ('actHor', 6), 
-
-        'n': ('actVert', -6), 'o': ('actVert', -5), 'p': ('actVert', -4), 'q': ('actVert', -3), 
-        'r': ('actVert', -2), 's': ('actVert', -1), 't': ('actVert', 0),  'u': ('actVert', 1),  'v': ('actVert', 2), 
-        'w': ('actVert', 3),  'x': ('actVert', 4),  'y': ('actVert', 5),  'z': ('actVert', 6), 
-
-        ' ': ('frame', 0), '\n': ('preframe', 0) #Just for completeness; this won't actually be looked up
-    }
-
-# This is a class for abstractions of physical controllers, derived from the base controller 
-# class. On top of the base controller, it provides input addition, input smoothing, and input 
-# decay, all of which may be helpful with physical controllers. 
-#
-# Applicable windows:
-#     
-#     (.+)((Zero)|(Strong)|(Weak)|(Override)|(Against))Decay: The per-frame decays. The first 
-#         parenthesized group is the name of the input to be decayed, and the second parenthesized 
-#         group is the type of decay. Each turn, the input is added to or subtracted from to make 
-#         it closer to zero, or in certain cases, the current input. This value depends on the 
-#         current state of the inputs dict. All five decays must be set for a particular primitive 
-#         to cause the input to decay. 
-#         
-
 class PhysicalController(BaseController):
-    def __init__(self,_bindings,_windows):
+    def __init__(self,_bindings,_windows,_joy):
         BaseController.__init__(self, _bindings, _windows)
-        self.inputs = self.init_state_dict
-
-    def flushInputs(self):
-        BaseController.flushInputs(self)
-        self.inputs = self.init_state_dict
-
-    def pumpBuffer(self):
-        BaseController.pumpBuffer(self)
-        for input_val in state:
-            self.decay(input_val)
-
-    def decay(self, _input):
-        if _input not in self.inputs: self.inputs[_input] = 0
-        if not all(lambda k: _input+k+'Decay' in self.windows for k in ['Zero', 'Strong', 'Weak', 'Override', 'Against']):
-            self.state[_input] = self.inputs[_input]
-        elif self.inputs[_input] == 0: 
-            # Case one: current input is zero
-            self.state[_input] = addFrom(self.state[_input], -self.windows[_input+'ZeroDecay'])
-        elif self.state[_input] == 0:
-            # Case two: smoothed input is zero
-            pass
-        elif math.copysign(1, self.inputs[_input]) == math.copysign(1, self.state[_input]):
-            if abs(self.inputs[_input]) >= abs(self.inputs[_input]):
-                # Case three: same direction, state is weaker
-                self.state[_input] = addFrom(self.state[_input], -self.windows[_input+'StrongDecay'])
-            else:
-                # Case four: same direction, state is stronger
-                self.state[_input] = addFrom(self.state[_input], -self.windows[_input+'WeakDecay'])
-        elif abs(self.inputs[_input]) >= abs(self.state[_input]):
-            # Case five: opposite directions, state is weaker
-            self.state[_input] = addFrom(self.state[_input], -self.windows[_input+'OverrideDecay'], self.inputs[_input])
-        else:
-            # Case six: opposite directions, state is stronger
-            self.state[_input] = addFrom(self.state[_input], -self.windows[_input+'AgainstDecay'])
-        self.pushState(_input, self.analogBucket('decay'+_input, self.state[_input]))
-
-    def acceptInput(self, _input, _value, _smoothValue = None):
-        if _input not in self.inputs: self.inputs[_input] = 0
-        if _input not in self.state: self.state[_input] = 0
-        if _smoothValue is None:
-            self.inputs[_input] = _value
-            self.pushState(_input, _value)
-        elif _value == 0: 
-            # Case one: current input is zero
-            self.inputs[_input] = 0
-            self.pushState(_input, 0)
-        elif self.smoothed[_input] == 0:
-            # Case two: smoothed input is zero
-            self.inputs[_input] = _value
-            self.pushState(_input, _smoothValue)
-        elif math.copysign(1, _value) == math.copysign(1, self.smoothed[_input]):
-            if abs(_value) > abs(self.state[_input]):
-                # Case three: same direction, state is weaker
-                self.inputs[_input] = bounded(_value+self.smoothed[_input], -1, 1)
-                self.pushPrimitive(_input, bounded(_smoothValue+self.smoothed[_input], -1, 1))
-            else:
-                # Case four: same direction, state is stronger
-                self.inputs[_input] = _value
-                self.pushPrimitive(_input, _value)
-        elif abs(_value) > abs(self.smoothed[_input]):
-            # Case five: opposite directions, state is weaker
-            self.inputs[_input] = _value
-            self.pushState(_input, _smoothValue)
-        else:
-            # Case six: opposite directions, state is stronger
-            self.inputs[_input] = _value
-            self.pushState(_input, _value)
-
-class KeyboardController(PhysicalController):
-    def __init__(self,_bindings,_windows):
-        DigitalController.__init__(self, _bindings, _windows)
-        self.type = "Keyboard"
-    
-    def pushInput(self,_event):
-        if _event.type not in [pygame.KEYDOWN, pygame.KEYUP]:
-            return None
-        k = self.key_bindings.get(_event.key)
-        if k:
-            if _event.type == pygame.KEYDOWN:
-                for key in k[1]:
-                    for bounds, act in key:
-                        if inIntervals(self.state, bounds):
-                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
-                            else: self.acceptInput(act[0], act[1])
-                            break
-                if len(k[1]) > 0:
-                    return k[1][0] # Return the first associated primitive input
-            elif _event.type == pygame.KEYUP:
-                for key in k[0]:
-                    for bounds, act in key:
-                        if inIntervals(self.state, bounds):
-                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
-                            else: self.acceptInput(act[0], act[1])
-                            break
-        return None
-    
-class GamepadController(PhysicalController):
-    def __init__(self,_padBindings,_windows,_joy):
-        PhysicalController.__init__(self, _padBindings,_windows)
-        self.type = 'Gamepad'
         self.joystick = _joy
 
     def pushInput(self,_event):
-        if _event.type not in [pygame.JOYAXISMOTION, pygame.JOYBALLMOTION, pygame.JOYHATMOTION, \
-        pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP]:
-            return None
-        if _event.joy != self.joystick:
-            return None
-        if _event.type == pygame.JOYAXISMOTION: 
-            k = self.key_bindings.get('axis'+str(_event.axis))
-            if k:
-                bucket = self.analogBucket(_event.axis,_event.value)
-                for key in k[bucket]:
-                    for bounds, act in key:
-                        if inIntervals(self.state, bounds):
-                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
-                            else: self.acceptInput(act[0], act[1])
-                            break
-                if bucket != 0 and len(k[bucket]) > 0:
-                    return k[bucket][0]
-        elif _event.type == pygame.JOYBALLMOTION: 
-            k = self.key_bindings.get('ball'+str(_event.ball))
-            k = self.key_bindings.getBallInput(_event.joy,_event.ball)
-            if k:
-                bucket = self.analogBucket(_event.ball,_event.rel)
-                for key in k[bucket]:
-                    for bounds, act in key:
-                        if inIntervals(self.state, bounds):
-                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
-                            else: self.acceptInput(act[0], act[1])
-                            break
-                if bucket != 0 and len(k[bucket]) > 0:
-                    return k[bucket][0]
+        if _event.type not in {pygame.KEYDOWN, pygame.KEYUP}:
+            if self.joystick is None or _event.type not in {pygame.JOYAXISMOTION, pygame.JOYBALLMOTION, \
+                    pygame.JOYHATMOTION, pygame.JOYBUTTONDOWN, pygame.JOYBUTTONUP}:
+                return None
+        if _event.type == pygame.KEYDOWN:
+            self.pushState('key_'+_event.key, 1)
+        elif _event.type == pygame.KEYUP:
+            self.pushState('key_'+_event.key, 0)
+        elif _event.type == pygame.JOYAXISMOTION:
+            self.pushState('axis_'+_event.axis, _event.value)
+        elif _event.type == pygame.JOYBALLMOTION:
+            self.pushState('ball_'+_event.ball, _event.rel)
         elif _event.type == pygame.JOYHATMOTION: 
-            k = self.key_bindings.get('hat'+str(_event.hat))
-            if k:
-                for key in k[_event.value]:
-                    for bounds, act in key:
-                        if inIntervals(self.state, bounds):
-                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
-                            else: self.acceptInput(act[0], act[1])
-                            break
-                if len(k[_event.value]) > 0:
-                    return k[_event.value][0]
-        elif _event.type == pygame.JOYBUTTONDOWN:
-            k = self.key_bindings.get('button'+str(_event.button))
-            if k: 
-                for key in k[1]:
-                    for bounds, act in key:
-                        if inIntervals(self.state, bounds):
-                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
-                            else: self.acceptInput(act[0], act[1])
-                            break
-                if len(k[1]) > 0:
-                    return k[1][0]
-        elif _event.type == pygame.JOYBUTTONUP: 
-            k = self.key_bindings.get('button'+str(_event.button))
-            if k: 
-                for key in k[0]:
-                    for bounds, act in key:
-                        if inIntervals(self.state, bounds):
-                            if len(key) == 3: self.acceptInput(act[0], act[1], act[2])
-                            else: self.acceptInput(act[0], act[1])
-                            break
-        return None
+            self.pushState('hat_x_'+_event.hat, _event.value[0])
+            self.pushState('hat_y_'+_event.hat, _event.value[1])
+        elif _event.type == pygame.JOYBUTTONDOWN: 
+            self.pushState('button_'+_event.button, 1)
+        elif _event.type == pygame.JOYBUTTONUP:
+            self.pushState('button_'+_event.button, 0)
     
     def getKeysForaction(self,_action):
         list_of_bindings = []
@@ -436,7 +205,6 @@ class GamepadController(PhysicalController):
                 list_of_bindings.append(str(key))
         return list_of_bindings
     
-
 class RangeCheckTree():
     def __init__(self, _entryName=None, _default=None):
         self.entry_name = _entryName
@@ -451,19 +219,68 @@ class RangeCheckTree():
         if self.entry_name in _dict:
             for entry in self.entries:
                 val = _dict[self.entry_name]
-                if val >= entry[0][0] and val < entry[0][1]:
+                if entry[0][0] <= val < entry[0][1]:
                     return_node = entry
                     break
         if return_node is None: return_node = self.default
-        if isinstance(return_node, RangeCheckTree): 
-            return return_node.lookup(_dict)
+        if isinstance(return_node, RangeCheckTree): return return_node.lookup(_dict)
         else: return return_node
 
 
 
+# Static dictionaries for lookups: 
+states = {
+    ('attack', 0): '!',  ('attack', 1): '"',   ('attack', 2): '#',  ('attack', 3): '%',  
+    ('special', 0): '&', ('special', 1): '\'', ('special', 2): ',', ('special', 3): '-',
+    ('jump', 0): '/',    ('jump', 1): '0',     ('jump', 2): '1',    ('jump', 3): '2', 
+    ('shield', 0): '3',  ('shield', 1): '4',   ('shield', 2): '5',  ('shield', 3): '6', 
+    ('taunt', 0): '7',   ('taunt', 1): '8',    ('taunt', 2): '9',   ('taunt', 3): ':', 
+    ('pause', 0): ';',   ('pause', 1): '<',    ('pause', 2): '=',   ('pause', 3): '>', 
+    
+    ('moveHor', -6): 'A', ('moveHor', -5): 'B', ('moveHor', -4): 'C', ('moveHor', -3): 'D', 
+    ('moveHor', -2): 'E', ('moveHor', -1): 'F', ('moveHor', 0): 'G',  ('moveHor', 1): 'H',  ('moveHor', 2): 'I', 
+    ('moveHor', 3): 'J',  ('moveHor', 4): 'K',  ('moveHor', 5): 'L',  ('moveHor', 6): 'M', 
+    
+    ('moveVert', -6): 'N', ('moveVert', -5): 'O', ('moveVert', -4): 'P', ('moveVert', -3): 'Q', 
+    ('moveVert', -2): 'R', ('moveVert', -1): 'S', ('moveVert', 0): 'T',  ('moveVert', 1): 'U',  ('moveVert', 2): 'V', 
+    ('moveVert', 3): 'W',  ('moveVert', 4): 'X',  ('moveVert', 5): 'Y',  ('moveVert', 6): 'Z',
 
+    ('actHor', -6): 'a', ('actHor', -5): 'b', ('actHor', -4): 'c', ('actHor', -3): 'd',
+    
+    ('actHor', -2): 'e', ('actHor', -1): 'f', ('actHor', 0): 'g',  ('actHor', 1): 'h',  ('actHor', 2): 'i', 
+    ('actHor', 3): 'j',  ('actHor', 4): 'k',  ('actHor', 5): 'l',  ('actHor', 6): 'm', 
+    
+    ('actVert', -6): 'n', ('actVert', -5): 'o', ('actVert', -4): 'p', ('actVert', -3): 'q', 
+    ('actVert', -2): 'r', ('actVert', -1): 's', ('actVert', 0): 't',  ('actVert', 1): 'u',  ('actVert', 2): 'v', 
+    ('actVert', 3): 'w',  ('actVert', 4): 'x',  ('actVert', 5): 'y',  ('actVert', 6): 'z', 
+    
+    ('frame', 0): ' ', ('preframe', 0): '\n' #Just for completeness; this won't actually be looked up
+}
 
+codes = {
+    '!': ('attack', 0),  '"': ('attack', 1),   '#': ('attack', 2),  '%': ('attack', 3),  
+    '&': ('special', 0), '\'': ('special', 1), ',': ('special', 2), '-': ('special', 3), 
+    '/': ('jump', 0),    '0': ('jump', 1),     '1': ('jump', 2),    '2': ('jump', 3), 
+    '3': ('shield', 0),  '4': ('shield', 1),   '5': ('shield', 2),  '6': ('shield', 3), 
+    '7': ('taunt', 0),   '8': ('taunt', 1),    '9': ('taunt', 2),   ':': ('taunt', 3), 
+    ';': ('pause', 0),   '<': ('pause', 1),    '=': ('pause', 2),   '>': ('pause', 3), 
 
+    'A': ('moveHor', -6), 'B': ('moveHor', -5), 'C': ('moveHor', -4), 'D': ('moveHor', -3), 
 
+    'E': ('moveHor', -2), 'F': ('moveHor', -1), 'G': ('moveHor', 0), 'H':  ('moveHor', 1),  'I': ('moveHor', 2), 
+    'J': ('moveHor', 3), 'K':  ('moveHor', 4), 'L':  ('moveHor', 5), 'M':  ('moveHor', 6), 
 
+    'N': ('moveVert', -6), 'O': ('moveVert', -5), 'P': ('moveVert', -4), 'Q': ('moveVert', -3), 
+    'R': ('moveVert', -2), 'S': ('moveVert', -1), 'T': ('moveVert', 0),  'U': ('moveVert', 1),  'V': ('moveVert', 2), 
+    'W': ('moveVert', 3),  'X': ('moveVert', 4),  'Y': ('moveVert', 5),  'Z': ('moveVert', 6), 
 
+    'a': ('actHor', -6), 'b': ('actHor', -5), 'c': ('actHor', -4), 'd': ('actHor', -3), 
+    'e': ('actHor', -2), 'f': ('actHor', -1), 'g': ('actHor', 0),  'h': ('actHor', 1),  'i': ('actHor', 2), 
+    'j': ('actHor', 3),  'k': ('actHor', 4),  'l': ('actHor', 5),  'm': ('actHor', 6), 
+
+    'n': ('actVert', -6), 'o': ('actVert', -5), 'p': ('actVert', -4), 'q': ('actVert', -3), 
+    'r': ('actVert', -2), 's': ('actVert', -1), 't': ('actVert', 0),  'u': ('actVert', 1),  'v': ('actVert', 2), 
+    'w': ('actVert', 3),  'x': ('actVert', 4),  'y': ('actVert', 5),  'z': ('actVert', 6), 
+
+    ' ': ('frame', 0), '\n': ('preframe', 0) #Just for completeness; this shouldn't actually be looked up
+}

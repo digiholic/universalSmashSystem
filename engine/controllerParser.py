@@ -1,10 +1,9 @@
 import xml.etree.ElementTree as ElementTree
 import engine.controller as controller
-import settingsManager
 import xml.dom.minidom as minidom
 import os
-import traceback
 from ast import literal_eval as make_tuple
+
 
 class ControllerParser():
     def __init__(self, _baseDir, _controls):
@@ -28,12 +27,7 @@ class ControllerParser():
     def saveControls(self,_path=None):
         if not _path: _path = self.controller_xml_data
         self.controller_xml_full.write(_path)
-    
-    """
-    This function will take an action name, and a dynamicAction object,
-    and rebuild the XML of that action, and then modify that in the actions_xml
-    object of the fighter.
-    """
+        
     def modifyControls(self,_controlName,_newControl):
         control_xml = self.controller_xml.find(_controlName)
         if control_xml is not None:self.controller_xml.remove(control_xml)
@@ -92,32 +86,39 @@ class ControllerParser():
                 if control_xml.find('decay') is not None: 
                     for val in control_xml.iter():
                         decay_dict[val.tag] = val.text
-                entry_dict[None] = decay_dict
+                entry_dict['decay'] = decay_dict
 
                 #Parse threshold crossovers
                 for val in control_xml.iter():
                     try:
-                        tag_num = float(val.tag)
+                        tag_num = int(val.tag)
                         entry_dict[tag_num] = constructRangeTree(val)
                     except ValueError: 
-                        pass
+                        try:
+                            tag_num = float(val.tag)
+                            entry_dict[tag_num] = constructRangeTree(val)
+                        except ValueError: 
+                            pass
 
                 inputs[input_case.tag] = entry_dict
            
         #Create and populate the Dynamic Action
         return controller.physicalController(inputs, windows)
 
+
 def constructRangeTree(_element):
     if len(list(_element.findall("condition"))) == 0:
         return_dict = dict()
-        for val in _element.iter()
-            return_dict[val.tag] = val.text
+        for val in _element.iter():
+            try: return_dict[val.tag] = int(val.text)
+            except ValueError:
+                try: return_dict[val.tag] = float(val.text)
+                except ValueError: 
+                    try: return_dict[val.tag] = make_tuple(val.text)
+                    except ValueError: pass
+        return return_dict
     else:
-        return_tree = controller.RangeCheckTree(_element.attrib['input'])
-        for 
-
-
-
-
-
-
+        return_tree = controller.RangeCheckTree(_element.attrib['input'], _element.attrib['default'])
+        for val in _element.iter():
+            return_tree[val.tag] = constructRangeTree(val)
+        return return_tree
