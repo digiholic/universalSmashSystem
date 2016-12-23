@@ -7,6 +7,7 @@ import imp
 import engine.controller
 import math
 import xml.etree.ElementTree as ElementTree
+
 try:
     from configparser import SafeConfigParser
 except ImportError:
@@ -14,7 +15,6 @@ except ImportError:
 
 settings = None
 sfx_lib = None
-
 
 ########################################################
 #                GLOBAL ACCESSORS                      #
@@ -72,12 +72,13 @@ another file a lot easier)
 """
 def getSetting(_key = None):
     global settings
-    if settings == None:
+    if settings is None:
         settings = Settings()
     if _key:
         return settings.setting[_key]
     else:
         return settings
+
 
 """
 Gets the Keybindings object for the given player_num.
@@ -86,32 +87,11 @@ If it can't find those controls, it'll make a blank Keybinding
 """
 def getControls(_playerNum):
     global settings
-    if settings == None:
-        settings = Settings()
-    
-    controls = None
-    
-    control_type = settings.setting['controlType_'+str(_playerNum)]  
-    if control_type == 'Keyboard':
-        try: 
-            controls = settings.setting['controls_' + str(_playerNum)]
-        except:
-            controls = engine.controller.KeyboardController({})
-    elif control_type == 'Gamepad':
-        try:
-            controls = settings.setting[control_type]
-            controls.windows = settings.setting['controls_' + str(_playerNum)].windows
-        except:
-            try: 
-                controls = settings.setting['controls_' + str(_playerNum)]
-            except: 
-                controls = engine.controller.GamepadController({})
-    else: # Add more controller types before this one as applicable
-        try:
-            controls = settings.setting['controls_' + str(_playerNum)]
-        except:
-            controls = engine.controller.KeyboardController({})
-
+    if settings is None: settings = Settings()
+    try:
+        controls = settings.setting['controls_' + str(_playerNum)]
+    except:
+        controls = engine.controller.PhysicalController()
     return controls
 
 """
@@ -119,7 +99,7 @@ Creates or returns the SFX Library.
 """
 def getSfx():
     global sfx_lib
-    if sfx_lib == None:
+    if sfx_lib is None:
         sfx_lib = sfx_library()
     return sfx_lib
     
@@ -135,7 +115,6 @@ class Settings():
             if name.startswith("K_"):
                 self.key_id_map[value] = name.lower()
                 self.key_name_map[name.lower()] = value
-        
         
         self.parser = SafeConfigParser()
         if getattr(sys, 'frozen', False):
@@ -237,62 +216,21 @@ class Settings():
     
     def loadControls(self):
         player_num = 0
-        self.getGamepadList(True)
         while self.parser.has_section('controls_' + str(player_num)):
-            bindings = {}
             group_name = 'controls_' + str(player_num)
             control_type = self.parser.get(group_name, 'controlType')
-            
+            control_file = self.parser.get(group_name, 'controlFile')
             self.setting['controlType_'+str(player_num)] = control_type
-            try:
-                self.setting[control_type]
-            except:
-                self.setting['controlType_'+str(player_num)] = 'Keyboard'
-
-            essential_entries = {
-                'bufferLength': 8, 
-                'moveHorThreshold1': 0.5, 'moveHorThreshold2': 1.5, 'moveHorThreshold3': 2.5, 
-                'moveHorThreshold4': 3.5, 'moveHorThreshold5': 4.5, 'moveHorThreshold6': 5.5, 
-                'moveVertThreshold1': 0.5, 'moveVertThreshold2': 1.5, 'moveVertThreshold3': 2.5, 
-                'moveVertThreshold4': 3.5, 'moveVertThreshold5': 4.5, 'moveVertThreshold6': 5.5, 
-                'actHorThreshold1': 0.5, 'actHorThreshold2': 1.5, 'actHorThreshold3': 2.5, 
-                'actHorThreshold4': 3.5, 'actHorThreshold5': 4.5, 'actHorThreshold6': 5.5, 
-                'actVertThreshold1': 0.5, 'actVertThreshold2': 1.5, 'actVertThreshold3': 2.5, 
-                'actVertThreshold4': 3.5, 'actVertThreshold5': 4.5, 'actVertThreshold6': 5.5, 
-                'attackThreshold1': 0.5, 'attackThreshold2': 1.5, 'attackThreshold3': 2.5, 
-                'specialThreshold1': 0.5, 'specialThreshold2': 1.5, 'specialThreshold3': 2.5, 
-                'jumpThreshold1': 0.5, 'jumpThreshold2': 1.5, 'jumpThreshold3': 2.5, 
-                'shieldThreshold1': 0.5, 'shieldThreshold2': 1.5, 'shieldThreshold3': 2.5, 
-                'tauntThreshold1': 0.5, 'tauntThreshold2': 1.5, 'tauntThreshold3': 2.5, 
-                'pauseThreshold1': 0.5, 'pauseThreshold2': 1.5, 'pauseThreshold3': 2.5, 
-            }
-
-            keyboard_entries = {
-            }
-
-            controller_entries = {
-            }
-            
-            for key in essential_entries.keys():
-                if self.parser.has_option(group_name, key):
-                    windows[key] = int(self.parser.get(group_name,key))
-            if control_type == 'Keyboard':
-                for key in keyboard_entries.keys():
-                    if self.parser.has_option(group_name, key):
-                        windows[key] = int(self.parser.get(group_name,key))
+            ctrl_path = settingsManager.createPath('settings/controller/'+control_file)
             if control_type == 'Gamepad':
-                for key in controller_entries.keys():
-                    if self.parser.has_option(group_name, key):
-                        windows[key] = int(self.parser.get(group_name,key))
-            
-            for opt in self.parser.options(group_name):
-                if self.key_name_map.has_key(opt):
-                    bindings[self.key_name_map[opt]] = self.parser.get(group_name, opt)
-            
-            self.setting[group_name] = engine.controller.Controller(bindings,timing_window)
-            #self.setting[group_name] = engine.cpuPlayer.CPUplayer(bindings) #Here be CPU players
-            
+                controller_obj = engine.controllerParser.loadControls(ElementTree.parse(ctrl_path))
+                controller_obj.joystick = self.getGamepad(player_num)
+                self.setting[group_name] = controller_obj
+            else:
+                controller_obj = engine.controllerParser.loadControls(ElementTree.parse(ctrl_path))
+                self.setting[group_name] = controller_obj
             player_num += 1
+            
     
     """
     Check all connected gamepads and add them to the settings.
@@ -314,17 +252,7 @@ class Settings():
             else:
                 jid = None
             
-            axes = {}
-            buttons = {}
-            for opt in controller_parser.options(_controllerName):
-                if opt[0] == 'a':
-                    axes[int(opt[1:])] = tuple(controller_parser.get(_controllerName, opt)[1:-1].split(','))
-                elif opt[0] == 'b':
-                    buttons[int(opt[1:])] = controller_parser.get(_controllerName, opt)
-        
-            pad_bindings = engine.controller.PadBindings(_controllerName,jid,axes,buttons)
-            
-            return engine.controller.GamepadController(pad_bindings)
+            return jid
         else:
             joystick = None
             for pad in range(pygame.joystick.get_count()):
@@ -345,6 +273,9 @@ class Settings():
             self.setting[joystick.get_name()] = pad_bindings
             
             return engine.controller.GamepadController(pad_bindings)
+
+    def getGamepad(self, _name):
+        
     
     def getGamepadList(self,_store=False):
         controller_parser = SafeConfigParser()
