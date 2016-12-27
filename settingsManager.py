@@ -239,45 +239,26 @@ class Settings():
         pygame.joystick.init()
         controller_parser = SafeConfigParser()
         controller_parser.read(os.path.join(os.path.join(self.datadir.replace('main.exe',''),'settings'),'gamepads.ini'))
-        if controller_parser.has_section(_controllerName):
-            joystick = None
-            for pad in range(pygame.joystick.get_count()):
-                joy = pygame.joystick.Joystick(pad)
-                if joy.get_name() == _controllerName:
-                    joystick = joy
-                    joystick.init()
-            
-            if joystick:
-                jid = joystick.get_id()
-            else:
-                jid = None
-            
-            return jid
+        joystick = None
+        for pad in range(pygame.joystick.get_count()):
+            joy = pygame.joystick.Joystick(pad)
+            if joy.get_name() == _controllerName:
+                joystick = joy
+                joystick.init()
+        
+        if joystick:
+            jid = joystick.get_id()
         else:
-            joystick = None
-            for pad in range(pygame.joystick.get_count()):
-                joy = pygame.joystick.Joystick(pad)
-                if joy.get_name() == _controllerName:
-                    joystick = joy
-                    joystick.init()
-            
-            if joystick:
-                jid = joystick.get_id()
-            else:
-                jid = None
-            
-            axes = dict()
-            buttons = dict()
-            
-            pad_bindings = engine.controller.PadBindings(_controllerName,jid,axes,buttons)
-            self.setting[joystick.get_name()] = pad_bindings
-            
-            return engine.controller.GamepadController(pad_bindings)
+            jid = None
+        self.setting[joystick.get_name()] = jid
+        return jid
 
     def getGamepad(self, _name):
-        
+        if _name in self.setting:
+            return self.setting[_name]
+        else: return None
     
-    def getGamepadList(self,_store=False):
+    def getGamepadList(self):
         controller_parser = SafeConfigParser()
         controller_parser.read(os.path.join(os.path.join(self.datadir.replace('main.exe',''),'settings'),'gamepads.ini'))
         controller_list = []
@@ -285,7 +266,6 @@ class Settings():
         for control in controller_parser.sections():
             controls = self.loadGamepad(control)
             controller_list.append(controls)
-            if _store: self.setting[control] = controls
             
         retlist = controller_parser.sections()
         retlist.extend(self.new_gamepads)
