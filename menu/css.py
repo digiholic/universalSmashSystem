@@ -36,13 +36,13 @@ class CSSScreen():
             self.player_controls[i].flushInputs()
         
         status = 0
-        musicManager.getMusicManager().stopMusic(100)
+        #musicManager.getMusicManager().stopMusic(100)
         
         while status == 0:
             music = musicManager.getMusicManager()
             music.doMusicEvent()
             if not musicManager.getMusicManager().isPlaying():
-                musicManager.getMusicManager().rollMusic('css')
+                musicManager.getMusicManager().rollMusic('menu')
             
             #Start event loop
             for bindings in self.player_controls:

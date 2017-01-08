@@ -1161,6 +1161,7 @@ class ActionPanel(dataPanel):
     def __init__(self,_parent,_root,_actionName):
         global fighter
         global changed_actions
+        global frame
         
         dataPanel.__init__(self, _parent, _root)
         self.config(bg="light coral")
@@ -1182,6 +1183,12 @@ class ActionPanel(dataPanel):
         """
         {'Current Frame': action.actions_at_frame[frame],
         """
+        
+        self.currentFrameGroup = dataSelector.GroupLine(self,self.interior,'Current Frame')
+        for subact in self.action.actions_at_frame[frame]:
+            self.currentFrameGroup.childElements.append(subact.getDataLine(self))
+        self.currentFrameGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        self.data_list.append(self.currentFrameGroup)
         
         #Action Groups
         setUpGroup = dataSelector.GroupLine(self,self.interior,'Set Up')
@@ -1236,7 +1243,16 @@ class ActionPanel(dataPanel):
         self.parent.closeActionPane(self.action_name)
     
     def changeFrame(self, *_args):
+        global frame
+        
         if self.root.action_string.get() == self.action_name: #if our action is selected
+            print('Change Frame',frame,self.action)
+            self.currentFrameGroup.clearChildren()
+            self.currentFrameGroup.childElements = []
+            for subact in self.action.actions_at_frame[frame]:
+                self.currentFrameGroup.childElements.append(subact.getDataLine(self))
+            self.currentFrameGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
+        
             self.last_known_frame = self.root.frame.get() #update our last known frame
             
     def onVisibility(self, *args):

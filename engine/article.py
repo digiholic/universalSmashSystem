@@ -373,7 +373,7 @@ class DynamicArticle():
         """ Resets rotation to it's proper, straight upwards value """
         self.sprite.rotate()
 
-    def changeSpriteImage(self,index):
+    def changeSpriteImage(self,index,_loop=False):
         self.sprite.getImageAtIndex(index)
 
     def updatePosition(self):

@@ -491,10 +491,13 @@ class GroupLine(dataLine):
             self.toggle_button.config(relief=RAISED)
             
         self.packChildren()
-        
-    def pack(self, cnf={}, **kw):
+    
+    def clearChildren(self):
         for child in self.childElements:
             child.pack_forget()
+        
+    def pack(self, cnf={}, **kw):
+        self.clearChildren()
         dataLine.pack(self, cnf=cnf, **kw)
         if self.expanded:
             for child in self.childElements:
