@@ -111,3 +111,84 @@ def bounded(_value, _min, _max):
     if _value < _min: return _min
     elif _value > _max: return _max
     else: return _value
+
+def dictDecay(_value, _dict, _decayAmount=1.0):
+    """ Returns _value decayed according to the piecewise linear decay function defined by _dict. 
+    If _decayAmount is provided, it is the decay value; otherwise, the decay factor is assumed 
+    to be 1. 
+
+    Parameters
+    -----------
+    _value : float
+        The value to be decayed from
+    _dict : dict(float: float)
+        The dict defining the piecewise linear decay function, in the form of maxThreshold: slope
+    _decayAmount : float
+        The decay factor
+    """
+
+    # Get our bucket
+    current_bucket = None
+    key_candidates = sorted(filter(lambda k: k is not None, _dict.keys()))
+    current_bucket_index = len(key_candidates)
+    for candidate in key_candidates:
+        if _value <= candidate:
+            current_bucket = candidate
+            current_bucket_index = key_candidates.index(candidate)
+            break
+
+    working_value = _value
+    working_decay = _decayAmount
+    while working_decay > 0.0:
+        decay_factor = _dict[current_bucket]
+        if decay_factor == 0.0: #Won't be moving from here, just return the value
+            return working_value
+        elif decay_factor > 0.0: #Move upward
+            if current_bucket is None: #No limits, just move forward
+                return working_value + decay_factor * working_decay
+            else: #There's a higher entry
+                if working_value + decay_factor*working_decay > current_bucket: # BONK
+                    next_bucket_index = current_bucket_index + 1
+                    if next_bucket_index == len(key_candidates): next_bucket = None
+                    else: next_bucket = key_candidates[next_bucket_index]
+                    if _dict[next_bucket] <= 0.0: #We'll stop here
+                        return current_bucket
+                    else:
+                        decay_used = (current_bucket-working_value)/decay_factor
+                        working_value = current_bucket
+                        working_decay -= decay_used
+                        current_bucket_index = next_bucket_index
+                        current_bucket = next_bucket
+                        continue
+                else: return working_value + decay_factor*working_decay
+        else: #Move downward
+            if current_bucket_index == 0: #No limits, just move backward
+                return working_value + decay_factor * working_decay
+            else: #There's a lower entry
+                if working_value + decay_factor*working_decay <= key_candidates[current_bucket_index-1]:
+                    next_bucket_index = current_bucket_index - 1
+                    next_bucket = key_candidates[next_bucket_index]
+                    if _dict[next_bucket] >= 0.0: #We'll stop here
+                        return next_bucket
+                    else:
+                        decay_used = (next_bucket-working_value)/decay_factor
+                        working_value = next_bucket
+                        working_decay -= decay_used
+                        current_bucket_index = next_bucket_index
+                        current_bucket = next_bucket
+                        continue
+                else: return working_value + decay_factor*working_decay
+    return working_value
+           
+                 
+                    
+    
+
+
+
+
+
+
+
+
+

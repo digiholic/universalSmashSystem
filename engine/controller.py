@@ -12,6 +12,7 @@ from global_functions import *
 #     bufferLength: The maximum frame length of the buffer. Smaller buffers may (and probably 
 #         will) be queried if applicable, but automatic buffer pruning ensures that the buffer can 
 #         be no longer than the max buffer length. 
+#
 # 
 
 class BaseController:
@@ -39,14 +40,16 @@ class BaseController:
     # Please call every time a primitive input state changes
     def pushState(self,_input,_state):
         now_state = self.bucket(_input,_state)
-        if self.bucket(_input,self.state[_input]) != now_state and now_state is not None: 
+        if self.bucket(_input,self.state[_input]) != now_state: 
             push_states = self.key_bindings[_input][now_state].lookup(self.bucket(_input, _state))
             if push_states is not None:
                 for key,val in push_states:
                     self.pushState(key,val)
             if _input in {'moveHor', 'moveVert', 'actHor', 'actVert', 
                     'attack', 'special', 'jump', 'shield', 'taunt', 'pause'}:
-                self.buffer.append(states[(_input, now_state)])
+                if now_state is not None: self.buffer.append(states[_input, int(math.floor(now_state))])
+                else: self.buffer.append(states[_input, None])
+                   
         self.state[_input] = _state
 
     def pumpBuffer(self):
@@ -69,10 +72,10 @@ class BaseController:
     def decay(self, _input):
         if 'decay' not in self.key_bindings[_input]:
             return
-        scale = self.key_bindings[_input]['decay'].lookup(self.state)
-        if scale is None: 
+        decay_dict = self.key_bindings[_input]['decay'].lookup(self.state)
+        if decay_dict is None: 
             return
-        self.pushState(_input, addFrom(self.state[_input], scale[0], scale[1]))
+        self.pushState(_input, dictDecay(self.state[_input], decay_dict))
 
     def pushInput(self,_event):
         raise NotImplementedError
@@ -230,57 +233,55 @@ class RangeCheckTree():
 
 # Static dictionaries for lookups: 
 states = {
-    ('attack', 0): '!',  ('attack', 1): '"',   ('attack', 2): '#',  ('attack', 3): '%',  
-    ('special', 0): '&', ('special', 1): '\'', ('special', 2): ',', ('special', 3): '-',
-    ('jump', 0): '/',    ('jump', 1): '0',     ('jump', 2): '1',    ('jump', 3): '2', 
-    ('shield', 0): '3',  ('shield', 1): '4',   ('shield', 2): '5',  ('shield', 3): '6', 
-    ('taunt', 0): '7',   ('taunt', 1): '8',    ('taunt', 2): '9',   ('taunt', 3): ':', 
-    ('pause', 0): ';',   ('pause', 1): '<',    ('pause', 2): '=',   ('pause', 3): '>', 
+    ('attack', 0): '!',  ('attack', 1): '"',   ('attack', 2): '#',  ('attack', None): '%',  
+    ('special', 0): '&', ('special', 1): '\'', ('special', 2): ',', ('special', None): '-',
+    ('jump', 0): '/',    ('jump', 1): '0',     ('jump', 2): '1',    ('jump', None): '2', 
+    ('shield', 0): '3',  ('shield', 1): '4',   ('shield', 2): '5',  ('shield', None): '6', 
+    ('taunt', 0): '7',   ('taunt', 1): '8',    ('taunt', 2): '9',   ('taunt', None): ':', 
+    ('pause', 0): ';',   ('pause', 1): '<',    ('pause', 2): '=',   ('pause', None): '>', 
     
-    ('moveHor', -6): 'A', ('moveHor', -5): 'B', ('moveHor', -4): 'C', ('moveHor', -3): 'D', 
-    ('moveHor', -2): 'E', ('moveHor', -1): 'F', ('moveHor', 0): 'G',  ('moveHor', 1): 'H',  ('moveHor', 2): 'I', 
-    ('moveHor', 3): 'J',  ('moveHor', 4): 'K',  ('moveHor', 5): 'L',  ('moveHor', 6): 'M', 
+    ('moveHor', 0): 'A', ('moveHor', 1): 'B',  ('moveHor', 2): 'C',  ('moveHor', 3): 'D', 
+    ('moveHor', 4): 'E', ('moveHor', 5): 'F',  ('moveHor', 6): 'G',  ('moveHor', 7): 'H', ('moveHor', 8): 'I', 
+    ('moveHor', 9): 'J', ('moveHor', 10): 'K', ('moveHor', 11): 'L', ('moveHor', None): 'M', 
     
-    ('moveVert', -6): 'N', ('moveVert', -5): 'O', ('moveVert', -4): 'P', ('moveVert', -3): 'Q', 
-    ('moveVert', -2): 'R', ('moveVert', -1): 'S', ('moveVert', 0): 'T',  ('moveVert', 1): 'U',  ('moveVert', 2): 'V', 
-    ('moveVert', 3): 'W',  ('moveVert', 4): 'X',  ('moveVert', 5): 'Y',  ('moveVert', 6): 'Z',
+    ('moveVert', 0): 'N', ('moveVert', 1): 'O',  ('moveVert', 2): 'P',  ('moveVert', 3): 'Q', 
+    ('moveVert', 4): 'R', ('moveVert', 5): 'S',  ('moveVert', 6): 'T',  ('moveVert', 7): 'U', ('moveVert', 8): 'V', 
+    ('moveVert', 9): 'W', ('moveVert', 10): 'X', ('moveVert', 11): 'Y', ('moveVert', None): 'Z',
 
-    ('actHor', -6): 'a', ('actHor', -5): 'b', ('actHor', -4): 'c', ('actHor', -3): 'd',
+    ('actHor', 0): 'a', ('actHor', 1): 'b',  ('actHor', 2): 'c',  ('actHor', 3): 'd',
+    ('actHor', 4): 'e', ('actHor', 5): 'f',  ('actHor', 6): 'g',  ('actHor', 7): 'h', ('actHor', 8): 'i', 
+    ('actHor', 9): 'j', ('actHor', 10): 'k', ('actHor', 11): 'l', ('actHor', None): 'm', 
     
-    ('actHor', -2): 'e', ('actHor', -1): 'f', ('actHor', 0): 'g',  ('actHor', 1): 'h',  ('actHor', 2): 'i', 
-    ('actHor', 3): 'j',  ('actHor', 4): 'k',  ('actHor', 5): 'l',  ('actHor', 6): 'm', 
-    
-    ('actVert', -6): 'n', ('actVert', -5): 'o', ('actVert', -4): 'p', ('actVert', -3): 'q', 
-    ('actVert', -2): 'r', ('actVert', -1): 's', ('actVert', 0): 't',  ('actVert', 1): 'u',  ('actVert', 2): 'v', 
-    ('actVert', 3): 'w',  ('actVert', 4): 'x',  ('actVert', 5): 'y',  ('actVert', 6): 'z', 
+    ('actVert', 0): 'n', ('actVert', 1): 'o',  ('actVert', 2): 'p',  ('actVert', 3): 'q', 
+    ('actVert', 4): 'r', ('actVert', 5): 's',  ('actVert', 6): 't',  ('actVert', 7): 'u', ('actVert', 8): 'v', 
+    ('actVert', 9): 'w', ('actVert', 10): 'x', ('actVert', 11): 'y', ('actVert', None): 'z', 
     
     ('frame', 0): ' ', ('preframe', 0): '\n' #Just for completeness; this won't actually be looked up
 }
 
 codes = {
-    '!': ('attack', 0),  '"': ('attack', 1),   '#': ('attack', 2),  '%': ('attack', 3),  
-    '&': ('special', 0), '\'': ('special', 1), ',': ('special', 2), '-': ('special', 3), 
-    '/': ('jump', 0),    '0': ('jump', 1),     '1': ('jump', 2),    '2': ('jump', 3), 
-    '3': ('shield', 0),  '4': ('shield', 1),   '5': ('shield', 2),  '6': ('shield', 3), 
-    '7': ('taunt', 0),   '8': ('taunt', 1),    '9': ('taunt', 2),   ':': ('taunt', 3), 
-    ';': ('pause', 0),   '<': ('pause', 1),    '=': ('pause', 2),   '>': ('pause', 3), 
+    '!': ('attack', 0),  '"': ('attack', 1),   '#': ('attack', 2),  '%': ('attack', None),  
+    '&': ('special', 0), '\'': ('special', 1), ',': ('special', 2), '-': ('special', None), 
+    '/': ('jump', 0),    '0': ('jump', 1),     '1': ('jump', 2),    '2': ('jump', None), 
+    '3': ('shield', 0),  '4': ('shield', 1),   '5': ('shield', 2),  '6': ('shield', None), 
+    '7': ('taunt', 0),   '8': ('taunt', 1),    '9': ('taunt', 2),   ':': ('taunt', None), 
+    ';': ('pause', 0),   '<': ('pause', 1),    '=': ('pause', 2),   '>': ('pause', None), 
 
-    'A': ('moveHor', -6), 'B': ('moveHor', -5), 'C': ('moveHor', -4), 'D': ('moveHor', -3), 
+    'A': ('moveHor', 0), 'B': ('moveHor', 1),  'C': ('moveHor', 2),  'D': ('moveHor', 3), 
+    'E': ('moveHor', 4), 'F': ('moveHor', 5),  'G': ('moveHor', 6),  'H': ('moveHor', 7), 'I': ('moveHor', 8), 
+    'J': ('moveHor', 9), 'K': ('moveHor', 10), 'L': ('moveHor', 11), 'M': ('moveHor', None), 
 
-    'E': ('moveHor', -2), 'F': ('moveHor', -1), 'G': ('moveHor', 0), 'H':  ('moveHor', 1),  'I': ('moveHor', 2), 
-    'J': ('moveHor', 3), 'K':  ('moveHor', 4), 'L':  ('moveHor', 5), 'M':  ('moveHor', 6), 
+    'N': ('moveVert', 0), 'O': ('moveVert', 1),  'P': ('moveVert', 2),  'Q': ('moveVert', 3), 
+    'R': ('moveVert', 4), 'S': ('moveVert', 5),  'T': ('moveVert', 6),  'U': ('moveVert', 7), 'V': ('moveVert', 8), 
+    'W': ('moveVert', 9), 'X': ('moveVert', 10), 'Y': ('moveVert', 11), 'Z': ('moveVert', None), 
 
-    'N': ('moveVert', -6), 'O': ('moveVert', -5), 'P': ('moveVert', -4), 'Q': ('moveVert', -3), 
-    'R': ('moveVert', -2), 'S': ('moveVert', -1), 'T': ('moveVert', 0),  'U': ('moveVert', 1),  'V': ('moveVert', 2), 
-    'W': ('moveVert', 3),  'X': ('moveVert', 4),  'Y': ('moveVert', 5),  'Z': ('moveVert', 6), 
+    'a': ('actHor', 0), 'b': ('actHor', 1),  'c': ('actHor', 2),  'd': ('actHor', 3), 
+    'e': ('actHor', 4), 'f': ('actHor', 5),  'g': ('actHor', 6),  'h': ('actHor', 7), 'i': ('actHor', 8), 
+    'j': ('actHor', 9), 'k': ('actHor', 10), 'l': ('actHor', 11), 'm': ('actHor', None), 
 
-    'a': ('actHor', -6), 'b': ('actHor', -5), 'c': ('actHor', -4), 'd': ('actHor', -3), 
-    'e': ('actHor', -2), 'f': ('actHor', -1), 'g': ('actHor', 0),  'h': ('actHor', 1),  'i': ('actHor', 2), 
-    'j': ('actHor', 3),  'k': ('actHor', 4),  'l': ('actHor', 5),  'm': ('actHor', 6), 
-
-    'n': ('actVert', -6), 'o': ('actVert', -5), 'p': ('actVert', -4), 'q': ('actVert', -3), 
-    'r': ('actVert', -2), 's': ('actVert', -1), 't': ('actVert', 0),  'u': ('actVert', 1),  'v': ('actVert', 2), 
-    'w': ('actVert', 3),  'x': ('actVert', 4),  'y': ('actVert', 5),  'z': ('actVert', 6), 
+    'n': ('actVert', 0), 'o': ('actVert', 1),  'p': ('actVert', 2),  'q': ('actVert', 3), 
+    'r': ('actVert', 4), 's': ('actVert', 5),  't': ('actVert', 6),  'u': ('actVert', 7), 'v': ('actVert', 8), 
+    'w': ('actVert', 9), 'x': ('actVert', 10), 'y': ('actVert', 11), 'z': ('actVert', None), 
 
     ' ': ('frame', 0), '\n': ('preframe', 0) #Just for completeness; this shouldn't actually be looked up
 }

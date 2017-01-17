@@ -30,39 +30,45 @@ def loadControls(_controllerXML):
             #Parse decays
             decay_dict = {}
             if control_xml.find('decay') is not None: 
-                for val in control_xml.iter():
-                    decay_dict[val.tag] = val.text
+                for val in control_xml.find('decay').iter():
+                    decay_dict[float(val.tag)] = constructRangeTree(val)
             entry_dict['decay'] = decay_dict
 
             #Parse threshold crossovers
-            for val in control_xml.iter():
-                try:
-                    tag_num = int(val.tag)
-                    entry_dict[tag_num] = constructRangeTree(val)
-                except ValueError: 
-                    try:
-                        tag_num = float(val.tag)
-                        entry_dict[tag_num] = constructRangeTree(val)
-                    except ValueError: 
-                        pass
+            for val in control_xml.findall('threshold'):
+                if 'value' in val.attrib:
+                    entry_dict[float(val.attrib['value'])] = constructRangeTree(val)
+                else: entry_dict[None] = constructRangeTree(val)
 
             inputs[input_case.tag] = entry_dict
             
     return controller.physicalController(inputs, windows)
 
 def constructRangeTree(_element):
-    if len(list(_element.findall("condition"))) == 0:
-        return_dict = dict()
-        for val in _element.iter():
-            try: return_dict[val.tag] = int(val.text)
-            except ValueError:
-                try: return_dict[val.tag] = float(val.text)
-                except ValueError: 
-                    try: return_dict[val.tag] = make_tuple(val.text)
-                    except ValueError: pass
-        return return_dict
+    default_dict = dict()
+    for val in _element.findall('key'):
+        if 'name' in val.attrib:
+            try: default_dict[float(val.attrib['name'])] = float(val.text)
+            except ValueError: default_dict[val.attrib['name']] = float(val.text)
+        else:
+            default_dict[None] = float(val.text)
+    if 'input' in _element.attrib:
+        return_tree = controller.RangeCheckTree(_element.attrib['input'], default_dict)
     else:
-        return_tree = controller.RangeCheckTree(_element.attrib['input'], _element.attrib['default'])
-        for val in _element.iter():
-            return_tree[val.tag] = constructRangeTree(val)
-        return return_tree
+        return_tree = controller.RangeCheckTree(None, default_dict)
+    for val in _element.findall('condition'):
+        for case in val.findall('threshold'):
+            if 'value' in case.attrib:
+                return_tree.addEntry(case.attrib['value'], constructRangeTree(case))
+            else:
+                return_tree.addEntry(None, constructRangeTree(case))
+    return return_tree
+
+
+
+
+
+
+
+
+
