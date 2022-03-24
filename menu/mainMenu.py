@@ -8,7 +8,7 @@ import colorsys
 import engine.article
 import engine.controller
 import sys
-import css
+import menu.css
 import spriteManager
 import battle
 import updater

@@ -1,10 +1,19 @@
-from Tkinter import *
+import sys
 import os
-from tkFileDialog import askopenfile, askdirectory
-import ttk
+
+# Python 3 compatibility
+if sys.version_info[0] == 3:
+    import tkinter as tk
+    from tkinter.filedialog import askopenfile, askdirectory
+    from tkinter import ttk
+else:
+    import Tkinter as tk
+    from tkFileDialog import askopenfile, askdirectory
+    import ttk
+
 import settingsManager
 
-class Selector(Label):
+class Selector(tk.Label):
     def __init__(self,_root):
         self.display_name = StringVar()
         self.display_name.set('')
@@ -92,7 +101,7 @@ class PropertySelector(Selector):
         if hasattr(_owner, _varname): fielddata = getattr(_owner, _varname)
         self.display_name.set(self.data[0]+': '+ str(fielddata))
         
-class ChangeAttributeFrame(Frame):
+class ChangeAttributeFrame(tk.Frame):
     def __init__(self,_root,_attribSet):
         Frame.__init__(self,_root,height=_root.winfo_height())
         self.root = _root
@@ -191,7 +200,7 @@ class ChangeAttributeFrame(Frame):
         res = os.path.relpath(loaded_name,os.path.dirname(self.root.root.fighter_file.name))
         _resultVar.set(res)
         
-class BasePropertiesFrame(Frame):
+class BasePropertiesFrame(tk.Frame):
     def __init__(self,_root,_subaction):
         Frame.__init__(self, _root, height=_root.winfo_height())
         self.root = _root

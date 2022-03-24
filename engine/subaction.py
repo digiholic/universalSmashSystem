@@ -1,7 +1,7 @@
 import engine.hitbox
 import engine.hurtbox
 import engine.statusEffect
-import baseActions
+import engine.baseActions
 import pygame.color
 import builder.subactionSelector as subactionSelector
 import xml.etree.ElementTree as ElementTree

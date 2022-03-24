@@ -1,7 +1,7 @@
 import pygame
 import random
 import settingsManager
-import thread
+import _thread as thread
 
 """
 The Music Manager is an object that is meant to store the list of music

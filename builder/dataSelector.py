@@ -1,9 +1,18 @@
-from Tkinter import *
-import settingsManager
-from idlelib.ObjectBrowser import _object_browser
-from tkFileDialog import askopenfile,askdirectory
+import sys
 import os
-import tkMessageBox
+
+# Python 3 compatibility
+if sys.version_info[0] == 3:
+    from tkinter import *
+    from tkinter.filedialog import askopenfile, askdirectory
+    import tkinter.messagebox as tkMessageBox
+else:
+    from Tkinter import *
+    from tkFileDialog import askopenfile, askdirectory
+    import tkMessageBox
+
+import settingsManager
+#from idlelib.ObjectBrowser import _object_browser
 import engine.action
 import inspect
 

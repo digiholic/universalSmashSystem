@@ -258,7 +258,7 @@ class Settings():
                     timing_window[key] = int(self.parser.get(group_name,key))
             
             for opt in self.parser.options(group_name):
-                if self.key_name_map.has_key(opt):
+                if opt in self.key_name_map:
                     bindings[self.key_name_map[opt]] = self.parser.get(group_name, opt)
             
             self.setting[group_name] = engine.controller.Controller(bindings,timing_window)

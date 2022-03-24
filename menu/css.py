@@ -8,7 +8,7 @@ import sys
 import stages.true_arena as stage
 import engine.cpuPlayer as cpuPlayer
 import engine.abstractFighter as abstractFighter
-import sss
+import menu.sss
 import musicManager
 
 class CSSScreen():

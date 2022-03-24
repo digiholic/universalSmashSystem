@@ -5,7 +5,7 @@ import random
 import settingsManager
 import engine.hitbox as hitbox
 import engine.collisionBox as collisionBox
-import subaction
+import engine.subaction
 import numpy
 
 """
