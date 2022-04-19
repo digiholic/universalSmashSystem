@@ -31,7 +31,7 @@ class executeCode(SubAction):
         else:
             print(self.scope + " is not a valid scope")
             return None
-        exec self.codeString in globals(), working_locals
+        exec(self.codeString, globals(), working_locals)
 
     def getDisplayName(self):
         return 'Execute ' + self.codeString + ' in the ' + self.scope + ' scope'

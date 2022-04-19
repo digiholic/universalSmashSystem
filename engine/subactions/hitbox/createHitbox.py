@@ -1,6 +1,13 @@
 from engine.subaction import *
-import ttk
-from Tkinter import *
+
+import sys
+
+if sys.version_info[0] == 3:
+    from tkinter import *
+    from tkinter import ttk
+else:
+    import ttk
+    from Tkinter import *
 
 # Create a new hitbox
 class createHitbox(SubAction):

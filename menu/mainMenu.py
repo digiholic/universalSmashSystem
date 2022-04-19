@@ -12,6 +12,7 @@ import menu.css
 import spriteManager
 import battle
 import updater
+from menu import css
 
 def main():
     Menu()

@@ -105,14 +105,14 @@ class SubactionFactory():
     def getSubaction(self,_name):
         if not self.initialized:
             self.initialize()
-        if self.subaction_dict.has_key(_name):
+        if _name in self.subaction_dict:
             return self.subaction_dict[_name]
         else: return None
         
     def getName(self,_subaction):
         if not self.initialized:
             self.initialize()
-        if self.name_dict.has_key(_subaction):
+        if _subaction in self.name_dict:
             return self.name_dict[_subaction]
         else: return None
         
@@ -145,13 +145,13 @@ def parseData(_data,_type="string",_default=None):
     if _data.find('var') is not None: #If the data has a Var tag
         varTag = _data.find('var')
         
-        if varTag.attrib.has_key('source'): source = varTag.attrib['source']
+        if 'source' in varTag.attrib: source = varTag.attrib['source']
         else: source = 'object'
         
         return VarData(source,varTag.text)
     if _data.find('function') is not None:
         funcTag = _data.find('function')
-        if funcTag.attrib.has_key('source'): source = funcTag.attrib['source']
+        if 'source' in funcTag.attrib: source = funcTag.attrib['source']
         else: source = 'object'
         
         funcName = loadNodeWithDefault(funcTag, 'functionName', '')
@@ -159,7 +159,7 @@ def parseData(_data,_type="string",_default=None):
         args = dict()
         if funcTag.find('args') is not None:
             for arg in funcTag.find('args'):
-                if arg.attrib.has_key('type'):
+                if 'type' in arg.attrib:
                     vartype = arg.attrib['type']
                 else: vartype = 'string'
                 
@@ -170,13 +170,13 @@ def parseData(_data,_type="string",_default=None):
 
     if _data.find('eval') is not None:
         evalTag = _data.find('eval')
-        if evalTag.attrib.has_key('scope'): scope = evalTag.attrib['scope']
+        if 'scope' in evalTag.attrib: scope = evalTag.attrib['scope']
         else: scope = 'object'
         return EvalData(scope, evalTag.text)
         
     
     if _type=="dynamic":
-        if _data.attrib.has_key('type'):
+        if 'type' in _data.attrib:
             _type = _data.attrib['type']
         else: _type = 'string'
     if _type=="string": return _data.text
@@ -196,15 +196,15 @@ class VarData():
         
     def unpack(self,_action,_actor):
         if self.source == 'article' and hasattr(_actor, 'owner'):
-            if _actor.variables.has_key(self.var):
+            if self.var in _actor.variables:
                 return _actor.variables[self.var]
             elif hasattr(_actor, self.var):
                 return getattr(_actor, self.var)
             else: return None
         if self.source == 'object':
-            if hasattr(_actor, 'stats') and _actor.stats.has_key(self.var):
+            if self.var in hasattr(_actor, 'stats') and _actor.stats:
                 return _actor.stats[self.var]
-            elif _actor.variables.has_key(self.var):
+            elif self.var in _actor.variables:
                 return _actor.variables[self.var]
             elif hasattr(_actor, self.var):
                 return getattr(_actor, self.var)
@@ -212,9 +212,9 @@ class VarData():
         if self.source == 'actor':
             if hasattr(_actor, 'owner'):
                 _actor = _actor.owner
-            if _actor.stats.has_key(self.var):
+            if self.var in _actor.stats:
                 return _actor.stats[self.var]
-            elif _actor.variables.has_key(self.var):
+            elif self.var in _actor.variables:
                 return _actor.variables[self.var]
             elif hasattr(_actor, self.var):
                 return getattr(_actor, self.var)
@@ -348,7 +348,7 @@ class NodeMap():
         
     def getTypeFromData(self,_data):
         if self.variableType=="dynamic":
-            if _data.attrib.has_key('type'):
+            if 'type' in _data.attrib:
                 self.variableType = _data.attrib['type']
             else: self.variableType = 'string'
         if self.variableType=="string": return _data
@@ -369,7 +369,7 @@ class NodeMap():
             if len(nodeList) == 1: #We only have the root or a root attribute
                 nodePath = nodeList[0]
                 if len(nodePath) > 1: #If we've hit an attribute
-                    if _rootNode.attrib.has_key(nodePath[1]):
+                    if nodePath[1] in _rootNode.attrib:
                         _subAction.defaultVars[self.variableName] = self.getTypeFromData(_rootNode.attrib[nodePath[1]])
                         setattr(_subAction, self.variableName, self.getTypeFromData(_rootNode.attrib[nodePath[1]]))
                     else:
@@ -388,7 +388,7 @@ class NodeMap():
                     setattr(_subAction,self.variableName,self.defaultValue)
                     return
                 if len(nodePath) > 1: #If we've hit an attribute
-                    if currentPosition.attrib.has_key(nodePath[1]):
+                    if nodePath[1] in currentPosition.attrib:
                         _subAction.defaultVars[self.variableName] = self.getTypeFromData(currentPosition.attrib[nodePath[1]])
                         setattr(_subAction, self.variableName, self.getTypeFromData(currentPosition.attrib[nodePath[1]]))
                     else:
@@ -448,7 +448,7 @@ def loadValueOrVariable(_node, _sub_node, _type="string", _default=""):
     if _node.find(_sub_node) is not None:
         if _node.find(_sub_node).find('var') is not None: #if there's a var set
             var_node = _node.find(_sub_node).find('var')
-            if not var_node.attrib.has_key('from'):
+            if not 'from' in var_node.attrib:
                 fromKey = 'action'
             else: fromKey = var_node.attrib['from']
             if fromKey == 'actor':
