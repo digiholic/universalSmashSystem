@@ -202,7 +202,7 @@ class VarData():
                 return getattr(_actor, self.var)
             else: return None
         if self.source == 'object':
-            if self.var in hasattr(_actor, 'stats') and _actor.stats:
+            if hasattr(_actor, 'stats') and self.var in _actor.stats:
                 return _actor.stats[self.var]
             elif self.var in _actor.variables:
                 return _actor.variables[self.var]
