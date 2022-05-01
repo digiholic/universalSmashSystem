@@ -154,7 +154,7 @@ class DamageHitbox(Hitbox):
             offset = random.randrange(0, 359)
             hit_intersection = self.rect.clip(_other.rect).center
             hitlag = ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier
-            from article import HitArticle
+            from engine.article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
                 self.owner.articles.append(art)
@@ -209,7 +209,7 @@ class SakuraiAngleHitbox(DamageHitbox):
             offset = random.randrange(0, 359)
             hit_intersection = self.rect.clip(_other.rect).center
             hitlag = ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier
-            from article import HitArticle
+            from engine.article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
                 self.owner.articles.append(art)
@@ -261,7 +261,7 @@ class AutolinkHitbox(DamageHitbox):
             offset = random.randrange(0, 359)
             hit_intersection = self.rect.clip(_other.rect).center
             hitlag = ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier
-            from article import HitArticle
+            from engine.article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
                 self.owner.articles.append(art)
@@ -313,7 +313,7 @@ class FunnelHitbox(DamageHitbox):
             offset = random.randrange(0, 359)
             hit_intersection = self.rect.clip(_other.rect).center
             hitlag = ((self.damage+self.charge_damage*self.charge) / 3.0 + 3.0)*self.hitlag_multiplier
-            from article import HitArticle
+            from engine.article import HitArticle
             for i in range(int(hitlag)):
                 art = HitArticle(self.owner, hit_intersection, 0.5, offset+i*360/int(hitlag), 0.5*hitlag, .4, self.trail_color)
                 self.owner.articles.append(art)

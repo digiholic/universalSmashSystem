@@ -1188,8 +1188,8 @@ class AbstractFighter():
         """
         if _from is None:
             _from = max(min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame), 1)
-        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
-        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
+        down_frames = list(map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to)))
+        up_frames = list(map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to)))
         if not any(down_frames):
             return False
         if any(down_frames) and not any(up_frames):

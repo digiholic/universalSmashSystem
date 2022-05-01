@@ -62,7 +62,7 @@ class Hurtbox(spriteManager.RectSprite):
     @_other: The hitbox that hit this hurtbox
     """
     def onHit(self,_hitbox):
-        all_armor = self.armor.values()+self.owner.armor.values()
+        all_armor = set(self.armor.values()) | set(self.owner.armor.values())
         # Use currying to composit everything together
         giant_filter = reduce(lambda f, g: (lambda j, k: g.filterHits(_hitbox, k, f)), all_armor, lambda x, y: self.owner.filterHits(x, y))
         return giant_filter(_hitbox, _hitbox.getOnHitSubactions(self))

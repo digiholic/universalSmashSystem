@@ -29,7 +29,7 @@ class createHitbox(SubAction):
         if self.hitbox_name == '': return #Don't make a hitbox without a name or we'll lose it
         #Use an existing hitbox lock by name, or create a new one
         
-        if self.hitbox_lock in self.hitbox_lock and _action.hitbox_locks:
+        if self.hitbox_lock and self.hitbox_lock in _action.hitbox_locks:
             hitbox_lock = _action.hitbox_locks[self.hitbox_lock]
         else:
             hitbox_lock = engine.hitbox.HitboxLock(self.hitbox_lock)
