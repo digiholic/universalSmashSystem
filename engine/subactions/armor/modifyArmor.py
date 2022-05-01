@@ -11,12 +11,12 @@ class modifyArmor(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        if _action.hurtboxes.has_key(self.hurtbox):  
+        if self.hurtbox in _action.hurtboxes:  
             hurtbox = _action.hurtboxes[self.hurtbox]
-            if hurtbox.armor.has_key(self.armor_name):
+            if self.armor_name in hurtbox.armor:
                 armor = hurtbox.armor[self.armor_name]
                 if armor:
-                    for name,value in self.hitbox_vars.iteritems():
+                    for name,value in self.hitbox_vars.items():
                         if hasattr(armor, name):
                             if isinstance(value, VarData) or isinstance(value, FuncData) or isinstance(value, EvalData):
                                 setattr(armor, name, value.unpack(_action,_actor))
@@ -27,9 +27,9 @@ class modifyArmor(SubAction):
                                 if name in armor.variable_dict:
                                     armor.variable_dict[name] = value
         else:
-            if _actor.armor.has_key(self.armor_name):
+            if self.armor_name in _actor.armor:
                 armor = _actor.armor[self.armor_name]
-                for name,value in self.hitbox_vars.iteritems():
+                for name,value in self.hitbox_vars.items():
                     if hasattr(armor, name):
                         if isinstance(value, VarData) or isinstance(value, FuncData) or isinstance(value, EvalData):
                             setattr(armor, name, value.unpack(_action,_actor))
@@ -49,7 +49,7 @@ class modifyArmor(SubAction):
     def getXmlElement(self):
         elem = ElementTree.Element('modifyArmor')
         elem.attrib['name'] = self.armor_name
-        for tag,value in self.armor_vars.iteritems():
+        for tag,value in self.armor_vars.items():
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)

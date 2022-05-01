@@ -240,7 +240,7 @@ class FuncData():
         self.args = _args
         
     def unpack(self,_action,_actor):
-        for argname,arg in self.args.iteritems():
+        for argname,arg in self.args.items():
             if isinstance(arg, FuncData) or isinstance(arg, VarData) or isinstance(arg, EvalData):
                 self.args[argname] = arg.unpack(_action,_actor)
                 
@@ -479,7 +479,7 @@ class SubAction():
         self.defaultVars = dict()
     
     def execute(self, _action, _actor):
-        for tag,variable in self.defaultVars.iteritems():
+        for tag,variable in self.defaultVars.items():
             if isinstance(variable, VarData) or isinstance(variable, FuncData) or isinstance(variable, EvalData):
                 setattr(self, tag, variable.unpack(_action,_actor))
                 

@@ -11,7 +11,7 @@ class deactivateHurtbox(SubAction):
     
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        if _action.hurtboxes.has_key(self.hurtbox_name):
+        if self.hurtbox_name in _action.hurtboxes:
             _action.hurtboxes[self.hurtbox_name].kill()
     
     def getPropertiesPanel(self, _root):

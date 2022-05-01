@@ -25,9 +25,9 @@ class If(SubAction):
         if self.source == 'fighter' or self.source == 'actor':
             if hasattr(_actor, 'owner'):
                 _actor = _actor.owner
-            if hasattr(_actor, 'stats') and _actor.stats.has_key(self.variable):
+            if hasattr(_actor, 'stats') and self.variable in _actor.stats:
                 variable = _actor.stats[self.variable]
-            elif _actor.variables.has_key(self.variable):
+            elif self.variable in _actor.variables:
                 variable = _actor.variables[self.variable]
             else: variable = getattr(_actor, self.variable)
         elif self.source == 'article' and hasattr(_actor, 'owner'):
@@ -65,12 +65,12 @@ class If(SubAction):
         print(self.if_actions,self.else_actions)
         
         if cond:
-            if self.if_actions and _action.events.has_key(self.if_actions):
+            if self.if_actions and self.if_actions in _action.events:
                 for act in _action.events[self.if_actions]:
                     act.execute(_action,_actor)
                     
         else:
-            if self.else_actions and _action.events.has_key(self.else_actions):
+            if self.else_actions and self.else_actions in _action.events:
                 for act in _action.events[self.else_actions]:
                     act.execute(_action,_actor)
     

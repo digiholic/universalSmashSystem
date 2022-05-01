@@ -85,7 +85,7 @@ class DynamicArticle():
             if hbox not in self.owner.active_hitboxes:
                 self.owner.active_hitboxes.add(hbox)
 
-        if self.sprite_rate is not 0:
+        if self.sprite_rate != 0:
             if self.sprite_rate < 0:
                 self.sprite.getImageAtIndex((self.frame // self.sprite_rate)-1)
             else:
@@ -147,7 +147,7 @@ class DynamicArticle():
             if isinstance(act, animation_actions):
                 act.execute(self,self)
         
-        if self.sprite_rate is not 0:
+        if self.sprite_rate != 0:
             if self.sprite_rate < 0:
                 self.sprite.getImageAtIndex((self.frame // self.sprite_rate)-1)
             else:
@@ -280,7 +280,7 @@ class DynamicArticle():
     def onCollision(self,_other):
         others_classes = list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]
         
-        for classKey,subacts in self.collision_actions.iteritems():
+        for classKey,subacts in self.collision_actions.items():
             if (classKey in others_classes):
                 for subact in subacts:
                     subact.execute(_other,self)
@@ -527,7 +527,7 @@ class AnimatedArticle():
     
     def update(self):
         self.sprite.updatePosition(self.posx, self.posy)
-        if self.sprite_rate is not 0:
+        if self.sprite_rate != 0:
             if self.sprite_rate < 0:
                 self.sprite.getImageAtIndex((self.frame // self.sprite_rate)-1)
             else:

@@ -187,7 +187,7 @@ class MainFrame(Tk):
         global changed_actions
         global fighter
         if fighter:
-            if changed_actions.has_key(self.action_string.get()):
+            if self.action_string.get() in changed_actions:
                 action = changed_actions[self.action_string.get()]
             else: action = fighter.getAction(self.action_string.get())
                 
@@ -239,7 +239,7 @@ class MenuBar(Menu):
         global action
         global changed_actions
         
-        for actName, new_action in changed_actions.iteritems():
+        for actName, new_action in changed_actions.items():
             if hasattr(fighter.actions, 'modifyAction'):
                 fighter.actions.modifyAction(actName, new_action) 
         if hasattr(fighter.actions,'saveActions'):
@@ -311,7 +311,7 @@ class CreateActionWindow(Toplevel):
         name = self.name.get()
         if name:
             if not fighter.actions.hasAction(name): #if it doesn't already exist
-                if not changed_actions.has_key(name): #and we didn't already make one
+                if not name in changed_actions: #and we didn't already make one
                     act = engine.action.Action()
                     act.name = name
                     self.root.addAction(act)
@@ -324,7 +324,7 @@ class CreateActionWindow(Toplevel):
         name = self.basic_choice.get()
         if name:
             if not fighter.actions.hasAction(name): #if it doesn't already exist
-                if not changed_actions.has_key(name): #and we didn't already make one
+                if not name in changed_actions: #and we didn't already make one
                     if hasattr(engine.baseActions, name):
                         act = getattr(engine.baseActions, name)()
                         act.name = name
@@ -349,7 +349,7 @@ class AddConditionalWindow(Toplevel):
         global action
         
         name = self.name.get()
-        if name and not action.conditional_actions.has_key(name):
+        if name and not name in action.conditional_actions:
             action.conditional_actions[name] = []
             self.root.actionModified()
             self.destroy()
@@ -740,7 +740,7 @@ class Subaction_panel(BuilderPanel):
         text += _node.text.lstrip() if _node.text is not None else ''
         if len(_node.attrib) > 0: #if it has attributes
             text += ' ('
-            for name,atr in _node.attrib.iteritems():
+            for name,atr in _node.attrib.items():
                 text+=name+': '+str(atr)
                 text+=','
             text = text[:-1] #chop off the last comma
@@ -804,7 +804,7 @@ class Subaction_panel(BuilderPanel):
             
             self.showSubactionList()
         elif self.group == 'Attributes':
-            for tag,val in fighter.var.iteritems():
+            for tag,val in fighter.var.items():
                 panel = subactionSelector.SubactionSelector(self.scroll_frame,[(tag,type(val).__name__,fighter.var,tag)],tag+': '+str(val))
                 self.subaction_list.append(panel)
             
@@ -909,7 +909,7 @@ class PropertiesPanel(BuilderPanel):
                          'Article': self.article_window
                          }
         
-        for name,window in subact_windows.iteritems():
+        for name,window in subact_windows.items():
             self.new_subaction_frame.add(window,text=name)
             
         subaction_lists = {'Control':[],
@@ -918,7 +918,7 @@ class PropertiesPanel(BuilderPanel):
                           'Hitbox':[],
                           'Article':[]}
         
-        for name,subact in engine.subaction.SubactionFactory.subaction_dict.iteritems():
+        for name,subact in engine.subaction.SubactionFactory.subaction_dict.items():
             if subact.subact_group in subact_windows.keys():
                 short_name = (name[:19] + '..') if len(name) > 22 else name
                 button = Button(subact_windows[subact.subact_group],text=short_name,command=lambda subaction=subact: self.addSubaction(subaction))
@@ -949,7 +949,7 @@ class PropertiesPanel(BuilderPanel):
                          'After Frames': action.actions_after_frame,
                          'Last Frame': action.actions_at_last_frame}
         group = self.parent.action_selector_panel.current_group.get()
-        if group_to_action.has_key(group) or group.startswith('Cond:'):
+        if group in group_to_action or group.startswith('Cond:'):
             subact = _subaction()
             if group.startswith('Cond:'):
                 action.conditional_actions[group[6:]].append(subact)
@@ -1041,7 +1041,7 @@ class SidePanel(ttk.Notebook):
             'Actions': fighter_actions
             }
         
-        for name,window in self.panel_windows.iteritems():
+        for name,window in self.panel_windows.items():
             self.add(window,text=name,sticky=N+S+E+W)
         
     def addActionPane(self,_actionName):
@@ -1166,7 +1166,7 @@ class ActionPanel(dataPanel):
         dataPanel.__init__(self, _parent, _root)
         self.config(bg="light coral")
         
-        if changed_actions.has_key(_actionName):
+        if _actionName in changed_actions:
             self.action = changed_actions[_actionName]
         else: self.action = fighter.getAction(_actionName)
         
@@ -1227,7 +1227,7 @@ class ActionPanel(dataPanel):
         lastGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
         self.data_list.append(lastGroup)
         
-        for name,event in self.action.events.iteritems():
+        for name,event in self.action.events.items():
             eventGroup = dataSelector.GroupLine(self,self.interior,'Event: '+name)
             for subact in event:
                 eventGroup.childElements.append(subact.getDataLine(self))

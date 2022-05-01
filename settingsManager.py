@@ -385,7 +385,7 @@ def saveSettings(_settings):
         for key in _settings[sect].key_bindings:
             parser.set(sect,'controlType',_settings['controlType_'+str(i)])
             parser.set(sect,key_id_map[key],str(_settings[sect].key_bindings[key]))
-        for key,val in _settings[sect].timing_window.iteritems():
+        for key,val in _settings[sect].timing_window.items():
             parser.set(sect,key,str(val))
             
     with open(os.path.join(getSetting().datadir.replace('main.exe',''),'settings','settings.ini'), 'w') as configfile:
@@ -400,13 +400,13 @@ def saveGamepad(_settings):
         if not parser.has_section(controller_name):
             parser.add_section(controller_name)
         
-        for key,value in gamepad.key_bindings.axis_bindings.iteritems():
+        for key,value in gamepad.key_bindings.axis_bindings.items():
             neg,pos = value
             if not neg: neg = 'none'
             if not pos: pos = 'none'
             parser.set(controller_name,'a'+str(key),'('+str(neg)+','+str(pos)+')' )
         
-        for key,value in gamepad.key_bindings.button_bindings.iteritems():
+        for key,value in gamepad.key_bindings.button_bindings.items():
             parser.set(controller_name,'b'+str(key),str(value))
             
     with open(os.path.join(getSetting().datadir.replace('main.exe',''),'settings','gamepads.ini'), 'w') as configfile:
@@ -472,7 +472,7 @@ class sfx_library():
     @_category - the category of the sound
     """
     def hasSound(self,_name,_category):
-        return self.sounds.has_key(_category+"_"+_name)
+        return _category+"_"+_name in self.sounds
                 
     """
     This is called to add a directory of sound effects to the library.

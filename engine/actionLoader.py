@@ -86,7 +86,7 @@ class ActionLoader():
             
             if _newAction.default_vars:
                 vars_elem = ElementTree.Element('vars')
-                for tag,val in _newAction.default_vars.iteritems():
+                for tag,val in _newAction.default_vars.items():
                     new_elem = ElementTree.Element(tag)
                     new_elem.attrib['type'] = type(val).__name__
                     new_elem.text = str(val)
@@ -145,7 +145,7 @@ class ActionLoader():
                         frameElem.append(subact.getXmlElement())
                     elem.append(frameElem)
             
-            for event_name,event in _newAction.events.iteritems():
+            for event_name,event in _newAction.events.items():
                 if len(event) > 0:
                     event_elem = ElementTree.Element('Event')
                     event_elem.attrib['name'] = str(event_name)
@@ -193,7 +193,7 @@ class ActionLoader():
         action_vars = {}
         if action_xml.find('vars') is not None:
             for var in action_xml.find('vars'):
-                t = var.attrib['type'] if var.attrib.has_key('type') else None
+                t = var.attrib['type'] if 'type' in var.attrib else None
                 if t and t == 'int':
                     action_vars[var.tag] = int(var.text)
                 elif t and t == 'float':
@@ -334,7 +334,7 @@ class ActionLoader():
         dyn_action.loop = loop
         
         dyn_action.default_vars = action_vars
-        for key,val in action_vars.iteritems():
+        for key,val in action_vars.items():
             setattr(dyn_action,key,val)
         
         return dyn_action

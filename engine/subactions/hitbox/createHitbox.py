@@ -29,7 +29,7 @@ class createHitbox(SubAction):
         if self.hitbox_name == '': return #Don't make a hitbox without a name or we'll lose it
         #Use an existing hitbox lock by name, or create a new one
         
-        if self.hitbox_lock and _action.hitbox_locks.has_key(self.hitbox_lock):
+        if self.hitbox_lock in self.hitbox_lock and _action.hitbox_locks:
             hitbox_lock = _action.hitbox_locks[self.hitbox_lock]
         else:
             hitbox_lock = engine.hitbox.HitboxLock(self.hitbox_lock)
@@ -60,13 +60,13 @@ class createHitbox(SubAction):
         
         if _action is not None:
             if hasattr(_action, 'events'): #Articles don't have events, and this can be called from article
-                if _action.events.has_key(self.owner_event):
+                if self.owner_event in _action.events:
                     hitbox.owner_on_hit_actions = _action.events[self.owner_event]
-                elif _actor.events.has_key(self.owner_event):
+                elif self.owner_event in _actor.events:
                     hitbox.owner_on_hit_actions = [_actor.events[self.owner_event]]
-                if _action.events.has_key(self.other_event):
+                if self.other_event in _action.events:
                     hitbox.other_on_hit_actions = _action.events[self.other_event]
-                elif _actor.events.has_key(self.other_event):
+                elif self.other_event in _actor.events:
                     hitbox.other_on_hit_actions = [_actor.events[self.other_event]]
             _action.hitboxes[self.hitbox_name] = hitbox
     
@@ -82,7 +82,7 @@ class createHitbox(SubAction):
         name_elem = ElementTree.Element('name')
         name_elem.text = self.hitbox_name
         elem.append(name_elem)
-        for tag,value in self.hitbox_vars.iteritems():
+        for tag,value in self.hitbox_vars.items():
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)
@@ -94,7 +94,7 @@ class createHitbox(SubAction):
     @staticmethod
     def customBuildFromXml(_node):
         #mandatory fields
-        hitbox_type = _node.attrib['type'] if _node.attrib.has_key('type') else "damage"
+        hitbox_type = _node.attrib['type'] if 'type' in _node.attrib else "damage"
         
         #build the variable dict
         variables = {}
@@ -162,7 +162,7 @@ class CreateHitboxLine(dataSelector.dataLine):
         
     def changeVariable(self,*args):
         hitboxes = self.root.getAction().hitboxes
-        if hitboxes.has_key(self.name_data.get()):
+        if self.name_data.get() in hitboxes:
             self.hitbox = hitboxes[self.name_data.get()]
         
     def packChildren(self):
@@ -174,7 +174,7 @@ class CreateHitboxLine(dataSelector.dataLine):
         
     def update(self):
         hitboxes = self.root.getAction().hitboxes
-        if hitboxes.has_key(self.name_data.get()):
+        if self.name_data.get() in hitboxes:
             self.hitbox = hitboxes[self.name_data.get()]
         
         self.properties_frame.hitbox = self.hitbox

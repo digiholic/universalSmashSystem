@@ -54,7 +54,7 @@ class createArmor(SubAction):
         hurtbox_elem = ElementTree.Element('hurtbox')
         hurtbox_elem.text = self.hurtbox
         elem.append(hurtbox_elem)
-        for tag,value in self.armor_vars.iteritems():
+        for tag,value in self.armor_vars.items():
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)
@@ -63,7 +63,7 @@ class createArmor(SubAction):
     @staticmethod
     def customBuildFromXml(_node):
         #mandatory fields
-        armor_type = _node.attrib['type'] if _node.attrib.has_key('type') else "hyper"
+        armor_type = _node.attrib['type'] if 'type' in _node.attrib else "hyper"
         
         #build the variable dict
         variables = {}
