@@ -321,19 +321,23 @@ class ECB():
             sizes = self.actor.ecb_size
             offsets = self.actor.ecb_offset
         
-        if sizes[0] == 0: 
-            self.current_ecb.rect.width = self.actor.sprite.bounding_rect.width
-        else:
-            self.current_ecb.rect.width = sizes[0]
-        if sizes[1] == 0: 
-            self.current_ecb.rect.height = self.actor.sprite.bounding_rect.height
-        else:
-            self.current_ecb.rect.height = sizes[1]
+        sizes = list(sizes)
+        offsets = list(offsets)
         
-        self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
+        if sizes and offsets:
+            if sizes[0] == 0: 
+                self.current_ecb.rect.width = self.actor.sprite.bounding_rect.width
+            else:
+                self.current_ecb.rect.width = sizes[0]
+            if sizes[1] == 0: 
+                self.current_ecb.rect.height = self.actor.sprite.bounding_rect.height
+            else:
+                self.current_ecb.rect.height = sizes[1]
+            
+            self.current_ecb.rect.center = self.actor.sprite.bounding_rect.center
 
-        self.current_ecb.rect.x += offsets[0]
-        self.current_ecb.rect.y += offsets[1]
+            self.current_ecb.rect.x += offsets[0]
+            self.current_ecb.rect.y += offsets[1]
         
     def draw(self,_screen,_offset,_scale):
         self.current_ecb.draw(_screen,self.actor.game_state.stageToScreen(self.current_ecb.rect),_scale)
