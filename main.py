@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import pygame
-import imp
+import importlib
 import os
 import sys
 import traceback
@@ -45,7 +45,7 @@ def importFromURI(filePath, uri, absl=False, _suffix=""):
          
     if os.path.exists(no_ext + '.py'):
         try:
-            return imp.load_source((mname + _suffix), no_ext + '.py')
+            return importlib.machinery.SourceFileLoader((mname + _suffix), no_ext + '.py').load_module()
         except Exception as e:
             print(mname, e)
         

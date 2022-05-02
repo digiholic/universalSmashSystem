@@ -6,15 +6,21 @@ sys.path.insert(0, '../')
 import settingsManager
 import inspect
 import engine.abstractFighter
-import subactionSelector
+import builder.subactionSelector
 import engine.subaction
 import xml.etree.ElementTree as ElementTree
-from Tkinter import *
-from tkFileDialog import askopenfile
-from tkMessageBox import showinfo
+if sys.version_info[0] == 3:
+    from tkinter import *
+    from tkinter.filedialog import askopenfile
+    from tkinter.messagebox import showinfo
+    from tkinter import ttk
+else:
+    from Tkinter import *
+    from tkFileDialog import askopenfile
+    from tkMessageBox import showinfo
+    import ttk
 from shutil import copyfile
 import stages.training_stage.stage
-import ttk
 import builder.dataSelector as dataSelector
 from engine.abstractFighter import AbstractFighter
 
