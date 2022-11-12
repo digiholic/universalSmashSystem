@@ -98,7 +98,7 @@ class SubactionFactory():
                  'deactivateSelf': deactivateSelf.deactivateSelf
                  }
         
-        self.name_dict = {v: k for k, v in self.subaction_dict.items()} #reverse the above so a class object gets you the string
+        self.name_dict = {v: k for k, v in list(self.subaction_dict.items())} #reverse the above so a class object gets you the string
 
         self.initialized = True
     
@@ -240,7 +240,7 @@ class FuncData():
         self.args = _args
         
     def unpack(self,_action,_actor):
-        for argname,arg in self.args.items():
+        for argname,arg in list(self.args.items()):
             if isinstance(arg, FuncData) or isinstance(arg, VarData) or isinstance(arg, EvalData):
                 self.args[argname] = arg.unpack(_action,_actor)
                 
@@ -479,7 +479,7 @@ class SubAction():
         self.defaultVars = dict()
     
     def execute(self, _action, _actor):
-        for tag,variable in self.defaultVars.items():
+        for tag,variable in list(self.defaultVars.items()):
             if isinstance(variable, VarData) or isinstance(variable, FuncData) or isinstance(variable, EvalData):
                 setattr(self, tag, variable.unpack(_action,_actor))
                 

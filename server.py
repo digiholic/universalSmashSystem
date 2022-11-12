@@ -80,7 +80,7 @@ class GameServer(object):
         else:
           print("progress message from unknown player: " + str(addr))
         allClientsHaveSameFrame = True
-        for player in self.players.values():
+        for player in list(self.players.values()):
           if player['nextframe']!=self.tick:
             allClientsHaveSameFrame = False
         if allClientsHaveSameFrame:

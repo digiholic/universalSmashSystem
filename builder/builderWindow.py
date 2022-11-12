@@ -245,7 +245,7 @@ class MenuBar(Menu):
         global action
         global changed_actions
         
-        for actName, new_action in changed_actions.items():
+        for actName, new_action in list(changed_actions.items()):
             if hasattr(fighter.actions, 'modifyAction'):
                 fighter.actions.modifyAction(actName, new_action) 
         if hasattr(fighter.actions,'saveActions'):
@@ -639,7 +639,7 @@ class SelectorPanel(BuilderPanel):
         global changed_actions
         global action
         
-        for changed_action in changed_actions.keys():
+        for changed_action in list(changed_actions.keys()):
             if not changed_action in self.act_list:
                 self.act_list.append(changed_action)
         
@@ -651,7 +651,7 @@ class SelectorPanel(BuilderPanel):
         else:
             self.group_list = self.default_group_list[:]
             if action and isinstance(action, engine.action.Action):
-                for group in action.events.keys():
+                for group in list(action.events.keys()):
                     self.group_list.append('Cond: '+ group)
                             
         self.action.destroy()
@@ -746,7 +746,7 @@ class Subaction_panel(BuilderPanel):
         text += _node.text.lstrip() if _node.text is not None else ''
         if len(_node.attrib) > 0: #if it has attributes
             text += ' ('
-            for name,atr in _node.attrib.items():
+            for name,atr in list(_node.attrib.items()):
                 text+=name+': '+str(atr)
                 text+=','
             text = text[:-1] #chop off the last comma
@@ -810,7 +810,7 @@ class Subaction_panel(BuilderPanel):
             
             self.showSubactionList()
         elif self.group == 'Attributes':
-            for tag,val in fighter.var.items():
+            for tag,val in list(fighter.var.items()):
                 panel = subactionSelector.SubactionSelector(self.scroll_frame,[(tag,type(val).__name__,fighter.var,tag)],tag+': '+str(val))
                 self.subaction_list.append(panel)
             
@@ -915,7 +915,7 @@ class PropertiesPanel(BuilderPanel):
                          'Article': self.article_window
                          }
         
-        for name,window in subact_windows.items():
+        for name,window in list(subact_windows.items()):
             self.new_subaction_frame.add(window,text=name)
             
         subaction_lists = {'Control':[],
@@ -924,13 +924,13 @@ class PropertiesPanel(BuilderPanel):
                           'Hitbox':[],
                           'Article':[]}
         
-        for name,subact in engine.subaction.SubactionFactory.subaction_dict.items():
-            if subact.subact_group in subact_windows.keys():
+        for name,subact in list(engine.subaction.SubactionFactory.subaction_dict.items()):
+            if subact.subact_group in list(subact_windows.keys()):
                 short_name = (name[:19] + '..') if len(name) > 22 else name
                 button = Button(subact_windows[subact.subact_group],text=short_name,command=lambda subaction=subact: self.addSubaction(subaction))
                 subaction_lists[subact.subact_group].append(button)
                 
-        for group in subaction_lists.values():
+        for group in list(subaction_lists.values()):
             x = 0
             y = 0
             for button in group:
@@ -1047,11 +1047,11 @@ class SidePanel(ttk.Notebook):
             'Actions': fighter_actions
             }
         
-        for name,window in self.panel_windows.items():
+        for name,window in list(self.panel_windows.items()):
             self.add(window,text=name,sticky=N+S+E+W)
         
     def addActionPane(self,_actionName):
-        if not _actionName in self.panel_windows.keys():
+        if not _actionName in list(self.panel_windows.keys()):
             actionPanel = ActionPanel(self,self.root,_actionName)
             self.panel_windows[_actionName] = actionPanel
             self.add(actionPanel,text=_actionName,sticky=N+S+E+W)
@@ -1233,7 +1233,7 @@ class ActionPanel(dataPanel):
         lastGroup.childElements.append(dataSelector.NewSubactionLine(self,self.interior))
         self.data_list.append(lastGroup)
         
-        for name,event in self.action.events.items():
+        for name,event in list(self.action.events.items()):
             eventGroup = dataSelector.GroupLine(self,self.interior,'Event: '+name)
             for subact in event:
                 eventGroup.childElements.append(subact.getDataLine(self))

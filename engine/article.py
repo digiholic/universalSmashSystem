@@ -110,7 +110,7 @@ class DynamicArticle():
             self.posx += self.change_x
             self.posy += self.change_y
 
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             hitbox.update()
             
         for act in self.actions_after_frame:
@@ -153,7 +153,7 @@ class DynamicArticle():
             else:
                 self.sprite.getImageAtIndex(self.frame // self.sprite_rate)
             
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             hitbox.update()
                 
         self.frame += 1      
@@ -181,7 +181,7 @@ class DynamicArticle():
             act.execute(self,self)
         
     def deactivate(self):
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             hitbox.kill()
         for act in self.tear_down_actions:
             act.execute(self,self)
@@ -280,7 +280,7 @@ class DynamicArticle():
     def onCollision(self,_other):
         others_classes = list(map(lambda x :x.__name__,_other.__class__.__bases__)) + [_other.__class__.__name__]
         
-        for classKey,subacts in self.collision_actions.items():
+        for classKey,subacts in list(self.collision_actions.items()):
             if (classKey in others_classes):
                 for subact in subacts:
                     subact.execute(_other,self)
@@ -393,7 +393,7 @@ class DynamicArticle():
 
     def changeOwner(self, _newOwner):
         self.owner = _newOwner
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             hitbox.owner = _newOwner
         
     def activateHitbox(self,_hitbox):

@@ -30,7 +30,7 @@ class NetworkUpdateMessage(object):
         self.frame = int(evtSplit[2])
         self.json = evtSplit[3]
         evt.type = self.type
-        jsondict = json.loads(self.json).items()
+        jsondict = list(json.loads(self.json).items())
         for attr,val in jsondict:
             setattr(evt,attr,val)
         return evt
@@ -92,7 +92,7 @@ class NetworkBufferEntry(object):
         self.receivedFrom = {}
     def getEvents(self):
         self.eventList = []
-        for k,v in self.receivedFrom.items():
+        for k,v in list(self.receivedFrom.items()):
             for e in v:
                 self.eventList.append(e)
         return self.eventList
@@ -355,7 +355,7 @@ class Network(object):
                     #hit_tagged = None#??"""
                 self.send(msg.toString(), (self.serveraddr, self.serverport))
         for fighter_message in nextFighterList:
-            fighter_data = json.loads(fighter_message.json).items()
+            fighter_data = list(json.loads(fighter_message.json).items())
             print("updating fighter"+str(fighter_data.frame)+" "+str(self.tick_count))
             for f in fighters:
                 for attr,val in fighter_data:

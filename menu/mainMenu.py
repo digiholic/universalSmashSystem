@@ -668,7 +668,7 @@ class PlayerControlsMenu(SubMenu):
             
     def bindControls(self,_screen):
         key_id_map = {}
-        for name, value in vars(pygame.constants).items():
+        for name, value in list(vars(pygame.constants).items()):
             if name.startswith("K_"):
                 key_id_map[value] = name
         
@@ -1113,7 +1113,7 @@ class GameSettingsMenu(SubMenu):
                 if event.type == QUIT:
                     self.status = -1
 
-            for key_name,key_value in holding.items():
+            for key_name,key_value in list(holding.items()):
                 if key_value and can_press: 
                     can_press = False
                     pygame.time.set_timer(pygame.USEREVENT+1,200)
@@ -1228,7 +1228,7 @@ class RebindMenu(SubMenu):
     def __init__(self,_parent):
         self.key_id_map = {}
         self.key_name_map = {}
-        for name, value in vars(pygame.constants).items():
+        for name, value in list(vars(pygame.constants).items()):
             if name.startswith("K_"):
                 self.key_id_map[value] = name
                 self.key_name_map[name] = value
@@ -1320,7 +1320,7 @@ class RebindIndividual(SubMenu):
                 if event.type == pygame.USEREVENT+1: 
                     can_press = True;
 
-            for key_name,key_value in holding.items():
+            for key_name,key_value in list(holding.items()):
                 if key_value and can_press:
                     can_press = False
                     pygame.time.set_timer(pygame.USEREVENT+1,150)

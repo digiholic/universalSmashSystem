@@ -338,7 +338,7 @@ class AbstractFighter():
             color_elem = ElementTree.Element('color_palette')
             color_elem.attrib['id'] = str(i)
             color_elem.attrib['displayColor'] = '#000000'
-            for from_color,to_color in color_dict.items():
+            for from_color,to_color in list(color_dict.items()):
                 map_elem = ElementTree.Element('color_map')
                 map_elem.attrib['from_color'] = '#%02x%02x%02x' % from_color
                 map_elem.attrib['to_color'] = '#%02x%02x%02x' % to_color
@@ -350,7 +350,7 @@ class AbstractFighter():
             if not costume == self.sprite_prefix:
                 tree.append(createElement('costume', costume))
             
-        for tag,val in self.stats.items():
+        for tag,val in list(self.stats.items()):
             stats_elem.append(createElement(tag, val))
         tree.append(stats_elem)
         

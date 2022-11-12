@@ -14,7 +14,7 @@ class modifyHitbox(SubAction):
         if self.hitbox_name in _action.hitboxes:
             hitbox = _action.hitboxes[self.hitbox_name]
             if hitbox:
-                for name,value in self.hitbox_vars.items():
+                for name,value in list(self.hitbox_vars.items()):
                     if hasattr(hitbox, name):
                         if isinstance(value, VarData) or isinstance(value, FuncData) or isinstance(value, EvalData):
                             setattr(hitbox, name, value.unpack(_action,_actor))
@@ -34,7 +34,7 @@ class modifyHitbox(SubAction):
     def getXmlElement(self):
         elem = ElementTree.Element('modifyHitbox')
         elem.attrib['name'] = self.hitbox_name
-        for tag,value in self.hitbox_vars.items():
+        for tag,value in list(self.hitbox_vars.items()):
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)

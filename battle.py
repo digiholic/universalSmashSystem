@@ -432,7 +432,7 @@ class Battle():
             dist = 48
             
             print(fighter.data_log.data)
-            for item,val in fighter.data_log.data.items():
+            for item,val in list(fighter.data_log.data.items()):
                 text = spriteManager.TextSprite(str(item) + ': ' + str(val))
                 result_sprite.image.blit(text.image,(0,dist))
                 dist += 16

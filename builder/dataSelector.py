@@ -384,7 +384,7 @@ class SpriteLine(dataLine):
         
         sprite_vals = ['No Sprites found']
         if self.root.getFighter():
-            sprite_vals = self.root.getFighter().sprite.image_library["right"].keys()
+            sprite_vals = list(self.root.getFighter().sprite.image_library["right"].keys())
             
         self.sprite_entry = OptionMenu(self,self.sprite_data,*sprite_vals)
         self.sprite_entry.config(width=18)
@@ -713,7 +713,7 @@ class TransitionLine(dataLine):
         self.target_object = _target_object
         self.var_name = _varname
         
-        self.tran_list = engine.baseActions.state_dict.keys()
+        self.tran_list = list(engine.baseActions.state_dict.keys())
         
         self.tran_data = StringVar()
         self.tran_entry = OptionMenu(self,self.tran_data,*self.tran_list)

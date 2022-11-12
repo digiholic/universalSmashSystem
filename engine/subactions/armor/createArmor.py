@@ -54,7 +54,7 @@ class createArmor(SubAction):
         hurtbox_elem = ElementTree.Element('hurtbox')
         hurtbox_elem.text = self.hurtbox
         elem.append(hurtbox_elem)
-        for tag,value in self.armor_vars.items():
+        for tag,value in list(self.armor_vars.items()):
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)

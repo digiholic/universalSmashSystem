@@ -23,7 +23,7 @@ class Hurtbox(spriteManager.RectSprite):
         
         #set the variables from the dict, so that we don't lose the initial value of the dict when modifying them
         #also lets us not have to go update all the old references. Score!
-        for key,value in self.variable_dict.items():
+        for key,value in list(self.variable_dict.items()):
             setattr(self, key, value)
 
         fix_center = self.getFixCenter()
@@ -92,7 +92,7 @@ class Armor():
         
         #set the variables from the dict, so that we don't lose the initial value of the dict when modifying them
         #also lets us not have to go update all the old references. Score!
-        for key,value in self.variable_dict.items():
+        for key,value in list(self.variable_dict.items()):
             setattr(self, key, value)
 
     def filterHits(self,_hitbox,_subactions,_forward):

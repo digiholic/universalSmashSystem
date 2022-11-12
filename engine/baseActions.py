@@ -1760,12 +1760,12 @@ class BaseAttack(action.Action):
         
     def tearDown(self, _actor, _nextAction):
         action.Action.tearDown(self, _actor, _nextAction)
-        for _,hitbox in self.hitboxes.items():
+        for _,hitbox in list(self.hitboxes.items()):
             hitbox.kill()
     
     def onClank(self, _actor, _hitbox, _other):
         action.Action.onClank(self, _actor, _hitbox, _other)
-        for _,hitbox in self.hitboxes.items():
+        for _,hitbox in list(self.hitboxes.items()):
             hitbox.kill()
 
     def stateTransitions(self, _actor):
@@ -1778,7 +1778,7 @@ class BaseAttack(action.Action):
                     
     def update(self, _actor):
         action.Action.update(self, _actor)
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             hitbox.update()
         self.frame += 1
 
@@ -1793,7 +1793,7 @@ class AirAttack(BaseAttack):
             self.fastfall_frame = None
     
     def onClank(self, _actor, _hitbox, _other):
-        for _,hitbox in self.hitboxes.items():
+        for _,hitbox in list(self.hitboxes.items()):
             hitbox.kill()
                     
     def stateTransitions(self, _actor):
@@ -1876,7 +1876,7 @@ class GroundGrab(BaseAttack):
     def setUp(self, _actor):
         BaseAttack.setUp(self, _actor)
         from engine import subactions
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             if not hitbox.owner_on_hit_actions: 
                 if _actor.hasAction('GrabReeling'): hitbox.owner_on_hit_actions.append(subactions.control.doAction.doAction('GrabReeling'))
                 else: hitbox.owner_on_hit_actions.append(subactions.control.doAction.doAction('Grabbing'))
@@ -1889,7 +1889,7 @@ class DashGrab(BaseAttack):
     def setUp(self, _actor):
         BaseAttack.setUp(self, _actor)
         from engine import subactions
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             if not hitbox.owner_on_hit_actions: 
                 if _actor.hasAction('GrabReeling'): hitbox.owner_on_hit_actions.append(subactions.control.doAction.doAction('GrabReeling'))
                 else: hitbox.owner_on_hit_actions.append(subactions.control.doAction.doAction('Grabbing'))
@@ -1944,7 +1944,7 @@ class BaseThrow(BaseGrab):
             else: _actor.doAction('Fall')
         
     def update(self, _actor):
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             hitbox.update()
         BaseGrab.update(self, _actor)
         self.frame += 1
@@ -1959,7 +1959,7 @@ class Pummel(BaseGrab):
             _actor.doAction('Grabbing')
 
     def update(self, _actor):
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             hitbox.update()
         BaseGrab.update(self, _actor)
         self.frame += 1

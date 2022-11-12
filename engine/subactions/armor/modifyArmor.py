@@ -16,7 +16,7 @@ class modifyArmor(SubAction):
             if self.armor_name in hurtbox.armor:
                 armor = hurtbox.armor[self.armor_name]
                 if armor:
-                    for name,value in self.hitbox_vars.items():
+                    for name,value in list(self.hitbox_vars.items()):
                         if hasattr(armor, name):
                             if isinstance(value, VarData) or isinstance(value, FuncData) or isinstance(value, EvalData):
                                 setattr(armor, name, value.unpack(_action,_actor))
@@ -29,7 +29,7 @@ class modifyArmor(SubAction):
         else:
             if self.armor_name in _actor.armor:
                 armor = _actor.armor[self.armor_name]
-                for name,value in self.hitbox_vars.items():
+                for name,value in list(self.hitbox_vars.items()):
                     if hasattr(armor, name):
                         if isinstance(value, VarData) or isinstance(value, FuncData) or isinstance(value, EvalData):
                             setattr(armor, name, value.unpack(_action,_actor))
@@ -49,7 +49,7 @@ class modifyArmor(SubAction):
     def getXmlElement(self):
         elem = ElementTree.Element('modifyArmor')
         elem.attrib['name'] = self.armor_name
-        for tag,value in self.armor_vars.items():
+        for tag,value in list(self.armor_vars.items()):
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)

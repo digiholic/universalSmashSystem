@@ -1427,7 +1427,7 @@ def optimize_dirty_rects(dirty_rects):
     if PYTHON_VERSION >= 3:
         return_list = list(r_dict.values())
     else:
-        return_list = r_dict.values()
+        return_list = list(r_dict.values())
 
     #####debug('OUTPUT: ' + str(return_list) + '\n')
     return return_list

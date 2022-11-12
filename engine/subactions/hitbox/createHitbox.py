@@ -82,7 +82,7 @@ class createHitbox(SubAction):
         name_elem = ElementTree.Element('name')
         name_elem.text = self.hitbox_name
         elem.append(name_elem)
-        for tag,value in self.hitbox_vars.items():
+        for tag,value in list(self.hitbox_vars.items()):
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)
