@@ -15,6 +15,7 @@ import string
 import menu
 import inspect
 import bdb
+import math
 
 import engine.network as network
 
@@ -88,7 +89,7 @@ class Battle():
                 
                 self.clock_sprite = spriteManager.TextSprite('8:00','Orbitron Medium',32,[0,0,0])
                 self.clock_sprite.rect.topright = self.screen.get_rect().topright
-                self.clock_sprite.changeText(str(self.clock_time / 60)+':'+str(self.clock_time % 60).zfill(2))
+                self.updateClockText()
                 self.gui_objects.append(self.clock_sprite)
             
             gui_offset = self.screen.get_rect().width / (len(self.players) + 1)
@@ -183,6 +184,10 @@ class Battle():
         
         self.endBattle(self.exit_status)    
         return self.exit_status # This'll pop us back to the character select screen.
+    
+    def updateClockText(self):
+        clockText = str(math.floor(self.clock_time / 60))+':'+str(self.clock_time % 60).zfill(2)
+        self.clock_sprite.changeText(clockText)
         
     def gameEventLoop(self):
         for cont in self.controllers:
@@ -210,7 +215,7 @@ class Battle():
                         
             if event.type == pygame.USEREVENT+2:
                 pygame.time.set_timer(pygame.USEREVENT+2, 1000)
-                self.clock_sprite.changeText(str(self.clock_time / 60)+':'+str(self.clock_time % 60).zfill(2))
+                self.updateClockText()
                 self.clock_time -= 1
                 if self.clock_time <= 5 and self.clock_time > 0:
                     self.countdown_sprite.changeText(str(self.clock_time))
