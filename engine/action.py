@@ -57,7 +57,7 @@ class Action(object):
                 act.execute(self,_actor)
         for act in self.actions_after_frame:
             act.execute(self,_actor)
-        if self.sprite_rate is not 0:
+        if self.sprite_rate != 0:
             if self.sprite_rate < 0:
                 _actor.changeSpriteImage((self.frame // self.sprite_rate)-1, _loop=self.loop)
             else:
@@ -90,7 +90,7 @@ class Action(object):
             if isinstance(act, animation_actions):
                 act.execute(self,_actor)
         
-        if self.sprite_rate is not 0:
+        if self.sprite_rate != 0:
             if self.sprite_rate < 0:
                 _actor.changeSpriteImage((self.frame // self.sprite_rate)-1, _loop=self.loop)
             else:

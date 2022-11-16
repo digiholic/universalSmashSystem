@@ -34,13 +34,13 @@ class createArmor(SubAction):
         elif self.armor_type == "crouchCancel":
             armor = engine.hurtbox.CrouchCancel(_actor,self.armor_vars)
             
-        if self.hurtbox is not '' and _action is not None:
+        if self.hurtbox != '' and _action != None:
             _action.hurtbox[self.hurtbox_name].armor[self.armor_name] = armor
         else:
             _actor.armor[self.armor_name] = armor
     
     def getDisplayName(self):
-        return 'Add ' + self.armor_type + ' armor to ' + self.hurtbox if self.hurtbox is not '' else 'the fighter'
+        return 'Add ' + self.armor_type + ' armor to ' + self.hurtbox if self.hurtbox != '' else 'the fighter'
     
     def getPropertiesPanel(self, _root):
         return subactionSelector.ModifyArmorProperties(_root,self,newArmor=True)
