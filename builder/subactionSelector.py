@@ -1,10 +1,19 @@
-from Tkinter import *
+import sys
 import os
-from tkFileDialog import askopenfile, askdirectory
-import ttk
+
+# Python 3 compatibility
+if sys.version_info[0] == 3:
+    import tkinter as tk
+    from tkinter.filedialog import askopenfile, askdirectory
+    from tkinter import ttk
+else:
+    import Tkinter as tk
+    from tkFileDialog import askopenfile, askdirectory
+    import ttk
+
 import settingsManager
 
-class Selector(Label):
+class Selector(tk.Label):
     def __init__(self,_root):
         self.display_name = StringVar()
         self.display_name.set('')
@@ -92,7 +101,7 @@ class PropertySelector(Selector):
         if hasattr(_owner, _varname): fielddata = getattr(_owner, _varname)
         self.display_name.set(self.data[0]+': '+ str(fielddata))
         
-class ChangeAttributeFrame(Frame):
+class ChangeAttributeFrame(tk.Frame):
     def __init__(self,_root,_attribSet):
         Frame.__init__(self,_root,height=_root.winfo_height())
         self.root = _root
@@ -122,7 +131,7 @@ class ChangeAttributeFrame(Frame):
             elif vartype == 'sprite':
                 attrib_var = StringVar(self)
                 attrib_var.set(self.getFromAttrib(obj, prop))
-                attrib_entry = OptionMenu(self,attrib_var,*self.root.getFighter().sprite.image_library["right"].keys())
+                attrib_entry = OptionMenu(self,attrib_var,*list(self.root.getFighter().sprite.image_library["right"].keys()))
             else:
                 attrib_var = StringVar(self)
                 attrib_var.set(str(self.getFromAttrib(obj, prop)))
@@ -191,7 +200,7 @@ class ChangeAttributeFrame(Frame):
         res = os.path.relpath(loaded_name,os.path.dirname(self.root.root.fighter_file.name))
         _resultVar.set(res)
         
-class BasePropertiesFrame(Frame):
+class BasePropertiesFrame(tk.Frame):
     def __init__(self,_root,_subaction):
         Frame.__init__(self, _root, height=_root.winfo_height())
         self.root = _root
@@ -207,7 +216,7 @@ class BasePropertiesFrame(Frame):
         return self.variable_list[_name]
     
     def initVars(self):
-        for (val,var) in self.variable_list.iteritems():
+        for (val,var) in list(self.variable_list.items()):
             var.set(getattr(self.subaction,val))
             var.trace('w',lambda name1, name2, op, variable=var, varname=val: self.variableChanged(variable, varname, name1, name2, op))
                 
@@ -247,7 +256,7 @@ class IfProperties(BasePropertiesFrame):
         value_type_entry = OptionMenu(self,self.value_type_var,*['string','int','float','bool'])
         
         conditionals = ['']
-        conditionals.extend(_root.getAction().conditional_actions.keys())
+        conditionals.extend(list(_root.getAction().conditional_actions.keys()))
         if_entry = OptionMenu(self,self.getVar('if_actions'),*conditionals)
         else_entry = OptionMenu(self,self.getVar('else_actions'),*conditionals)
         
@@ -296,7 +305,7 @@ class IfButtonProperties(BasePropertiesFrame):
         buffer_entry = Spinbox(self,textvariable=self.getVar('buffer_time'),from_=0,to=255)
         
         conditionals = ['']
-        conditionals.extend(_root.getAction().conditional_actions.keys())
+        conditionals.extend(list(_root.getAction().conditional_actions.keys()))
         if_entry = OptionMenu(self,self.getVar('if_actions'),*conditionals)
         else_entry = OptionMenu(self,self.getVar('else_actions'),*conditionals)
         
@@ -322,7 +331,7 @@ class ChangeSpriteProperties(BasePropertiesFrame):
         
         sprite_vals = ['No Sprites found']
         if _root.getFighter():
-            sprite_vals = _root.getFighter().sprite.image_library["right"].keys()
+            sprite_vals = list(_root.getFighter().sprite.image_library["right"].keys())
             
         sprites = OptionMenu(self,self.sprite_choice,*sprite_vals)
         sprites.config(width=18)
@@ -426,7 +435,7 @@ class ChangeSpeedProperties(BasePropertiesFrame):
             self.root.root.actionModified()
             
     def initVars(self):
-        for (val,var) in self.variable_list.iteritems():
+        for (val,var) in list(self.variable_list.items()):
             newval = getattr(self.subaction,val)
             if newval is None: var.set(0)
             else: var.set(newval)
@@ -520,7 +529,7 @@ class ShiftPositionProperties(BasePropertiesFrame):
             self.root.root.actionModified()
             
     def initVars(self):
-        for (val,var) in self.variable_list.iteritems():
+        for (val,var) in list(self.variable_list.items()):
             newval = getattr(self.subaction,val)
             if newval is None: var.set(0)
             else: var.set(newval)
@@ -605,7 +614,7 @@ class ShiftSpriteProperties(BasePropertiesFrame):
             self.root.root.actionModified()
             
     def initVars(self):
-        for (val,var) in self.variable_list.iteritems():
+        for (val,var) in list(self.variable_list.items()):
             newval = getattr(self.subaction,val)
             if newval is None: var.set(0)
             else: var.set(newval)
@@ -698,7 +707,7 @@ class TransitionProperties(BasePropertiesFrame):
         self.addVariable(StringVar, 'transition')
         transition_label = Label(self,text='Transition State:')
         import engine
-        transition_entry = OptionMenu(self,self.getVar('transition'),*engine.baseActions.state_dict.keys())
+        transition_entry = OptionMenu(self,self.getVar('transition'),*list(engine.baseActions.state_dict.keys()))
         
         self.initVars()
         
@@ -710,7 +719,7 @@ class ModifyHitboxProperties(BasePropertiesFrame):
         BasePropertiesFrame.__init__(self, _root, _subaction)
         
         import engine
-        if _root.getAction().hitboxes.has_key(self.subaction.hitbox_name):
+        if self.subaction.hitbox_name in _root.getAction().hitboxes:
             self.hitbox = _root.getAction().hitboxes[self.subaction.hitbox_name]
         else: self.hitbox = engine.hitbox.Hitbox(_root.getFighter(),engine.hitbox.HitboxLock())
         self.variable_list = []
@@ -792,7 +801,7 @@ class ModifyHitboxProperties(BasePropertiesFrame):
             var.trace('w',lambda name1, name2, op, variable=var, varname=val: self.variableChanged(variable, varname, name1, name2, op,))
             
     def populateHitboxVariable(self,_variable):
-        if self.subaction.hitbox_vars.has_key(_variable):
+        if _variable in self.subaction.hitbox_vars:
             return self.subaction.hitbox_vars[_variable]
         else: return getattr(self.hitbox,_variable)
     
@@ -849,7 +858,7 @@ class HitboxPropertiesFrame(ttk.Frame):
         else:
             hitbox_vals = ['No Hitboxes found']
             if _parent.root.getAction():
-                hitbox_vals = _parent.root.getAction().hitboxes.keys()
+                hitbox_vals = list(_parent.root.getAction().hitboxes.keys())
                 
             name_entry = OptionMenu(self,self.hitbox_name,*hitbox_vals)
             type_entry = Entry(self,textvariable=self.hitbox_type,state=DISABLED)
@@ -889,9 +898,9 @@ class HitboxPropertiesFrame(ttk.Frame):
         self.subaction.hitbox_name = new_name
         
         #we need something in the action so that we can select it from a dropdown later
-        if not self.parent.root.getAction().hitboxes.has_key(new_name): #Set our working Hitbox to the action
+        if not new_name in self.parent.root.getAction().hitboxes: #Set our working Hitbox to the action
             self.parent.root.getAction().hitboxes[new_name] = self.hitbox
-        if self.parent.root.getAction().hitboxes.has_key(old_name): #Set it to the Old one if it exists
+        if old_name in self.parent.root.getAction().hitboxes: #Set it to the Old one if it exists
             self.parent.root.getAction().hitboxes[new_name] = self.parent.root.getAction().hitboxes[old_name]
             del(self.parent.root.getAction().hitboxes[old_name])
         self.parent.root.root.actionModified()
@@ -919,7 +928,7 @@ class HitboxPropertiesFrame(ttk.Frame):
         self.parent.root.root.actionModified()
         
     def populateHitboxVariable(self,_variable):
-        if self.subaction.hitbox_vars.has_key(_variable):
+        if _variable in self.subaction.hitbox_vars:
             return self.subaction.hitbox_vars[_variable]
         else: return getattr(self.hitbox,_variable)
         
@@ -931,7 +940,7 @@ class UpdateHitboxProperties(BasePropertiesFrame):
         
         hitbox_vals = ['No Hitboxes found']
         if _root.getAction():
-            hitbox_vals = _root.getAction().hitboxes.keys()
+            hitbox_vals = list(_root.getAction().hitboxes.keys())
         
         hitbox_label = Label(self,text="Hitbox:")
         hitbox_entry = OptionMenu(self,self.getVar('hitbox_name'),*hitbox_vals)

@@ -29,10 +29,10 @@ class setVar(SubAction):
         elif self.source == 'article' and hasattr(_actor, 'owner'):
             source = _actor
         if not self.attr =='': #If there's a variable to set
-            if hasattr(source, 'stats') and source.stats.has_key(self.attr): #if it has a var dict, let's check it first
+            if hasattr(source, 'stats') and self.attr in source.stats: #if it has a var dict, let's check it first
                 if self.relative: source.stats[self.attr] += self.val
                 else: source.stats[self.attr] = self.val
-            elif hasattr(source, 'variables') and source.variables.has_key(self.attr):
+            elif hasattr(source, 'variables') and self.attr in source.variables:
                 if self.relative: source.variables[self.attr] += self.val
                 else: source.variables[self.attr] = self.val
             else:

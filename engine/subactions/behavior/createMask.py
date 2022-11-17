@@ -1,6 +1,12 @@
 from engine.subaction import *
-from Tkinter import *
-from tkColorChooser import askcolor 
+import sys
+
+if sys.version_info[0] == 3:
+    from tkinter import *
+    from tkinter.colorchooser import askcolor
+else:
+    from Tkinter import *
+    from tkColorChooser import askcolor 
 
 class createMask(SubAction):
     subact_group = 'Behavior'

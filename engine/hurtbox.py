@@ -1,3 +1,4 @@
+from functools import reduce
 import spriteManager
 import settingsManager
 import engine.hitbox as hitbox
@@ -22,7 +23,7 @@ class Hurtbox(spriteManager.RectSprite):
         
         #set the variables from the dict, so that we don't lose the initial value of the dict when modifying them
         #also lets us not have to go update all the old references. Score!
-        for key,value in self.variable_dict.iteritems():
+        for key,value in list(self.variable_dict.items()):
             setattr(self, key, value)
 
         fix_center = self.getFixCenter()
@@ -61,7 +62,7 @@ class Hurtbox(spriteManager.RectSprite):
     @_other: The hitbox that hit this hurtbox
     """
     def onHit(self,_hitbox):
-        all_armor = self.armor.values()+self.owner.armor.values()
+        all_armor = set(self.armor.values()) | set(self.owner.armor.values())
         # Use currying to composit everything together
         giant_filter = reduce(lambda f, g: (lambda j, k: g.filterHits(_hitbox, k, f)), all_armor, lambda x, y: self.owner.filterHits(x, y))
         return giant_filter(_hitbox, _hitbox.getOnHitSubactions(self))
@@ -91,7 +92,7 @@ class Armor():
         
         #set the variables from the dict, so that we don't lose the initial value of the dict when modifying them
         #also lets us not have to go update all the old references. Score!
-        for key,value in self.variable_dict.iteritems():
+        for key,value in list(self.variable_dict.items()):
             setattr(self, key, value)
 
     def filterHits(self,_hitbox,_subactions,_forward):

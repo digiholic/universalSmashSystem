@@ -34,13 +34,13 @@ class createArmor(SubAction):
         elif self.armor_type == "crouchCancel":
             armor = engine.hurtbox.CrouchCancel(_actor,self.armor_vars)
             
-        if self.hurtbox is not '' and _action is not None:
+        if self.hurtbox != '' and _action != None:
             _action.hurtbox[self.hurtbox_name].armor[self.armor_name] = armor
         else:
             _actor.armor[self.armor_name] = armor
     
     def getDisplayName(self):
-        return 'Add ' + self.armor_type + ' armor to ' + self.hurtbox if self.hurtbox is not '' else 'the fighter'
+        return 'Add ' + self.armor_type + ' armor to ' + self.hurtbox if self.hurtbox != '' else 'the fighter'
     
     def getPropertiesPanel(self, _root):
         return subactionSelector.ModifyArmorProperties(_root,self,newArmor=True)
@@ -54,7 +54,7 @@ class createArmor(SubAction):
         hurtbox_elem = ElementTree.Element('hurtbox')
         hurtbox_elem.text = self.hurtbox
         elem.append(hurtbox_elem)
-        for tag,value in self.armor_vars.iteritems():
+        for tag,value in list(self.armor_vars.items()):
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)
@@ -63,7 +63,7 @@ class createArmor(SubAction):
     @staticmethod
     def customBuildFromXml(_node):
         #mandatory fields
-        armor_type = _node.attrib['type'] if _node.attrib.has_key('type') else "hyper"
+        armor_type = _node.attrib['type'] if 'type' in _node.attrib else "hyper"
         
         #build the variable dict
         variables = {}

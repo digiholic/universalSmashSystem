@@ -1,9 +1,18 @@
-from Tkinter import *
-import settingsManager
-from idlelib.ObjectBrowser import _object_browser
-from tkFileDialog import askopenfile,askdirectory
+import sys
 import os
-import tkMessageBox
+
+# Python 3 compatibility
+if sys.version_info[0] == 3:
+    from tkinter import *
+    from tkinter.filedialog import askopenfile, askdirectory
+    import tkinter.messagebox as tkMessageBox
+else:
+    from Tkinter import *
+    from tkFileDialog import askopenfile, askdirectory
+    import tkMessageBox
+
+import settingsManager
+#from idlelib.ObjectBrowser import _object_browser
 import engine.action
 import inspect
 
@@ -375,7 +384,7 @@ class SpriteLine(dataLine):
         
         sprite_vals = ['No Sprites found']
         if self.root.getFighter():
-            sprite_vals = self.root.getFighter().sprite.image_library["right"].keys()
+            sprite_vals = list(self.root.getFighter().sprite.image_library["right"].keys())
             
         self.sprite_entry = OptionMenu(self,self.sprite_data,*sprite_vals)
         self.sprite_entry.config(width=18)
@@ -704,7 +713,7 @@ class TransitionLine(dataLine):
         self.target_object = _target_object
         self.var_name = _varname
         
-        self.tran_list = engine.baseActions.state_dict.keys()
+        self.tran_list = list(engine.baseActions.state_dict.keys())
         
         self.tran_data = StringVar()
         self.tran_entry = OptionMenu(self,self.tran_data,*self.tran_list)

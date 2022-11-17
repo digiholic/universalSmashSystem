@@ -57,14 +57,14 @@ class Action(object):
                 act.execute(self,_actor)
         for act in self.actions_after_frame:
             act.execute(self,_actor)
-        if self.sprite_rate is not 0:
+        if self.sprite_rate != 0:
             if self.sprite_rate < 0:
                 _actor.changeSpriteImage((self.frame // self.sprite_rate)-1, _loop=self.loop)
             else:
                 _actor.changeSpriteImage(self.frame // self.sprite_rate, _loop=self.loop)
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             hitbox.update()
-        for hurtbox in self.hurtboxes.values():
+        for hurtbox in list(self.hurtboxes.values()):
             hurtbox.update()
             
     def updateAnimationOnly(self,_actor):
@@ -90,15 +90,15 @@ class Action(object):
             if isinstance(act, animation_actions):
                 act.execute(self,_actor)
         
-        if self.sprite_rate is not 0:
+        if self.sprite_rate != 0:
             if self.sprite_rate < 0:
                 _actor.changeSpriteImage((self.frame // self.sprite_rate)-1, _loop=self.loop)
             else:
                 _actor.changeSpriteImage(self.frame // self.sprite_rate, _loop=self.loop)
 
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             hitbox.update()
-        for hurtbox in self.hurtboxes.values():
+        for hurtbox in list(self.hurtboxes.values()):
             hurtbox.update()
                 
         self.frame += 1         
@@ -122,9 +122,9 @@ class Action(object):
             _actor.activateHurtbox(self.hurtboxes['auto'])
             
     def tearDown(self,_actor,_nextAction):
-        for hitbox in self.hitboxes.values():
+        for hitbox in list(self.hitboxes.values()):
             hitbox.kill()
-        for hurtbox in self.hurtboxes.values():
+        for hurtbox in list(self.hurtboxes.values()):
             hurtbox.kill()
         for act in self.tear_down_actions:
             act.execute(self,_actor)

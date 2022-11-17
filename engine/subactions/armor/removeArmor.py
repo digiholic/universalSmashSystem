@@ -13,17 +13,17 @@ class removeArmor(SubAction):
     
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        if self.hurtbox is not '':
-            if _action.hurtboxes.has_key(self.hurtbox):
+        if self.hurtbox != '':
+            if self.hurtbox in _action.hurtboxes:
                 hurtbox = _action.hurtboxes[self.hurtbox]
-                if self.armor_name is '':
+                if self.armor_name == '':
                     hurtbox.armor.clear()
-                elif hurtbox.armor.has_key(self.armor_name):
+                elif self.armor_name in hurtbox.armor:
                     del hurtbox.armor[self.armor_name]
         else:
-            if self.armor_name is '':
+            if self.armor_name == '':
                 _actor.armor.clear()
-            elif _actor.armor.has_key(self.armor_name):
+            elif self.armor_name in _actor.armor:
                 del _actor.armor[self.armor_name]
     
     def getPropertiesPanel(self, _root):

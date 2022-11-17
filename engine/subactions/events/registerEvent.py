@@ -30,6 +30,6 @@ class RegisterEvent(SubAction):
     def customBuildFromXml(_node):
         event_actions = []
         for subact in _node:
-            if subactionFactory.subaction_dict.has_key(subact.tag): 
+            if subact.tag in subactionFactory.subaction_dict: 
                 event_actions.append(subactionFactory.buildFromXml(subact.tag,subact))
         return RegisterEvent(event_actions)

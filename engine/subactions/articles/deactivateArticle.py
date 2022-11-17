@@ -11,7 +11,7 @@ class deactivateArticle(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        if _action.articles.has_key(self.name):
+        if self.name in _action.articles:
             _action.articles[self.name].deactivate()
     
     def getDisplayName(self):

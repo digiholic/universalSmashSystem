@@ -53,11 +53,11 @@ class ifButton(SubAction):
             return
 
         if cond:
-            if self.if_actions and _action.events.has_key(self.if_actions):
+            if self.if_actions and self.if_actions in _action.events:
                 for act in _action.events[self.if_actions]:
                     act.execute(_action,_actor)
         else:
-            if self.else_actions and _action.events.has_key(self.else_actions):
+            if self.else_actions and self.else_actions in _action.events:
                 for act in _action.events[self.else_actions]:
                     act.execute(_action,_actor)
     
@@ -129,7 +129,7 @@ class ifButton(SubAction):
     @staticmethod
     def customBuildFromXml(_node):
         button = _node.find('button')
-        if button.attrib.has_key('check'):
+        if 'check' in button.attrib:
             check = button.attrib['check']
         else: check = 'keyBuffered'
         button = button.text
@@ -140,4 +140,4 @@ class ifButton(SubAction):
         if_actions = loadNodeWithDefault(_node, 'pass', None)
         else_actions = loadNodeWithDefault(_node, 'fail', None)
         
-        return ifButton(button, check, buffer_from, buffer_to, threshold, if_actions, else_actions, _node.attrib.has_key('beyondAction'))
+        return ifButton(button, check, buffer_from, buffer_to, threshold, if_actions, else_actions, 'beyondAction' in _node.attrib)

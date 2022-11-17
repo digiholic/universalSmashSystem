@@ -148,7 +148,7 @@ class button(panel):
         self.selection = _newSelect
 
     def getValue(self):
-        return self.option_dict.keys()[selection]
+        return list(self.option_dict.keys())[selection]
 
     def gainFocus(self, _event):
         if _event.type == pygame.MOUSEBUTTONDOWN and self.getcoordinatesatpixel(_event.pos[0]-self.corner[0]. _event.pos[1]-self.corner[1]) != (None, None):

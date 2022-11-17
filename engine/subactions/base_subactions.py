@@ -31,7 +31,7 @@ class Event(subaction.SubAction):
     def customBuildFromXml(_node):
         event_actions = []
         for subact in _node:
-            if subaction_dict.has_key(subact.tag): 
+            if subact.tag in subaction_dict: 
                 event_actions.append(subaction.SubAction.buildFromXml(subact.tag,subact))
         return Event(event_actions)
         
@@ -63,9 +63,9 @@ class If(subaction.SubAction):
         if self.source == 'fighter' or self.source == 'actor':
             if hasattr(_actor, 'owner'):
                 _actor = _actor.owner
-            if hasattr(_actor, 'stats') and _actor.stats.has_key(self.variable):
+            if hasattr(_actor, 'stats') and self.variable in _actor.stats:
                 variable = _actor.stats[self.variable]
-            elif _actor.variables.has_key(self.variable):
+            elif self.variable in _actor.variables:
                 variable = _actor.variables[self.variable]
             else: variable = getattr(_actor, self.variable)
         elif self.source == 'article' and hasattr(_actor, 'owner'):
@@ -90,12 +90,12 @@ class If(subaction.SubAction):
             
         cond = function(variable,self.value)
         if cond:
-            if self.if_actions and _action.events.has_key(self.if_actions):
+            if self.if_actions and self.if_actions in _action.events:
                 for act in _action.events[self.if_actions]:
                     act.execute(_action,_actor)
                     
         else:
-            if self.else_actions and _action.events.has_key(self.else_actions):
+            if self.else_actions and self.else_actions in _action.events:
                 for act in _action.events[self.else_actions]:
                     act.execute(_action,_actor)
     
@@ -175,11 +175,11 @@ class ifButton(subaction.SubAction):
             return
 
         if cond:
-            if self.if_actions and _action.events.has_key(self.if_actions):
+            if self.if_actions and self.if_actions in _action.events:
                 for act in _action.events[self.if_actions]:
                     act.execute(_action,_actor)
         else:
-            if self.else_actions and _action.events.has_key(self.else_actions):
+            if self.else_actions and self.else_actions in _action.events:
                 for act in _action.events[self.else_actions]:
                     act.execute(_action,_actor)
     
@@ -251,7 +251,7 @@ class ifButton(subaction.SubAction):
     @staticmethod
     def customBuildFromXml(_node):
         button = _node.find('button')
-        if button.attrib.has_key('check'):
+        if 'check' in button.attrib:
             check = button.attrib['check']
         else: check = 'keyBuffered'
         button = button.text
@@ -262,7 +262,7 @@ class ifButton(subaction.SubAction):
         if_actions = subaction.loadNodeWithDefault(_node, 'pass', None)
         else_actions = subaction.loadNodeWithDefault(_node, 'fail', None)
         
-        return ifButton(button, check, buffer_from, buffer_to, threshold, if_actions, else_actions, _node.attrib.has_key('beyondAction'))
+        return ifButton(button, check, buffer_from, buffer_to, threshold, if_actions, else_actions, 'beyondAction' in _node.attrib)
                   
 ########################################################
 #                SPRITE CHANGERS                       #
@@ -837,10 +837,10 @@ class modifyFighterVar(subaction.SubAction):
         if self.source == 'actor' and hasattr(_actor, 'owner'):
             _actor = _actor.owner
         if not self.attr =='':
-            if hasattr(_actor, 'stats') and _actor.stats.has_key(self.attr):
+            if hasattr(_actor, 'stats') and self.attr in _actor.stats:
                 if self.relative: _actor.stats[self.attr] += self.val
                 else: _actor.stats[self.attr] = self.val
-            elif _actor.variables.has_key(self.attr):
+            elif self.attr in _actor.variables:
                 if self.relative: _actor.variables[self.attr] += self.val
                 else: _actor.variables[self.attr] = self.val
             else:
@@ -883,10 +883,10 @@ class setVar(subaction.SubAction):
         elif self.source == 'article' and hasattr(_actor, 'owner'):
             source = _actor
         if not self.attr =='': #If there's a variable to set
-            if hasattr(source, 'stats') and source.stats.has_key(self.attr): #if it has a var dict, let's check it first
+            if hasattr(source, 'stats') and self.attr in source.stats: #if it has a var dict, let's check it first
                 if self.relative: source.stats[self.attr] += self.val
                 else: source.stats[self.attr] = self.val
-            elif hasattr(source, 'variables') and source.variables.has_key(self.attr):
+            elif hasattr(source, 'variables') and self.attr in source.variables:
                 if self.relative: source.variables[self.attr] += self.val
                 else: source.variables[self.attr] = self.val
             else:
@@ -952,7 +952,7 @@ class transitionState(subaction.SubAction):
     
     def execute(self, _action, _actor):
         subaction.SubAction.execute(self, _action, _actor)
-        if baseActions.state_dict.has_key(self.transition):
+        if self.transition in baseActions.state_dict:
             baseActions.state_dict[self.transition](_actor)
     
     def getPropertiesPanel(self, _root):
@@ -985,7 +985,7 @@ class createHitbox(subaction.SubAction):
         if self.hitbox_name == '': return #Don't make a hitbox without a name or we'll lose it
         #Use an existing hitbox lock by name, or create a new one
         
-        if self.hitbox_lock and _action.hitbox_locks.has_key(self.hitbox_lock):
+        if self.hitbox_lock and self.hitbox_lock in _action.hitbox_locks:
             hitbox_lock = _action.hitbox_locks[self.hitbox_lock]
         else:
             hitbox_lock = engine.hitbox.HitboxLock(self.hitbox_lock)
@@ -1016,9 +1016,9 @@ class createHitbox(subaction.SubAction):
         
         if _action is not None:
             if hasattr(_action, 'events'): #Articles don't have events, and this can be called from article
-                if _action.events.has_key(self.owner_event):
+                if self.owner_event in _action.events:
                     hitbox.owner_on_hit_actions = _action.events[self.owner_event]
-                if _action.events.has_key(self.other_event):
+                if self.other_event in _action.events:
                     hitbox.other_on_hit_actions = _action.events[self.other_event]
             _action.hitboxes[self.hitbox_name] = hitbox
     
@@ -1034,7 +1034,7 @@ class createHitbox(subaction.SubAction):
         name_elem = ElementTree.Element('name')
         name_elem.text = self.hitbox_name
         elem.append(name_elem)
-        for tag,value in self.hitbox_vars.iteritems():
+        for tag,value in list(self.hitbox_vars.items()):
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)
@@ -1046,7 +1046,7 @@ class createHitbox(subaction.SubAction):
     @staticmethod
     def customBuildFromXml(_node):
         #mandatory fields
-        hitbox_type = _node.attrib['type'] if _node.attrib.has_key('type') else "damage"
+        hitbox_type = _node.attrib['type'] if 'type' in _node.attrib else "damage"
         
         #build the variable dict
         variables = {}
@@ -1096,10 +1096,10 @@ class modifyHitbox(subaction.SubAction):
         
     def execute(self, _action, _actor):
         subaction.SubAction.execute(self, _action, _actor)
-        if _action.hitboxes.has_key(self.hitbox_name):
+        if self.hitbox_name in _action.hitboxes:
             hitbox = _action.hitboxes[self.hitbox_name]
             if hitbox:
-                for name,value in self.hitbox_vars.iteritems():
+                for name,value in list(self.hitbox_vars.items()):
                     if hasattr(hitbox, name):
                         if isinstance(value, subaction.VarData) or isinstance(value, subaction.FuncData) or isinstance(value, subaction.EvalData):
                             setattr(hitbox, name, value.unpack(_action,_actor))
@@ -1119,7 +1119,7 @@ class modifyHitbox(subaction.SubAction):
     def getXmlElement(self):
         elem = ElementTree.Element('modifyHitbox')
         elem.attrib['name'] = self.hitbox_name
-        for tag,value in self.hitbox_vars.iteritems():
+        for tag,value in list(self.hitbox_vars.items()):
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)
@@ -1167,7 +1167,7 @@ class activateHitbox(subaction.SubAction):
     
     def execute(self, _action, _actor):
         subaction.SubAction.execute(self, _action, _actor)
-        if _action.hitboxes.has_key(self.hitbox_name):
+        if self.hitbox_name in _action.hitboxes:
             _actor.activateHitbox(_action.hitboxes[self.hitbox_name])
     
     def getPropertiesPanel(self, _root):
@@ -1188,7 +1188,7 @@ class deactivateHitbox(subaction.SubAction):
     
     def execute(self, _action, _actor):
         subaction.SubAction.execute(self, _action, _actor)
-        if _action.hitboxes.has_key(self.hitbox_name):
+        if self.hitbox_name in _action.hitboxes:
             _action.hitboxes[self.hitbox_name].kill()
     
     def getPropertiesPanel(self, _root):
@@ -1208,7 +1208,7 @@ class unlockHitbox(subaction.SubAction):
         
     def execute(self, _action, _actor):
         subaction.SubAction.execute(self, _action, _actor)
-        if _action.hitboxes.has_key(self.hitbox_name):
+        if self.hitbox_name in _action.hitboxes:
             _action.hitboxes[self.hitbox_name].hitbox_lock = engine.hitbox.HitboxLock()
     
     def getPropertiesPanel(self, _root):
@@ -1279,7 +1279,7 @@ class createHurtbox(subaction.SubAction):
         name_elem = ElementTree.Element('name')
         name_elem.text = self.hurtbox_name
         elem.append(name_elem)
-        for tag,value in self.hurtbox_vars.iteritems():
+        for tag,value in list(self.hurtbox_vars.items()):
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)
@@ -1317,10 +1317,10 @@ class modifyHurtbox(subaction.SubAction):
         
     def execute(self, _action, _actor):
         subaction.SubAction.execute(self, _action, _actor)
-        if _action.hurtboxes.has_key(self.hurtbox_name):
+        if self.hurtbox_name in _action.hurtboxes:
             hurtbox = _action.hurtboxes[self.hurtbox_name]
             if hurtbox:
-                for name,value in self.hurtbox_vars.iteritems():
+                for name,value in list(self.hurtbox_vars.items()):
                     if hasattr(hurtbox, name):
                         if isinstance(value, subaction.VarData) or isinstance(value, subaction.FuncData) or isinstance(value, subaction.EvalData):
                             setattr(hurtbox, name, value.unpack(_action,_actor))
@@ -1336,7 +1336,7 @@ class modifyHurtbox(subaction.SubAction):
     def getXmlElement(self):
         elem = ElementTree.Element('modifyHurtbox')
         elem.attrib['name'] = self.hurtbox_name
-        for tag,value in self.hurtbox_vars.iteritems():
+        for tag,value in list(self.hurtbox_vars.items()):
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)
@@ -1373,7 +1373,7 @@ class activateHurtbox(subaction.SubAction):
     
     def execute(self, _action, _actor):
         subaction.SubAction.execute(self, _action, _actor)
-        if _action.hurtboxes.has_key(self.hurtbox_name):
+        if self.hurtbox_name in _action.hurtboxes:
             _actor.activateHurtbox(_action.hurtboxes[self.hurtbox_name])
     
     def getPropertiesPanel(self, _root):
@@ -1394,7 +1394,7 @@ class deactivateHurtbox(subaction.SubAction):
     
     def execute(self, _action, _actor):
         subaction.SubAction.execute(self, _action, _actor)
-        if _action.hurtboxes.has_key(self.hurtbox_name):
+        if self.hurtbox_name in _action.hurtboxes:
             _action.hurtboxes[self.hurtbox_name].kill()
     
     def getPropertiesPanel(self, _root):
@@ -1463,7 +1463,7 @@ class activateArticle(subaction.SubAction):
         
     def execute(self, _action, _actor):
         subaction.SubAction.execute(self, _action, _actor)
-        if _action.articles.has_key(self.name):
+        if self.name in _action.articles:
             _action.articles[self.name].activate()
         
     def getDisplayName(self):
@@ -1480,7 +1480,7 @@ class deactivateArticle(subaction.SubAction):
         
     def execute(self, _action, _actor):
         subaction.SubAction.execute(self, _action, _actor)
-        if _action.articles.has_key(self.name):
+        if self.name in _action.articles:
             _action.articles[self.name].deactivate()
     
     def getDisplayName(self):
@@ -1571,7 +1571,7 @@ class debugAction(subaction.SubAction):
             if source == 'action':
                 print('action.'+name+': '+str(getattr(_action, name)))
             else:
-                if hasattr(_actor, 'stats') and _actor.stats.has_key(name):
+                if hasattr(_actor, 'stats') and name in _actor.stats:
                     print('object['+name+']: '+str(_actor.stats[name]))
                 else:
                     print('object.'+name+': '+str(getattr(_actor, name)))
@@ -1642,7 +1642,7 @@ class executeCode(subaction.SubAction):
         else:
             print(self.scope + " is not a valid scope")
             return None
-        exec self.codeString in globals(), working_locals
+        exec(self.codeString in globals(), working_locals)
 
     def getDisplayName(self):
         return 'Execute ' + self.codeString + ' in the ' + self.scope + ' scope'

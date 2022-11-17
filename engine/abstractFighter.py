@@ -1,3 +1,4 @@
+from functools import reduce
 import settingsManager
 import pygame
 import xml.etree.ElementTree as ElementTree
@@ -337,7 +338,7 @@ class AbstractFighter():
             color_elem = ElementTree.Element('color_palette')
             color_elem.attrib['id'] = str(i)
             color_elem.attrib['displayColor'] = '#000000'
-            for from_color,to_color in color_dict.iteritems():
+            for from_color,to_color in list(color_dict.items()):
                 map_elem = ElementTree.Element('color_map')
                 map_elem.attrib['from_color'] = '#%02x%02x%02x' % from_color
                 map_elem.attrib['to_color'] = '#%02x%02x%02x' % to_color
@@ -349,7 +350,7 @@ class AbstractFighter():
             if not costume == self.sprite_prefix:
                 tree.append(createElement('costume', costume))
             
-        for tag,val in self.stats.iteritems():
+        for tag,val in list(self.stats.items()):
             stats_elem.append(createElement(tag, val))
         tree.append(stats_elem)
         
@@ -415,7 +416,7 @@ class AbstractFighter():
             if self.xml_data.find('variables') is not None:
                 for variable in self.xml_data.find('variables'):
                     vartype = 'string'
-                    if variable.attrib.has_key('type'): vartype = variable.attrib['type']
+                    if 'type' in variable.attrib: vartype = variable.attrib['type']
                     val = variable.text
                     if vartype == 'int': val = int(val)
                     elif vartype == 'float': val = float(val)
@@ -1187,8 +1188,8 @@ class AbstractFighter():
         """
         if _from is None:
             _from = max(min(int(self.key_bindings.timing_window['buffer_window']), self.last_input_frame), 1)
-        down_frames = map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to))
-        up_frames = map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to))
+        down_frames = list(map(lambda k: _key in k and k[_key] >= _state, self.input_buffer.getLastNFrames(_from, _to)))
+        up_frames = list(map(lambda k: _key in k and k[_key] < _state, self.input_buffer.getLastNFrames(_from, _to)))
         if not any(down_frames):
             return False
         if any(down_frames) and not any(up_frames):
@@ -1345,10 +1346,10 @@ class AbstractFighter():
                 smoothed_x += working_x
                 smoothed_y += working_y
         else:
-            left = self.keys_held['left'] if self.keys_held.has_key('left') else 0
-            right = self.keys_held['right'] if self.keys_held.has_key('right') else 0
-            up = self.keys_held['up'] if self.keys_held.has_key('up') else 0
-            down = self.keys_held['down'] if self.keys_held.has_key('down') else 0
+            left = self.keys_held['left'] if 'left' in self.keys_held else 0
+            right = self.keys_held['right'] if 'right' in self.keys_held else 0
+            up = self.keys_held['up'] if 'up' in self.keys_held else 0
+            down = self.keys_held['down'] if 'down' in self.keys_held else 0
             smoothed_x = -left+right
             smoothed_y = -up+down
             

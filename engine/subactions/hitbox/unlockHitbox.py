@@ -11,7 +11,7 @@ class unlockHitbox(SubAction):
         
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        if _action.hitboxes.has_key(self.hitbox_name):
+        if self.hitbox_name in _action.hitboxes:
             _action.hitboxes[self.hitbox_name].hitbox_lock = engine.hitbox.HitboxLock()
     
     def getPropertiesPanel(self, _root):

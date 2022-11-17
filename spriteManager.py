@@ -85,7 +85,7 @@ class SpriteHandler(Sprite):
         
         
         if not self.starting_image in self.image_library[self.flip]:
-            key_list = self.image_library[self.flip].keys()
+            key_list = list(self.image_library[self.flip].keys())
             self.starting_image = key_list[0] 
             print("Default Sprite not found. New default sprite: " + str(self.starting_image))
             
@@ -144,7 +144,7 @@ class SpriteHandler(Sprite):
     def buildImageLibrary(self,_lib,_offset):
         library = {}
         flipped_library = {}
-        for key,value in _lib.image_dict.items():
+        for key,value in list(_lib.image_dict.items()):
             image_list = self.buildSubimage_list(value,_offset)
             library[key] = image_list
             flip_list = []
@@ -165,7 +165,7 @@ class SpriteHandler(Sprite):
         while index < _sheet.get_width() // _offset:
             _sheet.set_clip(pygame.Rect(index * _offset, 0, _offset,_sheet.get_height()))
             image = _sheet.subsurface(_sheet.get_clip())
-            for from_color,to_color in self.color_map.items():
+            for from_color,to_color in list(self.color_map.items()):
                 self.recolor(image, tuple(list(from_color)), tuple(list(to_color)))
             if not self.scale_factor == 1.0:
                 w = int(image.get_width() * self.scale_factor)
@@ -244,7 +244,7 @@ class SheetSprite(ImageSprite):
             self.sheet.set_clip(pygame.Rect(index * _offset, 0, _offset,_sheet.get_height()))
             image = _sheet.subsurface(_sheet.get_clip())
             #image = image.convert_alpha()
-            for from_color,to_color in self.color_map.items():
+            for from_color,to_color in list(self.color_map.items()):
                 self.recolor(image, tuple(list(from_color)), tuple(list(to_color)))
             image_list.append(image)
             index += 1

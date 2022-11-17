@@ -21,10 +21,10 @@ class modifyFighterVar(SubAction):
         if self.source == 'actor' and hasattr(_actor, 'owner'):
             _actor = _actor.owner
         if not self.attr =='':
-            if hasattr(_actor, 'stats') and _actor.stats.has_key(self.attr):
+            if hasattr(_actor, 'stats') and self.attr in _actor.stats:
                 if self.relative: _actor.stats[self.attr] += self.val
                 else: _actor.stats[self.attr] = self.val
-            elif _actor.variables.has_key(self.attr):
+            elif self.attr in _actor.variables:
                 if self.relative: _actor.variables[self.attr] += self.val
                 else: _actor.variables[self.attr] = self.val
             else:

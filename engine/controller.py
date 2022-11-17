@@ -55,7 +55,7 @@ class BaseController():
         
     def getKeysForAction(self,_action):
         list_of_bindings = []
-        for binding,name in self.key_bindings.items():
+        for binding,name in list(self.key_bindings.items()):
             if name == _action:
                 list_of_bindings.append(settingsManager.getSetting().key_id_map[binding])
         return list_of_bindings
@@ -160,10 +160,10 @@ class PadBindings():
     
     def getKeysForAction(self,_action):
         list_of_bindings = []
-        for button,name in self.button_bindings.items():
+        for button,name in list(self.button_bindings.items()):
             if name == _action:
                 list_of_bindings.append('Button ' + str(button))
-        for axis,(neg,pos) in self.axis_bindings.items():
+        for axis,(neg,pos) in list(self.axis_bindings.items()):
             if pos == _action:
                 list_of_bindings.append('Axis ' + str(axis) + ' Positive')
             if neg == _action:

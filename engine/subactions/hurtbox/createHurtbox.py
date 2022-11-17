@@ -29,7 +29,7 @@ class createHurtbox(SubAction):
         name_elem = ElementTree.Element('name')
         name_elem.text = self.hurtbox_name
         elem.append(name_elem)
-        for tag,value in self.hurtbox_vars.iteritems():
+        for tag,value in list(self.hurtbox_vars.items()):
             new_elem = ElementTree.Element(tag)
             new_elem.text = str(value)
             elem.append(new_elem)

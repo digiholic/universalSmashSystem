@@ -15,7 +15,7 @@ class debugAction(SubAction):
             if source == 'action':
                 print('action.'+name+': '+str(getattr(_action, name)))
             else:
-                if hasattr(_actor, 'stats') and _actor.stats.has_key(name):
+                if hasattr(_actor, 'stats') and name in _actor.stats:
                     print('object['+name+']: '+str(_actor.stats[name]))
                 else:
                     print('object.'+name+': '+str(getattr(_actor, name)))

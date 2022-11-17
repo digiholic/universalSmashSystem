@@ -1,4 +1,5 @@
 from engine.subaction import *
+import engine.baseActions as baseActions
 
 class transitionState(SubAction):
     subact_group = 'Control'
@@ -11,7 +12,7 @@ class transitionState(SubAction):
     
     def execute(self, _action, _actor):
         SubAction.execute(self, _action, _actor)
-        if baseActions.state_dict.has_key(self.transition):
+        if self.transition in baseActions.state_dict:
             baseActions.state_dict[self.transition](_actor)
     
     def getPropertiesPanel(self, _root):

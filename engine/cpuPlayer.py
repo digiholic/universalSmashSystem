@@ -39,7 +39,7 @@ class CPUplayer(controller.Controller):
         estimates = {0: math.sqrt((_startPoint[0]-_endPoint[0])**2+(_startPoint[1]-_endPoint[1])**2)}
 
         while (len(open_set) > 0):
-            current = min(filter(lambda n: n[0] in open_set, estimates.items()), key=lambda x: x[1])[0] #Current now has the farthest-off point
+            current = min(filter(lambda n: n[0] in open_set, list(estimates.items())), key=lambda x: x[1])[0] #Current now has the farthest-off point
             if current == 1:
                 break
 
